@@ -2,29 +2,24 @@
  * @file MatrixAssembly.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of a class to assemble matrix entries in a distributed way.
@@ -112,36 +107,52 @@ public:
     /**
      *  @brief Get the assembled data in COO format localized for a given distribution
      *
-     *  Be careful as the returned coo storage can have multiple entries for the same matrix position.
+     *  @param[in] dist specifies the distribution of the rows 
+     *  @param[in] numColumns is required to set the second dimension of the storage
+     *  @param[in] op specifies how to deal with multiple entries for the same matrix position.
      */
-    COOStorage<ValueType> buildLocalCOO( const dmemo::Distribution& dist, const IndexType numColumns ) const;
+    COOStorage<ValueType> buildLocalCOO( const dmemo::Distribution& dist, const IndexType numColumns, common::BinaryOp op ) const;
 
     /**
      *  @brief Get the assembled data in COO format replicated on all processors
      *
      *  Be careful as the returned coo storage can have multiple entries for the same matrix position.
      */
-    COOStorage<ValueType> buildGlobalCOO( const IndexType numRows, const IndexType numColumns ) const;
+    COOStorage<ValueType> buildGlobalCOO( const IndexType numRows, const IndexType numColumns, common::BinaryOp op ) const;
+
+    /**
+     * @brief Return COO storage of assembled data but only the owned entries.
+     *
+     *  @param[in] dist is the (row) distribution to check for owned entries
+     *  @param[in] numColumns is required to set the second dimension of the storage
+     *  @param[in] op specifies how to deal with multiple entries for the same matrix position.
+     *
+     * This method should be called if the assembled data is replicated on all processors that are used for the new distribution.
+     * This method does not involve any interprocessor communication.
+     */
+    COOStorage<ValueType> buildOwnedCOO( const dmemo::Distribution& dist, const IndexType numColumns, common::BinaryOp op ) const;
+
+    /**
+     * @brief Return COO storage of assembled data according to the new distribution.
+     *
+     * This method calls either buildLocalCOO, buildOwnedCOO, or buildGlobalCOO according to the communicator of
+     * the assembled data and the communicator of the new distribution.
+     */
+    COOStorage<ValueType> buildCOO( const dmemo::Distribution& dist, const IndexType numColumns, common::BinaryOp op ) const;
 
     /**
      *  Override Printable::writeAt 
      */
     virtual void writeAt( std::ostream& stream ) const;
 
+    /**
+     *   Remove all entries where either row or column index is out of range
+     */
+    void truncate( const IndexType numRows, const IndexType numColumns );
+
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
-    /** Resort COO data according to the ownership of the row indexes */
-
-    void exchangeCOO(                      
-        hmemo::HArray<IndexType>& outIA,
-        hmemo::HArray<IndexType>& outJA,
-        hmemo::HArray<ValueType>& outValues,
-        const hmemo::HArray<IndexType> inIA,
-        const hmemo::HArray<IndexType> inJA,
-        const hmemo::HArray<ValueType> inValues,
-        const dmemo::Distribution& dist ) const;
 
     /** Check for correct indexes of the assembled entries */
 

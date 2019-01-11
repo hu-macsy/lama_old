@@ -2,29 +2,24 @@
  * @file sparsekernel/cuda/CUDAJDSUtils.cu
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of JDS utilities with CUDA
@@ -185,13 +180,14 @@ void CUDAJDSUtils::getRow(
 
 template<typename ValueType>
 __global__
-void scaleRowsKernel(
-    ValueType* jdsValues,
+void setRowsKernel(
+    ValueType jdsValues[],
     const IndexType numRows,
-    const IndexType* perm,
-    const IndexType* ilg,
-    const IndexType* dlg,
-    const ValueType* rowValues )
+    const IndexType perm[],
+    const IndexType ilg[],
+    const IndexType dlg[],
+    const ValueType rowValues[],
+    const common::BinaryOp op )
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -202,122 +198,29 @@ void scaleRowsKernel(
 
         for ( IndexType j = 0; j < ilg[i]; j++ )
         {
-            jdsValues[offset] *= rowScale;
+            jdsValues[offset] = common::applyBinary( jdsValues[offset], op, rowScale );
             offset += dlg[j];
         }
     }
 }
 
 template<typename ValueType>
-void CUDAJDSUtils::scaleRows(
+void CUDAJDSUtils::setRows(
     ValueType jdsValues[],
     const IndexType numRows,
     const IndexType perm[],
     const IndexType ilg[],
     const IndexType dlg[],
-    const ValueType rowValues[] )
+    const ValueType rowValues[],
+    const common::BinaryOp op )
 {
     SCAI_LOG_INFO( logger, "scaleValue with numRows = " << numRows )
     SCAI_CHECK_CUDA_ACCESS
     const int blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-    scaleRowsKernel <<< dimGrid, dimBlock>>>( jdsValues, numRows, perm, ilg, dlg, rowValues );
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:scaleRowsKernel FAILED" )
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                  checkDiagonalProperty                                             */
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-__global__
-void checkDiagonalPropertyKernel(
-    bool* result,
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType nonEmptyRows,
-    const IndexType* perm,
-    const IndexType* ja )
-{
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i >= numRows )
-    {
-        return;
-    }
-
-    const IndexType iRow = perm[i];
-
-    if ( iRow >= numColumns )
-    {
-        // row does not count for diagonal
-        return;
-    }
-
-    if ( i >= nonEmptyRows )
-    {
-        // iRow has no entries at all, ilg[i] is 0
-        result[0] = false;
-    }
-    else if ( ja[i] != iRow )
-    {
-        result[0] = false;
-    }
-}
-
-bool CUDAJDSUtils::checkDiagonalProperty(
-    const IndexType numDiagonals,
-    const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType perm[],
-    const IndexType ja[],
-    const IndexType dlg[] )
-{
-    SCAI_LOG_INFO( logger, "checkDiagonalProperty with numDiagonals = " << numDiagonals
-                   << ", numRows = " << numRows << " and numColumns = " << numColumns )
-    SCAI_CHECK_CUDA_ACCESS
-
-    if ( numRows <= 0 )
-    {
-        return false;
-    }
-
-    if ( numDiagonals <= 0 )
-    {
-        return false;
-    }
-
-    // now it is sure that dlg, perm and ja are not empty
-    const IndexType diagSize = std::min( numRows, numColumns );
-    IndexType nonEmptyRows = 0;
-    SCAI_CUDA_RT_CALL( cudaMemcpy( &nonEmptyRows, &dlg[0], sizeof( IndexType ), cudaMemcpyDeviceToHost ),
-                       "get number of non-zero rows from dlg" );
-
-    // Be careful: numDiagonals has nothing to do with size of diagonal
-
-    if ( nonEmptyRows < diagSize )
-    {
-        return false;
-    }
-
-    bool* d_hasProperty; // will be ptr to device version of hasProperty
-    bool hasProperty = true;
-    SCAI_CUDA_RT_CALL( cudaMalloc( ( void** ) &d_hasProperty, sizeof( bool ) ),
-                       "allocate 4 bytes on the device for the result of hasDiagonalProperty_kernel" )
-    SCAI_CUDA_RT_CALL( cudaMemcpy( d_hasProperty, &hasProperty, sizeof( bool ), cudaMemcpyHostToDevice ),
-                       "copy flag for diagonalProperty to device" )
-    const int blockSize = CUDASettings::getBlockSize();
-    dim3 dimBlock( blockSize, 1, 1 );
-    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-    checkDiagonalPropertyKernel <<< dimGrid, dimBlock>>>( d_hasProperty,
-            numRows, numColumns, nonEmptyRows,
-            perm, ja );
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:checkDiagonalPropertyKernel FAILED" )
-    SCAI_CUDA_RT_CALL( cudaMemcpy( &hasProperty, d_hasProperty, sizeof( bool ), cudaMemcpyDeviceToHost ),
-                       "copy flag for diagonalProperty to host" )
-    SCAI_CUDA_RT_CALL( cudaFree( d_hasProperty ),
-                       "free result var for diagonal property" )
-    return hasProperty;
+    setRowsKernel <<< dimGrid, dimBlock>>>( jdsValues, numRows, perm, ilg, dlg, rowValues, op );
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:setRowsKernel FAILED" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -386,19 +289,19 @@ IndexType CUDAJDSUtils::ilg2dlg(
 /*                                                  setCSRValues                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename JDSValueType, typename CSRValueType, bool useSharedMem>
+template<typename ValueType, bool useSharedMem>
 __global__
 void csr2jdsKernel(
-    IndexType* jdsJa,
-    JDSValueType* jdsValues,
-    const IndexType* const jdsDLG,
+    IndexType jdsJa[],
+    ValueType jdsValues[],
+    const IndexType jdsDLG[],
     const IndexType ndlg,
-    const IndexType* const jdsILG,
-    const IndexType* const jdsPerm,
+    const IndexType jdsILG[],
+    const IndexType jdsPerm[],
     const IndexType nrows,
-    const IndexType* const csrIa,
-    const IndexType* const csrJa,
-    const CSRValueType* const csrValues )
+    const IndexType csrIa[],
+    const IndexType csrJa[],
+    const ValueType csrValues[] )
 {
     extern __shared__ IndexType dlg[];
     const IndexType iJDS = threadId( gridDim, blockIdx, blockDim, threadIdx );
@@ -428,7 +331,7 @@ void csr2jdsKernel(
         for ( IndexType jj = 0; jj < numValuesInRow; ++jj )
         {
             jdsJa[jdsOffset] = csrJa[csrOffset + jj];
-            jdsValues[jdsOffset] = static_cast<JDSValueType>( csrValues[csrOffset + jj] );
+            jdsValues[jdsOffset] = csrValues[csrOffset + jj];
 
             if ( useSharedMem )
             {
@@ -442,10 +345,10 @@ void csr2jdsKernel(
     }
 }
 
-template<typename JDSValueType, typename CSRValueType>
+template<typename ValueType>
 void CUDAJDSUtils::setCSRValues(
     IndexType jdsJA[],
-    JDSValueType jdsValues[],
+    ValueType jdsValues[],
     const IndexType numRows,
     const IndexType jdsPerm[],
     const IndexType jdsILG[],
@@ -453,7 +356,7 @@ void CUDAJDSUtils::setCSRValues(
     const IndexType jdsDLG[],
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const CSRValueType csrValues[] )
+    const ValueType csrValues[] )
 {
     // convert CSR data to JDS, ja and values
     SCAI_REGION( "CUDA.JDS.setCSR" )
@@ -463,50 +366,48 @@ void CUDAJDSUtils::setCSRValues(
     const int blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-    SCAI_LOG_INFO( logger, "Start csr2jds_kernel<" << TypeTraits<JDSValueType>::id()
-                   << ", " << TypeTraits<CSRValueType>::id()
+    SCAI_LOG_INFO( logger, "Start csr2jds_kernel<" << TypeTraits<ValueType>::id()
                    << ", useSharedMem = " << useSharedMem
                    << "> ( nrows = " << numRows << ", ndiag = " << ndlg << " )" );
 
     if ( useSharedMem )
     {
-        SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr2jdsKernel<JDSValueType, CSRValueType, true>,
+        SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr2jdsKernel<ValueType, true>,
                            cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
         const int sharedMemSize = ndlg * sizeof( int );
-        csr2jdsKernel<JDSValueType, CSRValueType, true> <<< dimGrid, dimBlock, sharedMemSize>>>(
+        csr2jdsKernel<ValueType, true> <<< dimGrid, dimBlock, sharedMemSize>>>(
             jdsJA, jdsValues, jdsDLG, ndlg, jdsILG, jdsPerm, numRows, csrIA, csrJA, csrValues );
     }
     else
     {
-        SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr2jdsKernel<JDSValueType, CSRValueType, false>,
+        SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( csr2jdsKernel<ValueType, false>,
                            cudaFuncCachePreferL1 ),
                            "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" );
-        csr2jdsKernel<JDSValueType, CSRValueType, false> <<< dimGrid, dimBlock, 0>>>(
+        csr2jdsKernel<ValueType, false> <<< dimGrid, dimBlock, 0>>>(
             jdsJA, jdsValues, jdsDLG, ndlg, jdsILG, jdsPerm, numRows, csrIA, csrJA, csrValues );
     }
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "csr2jdsKernel failed" );
-    SCAI_LOG_INFO( logger, "Ready csr2jds_kernel<" << TypeTraits<JDSValueType>::id()
-                   << ", " << TypeTraits<CSRValueType>::id() << " )" )
+    SCAI_LOG_INFO( logger, "Ready csr2jds_kernel<" << TypeTraits<ValueType>::id() << ">" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                  getCSRValues                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename JDSValueType, typename CSRValueType>
+template<typename ValueType>
 __global__
 void jds2csrKernel(
-    IndexType* csrJA,
-    CSRValueType* csrValues,
-    const IndexType* csrIA,
+    IndexType csrJA[],
+    ValueType csrValues[],
+    const IndexType csrIA[],
     const IndexType numRows,
-    const IndexType* jdsInversePerm,
-    const IndexType* jdsILG,
-    const IndexType* jdsDLG,
-    const IndexType* jdsJA,
-    const JDSValueType* jdsValues )
+    const IndexType jdsInversePerm[],
+    const IndexType jdsILG[],
+    const IndexType jdsDLG[],
+    const IndexType jdsJA[],
+    const ValueType jdsValues[] )
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -520,27 +421,27 @@ void jds2csrKernel(
         for ( IndexType jj = 0; jj < numValuesInRow; jj++ )
         {
             csrJA[offset + jj] = jdsJA[jdsOffset];
-            csrValues[offset + jj] = static_cast<CSRValueType>( jdsValues[jdsOffset] );
+            csrValues[offset + jj] = jdsValues[jdsOffset];
             jdsOffset += jdsDLG[jj];
         }
     }
 }
 
-template<typename JDSValueType, typename CSRValueType>
+template<typename ValueType>
 void CUDAJDSUtils::getCSRValues(
     IndexType csrJA[],
-    CSRValueType csrValues[],
+    ValueType csrValues[],
     const IndexType csrIA[],
     const IndexType numRows,
     const IndexType jdsInversePerm[],
     const IndexType jdsILG[],
     const IndexType jdsDLG[],
     const IndexType jdsJA[],
-    const JDSValueType jdsValues[] )
+    const ValueType jdsValues[] )
 {
     SCAI_REGION( "CUDA.JDS.getCSR" )
     SCAI_LOG_INFO( logger,
-                   "get CSRValues<" << TypeTraits<JDSValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows )
+                   "get CSRValues<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows )
 
     if ( numRows < 1 )
     {
@@ -604,7 +505,7 @@ void jds_jacobi_kernel(
     const T omega )
 {
     extern __shared__ IndexType dlg[];
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( useSharedMem )
     {
@@ -619,31 +520,41 @@ void jds_jacobi_kernel(
         __syncthreads();
     }
 
-    if ( i < numRows )
+    if ( ii < numRows )
     {
-        const IndexType perm = jdsPerm[i];
-        T temp = rhs[perm];
-        const T aDiag = jdsValues[i];
-        IndexType pos = i + fetch_JDSdlg<useTexture, useSharedMem>( jdsDLG, dlg, 0 );
-        const IndexType rowEnd = jdsIlg[i];
+        const IndexType i = jdsPerm[ii];   // the original row
+        T temp = rhs[i];
+        T diag = 0;
+        IndexType pos = ii;   // for traversing jdsValues and jdsJA
+        const IndexType rowEnd = jdsIlg[ii];
 
-        for ( IndexType jj = 1; jj < rowEnd; ++jj )
+        for ( IndexType jj = 0; jj < rowEnd; ++jj )
         {
-            temp -= jdsValues[pos] * fetchVectorX<T, useTexture>( oldSolution, jdsJA[pos] );
+            IndexType j = jdsJA[pos];
+
+            if ( j == i )
+            {
+                diag = jdsValues[pos];   // save the diagonal entry for division later
+            }
+            else
+            {
+                temp -= jdsValues[pos] * fetchVectorX<T, useTexture>( oldSolution, jdsJA[pos] );
+            }
+
             pos += fetch_JDSdlg<useTexture, useSharedMem>( jdsDLG, dlg, jj );
         }
 
         if ( omega == 0.5 )
         {
-            solution[perm] = omega * ( fetchVectorX<T, useTexture>( oldSolution, perm ) + temp / aDiag );
+            solution[i] = omega * ( fetchVectorX<T, useTexture>( oldSolution, i ) + temp / diag );
         }
         else if ( omega == 1.0 )
         {
-            solution[perm] = temp / aDiag;
+            solution[i] = temp / diag;
         }
         else
         {
-            solution[perm] = omega * ( temp / aDiag ) + ( 1.0 - omega ) * fetchVectorX<T, useTexture>( oldSolution, perm );
+            solution[i] = omega * ( temp / diag ) + ( 1.0 - omega ) * fetchVectorX<T, useTexture>( oldSolution, i );
         }
     }
 }
@@ -1255,7 +1166,6 @@ void CUDAJDSUtils::Registrator::registerKernels( kregistry::KernelRegistry::Kern
     const common::ContextType ctx = common::ContextType::CUDA;
     SCAI_LOG_INFO( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag << "]" )
     KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx, flag );
 }
 
 template<typename ValueType>
@@ -1269,18 +1179,9 @@ void CUDAJDSUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
     KernelRegistry::set<JDSKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getRow<ValueType> >( getRow, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::scaleRows<ValueType> >( scaleRows, ctx, flag );
-}
-
-template<typename ValueType, typename OtherValueType>
-void CUDAJDSUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
-{
-    using kregistry::KernelRegistry;
-    const common::ContextType ctx = common::ContextType::CUDA;
-    SCAI_LOG_DEBUG( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag
-                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
-    KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::setRows<ValueType> >( setRows, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType> >( setCSRValues, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType> >( getCSRValues, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1294,7 +1195,6 @@ CUDAJDSUtils::CUDAJDSUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_CUDA_LIST, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
 }
 
 CUDAJDSUtils::~CUDAJDSUtils()
@@ -1304,7 +1204,6 @@ CUDAJDSUtils::~CUDAJDSUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_CUDA_LIST, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
 }
 
 CUDAJDSUtils CUDAJDSUtils::guard;    // guard variable for registration

@@ -2,29 +2,24 @@
  * @file DIAStorage.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Instantiation for template class DIAStorage.
@@ -37,14 +32,12 @@
 #include <scai/lama/storage/CSRStorage.hpp>
 
 // internal scai libraries
-#include <scai/sparsekernel/DIAKernelTrait.hpp>
-#include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/CSRUtils.hpp>
+#include <scai/sparsekernel/DIAUtils.hpp>
 
-#include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
-#include <scai/utilskernel/UtilKernelTrait.hpp>
-
-#include <scai/blaskernel/BLASKernelTrait.hpp>
+#include <scai/utilskernel/TransferUtils.hpp>
+#include <scai/utilskernel/freeFunction.hpp>
 
 #include <scai/hmemo/ContextAccess.hpp>
 
@@ -70,12 +63,11 @@ namespace scai
 
 using tasking::SyncToken;
 
-using utilskernel::LAMAKernel;
-using utilskernel::UtilKernelTrait;
 using utilskernel::HArrayUtils;
+using utilskernel::TransferUtils;
 
-using sparsekernel::CSRKernelTrait;
-using sparsekernel::DIAKernelTrait;
+using sparsekernel::CSRUtils;
+using sparsekernel::DIAUtils;
 
 using common::BinaryOp;
 
@@ -96,8 +88,6 @@ DIAStorage<ValueType>::DIAStorage( ContextPtr ctx ) :
     mValues( ctx )
 {
     SCAI_LOG_DEBUG( logger, "DIAStorage( 0 x 0 ) @ " << *ctx )
-
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -110,8 +100,6 @@ DIAStorage<ValueType>::DIAStorage( IndexType numRows, IndexType numColumns, Cont
     mValues( ctx )
 {
     SCAI_LOG_DEBUG( logger, "DIAStorage( " << getNumRows() << " x " << getNumColumns() << " @ " << *ctx )
-
-    _MatrixStorage::resetDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -124,13 +112,11 @@ DIAStorage<ValueType>::DIAStorage(
     HArray<ValueType> values,
     ContextPtr ctx ) :
 
-   MatrixStorage<ValueType>( numRows, numColumns, ctx ), 
-   mOffset( std::move( offsets ) ), 
-   mValues( std::move( values  ) )
+    MatrixStorage<ValueType>( numRows, numColumns, ctx ), 
+    mOffset( std::move( offsets ) ), 
+    mValues( std::move( values  ) )
 {
-    // set diagonal property inherited as given
-
-    _MatrixStorage::resetDiagonalProperty();
+    // ToDo: there might be some checks, mainly for offsets: legal values, no doubles
 }
 
 /* --------------------------------------------------------------------------- */
@@ -197,8 +183,6 @@ template<typename ValueType>
 template<typename OtherValueType>
 void DIAStorage<ValueType>::assignImpl( const MatrixStorage<OtherValueType>& other )
 {
-    ContextPtr ctx = getContextPtr();   // will force a valid copy in this context
-
     if ( other.getFormat() == Format::DIA )
     {
         // same format conversion, more efficient solution available
@@ -209,20 +193,20 @@ void DIAStorage<ValueType>::assignImpl( const MatrixStorage<OtherValueType>& oth
     {
         const auto otherCSR = static_cast<const CSRStorage<OtherValueType> & >( other );
 
-        setCSRDataImpl( otherCSR.getNumRows(), otherCSR.getNumColumns(),
-                        otherCSR.getIA(), otherCSR.getJA(), otherCSR.getValues(), ctx );
+        setCSRData( otherCSR.getNumRows(), otherCSR.getNumColumns(),
+                    otherCSR.getIA(), otherCSR.getJA(), otherCSR.getValues() );
 
         SCAI_LOG_INFO( logger, "assignImpl: other CSR = " << other )
     }
     else
     {
-        HArray<IndexType>  csrIA( ctx );
-        HArray<IndexType>  csrJA( ctx );
-        HArray<ValueType>  csrValues( ctx );     // might also be OtherValueType, depending on size
+        HArray<IndexType>  csrIA;
+        HArray<IndexType>  csrJA;
+        HArray<ValueType>  csrValues;     // might also be OtherValueType, depending on size
 
         other.buildCSRData( csrIA, csrJA, csrValues );
 
-        setCSRDataImpl( other.getNumRows(), other.getNumColumns(), csrIA, csrJA, csrValues, ctx );
+        setCSRDataImpl( other.getNumRows(), other.getNumColumns(), csrIA, csrJA, csrValues );
 
         SCAI_LOG_INFO( logger, "assignImpl: other = " << other << " -> tmpCSR: ia = " << csrIA 
                                 << ", ja = " << csrJA << ", values = " << csrValues << ", this = " << *this )
@@ -249,8 +233,6 @@ void DIAStorage<ValueType>::assignDIA( const DIAStorage<OtherValueType>& other )
     
     HArrayUtils::assign( mOffset, other.getOffsets(), ctx );
     HArrayUtils::assign( mValues, other.getValues(), ctx );
-    
-    _MatrixStorage::resetDiagonalProperty();
     
     SCAI_LOG_DEBUG( logger, "assignDIA: other = " << other << ", this = " << *this )
 }
@@ -308,7 +290,6 @@ void DIAStorage<ValueType>::clear()
 
     mOffset.clear();
     mValues.clear();
-    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -317,26 +298,6 @@ template<typename ValueType>
 Format DIAStorage<ValueType>::getFormat() const
 {
     return Format::DIA;
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void DIAStorage<ValueType>::setDiagonal( const ValueType value )
-{
-    SCAI_ASSERT_ERROR( mDiagonalProperty, *this << ": has not diagonal property, cannot set diagonal" )
-    IndexType numDiagonalElements = common::Math::min( getNumColumns(), getNumRows() );
-    static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
-    // take context of this storage to set
-    ContextPtr loc = this->getContextPtr();
-    setVal.getSupportedContext( loc );
-    {
-        // not all values might be changed, so use WriteAccess instead of WriteOnlyAccess
-        WriteAccess<ValueType> wValues( mValues, loc );
-        ReadAccess<IndexType> rOffset( mOffset, loc );
-        SCAI_CONTEXT_ACCESS( loc )
-        setVal[loc]( wValues.get(), numDiagonalElements, value, BinaryOp::COPY );
-    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -376,38 +337,23 @@ void DIAStorage<ValueType>::getRow( HArray<ValueType>& row, const IndexType i ) 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DIAStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::HArray<ValueType>& values, const IndexType i ) const
+void DIAStorage<ValueType>::getSparseRow( 
+    hmemo::HArray<IndexType>& jA, 
+    hmemo::HArray<ValueType>& values, 
+    const IndexType i ) const
 {
     SCAI_REGION( "Storage.DIA.getSparseRow" )
 
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, getNumRows(), "row index out of range" )
 
-    IndexType numDiagonals = mOffset.size();
+    ContextPtr loc = Context::getHostPtr();  // only on host here
 
-    // numDiagonals is also maximal number of non-zero entries in a row 
+    HArray<IndexType> positions;     // positions in the values array
 
-    WriteOnlyAccess<IndexType> wJA( jA, numDiagonals );
-    WriteOnlyAccess<ValueType> wValues( values, numDiagonals );
+    DIAUtils::getRowPositions( jA, positions, i, 
+                               getNumRows(), getNumColumns(), mOffset, getContextPtr() );
 
-    const ReadAccess<IndexType> offset( mOffset );
-    const ReadAccess<ValueType> dValues( mValues );
-
-    IndexType n = 0;  // count the real number of entries, might be lt numDiagonals 
-
-    for ( IndexType d = 0; d < numDiagonals; ++d )
-    {
-        IndexType j = i + offset[d];
-
-        if ( common::Utils::validIndex( j, getNumColumns() ) )
-        {
-            wJA[n] = j;
-            wValues[n] = dValues[diaindex( i, d, getNumRows(), numDiagonals )];
-            ++n;
-        }
-    }
-
-    wJA.resize( n );
-    wValues.resize( n );
+    HArrayUtils::gather( values, mValues, positions, BinaryOp::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -424,38 +370,12 @@ void DIAStorage<ValueType>::getSparseColumn(
 
     ContextPtr loc = Context::getHostPtr();  // only on host here
 
-    HArray<IndexType> valuePos;     // positions in the values array
+    HArray<IndexType> positions;     // positions in the values array
 
-    {
-        SCAI_CONTEXT_ACCESS( loc )
+    DIAUtils::getColPositions( iA, positions, j, 
+                               getNumRows(), getNumColumns(), mOffset, getContextPtr() );
 
-        IndexType numDiagonals = mOffset.size();
-
-        WriteOnlyAccess<IndexType> wRowIndexes( iA, loc, getNumRows() );
-        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, getNumRows() );
-
-        const ReadAccess<IndexType> offset( mOffset );
-        const ReadAccess<ValueType> values( mValues );
-
-        IndexType cnt = 0;
-
-        for ( IndexType d = 0; d < numDiagonals; ++d )
-        {
-            IndexType i = j - offset[d];
-
-            if ( common::Utils::validIndex( i, getNumRows() ) )
-            {
-                wRowIndexes[ cnt ] = i;
-                wValuePos  [ cnt ] = diaindex( i, d, getNumRows(), numDiagonals );
-                cnt++;
-            }
-        }
-
-        wRowIndexes.resize( cnt );
-        wValuePos.resize( cnt );
-    }
-
-    HArrayUtils::gather( values, mValues, valuePos, BinaryOp::COPY, loc );
+    HArrayUtils::gather( values, mValues, positions, BinaryOp::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -466,45 +386,28 @@ void DIAStorage<ValueType>::setRow( const HArray<ValueType>& row, const IndexTyp
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, getNumRows(), "row index out of range" )
     SCAI_ASSERT_GE_DEBUG( row.size(), getNumColumns(), "row array to small for set" )
 
-    ReadAccess<ValueType> rRow( row );
+    HArray<IndexType> ia;          // available indexes of the row
+    HArray<IndexType> positions;   // positions in the values array
 
-    IndexType numDiagonals = mOffset.size();
+    DIAUtils::getRowPositions( ia, positions, i,
+                               getNumRows(), getNumColumns(), mOffset, getContextPtr() );
 
-    ReadAccess<IndexType> offset( mOffset );
-    WriteAccess<ValueType> values( mValues );
+    SCAI_ASSERT_EQ_DEBUG( ia.size(), positions.size(), "illegal result arrays for row positions." )
 
-    #pragma omp parallel for
+    HArray<ValueType> sparseRow;  // available entries of the row
+    
+    // for each k :  values[positions[k]] op= row[ia[k]] 
 
-    for ( IndexType d = 0; d < numDiagonals; ++d )
+    if ( op == BinaryOp::COPY )
     {
-        IndexType j = i + offset[d];
+        TransferUtils::copy( mValues, positions, row, ia );
+    }
+    else
+    {
+        HArray<ValueType> sparseRow;  // gather entries of row that can be set
 
-        if ( common::Utils::validIndex( j, getNumColumns() ) )
-        {
-            ValueType val = rRow[j];
-            ValueType& loc = values[diaindex( i, d, getNumRows(), numDiagonals )];
-
-            switch ( op )
-            {
-                case BinaryOp::COPY :
-                    loc = val;
-                    break;
-                case BinaryOp::ADD  :
-                    loc += val;
-                    break;
-                case BinaryOp::SUB  :
-                    loc -= val;
-                    break;
-                case BinaryOp::MULT :
-                    loc *= val;
-                    break;
-                case BinaryOp::DIVIDE :
-                    loc /= val;
-                    break;
-                default:
-                    break;
-            }
-        }
+        HArrayUtils::gather( sparseRow, row, ia, BinaryOp::COPY, getContextPtr() );
+        HArrayUtils::scatter( mValues, positions, true, sparseRow, op, getContextPtr() );
     }
 }
 
@@ -529,47 +432,25 @@ template<typename ValueType>
 void DIAStorage<ValueType>::setColumn( const HArray<ValueType>& column, const IndexType j, const BinaryOp op )
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), "column index out of range" )
-    SCAI_ASSERT_GE_DEBUG( column.size(), getNumRows(), "column array to small for set" )
 
-    ReadAccess<ValueType> rColumn( column );
+    HArray<IndexType> ia;          // available indexes of the columns
+    HArray<IndexType> positions;   // positions in the values array
 
-    ReadAccess<IndexType> offset( mOffset );
-    WriteAccess<ValueType> values( mValues );
+    DIAUtils::getColPositions( ia, positions, j,
+                               getNumRows(), getNumColumns(), mOffset, getContextPtr() );
 
-    IndexType numDiagonals = mOffset.size();
+    // for each k :  values[positions[k]] op= column[ia[k]] 
 
-    #pragma omp parallel for
-
-    for ( IndexType d = 0; d < numDiagonals; ++d )
+    if ( op == BinaryOp::COPY )
     {
-        IndexType i = j - offset[d];
+        TransferUtils::copy( mValues, positions, column, ia );
+    }
+    else
+    {
+        HArray<ValueType> sparseCol;  // gather entries of column that can be set
 
-        if ( common::Utils::validIndex( i, getNumRows() ) )
-        {
-            ValueType val = rColumn[i];
-            ValueType& loc = values[diaindex( i, d, getNumRows(), numDiagonals )];
-
-            switch ( op )
-            {
-                case BinaryOp::COPY :
-                    loc = val;
-                    break;
-                case BinaryOp::ADD  :
-                    loc += val;
-                    break;
-                case BinaryOp::SUB  :
-                    loc -= val;
-                    break;
-                case BinaryOp::MULT :
-                    loc *= val;
-                    break;
-                case BinaryOp::DIVIDE :
-                    loc /= val;
-                    break;
-                default:
-                    break;
-            }
-        }
+        HArrayUtils::gather( sparseCol, column, ia, BinaryOp::COPY, getContextPtr() );
+        HArrayUtils::scatter( mValues, positions, true, sparseCol, op, getContextPtr() );
     }
 }
 
@@ -578,17 +459,32 @@ void DIAStorage<ValueType>::setColumn( const HArray<ValueType>& column, const In
 template<typename ValueType>
 void DIAStorage<ValueType>::getDiagonal( HArray<ValueType>& diagonal ) const
 {
-    SCAI_ASSERT_ERROR( hasDiagonalProperty(), "cannot get diagonal for DIA, no diagonal property" )
+    const IndexType numDiagonalElements = _MatrixStorage::getDiagonalSize();
 
-    static LAMAKernel<UtilKernelTrait::set<ValueType, ValueType> > set;
-    ContextPtr loc = this->getContextPtr();
-    set.getSupportedContext( loc );
-    IndexType numDiagonalElements = common::Math::min( getNumColumns(), getNumRows() );
-    WriteOnlyAccess<ValueType> wDiagonal( diagonal, loc, numDiagonalElements );
-    ReadAccess<ValueType> rValues( mValues, loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    // Diagonal is first column
-    set[ loc ]( wDiagonal.get(), rValues.get(), numDiagonalElements, BinaryOp::COPY );
+    if ( numDiagonalElements == 0 )
+    {
+        diagonal.clear();
+        return;
+    }
+
+    // find the index for the main diagonal in array mOffsets
+
+    IndexType mainIndex = getMainIndex();
+
+    SCAI_LOG_INFO( logger, "getDiagonal, #diagElems = " << numDiagonalElements << ", offset[" << mainIndex << "] == 0" )
+
+    if ( mainIndex == invalidIndex )
+    {
+        // diagonal not available, so set diagonal 
+
+        HArrayUtils::setSameValue<ValueType>( diagonal, numDiagonalElements, 0 );
+    }
+    else
+    {
+        IndexType valuesOffset = mainIndex * getNumRows();
+        diagonal.resize( numDiagonalElements );
+        HArrayUtils::setArraySection( diagonal, 0, 1, mValues, valuesOffset, 1, numDiagonalElements, BinaryOp::COPY );
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -596,19 +492,77 @@ void DIAStorage<ValueType>::getDiagonal( HArray<ValueType>& diagonal ) const
 template<typename ValueType>
 void DIAStorage<ValueType>::setDiagonalV( const HArray<ValueType>& diagonal )
 {
-    SCAI_ASSERT_ERROR( hasDiagonalProperty(), "cannot set diagonal for DIA, no diagonal property" )
+    const IndexType numDiagonalElements = _MatrixStorage::getDiagonalSize();
 
-    // DIA: diagonal property, diagonal element (i,i) is stored at diaValues[i]
+    SCAI_ASSERT_EQ_ERROR( diagonal.size(), numDiagonalElements, "serious mismtach for diagonal" )
 
-    const IndexType numDiagonalElements = std::min( diagonal.size(), std::min( getNumColumns(), getNumRows() ) );
+    if ( numDiagonalElements == 0 )
+    {
+        return;
+    }
 
-    static LAMAKernel<UtilKernelTrait::set<ValueType, ValueType> > set;
-    ContextPtr loc = this->getContextPtr();
-    set.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<ValueType> rDiagonal( diagonal, loc );
-    WriteAccess<ValueType> wValues( mValues, loc );
-    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements, BinaryOp::COPY );
+    // find the index for the main diagonal in array mOffsets
+
+    IndexType mainIndex = getMainIndex();
+
+    if ( mainIndex == invalidIndex )
+    {
+        // diagonal not available, throw an exception
+
+        COMMON_THROWEXCEPTION( "cannot set diagonal in DIAStorage, main diagonal not stored" )
+    }
+    else
+    {
+        IndexType valuesOffset = mainIndex * getNumRows();
+        HArrayUtils::setArraySection( mValues, valuesOffset, 1, diagonal, 0, 1, numDiagonalElements, BinaryOp::COPY );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+IndexType DIAStorage<ValueType>::getMainIndex() const
+{
+    auto rOffset = hostReadAccess( mOffset );
+
+    for ( IndexType i = 0; i < mOffset.size(); ++i )
+    {
+        if ( rOffset[i] == 0 )
+        {
+            return i;
+        }
+    }
+
+    return invalidIndex;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DIAStorage<ValueType>::setDiagonal( const ValueType value )
+{
+    const IndexType numDiagonalElements = _MatrixStorage::getDiagonalSize();
+
+    if ( numDiagonalElements == 0 )
+    {
+        return;     // there will be no diagonals available at all
+    }
+
+    // find the index for the main diagonal in array mOffsets
+
+    IndexType mainIndex = getMainIndex();
+
+    if ( mainIndex == invalidIndex )
+    {
+        // diagonal not available, throw an exception
+
+        COMMON_THROWEXCEPTION( "cannot set diagonal in DIAStorage, main diagonal not stored" )
+    }
+    else
+    {
+        IndexType valuesOffset = mainIndex * getNumRows();
+        HArrayUtils::fillArraySection( mValues, valuesOffset, 1, value, numDiagonalElements, BinaryOp::COPY );
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -652,44 +606,15 @@ void DIAStorage<ValueType>::scaleRows( const HArray<ValueType>& diagonal )
             }
         }
     }
-
-    if ( SCAI_LOG_TRACE_ON( logger ) )
-    {
-        SCAI_LOG_TRACE( logger, "DIA after scale diagonal" )
-        print();
-    }
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-bool DIAStorage<ValueType>::checkDiagonalProperty() const
+void DIAStorage<ValueType>::scaleColumns( const HArray<ValueType>& diagonal )
 {
-    bool diagonalProperty = true;
-
-    if ( getNumRows() != getNumColumns() )
-    {
-        diagonalProperty = false;
-    }
-    else if ( getNumRows() == 0 )
-    {
-        // zero sized matrix has diagonal property
-        diagonalProperty = true;
-    }
-    else if ( mOffset.size() == 0 )
-    {
-        // full zero matrix but not zero size -> no diagonal property
-        diagonalProperty = false;
-    }
-    else
-    {
-        // diagonal property is given if first diagonal is the main one
-        ReadAccess<IndexType> offset( mOffset );
-        diagonalProperty = offset[0] == 0;
-    }
-
-    SCAI_LOG_INFO( logger, *this << ": checkDiagonalProperty -> " << diagonalProperty )
-    return diagonalProperty;
+    DIAUtils::setColumns( mValues, getNumRows(), getNumColumns(), mOffset,
+                          diagonal, common::BinaryOp::MULT, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -698,11 +623,6 @@ template<typename ValueType>
 void DIAStorage<ValueType>::check( const char* /* msg */ ) const
 {
     IndexType numDiagonals = mOffset.size();
-
-    if ( numDiagonals == 0 && getNumRows() > 0 )
-    {
-        SCAI_ASSERT_EQUAL_ERROR( false, mDiagonalProperty )
-    }
 
     SCAI_ASSERT_EQ_ERROR( numDiagonals * getNumRows(), mValues.size(), 
                           "values array in DIA storage has illegal size" )
@@ -721,8 +641,6 @@ void DIAStorage<ValueType>::setIdentity( const IndexType size )
     mOffset = HArray<IndexType>( { 0 }, getContextPtr() );
   
     HArrayUtils::setSameValue( mValues, size, ValueType( 1 ), getContextPtr() );
-
-    mDiagonalProperty = true;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -735,284 +653,109 @@ void DIAStorage<ValueType>::assignDiagonal( const HArray<ValueType>& diagonal )
     _MatrixStorage::setDimension( size, size );
 
     // only main diagonal is available
+
     mOffset = HArray<IndexType>( { 0 }, getContextPtr() );
     
     HArrayUtils::setArray( mValues, diagonal, common::BinaryOp::COPY, getContextPtr() );
-
-    mDiagonalProperty = true;
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DIAStorage<ValueType>::setUsedDiagonal(
-    bool upperDiagonalUsed[],
-    bool lowerDiagonalUsed[],
-    IndexType i,
-    IndexType j )
+void DIAStorage<ValueType>::buildCSRSizes( hmemo::HArray<IndexType>& ia ) const
 {
-    if ( j >= i )
+    DIAUtils::getCSRSizes( ia, getNumRows(), getNumColumns(), mOffset, mValues, getContextPtr() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DIAStorage<ValueType>::buildCSRData(
+    hmemo::HArray<IndexType>& csrIA,
+    hmemo::HArray<IndexType>& csrJA,
+    hmemo::_HArray& csrValues ) const
+{
+    if ( csrValues.getValueType() == getValueType() )
     {
-        bool& flag = upperDiagonalUsed[j - i];
+        HArray<ValueType>& typedCSRValues = static_cast<HArray<ValueType>&>( csrValues );
 
-        // set flag only if not already set, improves cache usage
-
-        if ( !flag )
-        {
-            flag = true; // write only if not true,
-        }
+        DIAUtils::convertDIA2CSR( csrIA, csrJA, typedCSRValues,
+                                  getNumRows(), getNumColumns(), mOffset, mValues, getContextPtr() );
     }
     else
     {
-        bool& flag = lowerDiagonalUsed[i - j];
+        HArray<ValueType> tmpValues;
 
-        if ( !flag )
-        {
-            flag = true; // write only if not true,
-        }
+        DIAUtils::convertDIA2CSR( csrIA, csrJA, tmpValues,
+                                  getNumRows(), getNumColumns(), mOffset, mValues, getContextPtr() );
+
+        HArrayUtils::_assign( csrValues, tmpValues );
     }
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-template<typename CSRValueType>
-void DIAStorage<ValueType>::buildCSR(
-    HArray<IndexType>& ia,
-    HArray<IndexType>* ja,
-    HArray<CSRValueType>* values,
-    const ContextPtr prefLoc ) const
+void DIAStorage<ValueType>::setCSRData(
+    const IndexType numRows,
+    const IndexType numColumns,
+    const HArray<IndexType>& ia,
+    const HArray<IndexType>& ja,
+    const _HArray& values )
 {
-    SCAI_REGION( "Storage.DIA.buildCSR" )
-
-    IndexType numDiagonals = mOffset.size();
-
-    static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
-    static LAMAKernel<DIAKernelTrait::getCSRSizes<ValueType> > getCSRSizes;
-    static LAMAKernel<DIAKernelTrait::getCSRValues<ValueType, CSRValueType> > getCSRValues;
-    // do it where all routines are avaialble
-    ContextPtr loc = prefLoc;
-    sizes2offsets.getSupportedContext( loc, getCSRSizes, getCSRValues );
-    SCAI_LOG_INFO( logger,
-                   "buildTypedCSRData<" << common::getScalarType<CSRValueType>() << ">"
-                   << " from DIA<" << common::getScalarType<ValueType>() << "> = " << *this << ", diagonal property = " << mDiagonalProperty )
-    ReadAccess<IndexType> diaOffsets( mOffset );
-    ReadAccess<ValueType> diaValues( mValues );
-    WriteOnlyAccess<IndexType> csrIA( ia, loc, getNumRows() + 1 );
-    // In contrary to COO and CSR, the DIA format stores also some ZERO values like Dense
-    ValueType eps = static_cast<ValueType>( 0.0 );
-    getCSRSizes[loc]( csrIA.get(), mDiagonalProperty, getNumRows(), getNumColumns(), numDiagonals, diaOffsets.get(),
-                      diaValues.get(), eps );
-
-    if ( ja == NULL || values == NULL )
+    if ( values.getValueType() == getValueType() )
     {
-        csrIA.resize( getNumRows() );
-        return;
+        // call directly setCSRDataImpl, no conversion but cast
+
+        setCSRDataImpl( numRows, numColumns, ia, ja, 
+                        static_cast<const HArray<ValueType>&>( values ) );
     }
+    else
+    {
+        // call setCSRDataImpl with converted values
 
-    IndexType numValues = sizes2offsets[loc]( csrIA.get(), getNumRows() );
-    SCAI_LOG_INFO( logger, "CSR: #non-zero values = " << numValues )
-    WriteOnlyAccess<IndexType> csrJA( *ja, loc, numValues );
-    WriteOnlyAccess<CSRValueType> csrValues( *values, loc, numValues );
-    getCSRValues[loc]( csrJA.get(), csrValues.get(), csrIA.get(), mDiagonalProperty, getNumRows(), getNumColumns(),
-                       numDiagonals, diaOffsets.get(), diaValues.get(), eps );
+        setCSRDataImpl( numRows, numColumns, ia, ja, 
+                        utilskernel::convertHArray<ValueType>( values, getContextPtr() ) );
+    }
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DIAStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& ) const
-{
-    COMMON_THROWEXCEPTION( "getFirstColumnIndexes not possible for DENSE format" )
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-template<typename OtherValueType>
 void DIAStorage<ValueType>::setCSRDataImpl(
     const IndexType numRows,
     const IndexType numColumns,
     const HArray<IndexType>& ia,
     const HArray<IndexType>& ja,
-    const HArray<OtherValueType>& values,
-    ContextPtr prefLoc )
+    const HArray<ValueType>& values )
 {
     SCAI_REGION( "Storage.DIA.setCSR" )
+
+    SCAI_LOG_INFO( logger, "setCSRData " << numRows << " x " << numColumns 
+                            << ", ia = " << ia << ", ja = " << ja << ", values = " << values )
 
     IndexType numValues = ja.size();
 
     if ( ia.size() == numRows )
     {
-        // offset array required
-        HArray<IndexType> offsets;
-        IndexType total = _MatrixStorage::sizes2offsets( offsets, ia, prefLoc );
-        SCAI_ASSERT_EQUAL( numValues, total, "sizes do not sum to number of values" );
-        setCSRDataImpl( numRows, numColumns, offsets, ja, values, prefLoc );
+        HArray<IndexType> tmpOffsets;
+        IndexType total = CSRUtils::sizes2offsets( tmpOffsets, ia, getContextPtr() );
+        SCAI_ASSERT_EQUAL( total, numValues, "sizes do not sum up correctly" )
+        setCSRDataImpl( numRows, numColumns, tmpOffsets, ja, values );
         return;
     }
 
-    SCAI_ASSERT_EQUAL_DEBUG( numRows + 1, ia.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( numValues, values.size() )
-    static LAMAKernel<CSRKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
-    // prefLoc is ignored, we do it on the Host
-    // ToDo: replace Host code with kernels, implement kernels for other devices
-    ContextPtr loc = Context::getHostPtr();
-    ReadAccess<IndexType> csrIA( ia, loc );
-    ReadAccess<IndexType> csrJA( ja, loc );
-    ReadAccess<OtherValueType> csrValues( values, loc );
+    SCAI_ASSERT_EQ_DEBUG( numRows + 1, ia.size(), "illegal CSR ia offset array" )
+    SCAI_ASSERT_EQ_DEBUG( ja.size(), values.size(), "serious size mismatch for CSR arrays." )
+
+    SCAI_ASSERT_DEBUG( CSRUtils::validOffsets( ia, numValues, getContextPtr() ), "illegal CSR offset array" );
+
+    SCAI_ASSERT_DEBUG( HArrayUtils::validIndexes( ja, numColumns, getContextPtr() ),
+                       "CSR ja array contains illegal column indexes, #columns = " << numColumns );
+
     _MatrixStorage::setDimension( numRows, numColumns );
-    SCAI_LOG_DEBUG( logger, "fill DIA sparse matrix " << getNumRows() << " x " << getNumColumns() << " from csr data" )
-    // build a set of all used lower and upper diagonals
-    IndexType maxNumDiagonals = common::Math::max( getNumRows(), getNumColumns() );
-    unique_ptr<bool[]> upperDiagonalUsed( new bool[maxNumDiagonals] );
-    unique_ptr<bool[]> lowerDiagonalUsed( new bool[maxNumDiagonals] );
 
-    for ( IndexType i = 0; i < maxNumDiagonals; i++ )
-    {
-        upperDiagonalUsed[i] = false;
-        lowerDiagonalUsed[i] = false;
-    }
-
-    #pragma omp parallel for 
-
-    for ( IndexType i = 0; i < getNumRows(); ++i )
-    {
-        for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; jj++ )
-        {
-            IndexType j = csrJA[jj]; // column used
-            setUsedDiagonal( upperDiagonalUsed.get(), lowerDiagonalUsed.get(), i, j );
-        }
-    }
-
-    mDiagonalProperty = hasDiagonalProperty[loc]( numRows, csrIA.get(), csrJA.get() );
-    // mDiagonalProperty forces upper diagonal to be the first one
-    setOffsets( maxNumDiagonals, upperDiagonalUsed.get(), lowerDiagonalUsed.get() );
-
-    IndexType numDiagonals = mOffset.size();   // available after setOffsets
-
-    // now we can allocate and set the values
-    {
-        ReadAccess<IndexType> offset( mOffset );
-        WriteOnlyAccess<ValueType> myValues( mValues, numDiagonals * getNumRows() );
-        #pragma omp parallel for 
-
-        for ( IndexType i = 0; i < getNumRows(); i++ )
-        {
-            for ( IndexType d = 0; d < numDiagonals; d++ )
-            {
-                ValueType& addrValue = myValues[diaindex( i, d, getNumRows(), numDiagonals )];
-                // check for j >= 0 and j < getNumColumns() not needed here
-                addrValue = ValueType( 0 );
-                IndexType j = i + offset[d];
-
-                if ( !common::Utils::validIndex( j, getNumColumns() ) )
-                {
-                    continue;
-                }
-
-                for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
-                {
-                    if ( csrJA[jj] == j )
-                    {
-                        addrValue = static_cast<ValueType>( csrValues[jj] );
-                        break;
-                    }
-                }
-            }
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-template<typename OtherValueType>
-void DIAStorage<ValueType>::setDIADataImpl(
-    const IndexType /*numRows*/,
-    const IndexType /*numColumns*/,
-    const IndexType /*numDiagonals*/,
-    const HArray<IndexType>& /*offsets*/,
-    const HArray<OtherValueType>& /*values*/,
-    const ContextPtr /*prefLoc*/ )
-{
-    COMMON_THROWEXCEPTION( "not yet implemeted" )
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void DIAStorage<ValueType>::setOffsets(
-    const IndexType maxNumDiagonals,
-    const bool upperDiagonalUsed[],
-    const bool lowerDiagonalUsed[] )
-{
-    SCAI_LOG_INFO( logger, "setOffsets, max diagonals = " << maxNumDiagonals << ", " << *this )
-
-    // Help routine to set offsets from used diagonals
-
-    IndexType numDiagonals = 0;
-    IndexType firstIndex = 0;
-
-    if ( mDiagonalProperty )
-    {
-        firstIndex = 1;
-        numDiagonals = 1;
-    }
-
-    for ( IndexType i = firstIndex; i < maxNumDiagonals; i++ )
-    {
-        if ( upperDiagonalUsed[i] )
-        {
-            numDiagonals++;
-        }
-
-        if ( lowerDiagonalUsed[i] )
-        {
-            numDiagonals++;
-        }
-    }
-
-    SCAI_LOG_INFO( logger, "storage data requires " << numDiagonals << " diagonals a " << getNumRows() << " values" )
-
-    WriteOnlyAccess<IndexType> wOffset( mOffset, numDiagonals );
-
-    if ( numDiagonals > 0 )
-    {
-        numDiagonals = 0;
-        firstIndex = 0;
-
-        if ( mDiagonalProperty )
-        {
-            wOffset[numDiagonals++] = 0;
-            firstIndex = 1;
-        }
-
-        if ( maxNumDiagonals )  // otherwise maxNumDiagonals - 1 is illegal for unsigned
-        {
-            for ( IndexType i = maxNumDiagonals - 1; i > 0; i-- )
-            {
-                if ( lowerDiagonalUsed[i] )
-                {
-                    wOffset[numDiagonals++] = -i;
-                }
-            }
-        }
-
-        SCAI_LOG_INFO( logger, "lower diagonals = " << numDiagonals )
-
-        for ( IndexType i = firstIndex; i < maxNumDiagonals; i++ )
-        {
-            if ( upperDiagonalUsed[i] )
-            {
-                wOffset[numDiagonals++] = i;
-            }
-        }
-
-        SCAI_LOG_INFO( logger, "lower + upper diagonals = " << numDiagonals )
-    }
-
-    SCAI_ASSERT_EQUAL_DEBUG( numDiagonals, wOffset.size() )
+    DIAUtils::convertCSR2DIA( mOffset, mValues, numRows, numColumns, ia, ja, values, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1033,7 +776,6 @@ void DIAStorage<ValueType>::purge()
 
     mOffset.purge();
     mValues.purge();
-    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1046,8 +788,6 @@ void DIAStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
     clear();
 
     _MatrixStorage::setDimension( numRows, numColumns );
-
-    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1088,18 +828,7 @@ RealType<ValueType> DIAStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
 
-    IndexType numDiagonals = getNumDiagonals();
-
-    static LAMAKernel<DIAKernelTrait::absMaxVal<ValueType> > absMaxVal;
-    ContextPtr loc = this->getContextPtr();
-    absMaxVal.getSupportedContext( loc );
-
-    ReadAccess<IndexType> diaOffsets( mOffset, loc );
-    ReadAccess<ValueType> diaValues( mValues, loc );
-
-    SCAI_CONTEXT_ACCESS( loc )
-    RealType<ValueType> maxval = absMaxVal[loc]( getNumRows(), getNumColumns(), numDiagonals, diaOffsets.get(), diaValues.get() );
-    return maxval;
+    return DIAUtils::maxNorm( getNumRows(), getNumColumns(), mOffset, mValues, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1107,27 +836,13 @@ RealType<ValueType> DIAStorage<ValueType>::maxNorm() const
 template<typename ValueType>
 ValueType DIAStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
-    SCAI_ASSERT_VALID_INDEX_DEBUG( i, getNumRows(), "row index out of range" )
-    SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), "column index out of range" )
-
-    SCAI_LOG_TRACE( logger, "get value (" << i << ", " << j << ")" )
-
-    static LAMAKernel<DIAKernelTrait::getValuePos> getValuePos;
-
-    ContextPtr loc = this->getContextPtr();
-    getValuePos.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-
-    ReadAccess<IndexType> rOffset( mOffset, loc );
-
-    IndexType numDiagonals = mOffset.size();
-    IndexType pos = getValuePos[loc]( i, j, getNumRows(), rOffset.get(), numDiagonals );
+    IndexType pos = DIAUtils::getValuePos( i, j, getNumRows(), getNumColumns(), mOffset, getContextPtr() );
 
     ValueType val = 0;
 
     if ( pos != invalidIndex )
     {
-        SCAI_ASSERT_VALID_INDEX_DEBUG( pos, getNumRows() * numDiagonals, "illegal value position for ( " << i << ", " << j << " )" );
+        SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mValues.size(), "illegal value position for ( " << i << ", " << j << " )" );
 
         val = utilskernel::HArrayUtils::getVal<ValueType>( mValues, pos );
     }
@@ -1148,23 +863,14 @@ void DIAStorage<ValueType>::setValue( const IndexType i,
 
     SCAI_LOG_TRACE( logger, "set value (" << i << ", " << j << ")" )
 
-    static LAMAKernel<DIAKernelTrait::getValuePos> getValuePos;
-
-    ContextPtr loc = this->getContextPtr();
-    getValuePos.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-
-    ReadAccess<IndexType> rOffset( mOffset, loc );
-
-    IndexType numDiagonals = mOffset.size();
-    IndexType pos = getValuePos[loc]( i, j, getNumRows(), rOffset.get(), numDiagonals );
+    IndexType pos = DIAUtils::getValuePos( i, j, getNumRows(), getNumColumns(), mOffset, getContextPtr() );
 
     if ( pos == invalidIndex )
     {
         COMMON_THROWEXCEPTION( "DIA storage has no entry ( " << i << ", " << j << " ) " )
     }
 
-    SCAI_ASSERT_VALID_INDEX_DEBUG( pos, getNumRows() * numDiagonals, "illegal value position for ( " << i << ", " << j << " )" );
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mValues.size(), "illegal value position for ( " << i << ", " << j << " )" );
 
     utilskernel::HArrayUtils::setVal( mValues, pos, val, op );
 }
@@ -1268,7 +974,6 @@ SyncToken* DIAStorage<ValueType>::gemv(
 {
     SCAI_REGION( "Storage.DIA.gemv" )
 
-    const IndexType nSource = common::isTranspose( op ) ? getNumRows() : getNumColumns();
     const IndexType nTarget = common::isTranspose( op ) ? getNumColumns() : getNumRows();
 
     IndexType numDiagonals = mOffset.size();
@@ -1302,75 +1007,9 @@ SyncToken* DIAStorage<ValueType>::gemv(
         }
     }
 
-    // check for correct sizes of x
-
-    SCAI_ASSERT_EQUAL_ERROR( x.size(), nSource )
-
-    static LAMAKernel<DIAKernelTrait::normalGEMV<ValueType> > normalGEMV;
-
-    ContextPtr loc = this->getContextPtr();
-    normalGEMV.getSupportedContext( loc );
-
-    unique_ptr<SyncToken> syncToken;
-
-    if ( async )
-    {
-        syncToken.reset( loc->getSyncToken() );
-    }
-
-    SCAI_ASYNCHRONOUS( syncToken.get() );
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    ReadAccess<IndexType> diaOffsets( mOffset, loc );
-    ReadAccess<ValueType> diaValues( mValues, loc );
-    ReadAccess<ValueType> rX( x, loc );
-
-    if ( beta != common::Constants::ZERO )
-    {
-        SCAI_ASSERT_EQ_ERROR( y.size(), nTarget, "y has illegal size" )
-
-        ReadAccess<ValueType> rY( y, loc );
-        WriteOnlyAccess<ValueType> wResult( result, loc, nTarget );  // result might be aliased to y
-
-        SCAI_LOG_INFO( logger, "call kernel normalGEMV( beta = " << beta << ", y[" << nTarget << "] = " << rY.get() << " ) on " << *loc )
-
-        normalGEMV[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(), 
-                         getNumRows(), getNumColumns(), numDiagonals,
-                         diaOffsets.get(), diaValues.get(), op );
-
-        if ( async )
-        {
-            syncToken->pushRoutine( rY.releaseDelayed() );
-            syncToken->pushRoutine( wResult.releaseDelayed() );
-        }
-    }
-    else
-    {
-        // do not access y at all
-
-        WriteOnlyAccess<ValueType> wResult( result, loc, nTarget );
-
-        SCAI_LOG_INFO( logger, "call kernel normalGEMV( beta is 0 ) on " << *loc )
-
-        normalGEMV[loc]( wResult.get(), alpha, rX.get(), ValueType( 0 ), NULL, 
-                         getNumRows(), getNumColumns(), numDiagonals,
-                         diaOffsets.get(), diaValues.get(), op );
-
-        if ( async )
-        {
-            syncToken->pushRoutine( wResult.releaseDelayed() );
-        }
-    }
-
-    if ( async )
-    {
-        syncToken->pushRoutine( rX.releaseDelayed() );
-        syncToken->pushRoutine( diaValues.releaseDelayed() );
-        syncToken->pushRoutine( diaOffsets.releaseDelayed() );
-    }
-
-    return syncToken.release();
+    return DIAUtils::gemv( result, alpha, x, beta, y,
+                           getNumRows(), getNumColumns(), mOffset, mValues,
+                           op, async, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1400,28 +1039,33 @@ void DIAStorage<ValueType>::jacobiIterate(
     const ValueType omega ) const
 {
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
-    SCAI_ASSERT_ERROR( mDiagonalProperty, *this << ": jacobiIterate requires diagonal property" )
 
     if ( &solution == &oldSolution )
     {
         COMMON_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
 
-    SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), oldSolution.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), rhs.size() )
-    SCAI_ASSERT_EQUAL_DEBUG( getNumRows(), getNumColumns() )
     // matrix must be square
-    static LAMAKernel<DIAKernelTrait::jacobi<ValueType> > jacobi;
-    ContextPtr loc = this->getContextPtr();
-    jacobi.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<IndexType> diaOffset( mOffset, loc );
-    ReadAccess<ValueType> diaValues( mValues, loc );
-    ReadAccess<ValueType> rOldSolution( oldSolution, loc );
-    ReadAccess<ValueType> rRhs( rhs, loc );
-    WriteOnlyAccess<ValueType> wSolution( solution, loc, getNumRows() );
-    jacobi[loc]( wSolution.get(), getNumColumns(), getNumDiagonals(), diaOffset.get(), diaValues.get(),
-                 rOldSolution.get(), rRhs.get(), omega, getNumRows() );
+
+    SCAI_ASSERT_EQ_DEBUG( getNumRows(), getNumColumns(), "jacobi iteration step only on square matrix storage" )
+
+    DIAUtils::jacobi( solution, omega, oldSolution, rhs, 
+                      getNumRows(), mOffset, mValues, getContextPtr() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DIAStorage<ValueType>::jacobiIterateHalo(
+    HArray<ValueType>& solution,
+    const HArray<ValueType>& localDiagonal,
+    const HArray<ValueType>& oldSolution,
+    const ValueType omega ) const
+{
+    // matrix must be square
+
+    DIAUtils::jacobiHalo( solution, omega, localDiagonal, oldSolution, 
+                          getNumRows(), getNumColumns(), mOffset, mValues, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1490,23 +1134,6 @@ _MatrixStorage* DIAStorage<ValueType>::create()
 /* ========================================================================= */
 
 SCAI_COMMON_INST_CLASS( DIAStorage, SCAI_NUMERIC_TYPES_HOST )
-
-#define DIA_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                 \
-    template void DIAStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType,                                 \
-            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&,                                              \
-            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                               \
-    template void DIAStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
-            hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;                                               \
-    template void DIAStorage<ValueType>::setDIADataImpl( const IndexType, const IndexType, const IndexType,                \
-            const hmemo::HArray<IndexType>&, const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );
-
-#define DIA_STORAGE_INST_LVL1( ValueType )                                                                                  \
-    SCAI_COMMON_LOOP_LVL2( ValueType, DIA_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
-
-SCAI_COMMON_LOOP( DIA_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
-
-#undef DIA_STORAGE_INST_LVL2
-#undef DIA_STORAGE_INST_LVL1
 
 } /* end namespace lama */
 

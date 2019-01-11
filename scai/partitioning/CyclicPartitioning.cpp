@@ -2,29 +2,24 @@
  * @file CyclicPartitioning.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief CyclicPartitioning.cpp
@@ -110,7 +105,7 @@ void CyclicPartitioning::rectangularPartitioning(
 
     for ( IndexType i = 0; i < numLocalRows; ++i )
     {
-        IndexType globalI = rowDist.local2global( i );
+        IndexType globalI = rowDist.local2Global( i );
         IndexType globalChunk = globalI / nbRows;
         wRowMapping[i] = globalChunk % npart;
     }
@@ -119,7 +114,7 @@ void CyclicPartitioning::rectangularPartitioning(
 
     for ( IndexType j = 0; j < numLocalCols; ++j )
     {
-        IndexType globalJ = colDist.local2global( j );
+        IndexType globalJ = colDist.local2Global( j );
         IndexType globalChunk = globalJ / nbCols;
         wColMapping[j] = globalChunk % npart;
     }
@@ -163,15 +158,15 @@ void CyclicPartitioning::squarePartitioning(
 
 void CyclicPartitioning::rectangularRedistribute( _Matrix& matrix, const float ) const
 {
-    CommunicatorPtr comm = matrix.getRowDistribution().getCommunicatorPtr();
-
-    IndexType np = comm->getSize();
-
-    if ( np < 2 )
+    if ( matrix.getRowDistribution().isReplicated() )
     {
         // no repartitioning for a single processor
         return;
     }
+
+    CommunicatorPtr comm = matrix.getRowDistribution().getCommunicatorPtr();
+
+    IndexType np = comm->getSize();
 
     IndexType numRows    = matrix.getRowDistribution().getGlobalSize();
     IndexType numColumns = matrix.getColDistribution().getGlobalSize();

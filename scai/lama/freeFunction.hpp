@@ -1,33 +1,28 @@
 /**
- * @file freeFunction.hpp
+ * @file lama/freeFunction.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Definiton of free functions to construct objects
+ * @brief Definiton of free functions to construct objects in lama namespace.
  * @author Thomas Brandes, Andreas Borgen Longva
  * @date 25.01.18
  */
@@ -255,6 +250,16 @@ ObjectType read( const std::string& fileName, hmemo::ContextPtr ctx = hmemo::Con
     return obj;
 }
 
+template<typename ObjectType>
+ObjectType read( const std::string& fileName, 
+                 dmemo::CommunicatorPtr comm,
+                 hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    ObjectType obj( ctx );
+    obj.readFromFile( fileName, comm );
+    return obj;
+}
+
 /** 
  *  @brief Function that returns a vector of a given size initialized with the same value.
  * 
@@ -359,6 +364,23 @@ DistObjType distribute( const GlobalObjType& input, dmemo::DistributionPtr dist,
     return obj;
 }
 
+/**
+ *  @brief Resize is nearly the same as distribute but here the new distributon might have a different global size
+ *
+ *  Note: The input vector might be either truncated or filled up with zero.
+ */
+template<typename DistObjType, typename GlobalObjType>
+DistObjType resize( 
+    const GlobalObjType& input, 
+    dmemo::DistributionPtr dist, 
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    DistObjType obj( ctx );
+    obj.assign( input );
+    obj.resize( dist );
+    return obj;
+}
+
 /** 
  *  @brief Function that (re-)distributes a global matrix/storage 
  * 
@@ -400,6 +422,25 @@ DistObjType distribute(
     return obj;
 }
 
+/**
+ *  @brief Make a copy of an existing storage/matrix and resize it with new distributions.
+ */
+template<typename DistObjType, typename GlobalObjType>
+DistObjType resize( 
+    const GlobalObjType& input, 
+    dmemo::DistributionPtr rowDist, 
+    dmemo::DistributionPtr colDist, 
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    DistObjType obj( ctx );
+    obj.assign( input );
+    obj.resize( rowDist, colDist );
+    return obj;
+}
+
+/** 
+ *  @brief Function that returns a matrix where only the diagonal is set.
+ */
 template<typename MatrixType, typename ArrayType>
 MatrixType diagonal(
     const ArrayType& diag,

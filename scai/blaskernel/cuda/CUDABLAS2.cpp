@@ -2,29 +2,24 @@
  * @file CUDABLAS2.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief CUDA implementations of BLAS2 routines for the class CUDABLAS2.
@@ -143,10 +138,21 @@ void CUDABLAS2::geam(
 
     SCAI_CHECK_CUDA_ACCESS
 
+    if ( m == 0 || n == 0 )
+    {
+        return;    // important as call of geam might return an error 
+    }
+
     cudaStream_t stream = 0; // default stream if no syncToken is given
 
     SCAI_CUBLAS_CALL( cublasSetStream( handle, stream ),
                       "CUDABLAS2::geam set cublas kernel stream = " << stream );
+
+    SCAI_LOG_INFO( logger,
+                    "geam<" << TypeTraits<ValueType>::id() << "> with cuBLAS: "
+                     << "C ( " << m << " x " << n << ", ldc = " << ldc << " ) "
+                     << " = " << alpha << " * A ( lda = " << lda << " ) " << opA 
+                     << " + " << beta << " * B ( ldb = " << ldb << " ) " << opB )
 
     // we swap m and n as geam expects matrices in columns-major format
 

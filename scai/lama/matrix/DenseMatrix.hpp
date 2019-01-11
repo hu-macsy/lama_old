@@ -2,29 +2,24 @@
  * @file DenseMatrix.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of matrix class for distributed matrixes in Dense format.
@@ -323,7 +318,11 @@ public:
 
     /* Implementation of pure method of class _Matrix. */
 
-    virtual void redistribute( const dmemo::Redistributor& redistributor, dmemo::DistributionPtr colDistributionPtr );
+    virtual void redistribute( const dmemo::RedistributePlan& redistributor, dmemo::DistributionPtr colDistributionPtr );
+
+    /* Implementation of pure method of _Matrix::resize */
+
+    virtual void resize( dmemo::DistributionPtr rowDistributionPtr, dmemo::DistributionPtr colDistributionPtr );
 
     /** Implementation of pure method Matrix<ValueType>::getDiagonal */
 
@@ -361,9 +360,13 @@ public:
 
     virtual void scale( const ValueType& alpha );
 
-    /* Implementation of pure method Matrix<ValueType>::scale */
+    /* Implementation of pure method Matrix<ValueType>::scaleRows */
 
     virtual void scaleRows( const DenseVector<ValueType>& scaleY );
+
+    /* Implementation of pure method Matrix<ValueType>::scaleColumns */
+
+    virtual void scaleColumns( const DenseVector<ValueType>& scaleY );
 
     /* Implementation of pure method of class _Matrix. */
 
@@ -404,9 +407,6 @@ public:
      * @param[in]  denseX        vector that is used for multiplication
      * @param[in]  betaValue     scaling factor for additional summand
      * @param[in]  denseY        additional summand ( beta = 0 if not available )
-     *
-     *  Note: _Matrix::matrixTimesMatrix is implemented in the CRTPMatrix class.
-     *        that requires this method.
      *
      *  Note: all vectors must have the right distribution.
      */
@@ -453,6 +453,10 @@ public:
 
     ValueType maxDiffNormImpl( const DenseMatrix<ValueType>& other ) const;
 
+    /* Implemenation of pure method Matrix<ValueType>::binaryOp */
+
+    virtual void binaryOp( const Matrix<ValueType>& matrixA, const common::BinaryOp op, const Matrix<ValueType>& matrixB );
+
     /* Implemenation of pure method Matrix<ValueType>::matrixPlusMatrix */
 
     virtual void matrixPlusMatrix( const ValueType alpha, const Matrix<ValueType>& A, const ValueType beta, const Matrix<ValueType>& B );
@@ -465,6 +469,25 @@ public:
         const Matrix<ValueType>& B,
         const ValueType beta,
         const Matrix<ValueType>& C ) const;
+
+    /** @brief Matrix-multiplication where only dense matrices are involved 
+     *
+     *  This method computes result = alpha * this * B + beta * C
+     *  where result, B, and C are now dense matrices.
+     */
+    void matrixTimesMatrixDense(
+        DenseMatrix<ValueType>& result,
+        const ValueType alpha,
+        const DenseMatrix<ValueType>& B,
+        const ValueType beta,
+        const DenseMatrix<ValueType>& C ) const;
+
+    void matrixTimesMatrixSparse(
+        DenseMatrix<ValueType>& result,
+        const ValueType alpha,
+        const SparseMatrix<ValueType>& B,
+        const ValueType beta,
+        const DenseMatrix<ValueType>& C ) const;
 
     /* Implementation of pure method of class _Matrix. */
 
@@ -501,14 +524,6 @@ public:
     /* Implementation of pure method of class _Matrix. */
 
     virtual IndexType getNumValues() const;
-
-    /* Implementation of pure method of class _Matrix. */
-
-    virtual bool hasDiagonalProperty() const;
-
-    /* Implementation of pure method of class _Matrix. */
-
-    virtual void resetDiagonalProperty();
 
     /* Implementation of method writeAt for dense matrix. */
 
@@ -606,6 +621,10 @@ private:
      */
     void joinColumnData( hmemo::HArray<ValueType>& result, const IndexType firstRow, const IndexType nRows ) const;
 
+    /** binaryOp but with dense matrices */
+
+    void binaryOpDense( const DenseMatrix<ValueType>& matrixA, const common::BinaryOp op, const DenseMatrix<ValueType>& matrixB );
+
     /***************************************************************************
      *  Static Methods for dense storage                                        *
      ***************************************************************************/
@@ -644,6 +663,8 @@ private:
 
     mutable hmemo::HArray<ValueType> mSendValues;
     mutable hmemo::HArray<ValueType> mReceiveValues;
+
+    void reserveCommunicationBuffers( const IndexType nValuesPerColumn ) const;
 
     void computeOwners();
 

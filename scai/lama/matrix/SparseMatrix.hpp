@@ -2,29 +2,24 @@
  * @file SparseMatrix.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of class for distributed sparse matrices.
@@ -43,6 +38,8 @@
 // local library
 #include <scai/lama/storage/MatrixStorage.hpp>
 #include <scai/lama/DenseVector.hpp>
+
+#include <scai/dmemo/HaloExchangePlan.hpp>
 
 // internal scai libraries
 #include <scai/tasking/SyncToken.hpp>
@@ -206,7 +203,7 @@ public:
      *    diffMatrix.compress( 0.0001 );
      * \endcode
      */
-    void compress( const RealType<ValueType> eps = 0, bool keepDiagonal = false );
+    void compress( const RealType<ValueType> eps = 0 );
 
     /** @brief Implementation of pure method Matrix<ValueType>::getColumn 
      *
@@ -323,6 +320,10 @@ public:
     /* Implementation of pure method Matrix<ValueType>::scaleRows */
 
     virtual void scaleRows( const DenseVector<ValueType>& scaleY );
+
+    /* Implementation of pure method Matrix<ValueType>::scaleColumns */
+
+    virtual void scaleColumns( const DenseVector<ValueType>& scaleY );
 
     /* Implementation of pure method of class _Matrix. */
 
@@ -475,6 +476,10 @@ public:
             hmemo::HArray<ValueType>& localResult,
             const hmemo::HArray<ValueType>& haloX ) > haloF ) const;
 
+    /* Implementation of pure method Matrix<ValueType>::binaryOp */
+
+    virtual void binaryOp( const Matrix<ValueType>& matrixA, const common::BinaryOp op, const Matrix<ValueType>& matrixB );
+
     /* Implemenation of pure method Matrix<ValueType>::matrixPlusMatrix */
 
     virtual void matrixPlusMatrix( const ValueType alpha, const Matrix<ValueType>& A, const ValueType beta, const Matrix<ValueType>& B );
@@ -545,7 +550,7 @@ public:
      *
      * @return   reference to the halo of the distributed matrix
      */
-    const dmemo::Halo& getHalo() const;
+    const dmemo::HaloExchangePlan& getHaloExchangePlan() const;
 
     /* Implementation of method writeAt for sparse matrix. */
 
@@ -558,14 +563,6 @@ public:
     /* Implementation of pure method of class _Matrix. */
 
     virtual void wait() const;
-
-    /* Implementation of pure method of class _Matrix. */
-
-    virtual bool hasDiagonalProperty() const;
-
-    /* Implementation of pure method of class _Matrix. */
-
-    virtual void resetDiagonalProperty();
 
     /* Implementation of pure method _Matrix::newMatrix with covariant return type */
 
@@ -581,7 +578,11 @@ public:
 
     /* Implementation of pure method of _Matrix::redistribute */
 
-    virtual void redistribute( const dmemo::Redistributor& redistributor, dmemo::DistributionPtr colDistribution );
+    virtual void redistribute( const dmemo::RedistributePlan& redistributor, dmemo::DistributionPtr colDistribution );
+
+    /* Implementation of pure method _Matrix::resize */
+
+    virtual void resize( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
 
     /**
      * @brief Assign another matrix transposed to this matrix.
@@ -650,7 +651,7 @@ protected:
 
     std::shared_ptr<MatrixStorage<ValueType> > mHaloData; //!< local columns of sparse matrix
 
-    dmemo::Halo mHalo; //!< Exchange plans for halo part due to column distribution
+    dmemo::HaloExchangePlan mHaloExchangePlan; //!< Exchange plans for halo part due to column distribution
 
     /**
      * @brief Set this matrix = alpha * A + beta * B
@@ -680,6 +681,14 @@ protected:
         const SparseMatrix<ValueType>& B,
         const ValueType beta,
         const SparseMatrix<ValueType>& C );
+
+    /**
+     *  @brief element-wise binary operation for two sparse matrices.
+     */
+    virtual void binaryOpSparse( 
+        const SparseMatrix<ValueType>& matrixA, 
+        const common::BinaryOp op, 
+        const SparseMatrix<ValueType>& matrixB );
 
     /** Implementation of pure method Matrix<ValueType>::selectComplexPart */
 

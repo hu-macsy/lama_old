@@ -2,29 +2,29 @@
  * @file CUDAStencilKernel.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
  * @brief Definition of CUDA routines that implement the stencil kernels.
  * @author Pascal Maczey, Thomas Brandes
- * @date May 04, 2017
+ * @date 04.05.2017
  */
 
 #pragma once
@@ -49,15 +49,18 @@ public:
     /** CUDA implementation for StencilKernelTrait::stencilGEMV */
 
     template<typename ValueType>
-    static void stencilGEMV(
+    static void normalGEMV(
         ValueType result[], 
         const ValueType alpha,  
         const ValueType x[],
+        const ValueType beta,  
+        const ValueType y[],
         const IndexType nDims, 
+        const IndexType hostGridSizes[],
         const IndexType gridSizes[],
-        const IndexType width[],
         const IndexType gridDistances[],
-        const common::Grid::BorderType gridBorders[],
+        const IndexType gridBorders[],
+        const IndexType gridStencilWidth[],
         const IndexType nPoints,
         const int stencilNodes[], 
         const ValueType stencilVal[],
@@ -72,40 +75,68 @@ private:
         ValueType result[],
         const ValueType alpha,
         const ValueType x[],
-        const IndexType gridSizes[],
+        const ValueType beta,  
+        const ValueType y[],
+        const IndexType hostgridSizes[],
         const IndexType nPoints,
+        const int stencilData[],
         const ValueType stencilVal[],
-        const int stencilOffset[] );
+        const int stencilOffset[],
+        const IndexType gridSizes[],
+        const IndexType gridDistances[],
+        const IndexType gridBorders[],
+        const IndexType gridStencilWidth[] );
 
     template<typename ValueType>
     static void stencilGEMV2(
         ValueType result[],
         const ValueType alpha,
         const ValueType x[],
-        const IndexType gridSizes[],
+        const ValueType beta,  
+        const ValueType y[],
+        const IndexType hostgridSizes[],
         const IndexType nPoints,
+        const int stencilData[],
         const ValueType stencilVal[],
-        const int stencilOffset[] );
+        const int stencilOffset[],
+        const IndexType gridSizes[],
+        const IndexType gridDistances[],
+        const IndexType gridBorders[],
+        const IndexType gridStencilWidth[] );
 
     template<typename ValueType>
     static void stencilGEMV3(
         ValueType result[],
         const ValueType alpha,
         const ValueType x[],
-        const IndexType gridSizes[],
+        const ValueType beta,  
+        const ValueType y[],
+        const IndexType hostgridSizes[],
         const IndexType nPoints,
+        const int stencilData[],
         const ValueType stencilVal[],
-        const int stencilOffset[] );
+        const int stencilOffset[],
+        const IndexType gridSizes[],
+        const IndexType gridDistances[],
+        const IndexType gridBorders[],
+        const IndexType gridStencilWidth[] );
 
     template<typename ValueType>
     static void stencilGEMV4(
         ValueType result[],
         const ValueType alpha,
         const ValueType x[],
-        const IndexType gridSizes[],
+        const ValueType beta,  
+        const ValueType y[],
+        const IndexType hostgridSizes[],
         const IndexType nPoints,
+        const int stencilData[],
         const ValueType stencilVal[],
-        const int stencilOffset[] );
+        const int stencilOffset[],
+        const IndexType gridSizes[],
+        const IndexType gridDistances[],
+        const IndexType gridBorders[],
+        const IndexType gridStencilWidth[] );
 
     /** Struct for registration of methods with one template argument.
      *

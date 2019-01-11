@@ -2,29 +2,24 @@
  * @file MathTest.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Test routines for class Math
@@ -242,6 +237,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( argTest, ValueType, scai_math_complex_test_types 
     BOOST_CHECK_SMALL( y - RealType( 0.927295218001612 ), TypeTraits<ValueType>::small() );
 }
 #endif
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( signTest, ValueType, scai_numeric_test_types )
+{
+    BOOST_CHECK_EQUAL( Math::sign( ValueType( 0.2 ) ), ValueType( 1 ) );
+    BOOST_CHECK_EQUAL( Math::sign( ValueType( -0.1 ) ), ValueType( -1 ) );
+    BOOST_CHECK_EQUAL( Math::sign( ValueType( 0 ) ), ValueType( 0 ) );
+}
 
 /* --------------------------------------------------------------------- */
 

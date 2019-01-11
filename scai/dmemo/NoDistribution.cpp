@@ -2,29 +2,24 @@
  * @file NoDistribution.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of methods for class NoDistribution.
@@ -34,6 +29,7 @@
 
 // hpp
 #include <scai/dmemo/NoDistribution.hpp>
+#include <scai/dmemo/NoCommunicator.hpp>
 
 // std
 #include <fstream>
@@ -52,8 +48,9 @@ SCAI_LOG_DEF_LOGGER( NoDistribution::logger, "Distribution.NoDistribution" )
 
 /* ---------------------------------------------------------------------- */
 
-NoDistribution::NoDistribution( const IndexType globalSize )
-    : Distribution( globalSize )
+NoDistribution::NoDistribution( const IndexType globalSize ):
+
+    Distribution( globalSize, Communicator::getCommunicatorPtr( Communicator::NO ) )
 {
 }
 
@@ -79,14 +76,14 @@ IndexType NoDistribution::getLocalSize() const
 
 /* ---------------------------------------------------------------------- */
 
-IndexType NoDistribution::local2global( const IndexType localIndex ) const
+IndexType NoDistribution::local2Global( const IndexType localIndex ) const
 {
     return localIndex;
 }
 
 /* ---------------------------------------------------------------------- */
 
-IndexType NoDistribution::global2local( const IndexType globalIndex ) const
+IndexType NoDistribution::global2Local( const IndexType globalIndex ) const
 {
     return globalIndex;
 }
@@ -150,7 +147,7 @@ bool NoDistribution::isEqual( const Distribution& other ) const
 void NoDistribution::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
-    stream << "NoDistribution( size = " << mGlobalSize << " )";
+    stream << "NoDistribution( size = " << mGlobalSize << ", comm = " << getCommunicator() << " )";
 }
 
 /* ---------------------------------------------------------------------- */
@@ -165,11 +162,17 @@ void NoDistribution::computeOwners( HArray<PartitionId>& owners, const HArray<In
  *   static create methods ( required for registration in distribution factory )    *
  * ---------------------------------------------------------------------------------*/
 
-Distribution* NoDistribution::create( const DistributionArguments arg )
+DistributionPtr NoDistribution::create( const DistributionArguments arg )
 {
     // Note: weight argument is not used here
     //       same is true for matrix, commonunicationPtr
-    return new NoDistribution( arg.globalSize );
+    return std::make_shared<NoDistribution>( arg.globalSize );
+}
+
+const char* NoDistribution::getId()
+{
+    static const char id[] = "NO";
+    return id;
 }
 
 } /* end namespace dmemo */

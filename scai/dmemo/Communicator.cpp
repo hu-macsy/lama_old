@@ -2,29 +2,24 @@
  * @file Communicator.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Communicator.cpp
@@ -34,9 +29,9 @@
 
 // hpp
 #include <scai/dmemo/Communicator.hpp>
+#include <scai/dmemo/CommunicatorStack.hpp>
 
 #include <scai/dmemo/Distribution.hpp>
-#include <scai/dmemo/Halo.hpp>
 
 // internal scai libraries
 #include <scai/tasking/NoSyncToken.hpp>
@@ -101,6 +96,11 @@ CommunicatorPtr Communicator::getDefaultCommunicatorPtr()
 
 CommunicatorPtr Communicator::getCommunicatorPtr()
 {
+    if ( !CommunicatorStack::empty() )
+    {
+        return CommunicatorStack::top();
+    }
+
     std::string comm;
     std::locale loc;
 
@@ -126,6 +126,11 @@ CommunicatorPtr Communicator::getCommunicatorPtr()
     }
 
     return getDefaultCommunicatorPtr();
+}
+
+const Communicator& Communicator::getCurrent()
+{
+    return *getCommunicatorPtr();
 }
 
 /* -----------------------------------------------------------------------------*/
@@ -555,6 +560,38 @@ void Communicator::bcastArray( HArray<ValueType>& array, const IndexType n, cons
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void Communicator::scatterVArray( 
+    HArray<ValueType>& recvArray,
+    const PartitionId root, 
+    const HArray<ValueType>& sendArray, 
+    const HArray<IndexType>& sendSizes ) const
+{
+    // scatter the send sizes so that each processor knows the size of its part to allocate it
+
+    IndexType recvSize;
+    ValueType dummy;
+
+    // avoid NULL pointers on non-root processors, caused problems with some MPI implementations
+
+    const IndexType* sizesPtr = &recvSize;
+    const ValueType* allValuesPtr = &dummy;
+
+    if ( getRank() == root )
+    {
+        sizesPtr = hostReadAccess( sendSizes ).get();
+        allValuesPtr = hostReadAccess( sendArray ).get();
+    }
+
+    scatter( &recvSize, 1, root, sizesPtr );
+
+    auto wMyValues = hostWriteOnlyAccess( recvArray, recvSize );
+
+    scatterV( wMyValues.get(), recvSize, root, allValuesPtr, sizesPtr );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void Communicator::bcastArray( HArray<ValueType>& array, const PartitionId root ) const
 {
     SCAI_ASSERT_VALID_INDEX_ERROR( root, getSize(), "illegal root for bcast specified" )
@@ -605,81 +642,6 @@ SyncToken* Communicator::shiftAsync(
 }
 
 /* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void Communicator::updateHalo(
-    HArray<ValueType>& haloValues,
-    const HArray<ValueType>& localValues,
-    const Halo& halo ) const
-{
-    SCAI_REGION( "Communicator.updateHalo" )
-    SCAI_LOG_INFO( logger, *this << ": update halo" )
-    const CommunicationPlan& requiredPlan = halo.getRequiredPlan();
-    SCAI_ASSERT_ERROR( requiredPlan.allocated(), "Required plan in Halo not allocated" )
-    SCAI_ASSERT_ERROR( requiredPlan.size() < getSize(), "Required plan in Halo mismatches size of communicator" )
-    const CommunicationPlan& providesPlan = halo.getProvidesPlan();
-    SCAI_ASSERT_ERROR( providesPlan.allocated(), "Provides plan in Halo not allocated" )
-    SCAI_ASSERT_ERROR( providesPlan.size() < getSize(), "Provides plan in Halo mismatches size of communicator" )
-
-    // Before we exchange by plan, we have to pack local values to send
-    // Note: A previous MPI implementation took advantage of packing the data after
-    //       starting the receives. This is here no more possible. But we might now
-    //       pack the data already on the GPU and can avoid gpu->host transfer of all localValues
-
-    IndexType numSendValues = providesPlan.totalQuantity();
-    HArray<ValueType> sendValues( numSendValues ); //!< temporary array for send communication
-
-    utilskernel::HArrayUtils::gather( sendValues, localValues, halo.getProvidesIndexes(), common::BinaryOp::COPY );
-
-    exchangeByPlan( haloValues, requiredPlan, sendValues, providesPlan );
-}
-
-/* -------------------------------------------------------------------------- */
-
-static void releaseArray( std::shared_ptr<_HArray> array )
-{
-    array->clear();
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-SyncToken* Communicator::updateHaloAsync(
-    HArray<ValueType>& haloValues,
-    const HArray<ValueType>& localValues,
-    const Halo& halo ) const
-{
-    SCAI_REGION( "Communicator.updateHaloAsync" )
-    SCAI_LOG_INFO( logger, *this << ": asynchronous update halo" )
-    const CommunicationPlan& requiredPlan = halo.getRequiredPlan();
-    SCAI_ASSERT_ERROR( requiredPlan.allocated(), "Required plan in Halo not allocated" )
-    SCAI_ASSERT_ERROR( requiredPlan.size() < getSize(), "Required plan in Halo mismatches size of communicator" )
-    const CommunicationPlan& providesPlan = halo.getProvidesPlan();
-    SCAI_ASSERT_ERROR( providesPlan.allocated(), "Provides plan in Halo not allocated" )
-    SCAI_ASSERT_ERROR( providesPlan.size() < getSize(), "Provides plan in Halo mismatches size of communicator" )
-
-    // Before we exchange by plan, we have to pack local values to send
-    // Note: A previous MPI implementation took advantage of packing the data after
-    //       starting the receives. This is here no more possible. But we might now
-    //       pack the data already on the GPU and can avoid gpu->host transfer of all localValues
-
-    IndexType numSendValues = providesPlan.totalQuantity();
-
-    std::shared_ptr<HArray<ValueType> > sendValues( new HArray<ValueType>( numSendValues ) );
-
-    // put together the (send) values to provide for other partitions
-
-    utilskernel::HArrayUtils::gather( *sendValues, localValues, halo.getProvidesIndexes(), common::BinaryOp::COPY );
-
-    SyncToken* token( exchangeByPlanAsync( haloValues, requiredPlan, *sendValues, providesPlan ) );
-
-    // Also push the sendValues array to the token so it will be freed after synchronization
-    // Note: it is guaranteed that access to sendValues is freed before sendValues
-    token->pushRoutine( std::bind( releaseArray, sendValues ) );
-    return token;
-}
-
-/* -------------------------------------------------------------------------- */
 /*  computeOwners                                                             */
 /* -------------------------------------------------------------------------- */
 
@@ -698,12 +660,29 @@ void Communicator::computeOwners(
     computeOwners( wOwners.get(), distribution, rIndexes.get(), numIndexes );
 }
 
+/* -------------------------------------------------------------------------- */
+
 void Communicator::computeOwners(
     PartitionId owners[],
     const Distribution& distribution,
     const IndexType requiredIndexes[],
     const IndexType numIndexes ) const
 {
+    if ( distribution.isReplicated() )
+    {
+        // there might be multiple owners but we take the only the first one
+
+        const IndexType size = distribution.getGlobalSize();
+
+        for ( IndexType i = 0; i < numIndexes; ++i )
+        { 
+            SCAI_ASSERT_VALID_INDEX_ERROR( requiredIndexes[i], size, "required index out of range" )
+            owners[i] = 0;
+        }
+
+        return;
+    }
+
     // Note: this routine is only supported on Host, may change in future releases
 
     PartitionId rank = getRank();
@@ -711,10 +690,7 @@ void Communicator::computeOwners(
 
     SCAI_LOG_INFO( logger, "need owners for " << numIndexes << " global indexes" )
 
-    if ( distribution.getCommunicator() != *this )
-    {
-        COMMON_THROWEXCEPTION( "The distribution has a different Communicator." )
-    }
+    SCAI_ASSERT_EQ_ERROR( *this, distribution.getCommunicator(), "illegal communicator for computeOwners" )
 
     IndexType nonLocal = 0;
 
@@ -1116,6 +1092,34 @@ void Communicator::minloc( ValueType& val, IndexType& location, const PartitionI
 
 /* -------------------------------------------------------------------------- */
 
+CommunicationPlan Communicator::transpose( const CommunicationPlan& plan ) const
+{
+    const PartitionId np = getSize();
+
+    // plan might be compressed, so build values again
+
+    std::vector<IndexType> sendSizes( np, 0 );
+
+    for ( PartitionId i = 0; i < plan.size(); ++i )
+    {
+        const CommunicationPlan::Entry& entry = plan[i];
+        sendSizes[entry.partitionId] = entry.quantity;
+    }
+
+    std::vector<IndexType> recvSizes( np, 0 );
+
+    // send each processor the number of indexes I require
+    // and receive the number of indexes that I have to provide
+
+    all2all( &recvSizes[0], &sendSizes[0] );
+
+    // now we can construct it by quantities
+
+    return CommunicationPlan( recvSizes.data(), np );
+}
+
+/* -------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void Communicator::exchangeByPlan(
     hmemo::HArray<ValueType>& recvArray,
@@ -1144,6 +1148,19 @@ void Communicator::exchangeByPlan(
     // Data will be received at the same context where send data is
     hmemo::WriteOnlyAccess<ValueType> recvData( recvArray, comCtx, recvSize );
     exchangeByPlan( recvData.get(), recvPlan, sendData.get(), sendPlan );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void Communicator::exchangeByPlanF(
+    const CommunicationPlan& recvPlan,
+    const hmemo::HArray<ValueType>& sendArray,
+    const CommunicationPlan& sendPlan ) const
+{
+    HArray<ValueType> recvArray;
+    exchangeByPlan( recvArray, recvPlan, sendArray, sendPlan );
+    return recvArray;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1299,6 +1316,13 @@ SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ALL_TYPES )
             const HArray<_type>& localArray ) const;                \
                                                                     \
     template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::scatterVArray(                               \
+            HArray<_type>& recvArray,                               \
+            const PartitionId root,                                 \
+            const HArray<_type>& sendArray,                         \
+            const HArray<IndexType>& sendSizes ) const;             \
+                                                                    \
+    template COMMON_DLL_IMPORTEXPORT                                \
     SyncToken* Communicator::shiftAsync(                            \
             HArray<_type>& recvArray,                               \
             const HArray<_type>& sendArray,                         \
@@ -1307,12 +1331,6 @@ SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ALL_TYPES )
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::sumArray(                                    \
             HArray<_type>& array ) const;                           \
-                                                                    \
-    template COMMON_DLL_IMPORTEXPORT                                \
-    void Communicator::updateHalo(                                  \
-            HArray<_type>& haloValues,                              \
-            const HArray<_type>& localValues,                       \
-            const Halo& halo ) const;                               \
                                                                     \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::all2all(                                     \
@@ -1339,11 +1357,6 @@ SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ALL_TYPES )
             const HArray<_type>& sendArray,                         \
             const CommunicationPlan& sendPlan ) const;              \
                                                                     \
-    template COMMON_DLL_IMPORTEXPORT                                \
-    SyncToken* Communicator::updateHaloAsync(                       \
-            HArray<_type>& haloValues,                              \
-            const HArray<_type>& localValues,                       \
-            const Halo& halo ) const;
 
 // instantiate communicator methods with Harray only for supported array types
 

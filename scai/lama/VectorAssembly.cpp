@@ -2,29 +2,24 @@
  * @file VectorAssembly.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of methods for vector assembly.
@@ -35,6 +30,8 @@
 #include <scai/lama.hpp>
 
 #include <scai/lama/VectorAssembly.hpp>
+#include <scai/dmemo/GlobalExchangePlan.hpp>
+#include <scai/dmemo/Distribution.hpp>
 
 #include <scai/common/macros/instantiate.hpp>
 #include <algorithm>
@@ -124,11 +121,11 @@ void VectorAssembly<ValueType>::exchangeCOO(
     PartitionId np = comm.getSize();
 
     HArray<IndexType> perm;
-    HArray<IndexType> offsets;
+    HArray<IndexType> sizes;
 
-    HArrayUtils::bucketSort( offsets, perm, owners, np );
+    HArrayUtils::bucketSortSizes( sizes, perm, owners, np );
 
-    SCAI_LOG_DEBUG( logger, "sorted, perm = " << perm << ", offsets = " << offsets )
+    SCAI_LOG_DEBUG( logger, "sorted, perm = " << perm << ", sizes = " << sizes )
 
     HArray<IndexType> sendIA;
     HArray<ValueType> sendValues;
@@ -136,8 +133,8 @@ void VectorAssembly<ValueType>::exchangeCOO(
     HArrayUtils::gather( sendIA, inIA, perm, common::BinaryOp::COPY );
     HArrayUtils::gather( sendValues, inValues, perm, common::BinaryOp::COPY );
 
-    auto sendPlan = dmemo::CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), np );
-    auto recvPlan = sendPlan.transpose( comm );
+    auto sendPlan = dmemo::CommunicationPlan( hostReadAccess( sizes ) );
+    auto recvPlan = comm.transpose( sendPlan );
 
     SCAI_LOG_DEBUG( logger, "recv plan: " << recvPlan )
 
@@ -182,17 +179,28 @@ void VectorAssembly<ValueType>::buildLocalData(
 
     checkLegalIndexes( dist.getGlobalSize() );
 
-    const HArrayRef<IndexType> localIA( mIA );
-    const HArrayRef<ValueType> localValues( mValues );
+    if ( dist.isReplicated() )
+    {
+        const HArrayRef<IndexType> localIA( mIA );
+        const HArrayRef<ValueType> localValues( mValues );
 
-    // These arrays will keep the matrix items owned by this processor
+        ia = localIA;
+        values = localValues;
+    }
+    else
+    {
+        const HArrayRef<IndexType> localIA( mIA );
+        const HArrayRef<ValueType> localValues( mValues );
 
-    ia.clear();
-    values.clear();
+        // These arrays will keep the matrix items owned by this processor
 
-    exchangeCOO( ia, values, localIA, localValues, dist );
+        HArray<PartitionId> owners;
 
-    dist.global2localV( ia, ia );   // translates global indexes to local ones
+        dist.computeOwners( owners, localIA );
+        dmemo::globalExchange( ia, values, localIA, localValues, owners, dist.getCommunicatorPtr() );
+         
+        dist.global2LocalV( ia, ia );   // translates global indexes to local ones
+    }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -260,6 +268,32 @@ void VectorAssembly<ValueType>::buildGlobalData(
 
     SCAI_ASSERT_EQ_ERROR( ia.size(), numValues, "serious mismatch" )
     SCAI_ASSERT_EQ_ERROR( values.size(), numValues, "serious mismatch" )
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void VectorAssembly<ValueType>::truncate( const IndexType size )
+{
+    IndexType offset = 0;
+
+    for ( size_t k = 0; k < mIA.size(); ++k )
+    {
+        if ( mIA[k] >= size )
+        {
+            continue;   // skip this element
+        }
+
+        mIA[offset] = mIA[k];
+        mValues[offset] = mValues[k];
+
+        ++offset;
+    }
+
+    SCAI_LOG_INFO( logger, "truncate size = " << size << ", now " << offset << " entries, were " << mIA.size() << " before" )
+
+    mIA.resize( offset );
+    mValues.resize( offset );
 }
 
 /* -------------------------------------------------------------------------- */

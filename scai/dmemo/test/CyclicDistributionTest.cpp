@@ -2,29 +2,24 @@
  * @file CyclicDistributionTest.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Contains the implementation of the class CyclicDistributionTest.
@@ -89,7 +84,7 @@ BOOST_AUTO_TEST_CASE( cyclicGlobal2Local )
             counter += ( size - 1 ) * chunkSize;
         }
 
-        BOOST_CHECK_EQUAL( dist->local2global( i ), counter );
+        BOOST_CHECK_EQUAL( dist->local2Global( i ), counter );
         counter++;
     }
 }
@@ -153,10 +148,8 @@ BOOST_AUTO_TEST_CASE( cyclicComputeOwnersTest )
 BOOST_AUTO_TEST_CASE( cyclicTest )
 {
     // Test cyclic distribution for different global sizes and chunk sizes
-    IndexType globalSizes[] =
-    { 1, 50, 200 };
-    IndexType chunkSizes[] =
-    { 1, 3, 5, 19 };
+    IndexType globalSizes[] = { 1, 50, 200 };
+    IndexType chunkSizes[] = { 1, 3, 5, 19 };
 
     //BOOST_FOREACH(IndexType globalSize, globalSizes)
     for ( IndexType i = 0; i < 3; ++i )
@@ -167,9 +160,12 @@ BOOST_AUTO_TEST_CASE( cyclicTest )
         for ( IndexType j = 0; j < 4; ++j )
         {
             IndexType chunkSize = chunkSizes[i];
-            // printf("Test cyclic distribution of %d elements in chunks of size %d\n", globalSize, chunkSize);
             CyclicDistribution cyclicDist( globalSize, chunkSize, comm );
-            // test the routines getNumChunks + getNumTotalChunks
+ 
+            SCAI_LOG_DEBUG( logger, "Test cylic distribution: " << cyclicDist )
+
+            // test the routines getNumLocalChunks and getNumTotalChunks
+
             IndexType sumLocalChunks = cyclicDist.getCommunicator().sum( cyclicDist.getNumLocalChunks() );
             BOOST_CHECK_EQUAL( cyclicDist.getNumTotalChunks(), sumLocalChunks );
         }
@@ -180,14 +176,16 @@ BOOST_AUTO_TEST_CASE( cyclicTest )
 
 BOOST_AUTO_TEST_CASE( isEqualTest )
 {
-    DistributionPtr cyclicdist1( new CyclicDistribution( 1, comm->getSize(), comm ) );
-    DistributionPtr cyclicdist2( cyclicdist1 );
-    DistributionPtr cyclicdist3( new CyclicDistribution( 1, comm->getSize(), comm ) );
-    DistributionPtr cyclicdist4( new CyclicDistribution( 3, comm->getSize(), comm ) );
-    BOOST_CHECK( ( *cyclicdist1 ).isEqual( *cyclicdist2 ) );
-    BOOST_CHECK( ( *cyclicdist1 ).isEqual( *cyclicdist3 ) );
-    BOOST_CHECK( !( *cyclicdist1 ).isEqual( *cyclicdist4 ) );
+    auto cyclicdist1 = cyclicDistribution( 5, 1 );
+    auto cyclicdist2 = cyclicdist1;
+    auto cyclicdist3 = cyclicDistribution( 5, 1 );
+    auto cyclicdist4 = cyclicDistribution( 3, 1 );
+
+    BOOST_CHECK( *cyclicdist1 == *cyclicdist2 );    // pointer equality
+    BOOST_CHECK( *cyclicdist1 == *cyclicdist3 );    // same sizes
+    BOOST_CHECK( *cyclicdist1 != *cyclicdist4 );   // different global sizes
 }
+
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();

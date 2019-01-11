@@ -2,29 +2,24 @@
  * @file DenseVector.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of template class that stands for a dense vector of a certain type.
@@ -42,7 +37,7 @@
 
 // internal scai libraries
 #include <scai/dmemo/Distribution.hpp>
-#include <scai/dmemo/Halo.hpp>
+#include <scai/dmemo/GlobalAddressingPlan.hpp>
 #include <scai/hmemo.hpp>
 
 #include <scai/tasking/SyncToken.hpp>
@@ -56,7 +51,7 @@ namespace scai
 
 namespace dmemo
 {
-class Redistributor;
+class RedistributePlan;
 }
 
 namespace lama
@@ -281,6 +276,13 @@ public:
      */
     void fillLinearValues( const ValueType startValue, const ValueType inc );
 
+    /**
+     * @brief This method fills an allocated vector by a function
+     *
+     * @param[in] fillFunction is a function that returns for a global index the value
+     */
+    void fillByFunction( ValueType ( *fillFunction ) ( IndexType ) );
+
     /** Sort all elements of this vector.
      *
      *  Currently, sorting is only possible on block distributed vectors.
@@ -477,14 +479,22 @@ public:
      *  If op is COPY, this vector will have the same size and distribution as index, otherwise
      *  this vector and the other vector must have the same size and distribution.
      */
-    virtual void gather(
+    virtual void gatherInto(
         const DenseVector<ValueType>& source,
         const DenseVector<IndexType>& index,
         const common::BinaryOp op = common::BinaryOp::COPY );
 
+    /** Gathering from this vector into a target vector. */
+
+    virtual void gatherFrom(
+        DenseVector<ValueType>& target,
+        const DenseVector<IndexType>& index,
+        const common::BinaryOp op = common::BinaryOp::COPY ) const;
+
     /** Scattering values from another vector into this vector
      *
      *  @param[in] index  specifies positions where to update values
+     *  @param[in] unique might be set true if no entry appears twice in index (global view)
      *  @param[in] source values that are scattered
      *  @param[in] op     specifies how to combine elements with existing ones
      *
@@ -492,6 +502,54 @@ public:
      */
     virtual void scatter(
         const DenseVector<IndexType>& index,
+        const bool unique,
+        const DenseVector<ValueType>& source,
+        const common::BinaryOp op = common::BinaryOp::COPY );
+
+    /**
+     *  Build a global addressing plan for gather from or scatter into this vector.
+     *
+     *  @param[in] index  specifies positions where this vector is accessed
+     *  @param[in] unique might be set true if no entry appears twice in index (global view)
+     *  @returns   a plan that can be used to gather from this array or scatter into this array
+     */
+    dmemo::GlobalAddressingPlan globalAddressingPlan(
+        const DenseVector<IndexType>& index,
+        const bool unique = false );
+
+    /**
+     *  Gather data from this array with indexes for which a plan is available
+     * 
+     *  @param[in,out] target the vector that will contain the gathered data
+     *  @param[in] plan   contains communication pattern built for source array
+     *  @param[in] op     specifies how to combine elements with existing ones
+     * 
+     *  Note: the target array must have the same distribution as the index array used for building the plan
+     * 
+     *  \code
+     *      // target = source[ index ]
+     *      target.gather( source, index );
+     *      source.gatherFrom( target, index );
+     *      auto plan = source.globalAddressingPlan( index );
+     *      source.gatherByPlan( target, plan );
+     *  \endcode
+     */
+    void gatherByPlan( 
+        DenseVector<ValueType>& target,
+        const dmemo::GlobalAddressingPlan& plan,
+        const common::BinaryOp op = common::BinaryOp::COPY ) const;
+
+    /**
+     *  Scatter data into this distributed source array 
+     * 
+     *  @param[in] plan contains communication pattern built for indexing this vector
+     *  @param[in] source contains the data that will be scatter into this array
+     *  @param[in] op     specifies how to combine elements with existing ones
+     * 
+     *  Note: source must have the same distribution as index that has been used for building the plan
+     */
+    void scatterByPlan(
+        const dmemo::GlobalAddressingPlan& plan,
         const DenseVector<ValueType>& source,
         const common::BinaryOp op = common::BinaryOp::COPY );
 
@@ -529,7 +587,11 @@ public:
 
     /** Implementation of pure method _Vector::redistribute */
 
-    virtual void redistribute( const dmemo::Redistributor& redistributor );
+    virtual void redistribute( const dmemo::RedistributePlan& redistributor );
+
+    /** Implementation of pure method _Vector::resize */
+
+    virtual void resize( const dmemo::DistributionPtr distribution );
 
 private:
 
@@ -624,6 +686,30 @@ DenseVector<ValueType> linearDenseVector(
     DenseVector<ValueType> result( ctx );
     result.allocate( distribution );
     result.fillLinearValues( startValue, inc );
+    return result;
+}
+
+template<typename ValueType>
+DenseVector<ValueType> fillDenseVector(
+    dmemo::DistributionPtr distribution, 
+    ValueType value,
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    DenseVector<ValueType> result( ctx );
+    result.setSameValue( distribution, value );
+    return result;
+}
+
+template<typename ValueType>
+DenseVector<ValueType> fillDenseVector(
+    dmemo::DistributionPtr distribution, 
+    ValueType ( *fillFunction ) ( IndexType ),
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    SCAI_ASSERT_ERROR( fillFunction, "NULL function for filling" )
+    DenseVector<ValueType> result( ctx );
+    result.allocate( distribution );
+    result.fillByFunction( fillFunction );
     return result;
 }
 

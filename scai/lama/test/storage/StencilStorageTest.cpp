@@ -2,29 +2,24 @@
  * @file StencilStorageTest.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Contains some test of the template class StencilStorage
@@ -97,6 +92,46 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, scai_numeric_test_types )
     BOOST_CHECK_EQUAL( storage1.getStencil(), storage3->getStencil() );
     BOOST_CHECK_EQUAL( storage1.getGrid(), storage2.getGrid() );
     BOOST_CHECK_EQUAL( storage1.getGrid(), storage3->getGrid() );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( scaleTest )
+{
+    typedef DefaultReal ValueType;
+
+    const IndexType N1 = 5;
+    const IndexType N2 = 8;
+    const IndexType N3 = 4;
+
+    common::Grid3D grid( N1, N2, N3 );
+
+    common::Stencil3D<ValueType> stencil( 7 ); // take 7-point stencil
+
+    ValueType factor = 0.1;
+
+    StencilStorage<ValueType> storage1( grid, stencil );
+    StencilStorage<ValueType> storage2( storage1 );
+
+    storage1.scale( factor );
+
+    const IndexType N = N1 * N2 * N3;
+    HArray<ValueType> x;
+    ValueType inc = ValueType( 1 ) / ValueType( N);
+    HArrayUtils::setSequence<ValueType>( x, 0, inc, N );
+
+    ValueType alpha = 1;
+    ValueType beta  = 0;
+
+    HArray<ValueType> result1;
+    HArray<ValueType> result2;
+
+    storage1.matrixTimesVector( result1, alpha, x, beta, x, common::MatrixOp::NORMAL );
+    storage2.matrixTimesVector( result2, alpha * factor, x, beta, x, common::MatrixOp::NORMAL );
+
+    auto eps = common::TypeTraits<ValueType>::small();
+
+    BOOST_CHECK( HArrayUtils::maxDiffNorm( result1, result2)  < eps );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -180,12 +215,12 @@ BOOST_AUTO_TEST_CASE( transposeTest )
             StencilStorage<ValueType> stencilStorageT( grid, stencilT );
         
             auto csrStorage = convert<CSRStorage<ValueType>>( stencilStorage );
-            csrStorage.sortRows( false );
-            csrStorage.compress( ValueType( 0 ) );
+            csrStorage.sortRows();
+            csrStorage.compress();
 
             auto csrStorageT = convert<CSRStorage<ValueType>>( stencilStorageT );
-            csrStorageT.sortRows( false );
-            csrStorageT.compress( ValueType( 0 ) );
+            csrStorageT.sortRows();
+            csrStorageT.compress();
         
             CSRStorage<ValueType> csrStorageT1;
             csrStorageT1.assignTranspose( csrStorage );

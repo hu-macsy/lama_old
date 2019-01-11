@@ -2,29 +2,24 @@
  * @file MatrixStorage.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of methods for common base class of all matrix storage formats.
@@ -41,19 +36,15 @@
 #include <scai/lama/storage/StorageMethods.hpp>
 
 #include <scai/dmemo/Distribution.hpp>
-#include <scai/dmemo/Redistributor.hpp>
-#include <scai/dmemo/Halo.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
+#include <scai/dmemo/HaloExchangePlan.hpp>
 
 #include <scai/lama/io/FileIO.hpp>
 
 // internal scai libraries
-#include <scai/sparsekernel/CSRKernelTrait.hpp>
-#include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
+#include <scai/sparsekernel/CSRUtils.hpp>
 
-#include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
-#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
 
@@ -75,12 +66,7 @@ using namespace dmemo;
 using tasking::SyncToken;
 using tasking::TaskSyncToken;
 
-using utilskernel::LAMAKernel;
-using utilskernel::UtilKernelTrait;
-using utilskernel::OpenMPUtils;
-
-using sparsekernel::CSRKernelTrait;
-using sparsekernel::OpenMPCSRUtils;
+using sparsekernel::CSRUtils;
 
 using common::BinaryOp;
 
@@ -135,39 +121,6 @@ common::ScalarType MatrixStorage<ValueType>::getValueType() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::convertCSR2CSC(
-    HArray<IndexType>& colIA,
-    HArray<IndexType>& colJA,
-    HArray<ValueType>& colValues,
-    const IndexType numColumns,
-    const HArray<IndexType>& rowIA,
-    const HArray<IndexType>& rowJA,
-    const HArray<ValueType>& rowValues,
-    const ContextPtr preferredLoc )
-{
-    const IndexType numRows = rowIA.size() - 1;
-    const IndexType numValues = rowJA.size();
-    SCAI_ASSERT_EQUAL_DEBUG( rowJA.size(), rowValues.size() )
-    static LAMAKernel<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
-    ContextPtr loc = preferredLoc;
-    convertCSR2CSC.getSupportedContext( loc );
-    SCAI_LOG_INFO( logger,
-                   "MatrixStorage::CSR2CSC of matrix " << numRows << " x " << numColumns << ", #nnz = " << numValues << " on " << *loc )
-    SCAI_REGION( "Storage.CSR2CSC" )
-    WriteOnlyAccess<IndexType> cIA( colIA, loc, numColumns + 1 );
-    WriteOnlyAccess<IndexType> cJA( colJA, loc, numValues );
-    WriteOnlyAccess<ValueType> cValues( colValues, loc, numValues );
-    ReadAccess<IndexType> rIA( rowIA, loc );
-    ReadAccess<IndexType> rJA( rowJA, loc );
-    ReadAccess<ValueType> rValues( rowValues, loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    convertCSR2CSC[loc]( cIA.get(), cJA.get(), cValues.get(),  // output args
-                         rIA.get(), rJA.get(), rValues.get(), numRows, numColumns, numValues );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void MatrixStorage<ValueType>::buildCSCData(
     HArray<IndexType>& colIA,
     HArray<IndexType>& colJA,
@@ -178,40 +131,8 @@ void MatrixStorage<ValueType>::buildCSCData(
     HArray<ValueType> rowValues;
     buildCSRData( rowIA, rowJA, rowValues );
     ContextPtr loc = Context::getHostPtr();
-    convertCSR2CSC( colIA, colJA, colValues, getNumColumns(), rowIA, rowJA, rowValues, loc );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void MatrixStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const
-{
-    HArray<IndexType> csrIA;
-    HArray<IndexType> csrJA;
-    HArray<ValueType> csrValues;
-
-    buildCSRData( csrIA, csrJA, csrValues );
-
-    // ToDo: csrIA[i] == csrIA[i+1], no entry in row at all
-    // ToDo: csrIA[numRows-1] == numValues possible, out of range addressing
-
-    // gather: colIndexes[i] = csrJA[ csrIA[i] ]
-
-    if ( getNumRows() > 0 )
-    {
-        SCAI_ASSERT_LT_ERROR( csrIA[getNumRows() - 1], csrJA.size(), "last row without any entry" )
-    }
-
-    static LAMAKernel<UtilKernelTrait::setGather<IndexType, IndexType> > setGather;
-
-    ContextPtr loc = getContextPtr();
-    setGather.getSupportedContext( loc );
-
-    WriteOnlyAccess<IndexType> wColIndexes( colIndexes, loc, getNumRows() );
-    SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<IndexType> ja( csrJA, loc );
-    ReadAccess<IndexType> ia( csrIA, loc );
-    setGather[loc] ( wColIndexes.get(), ja.get(), ia.get(), BinaryOp::COPY, getNumRows() );
+    sparsekernel::CSRUtils::convertCSR2CSC( colIA, colJA, colValues, 
+                                            getNumRows(), getNumColumns(), rowIA, rowJA, rowValues, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -385,13 +306,11 @@ void MatrixStorage<ValueType>::joinRows(
         }
     }
     // generate offset array for insertion
+
     HArray<IndexType> IA;
-    {
-        WriteOnlyAccess<IndexType> offsets( IA, numLocalRows + 1 );
-        ReadAccess<IndexType> sizes( outSizes );
-        OpenMPUtils::set( offsets.get(), sizes.get(), numLocalRows, BinaryOp::COPY );
-        OpenMPCSRUtils::sizes2offsets( offsets.get(), numLocalRows );
-    }
+ 
+    CSRUtils::sizes2offsets( IA, outSizes, Context::getHostPtr() );
+
     WriteAccess<IndexType> tmpIA( IA );
     WriteAccess<IndexType> ja( outJA );
     WriteAccess<ValueType> values( outValues );
@@ -451,15 +370,15 @@ void MatrixStorage<ValueType>::moveImpl( MatrixStorage<ValueType>&& other )
 
 template<typename ValueType>
 void MatrixStorage<ValueType>::joinHalo(
-    const _MatrixStorage& localData,
-    const _MatrixStorage& haloData,
-    const Halo& halo,
-    const Distribution& colDist,
-    const bool attemptDiagonalProperty )
+    const MatrixStorage<ValueType>& localData,
+    const MatrixStorage<ValueType>& haloData,
+    const HaloExchangePlan& haloPlan,
+    const Distribution& colDist )
 {
     SCAI_REGION( "Storage.joinHalo" )
     SCAI_LOG_INFO( logger,
-                   "join local = " << localData << " with diag = " << localData.hasDiagonalProperty() << " and halo = " << haloData << ", col dist = " << colDist )
+                   "join local = " << localData << " and halo = " << haloData << ", col dist = " << colDist )
+
     //  Default solution joins storage data via the CSR format
     //  Note: this solution works also for *this == localData or haloData
     HArray<IndexType> localIA;
@@ -467,47 +386,26 @@ void MatrixStorage<ValueType>::joinHalo(
     HArray<ValueType> localValues;
     localData.buildCSRData( localIA, localJA, localValues );
     SCAI_LOG_DEBUG( logger, "local CSR: ia = " << localIA << ", ja = " << localJA << ", values = " << localValues )
-    // map back the local indexes to global column indexes
-    {
-        IndexType numValues = localJA.size();
-        WriteAccess<IndexType> ja( localJA );
 
-        for ( IndexType i = 0; i < numValues; i++ )
-        {
-            ja[i] = colDist.local2global( ja[i] );
-        }
-    }
+    // map back the local indexes to global column indexes, is done in place
+    colDist.local2GlobalV( localJA, localJA );
+
     HArray<IndexType> haloIA;
     HArray<IndexType> haloJA;
     HArray<ValueType> haloValues;
     haloData.buildCSRData( haloIA, haloJA, haloValues );
     SCAI_LOG_DEBUG( logger, "halo CSR: ia = " << haloIA << ", ja = " << haloJA << ", values = " << haloValues )
-    // map back the halo indexes to global column indexes
-    // this mapping is given by the array of required indexes
-    {
-        IndexType numValues = haloJA.size();
-        WriteAccess<IndexType> ja( haloJA );
-        ReadAccess<IndexType> halo2global( halo.getRequiredIndexes() );
 
-        for ( IndexType i = 0; i < numValues; i++ )
-        {
-            ja[i] = halo2global[ja[i]];
-        }
-    }
+    // map back the halo indexes to global column indexes, is done in place
+
+    haloPlan.halo2GlobalV( haloJA, haloJA ); 
+
     HArray<IndexType> outIA;
     HArray<IndexType> outJA;
     HArray<ValueType> outValues;
-    IndexType numKeepDiagonals = 0;
-
-    if ( attemptDiagonalProperty && localData.hasDiagonalProperty() )
-    {
-        numKeepDiagonals = common::Math::min( localData.getNumRows(), localData.getNumColumns() );
-        SCAI_LOG_INFO( logger, localData << ": has diagonal property, numKeepDiagonals = " << numKeepDiagonals );
-    }
 
     // use static method of MatrixStorage
-    StorageMethods<ValueType>::joinCSR( outIA, outJA, outValues, localIA, localJA, localValues, haloIA, haloJA,
-                                        haloValues, numKeepDiagonals );
+    StorageMethods<ValueType>::joinCSR( outIA, outJA, outValues, localIA, localJA, localValues, haloIA, haloJA, haloValues );
     // here mIA is size array, NOT offsets
     const IndexType numRows = outIA.size() - 1;
     const IndexType numColumns = colDist.getGlobalSize();
@@ -578,7 +476,7 @@ template<typename ValueType>
 void MatrixStorage<ValueType>::splitHalo(
     MatrixStorage<ValueType>& localData,
     MatrixStorage<ValueType>& haloData,
-    Halo& halo,
+    HaloExchangePlan& halo,
     const Distribution& colDist,
     const Distribution* rowDist ) const
 {
@@ -604,7 +502,7 @@ void MatrixStorage<ValueType>::splitHalo(
         }
 
         haloData.allocate( getNumRows(), 0 );
-        halo = Halo(); // empty halo schedule
+        halo = HaloExchangePlan(); // empty halo schedule
         return;
     }
 
@@ -637,9 +535,9 @@ void MatrixStorage<ValueType>::splitHalo(
     SCAI_LOG_INFO( logger,
                    *this << ": split into " << localJA.size() << " local non-zeros " " and " << haloJA.size() << " halo non-zeros" )
     const IndexType localNumColumns = colDist.getLocalSize();
-    IndexType haloNumColumns; // will be available after remap
     // build the halo by the non-local indexes
-    _StorageMethods::buildHalo( halo, haloJA, haloNumColumns, colDist );
+    _StorageMethods::buildHaloExchangePlan( halo, haloJA, colDist );
+    IndexType haloNumColumns = halo.getHaloSize();
     SCAI_LOG_INFO( logger, "build halo: " << halo )
     localData.setCSRData( numRows, localNumColumns, localIA, localJA, localValues );
     localData.check( "local part after split" );
@@ -654,7 +552,7 @@ void MatrixStorage<ValueType>::splitHalo(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::buildHalo( Halo& halo, const Distribution& colDist )
+void MatrixStorage<ValueType>::buildHalo( HaloExchangePlan& halo, const Distribution& colDist )
 {
     SCAI_LOG_INFO( logger, *this << ": build halo according to column distribution " << colDist )
     SCAI_ASSERT_EQUAL_ERROR( getNumColumns(), colDist.getGlobalSize() )
@@ -662,9 +560,9 @@ void MatrixStorage<ValueType>::buildHalo( Halo& halo, const Distribution& colDis
     HArray<IndexType> haloJA; // global columns, all non-local
     HArray<ValueType> haloValues;
     buildCSRData( haloIA, haloJA, haloValues );
-    IndexType haloNumColumns; // will be available after remap
     // build the halo by the non-local indexes
-    _StorageMethods::buildHalo( halo, haloJA, haloNumColumns, colDist );
+    _StorageMethods::buildHaloExchangePlan( halo, haloJA, colDist );
+    IndexType haloNumColumns = halo.getHaloSize();
     setCSRData( getNumRows(), haloNumColumns, haloIA, haloJA, haloValues );
     check( "halo part after split" );
     SCAI_LOG_INFO( logger, "Result of buildHalo: " << "halo storage = " << *this << ", halo = " << halo )
@@ -673,7 +571,7 @@ void MatrixStorage<ValueType>::buildHalo( Halo& halo, const Distribution& colDis
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::compress( const RealType<ValueType> eps, bool keepDiagonal )
+void MatrixStorage<ValueType>::compress( const RealType<ValueType> eps )
 {
     HArray<IndexType> csrIA;
     HArray<IndexType> csrJA;
@@ -681,15 +579,20 @@ void MatrixStorage<ValueType>::compress( const RealType<ValueType> eps, bool kee
 
     buildCSRData( csrIA, csrJA, csrValues );
 
-    CSRStorage<ValueType>::compress( csrIA, csrJA, csrValues, keepDiagonal, eps, getContextPtr() );
+    const IndexType numValues = csrJA.size();
 
-    setCSRData( getNumRows(), getNumColumns(), csrIA, csrJA, csrValues );
+    sparsekernel::CSRUtils::compress( csrIA, csrJA, csrValues, eps, getContextPtr() );
+
+    if ( csrJA.size() != numValues )
+    {
+        setCSRData( getNumRows(), getNumColumns(), csrIA, csrJA, csrValues );
+    }
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns )
+void MatrixStorage<ValueType>::globalizeHaloIndexes( const dmemo::HaloExchangePlan& haloPlan, const IndexType globalNumColumns )
 {
     HArray<IndexType> csrIA;
     HArray<IndexType> csrJA;
@@ -697,7 +600,7 @@ void MatrixStorage<ValueType>::globalizeHaloIndexes( const dmemo::Halo& halo, co
 
     buildCSRData( csrIA, csrJA, csrValues );
 
-    halo.halo2Global( csrJA );
+    haloPlan.halo2GlobalV( csrJA, csrJA );   // globalize column indexes in place
 
     setCSRData( getNumRows(), globalNumColumns, csrIA, csrJA, csrValues );
 }
@@ -725,58 +628,42 @@ void MatrixStorage<ValueType>::reduce(
     const common::BinaryOp reduceOp,
     const common::UnaryOp elemOp )
 {
+    SCAI_ASSERT_VALID_INDEX_ERROR( dim, IndexType( 2 ), "Illegal dimension, only 0 (rows) or 1 (columns)" )
+
     HArray<IndexType> csrIA;
     HArray<IndexType> csrJA;
     HArray<ValueType> csrValues;
 
     buildCSRData( csrIA, csrJA, csrValues );
 
-    hmemo::ReadAccess<ValueType> values( csrValues );
-    hmemo::ReadAccess<IndexType> ia( csrIA );
-    hmemo::ReadAccess<IndexType> ja( csrJA );
+    CSRUtils::reduce( array, getNumRows(), getNumColumns(), 
+                      csrIA, csrJA, csrValues, 
+                      dim, reduceOp, elemOp, getContextPtr() );
+}
 
-    hmemo::WriteAccess<ValueType> a( array );
+/* ------------------------------------------------------------------------- */
 
-    OpenMPCSRUtils::reduce( a.get(), ia.get(), ja.get(), values.get(), getNumRows(), dim, reduceOp, elemOp );
+template<typename ValueType>
+void MatrixStorage<ValueType>::gemvCheck(
+    const ValueType alpha,
+    const HArray<ValueType>& x,
+    const ValueType beta,
+    const HArray<ValueType>& y,
+    const common::MatrixOp op ) const
+{
+    const IndexType nSource = common::isTranspose( op ) ? getNumRows() : getNumColumns();
+    const IndexType nTarget = common::isTranspose( op ) ? getNumColumns() : getNumRows();
 
-    /*
-    if ( dim == 0 )
+    if ( alpha != common::Constants::ZERO )
     {
-        SCAI_ASSERT_EQ_ERROR( array.size(), getNumRows(), "size mismatch" );
-
-        for ( IndexType i = 0; i < getNumRows(); ++i )
-        {
-            // a[i] = 0;
-
-            for ( IndexType jj = ia[i]; jj < ia[i+1]; ++jj )
-            {
-                ValueType v = values[jj];
-                v = applyUnaryOp( elemOp, v );
-                a[i] += v;
-            }
-        }
+        SCAI_ASSERT_EQUAL( x.size(), nSource, "vector x in A * x has illegal size" )
     }
-    else if ( dim == 1 )
+
+    if ( beta != common::Constants::ZERO )
     {
-        SCAI_ASSERT_EQ_ERROR( array.size(), getNumColumns(), "size mismatch" );
-
-        // for ( IndexType j = 0; j < getNumColumns(); ++j )
-        // {
-            // a[j] = 0;
-        // }
-
-        for ( IndexType i = 0; i < getNumRows(); ++i )
-        {
-            for ( IndexType jj = ia[i]; jj < ia[i+1]; ++jj )
-            {
-                IndexType j = ja[jj];
-                ValueType v = values[jj];
-                v = applyUnaryOp( elemOp, v );
-                a[j] += v;
-            }
-        }
+        SCAI_ASSERT_EQUAL( y.size(), nTarget, "result = " << alpha << " * A * x + " << beta 
+                                              << " * y, y has illegal size, matrix storage = " << *this )
     }
-    */
 }
 
 /* ------------------------------------------------------------------------- */
@@ -865,31 +752,6 @@ SyncToken* MatrixStorage<ValueType>::jacobiIterateAsync(
 template<typename ValueType>
 void MatrixStorage<ValueType>::jacobiIterateHalo(
     HArray<ValueType>& localSolution,
-    const MatrixStorage<ValueType>& localStorage,
-    const HArray<ValueType>& oldHaloSolution,
-    const ValueType omega ) const
-{
-    SCAI_UNSUPPORTED( *this << ": jacobiIterateHalo for this format NOT available, take CSR" )
-
-    // very inefficient as we just need the diagonal
-
-    auto csrHalo  = convert<CSRStorage<ValueType>>( *this );
-   
-    // we need the diagonal from the local storage
-
-    HArray<ValueType> diagValues;
-    localStorage.getDiagonal( diagValues );
-
-    auto csrLocal = diagonal<CSRStorage<ValueType>>( diagValues );
-
-    csrHalo.jacobiIterateHalo( localSolution, csrLocal, oldHaloSolution, omega );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void MatrixStorage<ValueType>::jacobiIterateHalo(
-    HArray<ValueType>& localSolution,
     const HArray<ValueType>& localDiagonal,
     const HArray<ValueType>& oldHaloSolution,
     const ValueType omega ) const
@@ -930,8 +792,25 @@ void MatrixStorage<ValueType>::matrixPlusMatrix(
 
     SCAI_ASSERT_NE_ERROR( getFormat(), Format::CSR, "default implementation has not been overridden by CSR" )
 
-    auto csr  = convert<CSRStorage<ValueType>>( *this );
+    CSRStorage<ValueType> csr;
     csr.matrixPlusMatrix( alpha, a, beta, b );
+    assign( csr );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatrixStorage<ValueType>::binaryOp(
+    const MatrixStorage<ValueType>& a,
+    const common::BinaryOp op,
+    const MatrixStorage<ValueType>& b )
+{
+    // Make sure that CSRStorage really has overridden it, otherwise endless recursion here
+
+    SCAI_ASSERT_NE_ERROR( getFormat(), Format::CSR, "default implementation has not been overridden by CSR" )
+
+    CSRStorage<ValueType> csr;
+    csr.binaryOp( a, op, b );
     assign( csr );
 }
 
@@ -943,7 +822,7 @@ void MatrixStorage<ValueType>::matrixTimesMatrix(
     const MatrixStorage<ValueType>& a,
     const MatrixStorage<ValueType>& b,
     const ValueType beta,
-    const MatrixStorage<ValueType>& y )
+    const MatrixStorage<ValueType>& c )
 {
     SCAI_UNSUPPORTED( *this << ": no matrixTimesMatrix for this format available, take CSR" )
 
@@ -951,8 +830,8 @@ void MatrixStorage<ValueType>::matrixTimesMatrix(
 
     SCAI_ASSERT_NE_ERROR( getFormat(), Format::CSR, "default implementation has not been overridden by CSR" )
 
-    auto csr  = convert<CSRStorage<ValueType>>( *this );
-    csr.matrixTimesMatrix( alpha, a, b, beta, y );
+    CSRStorage<ValueType> csr;
+    csr.matrixTimesMatrix( alpha, a, b, beta, c );
     assign( csr );
 }
 
@@ -976,7 +855,7 @@ RealType<ValueType> MatrixStorage<ValueType>::maxDiffNorm( const MatrixStorage<V
 
 template<typename ValueType>
 void MatrixStorage<ValueType>::exchangeHalo(
-    const Halo& halo,
+    const HaloExchangePlan& haloPlan,
     const MatrixStorage<ValueType>& matrix,
     const Communicator& comm )
 {
@@ -990,7 +869,7 @@ void MatrixStorage<ValueType>::exchangeHalo(
     HArray<IndexType> targetJA;
     HArray<ValueType> targetValues;
     StorageMethods<ValueType>::exchangeHaloCSR( targetIA, targetJA, targetValues, sourceIA, sourceJA, sourceValues,
-            halo, comm );
+            haloPlan, comm );
     const IndexType targetNumRows = targetIA.size() - 1;
     setCSRData( targetNumRows, numColumns, targetIA, targetJA, targetValues );
 }
@@ -998,7 +877,7 @@ void MatrixStorage<ValueType>::exchangeHalo(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::redistribute( const _MatrixStorage& other, const Redistributor& redistributor )
+void MatrixStorage<ValueType>::redistribute( const _MatrixStorage& other, const RedistributePlan& redistributor )
 
 {
     if ( other.getFormat() == Format::CSR && other.getValueType() == getValueType() )
@@ -1065,7 +944,7 @@ void MatrixStorage<ValueType>::redistribute( const _MatrixStorage& other, const 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& other, const Redistributor& redistributor )
+void MatrixStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& other, const RedistributePlan& redistributor )
 {
     SCAI_REGION( "Storage.redistributeCSR" )
     const Distribution& sourceDistribution = *redistributor.getSourceDistributionPtr();

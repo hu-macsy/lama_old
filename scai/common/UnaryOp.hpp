@@ -2,29 +2,24 @@
  * @file UnaryOp.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Enum typ for the different elementwise functions.
@@ -75,6 +70,7 @@ enum class UnaryOp
     LOG,        //!< call log on each vector element
     FLOOR,      //!< rounds downward
     CEIL,       //!< rounds upward
+    SIGN,       //!< signum function
     RECIPROCAL, //!< builds multiplicate inverse, x^-1
 
 
@@ -127,6 +123,8 @@ inline ValueType applyUnary( const UnaryOp op, const ValueType& x )
             return common::Math::floor( x );
         case UnaryOp::CEIL:
             return common::Math::ceil( x );
+        case UnaryOp::SIGN:
+            return common::Math::sign( x );
         case UnaryOp::RECIPROCAL:
             return ValueType( 1 ) / x;
         default:
@@ -234,6 +232,10 @@ inline std::ostream& operator<<( std::ostream& stream, const UnaryOp& op )
 
         case UnaryOp::CEIL:
             stream << "CEIL";
+            break;
+
+        case UnaryOp::SIGN:
+            stream << "SIGN";
             break;
 
         case UnaryOp::RECIPROCAL:

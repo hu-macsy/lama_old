@@ -2,29 +2,24 @@
  * @file OpenMPCSRUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of CSR utilities with OpenMP
@@ -67,9 +62,9 @@ public:
         const IndexType csrIA[],
         const IndexType csrJA[] );
 
-    /** Implementation for CSRKernelTrait::getValuePosCol */
+    /** Implementation for CSRKernelTrait::getColumnPositions */
 
-    static IndexType getValuePosCol(
+    static IndexType getColumnPositions(
         IndexType row[],
         IndexType pos[],
         const IndexType j,
@@ -78,16 +73,11 @@ public:
         const IndexType csrJA[],
         const IndexType numValues );
 
-    /** Implementation for CSRKernelTrait::countNonEmptyRowsByOffsets */
+    /** Implementation for CSRKernelTrait::nonEmptyRows */
 
-    static IndexType countNonEmptyRowsByOffsets( const IndexType offsets[], const IndexType numRows );
-
-    /** Implementation for CSRKernelTrait::setNonEmptyRowsByOffsets */
-
-    static void setNonEmptyRowsByOffsets(
+    static IndexType nonEmptyRows( 
         IndexType rowIndexes[],
-        const IndexType numNonEmptyRows,
-        const IndexType offsets[],
+        const IndexType csrIA[], 
         const IndexType numRows );
 
     /** This function build an offset array from a counter array.
@@ -104,47 +94,72 @@ public:
      *  CSR sparse representation of matrices store the sum of all values at an additional
      *  position at the end of the array.
      */
-
     static IndexType scan( IndexType array[], const IndexType numValues );
 
-    /** Implementation for CSRKernelTrait::Offsets::sizes2offsets */
+    /** Implementation for CSRKernelTrait::sizes2offsets */
 
     static IndexType sizes2offsets( IndexType sizes[], const IndexType numRows );
 
-    /** Implementation for CSRKernelTrait::Offsets::offsets2sizes */
+    /** Implementation for CSRKernelTrait::offsets2sizes */
 
     static void offsets2sizes( IndexType sizes[], const IndexType offsets[], const IndexType n );
 
-    /** offset2sizes for indexed rows */
+    /** Implementation for CSRKernelTrait::gatherSizes */
 
-    static void offsets2sizesGather(
+    static void gatherSizes(
         IndexType sizes[],
-        const IndexType offsets[],
+        const IndexType csrIA[],
+        const IndexType numRows,
         const IndexType rowIndexes[],
-        const IndexType numRows );
+        const IndexType nIndexes );
 
-    /** Implementation for CSRKernelTrait::Offsets::validOffsets  */
+    /** Implementation for CSRKernelTrait::validOffsets  */
 
     static bool validOffsets( const IndexType array[], const IndexType n, const IndexType total );
 
-    /** This function checks if csr data has diagonal property.
-     *
-     *  @param[in] numDiagonals is min( numRows, numColumns )
-     *  @param[in] csrIA is the csr offset array
-     *  @param[in] csrJA is array with column indexes
-     */
+    /** Implementation for CSRKernelTrait::hasDiagonalProperty using OpenMP parallelization. */
 
-    static bool hasDiagonalProperty( const IndexType numDiagonals, const IndexType csrIA[], const IndexType csrJA[] );
+    static bool hasDiagonalProperty( 
+        const IndexType numDiagonals, 
+        const IndexType csrIA[], 
+        const IndexType csrJA[], 
+        const bool isSorted );
 
     /** Host implementation for CSRKernelTrait::sortRowElements using OpenMP parallelization. */
 
     template<typename ValueType>
-    static void sortRowElements(
+    static void sortRows(
         IndexType csrJA[],
         ValueType csrValues[],
         const IndexType csrIA[],
         const IndexType numRows,
-        const bool diagonalFlag );
+        const IndexType numColumns,
+        const IndexType nnz );
+
+    /** Host implementation for CSRKernelTrait::hasSortedRows using OpenMP parallelization. */
+
+    static bool hasSortedRows(
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType nnz );
+
+    static IndexType getPosDiagonal(
+        IndexType pos[],
+        const IndexType numDiagonals,
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const bool isSorted );
+
+    /** Implementation for CSRKernelTrait::shiftDiagonal  */
+
+    template<typename ValueType>
+    static IndexType shiftDiagonal(
+        IndexType csrJA[],
+        ValueType csrValues[],
+        const IndexType numDiagonals,
+        const IndexType csrIA[] );
 
     /** Implementation for CSRKernelTrait::convertCSR2CSC  */
 
@@ -160,14 +175,26 @@ public:
         IndexType numColumns,
         IndexType numValues );
 
-    /** Implementation for CSRKernelTrait::scaleRows  */
+    /** Implementation for CSRKernelTrait::setRows  */
 
     template<typename ValueType>
-    static void scaleRows(
+    static void setRows(
         ValueType csrValues[],
         const IndexType csrIA[],
         const IndexType numRows,
-        const ValueType values[] );
+        const ValueType values[], 
+        common::BinaryOp op );
+
+    /** Implementation for CSRKernelTrait::setColumns  */
+
+    template<typename ValueType>
+    static void setColumns(
+        ValueType csrValues[],
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const IndexType numRows,
+        const ValueType values[], 
+        common::BinaryOp op );
 
 
     template<typename ValueType>
@@ -212,10 +239,10 @@ public:
         const ValueType csrValues[],
         const common::MatrixOp op );
 
-    /** Implementation for CSRKernelTrait::Mult::gemm  */
+    /** Implementation for CSRKernelTrait::Mult::gemmSD  */
 
     template<typename ValueType>
-    static void gemm(
+    static void gemmSD(
         ValueType result[],
         const ValueType alpha,
         const ValueType x[],
@@ -226,9 +253,26 @@ public:
         const IndexType p,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const ValueType csrValues[] );
+        const ValueType csrValues[], 
+        const common::MatrixOp op );
 
-    /** Implementation for CSRKernelTrait::Jacobi::jacobi(Async/Halo) */
+    /** Implementation for CSRKernelTrait::Mult::gemmDS  */
+
+    template<typename ValueType>
+    static void gemmDS(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const ValueType beta,
+        const IndexType m,
+        const IndexType n,
+        const IndexType p,
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const ValueType csrValues[], 
+        const common::MatrixOp op );
+
+    /** Implementation for CSRKernelTrait::jacobi */
 
     template<typename ValueType>
     static void jacobi(
@@ -241,27 +285,12 @@ public:
         const ValueType omega,
         const IndexType numRows );
 
+    /** Implementation for CSRKernelTrait::jacobiHalo  */
+
     template<typename ValueType>
     static void jacobiHalo(
         ValueType solution[],
-        const IndexType localIA[],
-        const ValueType localValues[],
-        const IndexType haloIA[],
-        const IndexType haloJA[],
-        const ValueType haloValues[],
-        const IndexType haloRowIndexes[],
-        const ValueType oldSolution[],
-        const ValueType omega,
-        const IndexType numNonEmptyRows );
-
-    /** Implementation for CSRKernelTrait::Jacobi::jacobiHaloWithDiag
-     *  @since 1.1.0
-     */
-
-    template<typename ValueType>
-    static void jacobiHaloWithDiag(
-        ValueType solution[],
-        const ValueType localDiagValues[],
+        const ValueType diagonal[],
         const IndexType haloIA[],
         const IndexType haloJA[],
         const ValueType haloValues[],
@@ -289,7 +318,17 @@ public:
         IndexType cSizes[],
         const IndexType numRows,
         const IndexType numColumns,
-        bool diagonalProperty,
+        const IndexType aIA[],
+        const IndexType aJA[],
+        const IndexType bIA[],
+        const IndexType bJA[] );
+
+    /** Implementation for CSRKernelTrait::Offsets::binaryOpSizes  */
+
+    static IndexType binaryOpSizes(
+        IndexType cSizes[],
+        const IndexType numRows,
+        const IndexType numColumns,
         const IndexType aIA[],
         const IndexType aJA[],
         const IndexType bIA[],
@@ -302,7 +341,6 @@ public:
         const IndexType m,
         const IndexType n,
         const IndexType k,
-        bool diagonalProperty,
         const IndexType aIA[],
         const IndexType aJA[],
         const IndexType bIA[],
@@ -317,7 +355,6 @@ public:
         const IndexType cIA[],
         const IndexType numRows,
         const IndexType numColumns,
-        bool diagonalProperty,
         const ValueType alpha,
         const IndexType aIA[],
         const IndexType aJA[],
@@ -336,7 +373,6 @@ public:
         const IndexType cIA[],
         const IndexType numRows,
         const IndexType numColumns,
-        bool diagonalProperty,
         const IndexType aIA[],
         const IndexType aJA[],
         const ValueType aValues[],
@@ -356,7 +392,6 @@ public:
         const IndexType n,
         const IndexType k,
         const ValueType alpha,
-        bool diagonalProperty,
         const IndexType aIA[],
         const IndexType aJA[],
         const ValueType aValues[],
@@ -367,7 +402,7 @@ public:
     /** Implementation for CSRKernelTrait::absMaxDiffVal */
 
     template<typename ValueType>
-    static ValueType absMaxDiffVal(
+    static RealType<ValueType> absMaxDiffVal(
         IndexType numRows,
         bool sortedRows,
         const IndexType csrIA1[],
@@ -386,8 +421,7 @@ public:
         const IndexType ja[],
         const ValueType values[],
         const IndexType numRows,
-        const ValueType eps,
-        const bool diagonalFlag );
+        const RealType<ValueType> eps );
 
     /** Implementation for CSRKernelTrait::compress */
 
@@ -400,8 +434,34 @@ public:
         const IndexType ja[],
         const ValueType values[],
         const IndexType numRows,
-        const ValueType eps,
-        const bool diagonalFlag );
+        const RealType<ValueType> eps );
+
+    template<typename ValueType>
+    static void getDiagonal(
+        ValueType diagonal[],
+        const IndexType numDiagonals,
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const ValueType csrValues[],
+        const bool isSorted );
+
+    template<typename ValueType>
+    static bool setDiagonalV(
+        ValueType csrValues[],
+        const ValueType diagonal[],
+        const IndexType numDiagonals,
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const bool isSorted );
+
+    template<typename ValueType>
+    static bool setDiagonal(
+        ValueType csrValues[],
+        const ValueType diagonal,
+        const IndexType numDiagonals,
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const bool isSorted );
 
 protected:
 
@@ -445,12 +505,12 @@ private:
     static IndexType scanParallel( PartitionId numThreads, IndexType array[], const IndexType numValues );
 
     template<typename ValueType>
-    static ValueType absMaxDiffRowSorted(
+    static RealType<ValueType> absMaxDiffRowSorted(
         const IndexType n1, const IndexType csrJA1[], const ValueType csrValues1[],
         const IndexType n2, const IndexType csrJA2[], const ValueType csrValues2[] );
 
     template<typename ValueType>
-    static ValueType absMaxDiffRowUnsorted(
+    static RealType<ValueType> absMaxDiffRowUnsorted(
         const IndexType n1, const IndexType csrJA1[], const ValueType csrValues1[],
         const IndexType n2, const IndexType csrJA2[], const ValueType csrValues2[] );
 };

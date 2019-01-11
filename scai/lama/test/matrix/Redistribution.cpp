@@ -2,29 +2,24 @@
  * @file lama/test/matrix/Redistribution.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Redistribution of storages for matrices
@@ -35,9 +30,8 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/dmemo/Halo.hpp>
-#include <scai/dmemo/HaloBuilder.hpp>
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/HaloExchangePlan.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 
 #include <scai/lama/storage/DenseStorage.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
@@ -117,15 +111,14 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
         // create matrix storage for local and halo part of same type as storage
         unique_ptr<MatrixStorage<ValueType> > localStorage ( storage.newMatrixStorage() );
         unique_ptr<MatrixStorage<ValueType> > haloStorage ( storage.newMatrixStorage() );
-        Halo halo;
+        HaloExchangePlan haloPlan;
         SCAI_LOG_INFO( logger, *comm << ", split halo : " << storage )
-        storage.splitHalo( *localStorage, *haloStorage, halo, *colDist, NULL );
+        storage.splitHalo( *localStorage, *haloStorage, haloPlan, *colDist, NULL );
         SCAI_LOG_DEBUG( logger, *comm << ": split done, local = " << *localStorage
-                        << ", halo = " << *haloStorage << ", halo exchg = " << halo );
+                        << ", halo = " << *haloStorage << ", halo plan = " << haloPlan );
         BOOST_CHECK_EQUAL( localStorage->getNumRows(), storage.getNumRows() );
         BOOST_CHECK_EQUAL( haloStorage->getNumRows(), storage.getNumRows() );
-        bool keepDiagonalFlag = false;  // does not matter here
-        storage.joinHalo( *localStorage, *haloStorage, halo, *colDist, keepDiagonalFlag );
+        storage.joinHalo( *localStorage, *haloStorage, haloPlan, *colDist );
         SCAI_LOG_DEBUG( logger, *comm << ": join done, result = " << storage );
         BOOST_REQUIRE_EQUAL( storage.getNumRows(), numRows );
         BOOST_REQUIRE_EQUAL( storage.getNumColumns(), numColumns );
@@ -210,8 +203,8 @@ BOOST_AUTO_TEST_CASE( redistributeTest )
         // Localize the matrix data according to the source distribution
         matrixStorage.localize( matrixStorage, *rowDist1 );
         SCAI_LOG_INFO( logger, matrixStorage << ": is local storage" );
-        Redistributor redistributor( rowDist2, rowDist1 );
-        matrixStorage.redistribute( matrixStorage, redistributor );
+        auto plan = redistributePlanByNewDistribution( rowDist2, rowDist1 );
+        matrixStorage.redistribute( matrixStorage, plan );
         SCAI_LOG_INFO( logger, matrixStorage << ": is redistributed storage" );
         matrixStorage.replicate( matrixStorage, *rowDist2 );
         SCAI_LOG_INFO( logger, matrixStorage << ": is global/replicated storage" );
@@ -245,7 +238,7 @@ BOOST_AUTO_TEST_CASE( exchangeHaloTest )
         // create local matrix storage
         matrixStorage.localize( matrixStorage, *rowDist );
         // build a vector of required indexes
-        Halo halo;
+        HaloExchangePlan haloPlan;
         std::vector<IndexType> requiredIndexes;// will keep ALL non-local indexes
 
         for ( IndexType i = 0; i < numRows; ++i )
@@ -260,11 +253,11 @@ BOOST_AUTO_TEST_CASE( exchangeHaloTest )
 
         {
             HArrayRef<IndexType> haloIndexes( requiredIndexes );  // does not copy values
-            HaloBuilder::build( *rowDist, haloIndexes, halo );
+            haloPlan = haloExchangePlan( *rowDist, haloIndexes );
         }
 
         unique_ptr<MatrixStorage<ValueType> > haloMatrix( matrixStorage.newMatrixStorage() );
-        haloMatrix->exchangeHalo( halo, matrixStorage, *comm );
+        haloMatrix->exchangeHalo( haloPlan, matrixStorage, *comm );
         SCAI_LOG_INFO( logger, *comm << ": halo matrix = " << *haloMatrix );
         BOOST_REQUIRE_EQUAL( haloMatrix->getNumRows(), static_cast<IndexType>( requiredIndexes.size() ) );
         BOOST_REQUIRE_EQUAL( haloMatrix->getNumColumns(), numColumns );

@@ -2,29 +2,24 @@
  * @file TestData1.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Contains test data of one matrix for different formats
@@ -281,23 +276,22 @@ static void getDIATestData(
                                    x  0  0  0  0  x  x  x  x  x
                                       0  1  0  2  x  x  x  x  x  x  */
 
-    const IndexType diag_offsets[] = { 0,
-                                       static_cast<IndexType>( -5 ),
+    const IndexType diag_offsets[] = { static_cast<IndexType>( -5 ),
                                        static_cast<IndexType>( -4 ),
                                        static_cast<IndexType>( -3 ),
                                        static_cast<IndexType>( -2 ),
                                        static_cast<IndexType>( -1 ),
-                                       1, 3
+                                       0, 1, 3
                                      };
 
     const ValueType x = 0;  // just a stupid value as these entries should never be used
 
-    const ValueType diag_values[]  = { 6, 0, 9, 3, x, x, x,
-                                       x, x, x, x, x, 0, 1,
+    const ValueType diag_values[]  = { x, x, x, x, x, 0, 1,
                                        x, x, x, x, 2, 0, 0,
                                        x, x, x, 2, 0, 0, 2,
                                        x, x, 0, 5, 0, 0, x,
                                        x, 7, 0, 0, 1, x, x,
+                                       6, 0, 9, 3, x, x, x,
                                        0, 0, 4, x, x, x, x,
                                        4, x, x, x, x, x, x
                                      };

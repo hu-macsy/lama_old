@@ -2,29 +2,24 @@
  * @file HArrayUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of class with utility routines.
@@ -83,6 +78,16 @@ public:
         const hmemo::HArray<SourceValueType>& source,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** 
+     *  Assign to a resized array, so either target array is filled up or truncated.
+     */
+    template<typename TargetValueType, typename SourceValueType>
+    static void assignResized(
+        hmemo::HArray<TargetValueType>& target,
+        const IndexType newSize,
+        const hmemo::HArray<SourceValueType>& source,
+        const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
     /**
      *  @brief Gathering (unstructured read) of values with heterogeneous arrays.
      *
@@ -138,6 +143,15 @@ public:
         const hmemo::HArray<SourceValueType>& source,
         const hmemo::HArray<IndexType>& indexes,
         const common::BinaryOp op,
+        const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /**
+     *  Gathering as function with result argument for more convenient usage.
+     */
+    template<typename ValueType>
+    static hmemo::HArray<ValueType> gatherF(
+        const hmemo::HArray<ValueType>& source,
+        const hmemo::HArray<IndexType>& indexes,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
@@ -330,6 +344,18 @@ public:
         const hmemo::HArray<SourceValueType>& source,
         const IndexType sourceOffset,
         const IndexType sourceStride,
+        const IndexType n,
+        const common::BinaryOp op = common::BinaryOp::COPY,
+        hmemo::ContextPtr context = hmemo::ContextPtr() );
+
+    /** Fill a regular section of an array with a certain value */
+
+    template<typename ValueType>
+    static void fillArraySection(
+        hmemo::HArray<ValueType>& value,
+        const IndexType offset,
+        const IndexType stride,
+        const ValueType val,
         const IndexType n,
         const common::BinaryOp op = common::BinaryOp::COPY,
         hmemo::ContextPtr context = hmemo::ContextPtr() );
@@ -671,8 +697,16 @@ public:
      */
 
     template<typename BucketType>
-    static void bucketSort(
+    static void bucketSortOffsets(
         hmemo::HArray<IndexType>& offsets,
+        hmemo::HArray<IndexType>& perm,
+        const hmemo::HArray<BucketType>& array,
+        const BucketType nb,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename BucketType>
+    static void bucketSortSizes(
+        hmemo::HArray<IndexType>& sizes,
         hmemo::HArray<IndexType>& perm,
         const hmemo::HArray<BucketType>& array,
         const BucketType nb,

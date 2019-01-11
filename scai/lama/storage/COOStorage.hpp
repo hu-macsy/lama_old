@@ -2,29 +2,24 @@
  * @file COOStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of a matrix storage class for a (non-distributed) sparse matrix
@@ -42,11 +37,8 @@
 #include <scai/lama/mepr/StorageWrapper.hpp>
 
 // internal scai libraries
-#include <scai/sparsekernel/CSRKernelTrait.hpp>
-#include <scai/sparsekernel/COOKernelTrait.hpp>
-#include <scai/utilskernel/LAMAKernel.hpp>
+
 #include <scai/utilskernel/HArrayUtils.hpp>
-#include <scai/utilskernel/UtilKernelTrait.hpp>
 
 #include <memory>
 
@@ -278,7 +270,7 @@ public:
         const hmemo::_HArray& values )
     {
         mepr::StorageWrapper<COOStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
-            setCSRDataImpl( this, numRows, numColumns, ia, ja, values, this->getContextPtr() );
+            setCSRDataImpl( this, numRows, numColumns, ia, ja, values );
     }
 
     /**
@@ -289,7 +281,6 @@ public:
      * @param[in] ia         row pointer of the input csr sparse matrix
      * @param[in] ja         column indexes of the input csr sparse matrix
      * @param[in] values     the data values of the input csr sparse matrix
-     * @param[in] loc        is the context where filling takes place
      */
     template<typename OtherValueType>
     void setCSRDataImpl(
@@ -297,8 +288,7 @@ public:
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::HArray<OtherValueType>& values,
-        const hmemo::ContextPtr loc );
+        const hmemo::HArray<OtherValueType>& values );
 
     /* ==================================================================== */
     /*  build CSR data                                                      */
@@ -466,12 +456,20 @@ public:
         const hmemo::HArray<ValueType>& y,
         const common::MatrixOp op ) const;
 
-    /** solution = xxx */
+    /** Implementation of MatrixStorage<ValueType>::jacobiIterate for COO */
 
     virtual void jacobiIterate(
         hmemo::HArray<ValueType>& solution,
         const hmemo::HArray<ValueType>& oldSolution,
         const hmemo::HArray<ValueType>& rhs,
+        const ValueType omega ) const;
+
+    /** Implementation of MatrixStorage<ValueType>::jacobiIterateHalo for COO */
+
+    virtual void jacobiIterateHalo(
+        hmemo::HArray<ValueType>& localSolution,
+        const hmemo::HArray<ValueType>& localDiagonal,
+        const hmemo::HArray<ValueType>& haloOldSolution,
         const ValueType omega ) const;
 
     /** @brief Override default implementation of MatrixStorage::matrixPlusMatrix 
@@ -501,15 +499,19 @@ public:
      *
      *  This solution is more efficient as temporary CSR data is completely avoided.
      */
-    virtual void globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns );
+    virtual void globalizeHaloIndexes( const dmemo::HaloExchangePlan& haloPlan, const IndexType globalNumColumns );
 
     /******************************************************************
      *  Scaling of elements in a matrix                                *
      ******************************************************************/
 
-    /** Template version used for virtual routine scale with known value type. */
+    /** Implementation of pure method MatrixStorage<ValueType>::scaleRows */
 
     void scaleRows( const hmemo::HArray<ValueType>& values );
+
+    /** Implementation of pure method MatrixStorage<ValueType>::scaleColumns */
+
+    void scaleColumns( const hmemo::HArray<ValueType>& values );
 
     /** Implementation of pure method.  */
 
@@ -563,7 +565,6 @@ public:
 
     virtual size_t getMemoryUsageImpl() const;
 
-    using _MatrixStorage::hasDiagonalProperty;
     using _MatrixStorage::getNumRows;
     using _MatrixStorage::getNumColumns;
     using _MatrixStorage::getValueType;
@@ -575,7 +576,6 @@ public:
 
 protected:
 
-    using MatrixStorage<ValueType>::mDiagonalProperty;
     using MatrixStorage<ValueType>::mRowIndexes;
     using MatrixStorage<ValueType>::mCompressThreshold;
 
@@ -586,6 +586,10 @@ protected:
     hmemo::HArray<ValueType> mValues; //!< non-zero values 
 
 private:
+
+    // check if COO data is sorted; sorts it if not.
+
+    void verifySorting();
 
     /** matrixTimesVector for synchronous and asynchronous execution */
 
@@ -605,11 +609,6 @@ private:
                                  const hmemo::HArray<ValueType>& x,
                                  const common::MatrixOp op,
                                  bool async ) const;
-
-    /** Function that checks the diagonal property of the COO matrix. If on
-     *  the first column index for each row is the row (diagonal element).
-     */
-    virtual bool checkDiagonalProperty() const;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 

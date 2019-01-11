@@ -2,29 +2,24 @@
  * @file OpenMPJDSUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of JDS utilities with OpenMP
@@ -160,8 +155,8 @@ IndexType OpenMPJDSUtils::getValuePos(
     const IndexType i,
     const IndexType j,
     const IndexType numRows,
-    const IndexType dlg[],
     const IndexType ilg[],
+    const IndexType dlg[],
     const IndexType perm[],
     const IndexType ja[] )
 {
@@ -206,7 +201,54 @@ IndexType OpenMPJDSUtils::getValuePos(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-IndexType OpenMPJDSUtils::getValuePosCol(
+IndexType OpenMPJDSUtils::getDiagonalPositions(
+    IndexType diagonalPositions[],
+    const IndexType numDiagonals,
+    const IndexType numRows,
+    const IndexType ilg[],
+    const IndexType dlg[],
+    const IndexType perm[],
+    const IndexType ja[] )
+{
+    #pragma omp parallel for
+    for ( IndexType i = 0; i < numDiagonals; i++ )
+    {
+        diagonalPositions[i] = invalidIndex;
+    }
+
+    IndexType numDiagonalsFound = 0;  
+
+    #pragma omp parallel for reduction( + : numDiagonalsFound )
+    for ( IndexType ii = 0; ii < numRows; ii++ )
+    {
+        IndexType i = perm[ii];    // original row
+
+        IndexType k = 0;
+
+        SCAI_LOG_TRACE( logger, "find diag entry for row " << i << ", has " << ilg[ii] << " entries" )
+
+        for ( IndexType jj = 0; jj < ilg[ii]; jj++ )
+        {
+            SCAI_LOG_TRACE( logger, "check entry " << jj << " of " << ilg[ii] << ", j = " << ja[ii+k] )
+
+            if ( ja[ii + k] == i )
+            {
+                SCAI_ASSERT_LT_ERROR( i, numDiagonals, "more diagonals than expected" )
+                diagonalPositions[i] = ii + k;
+                numDiagonalsFound++;
+                break;
+            }
+    
+            k += dlg[jj];
+        }
+    }
+
+    return numDiagonalsFound;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+IndexType OpenMPJDSUtils::getColumnPositions(
     IndexType row[],
     IndexType pos[],
     const IndexType j,
@@ -216,7 +258,7 @@ IndexType OpenMPJDSUtils::getValuePosCol(
     const IndexType perm[],
     const IndexType ja[] )
 {
-    SCAI_REGION( "OpenMP.JDSUtils.getValuePosCol" )
+    SCAI_REGION( "OpenMP.JDSUtils.getColumnPositions" )
 
     IndexType cnt  = 0;   // counts number of available row entries in column j
 
@@ -247,7 +289,7 @@ IndexType OpenMPJDSUtils::getValuePosCol(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-IndexType OpenMPJDSUtils::getValuePosRow(
+IndexType OpenMPJDSUtils::getRowPositions(
     IndexType pos[],
     const IndexType i,
     const IndexType numRows,
@@ -255,7 +297,7 @@ IndexType OpenMPJDSUtils::getValuePosRow(
     const IndexType dlg[],
     const IndexType perm[] )
 {
-    SCAI_REGION( "OpenMP.JDSUtils.getValuePosRow" )
+    SCAI_REGION( "OpenMP.JDSUtils.getRowPositions" )
 
     IndexType ii = invalidIndex;
 
@@ -288,15 +330,16 @@ IndexType OpenMPJDSUtils::getValuePosRow(
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void OpenMPJDSUtils::scaleRows(
+void OpenMPJDSUtils::setRows(
     ValueType jdsValues[],
     const IndexType numRows,
-    const IndexType perm[],
-    const IndexType ilg[],
-    const IndexType dlg[],
-    const ValueType rowValues[] )
+    const IndexType jdsPerm[],
+    const IndexType jdsILG[],
+    const IndexType jdsDLG[],
+    const ValueType rowValues[],
+    const common::BinaryOp op )
 {
-    SCAI_LOG_INFO( logger, "scaleRows with numRows = " << numRows )
+    SCAI_LOG_INFO( logger, "setRows with numRows = " << numRows )
 
     // Due to false sharing, use of OpenMP is not recommended here
 
@@ -304,71 +347,43 @@ void OpenMPJDSUtils::scaleRows(
     {
         IndexType offset = i;
 
-        ValueType rowScale = rowValues[perm[i]];
+        ValueType rowScale = rowValues[jdsPerm[i]];
 
-        for ( IndexType jj = 0; jj < ilg[i]; jj++ )
+        for ( IndexType jj = 0; jj < jdsILG[i]; jj++ )
         {
-            jdsValues[offset] *= rowScale;
-            offset += dlg[jj];
+            jdsValues[offset] = common::applyBinary( jdsValues[offset], op, rowScale );
+            offset += jdsDLG[jj];
         }
     }
 }
 
-/* ------------------------------------------------------------------------------------------------------------------ */
+/* --------------------------------------------------------------------------- */
 
-bool OpenMPJDSUtils::checkDiagonalProperty(
-    const IndexType numDiagonals,
+template<typename ValueType>
+void OpenMPJDSUtils::setColumns(
+    ValueType jdsValues[],
     const IndexType numRows,
-    const IndexType numColumns,
-    const IndexType perm[],
-    const IndexType ja[],
-    const IndexType dlg[] )
+    const IndexType[],
+    const IndexType jdsILG[],
+    const IndexType jdsDLG[],
+    const IndexType jdsJA[],
+    const ValueType colValues[],
+    const common::BinaryOp op )
 {
-    SCAI_LOG_INFO( logger,
-                   "checkDiagonalProperty with numDiagonals = " << numDiagonals << ", numColumns = " << numColumns << " and numRows = " << numRows )
+    SCAI_LOG_INFO( logger, "setColumns with numRows = " << numRows )
 
-    if ( numRows > 0 )
+    // Due to false sharing, use of OpenMP is not recommended here
+
+    for ( IndexType i = 0; i < numRows; i++ )
     {
-        bool diagonalProperty = true;
+        IndexType offset = i;
 
-        if ( dlg[0] < std::min( numDiagonals, numColumns ) )
+        for ( IndexType jj = 0; jj < jdsILG[i]; jj++ )
         {
-            // not even one entry for each row / column
-            diagonalProperty = false;
-            return diagonalProperty;
+            jdsValues[offset] = common::applyBinary( jdsValues[offset], op, colValues[jdsJA[offset]] );
+            offset += jdsDLG[jj];
         }
-
-        #pragma omp parallel for 
-
-        for ( IndexType ii = 0; ii < numRows; ++ii )
-        {
-            if ( !diagonalProperty )
-            {
-                continue;
-            }
-
-            const IndexType i = perm[ii];
-
-            if ( i >= numColumns )
-            {
-                continue;
-            }
-
-            if ( ii >= dlg[0] )
-            {
-                // ilg[ii] = 0, empty row
-                diagonalProperty = false;
-            }
-            else if ( ja[ii] != i )
-            {
-                diagonalProperty = false;
-            }
-        }
-
-        return diagonalProperty;
     }
-
-    return false;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -426,20 +441,20 @@ IndexType OpenMPJDSUtils::ilg2dlg(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename JDSValueType, typename CSRValueType>
+template<typename ValueType>
 void OpenMPJDSUtils::getCSRValues(
     IndexType csrJA[],
-    CSRValueType csrValues[],
+    ValueType csrValues[],
     const IndexType csrIA[],
     const IndexType numRows,
     const IndexType jdsInversePerm[],
     const IndexType jdsILG[],
     const IndexType jdsDLG[],
     const IndexType jdsJA[],
-    const JDSValueType jdsValues[] )
+    const ValueType jdsValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "get CSRValues<" << TypeTraits<JDSValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
+                   "get CSRValues<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.JDS.getCSR" )
@@ -455,7 +470,7 @@ void OpenMPJDSUtils::getCSRValues(
             for ( IndexType jj = 0; jj < numValuesInRow; jj++ )
             {
                 csrJA[offset + jj] = jdsJA[jdsOffset];
-                csrValues[offset + jj] = static_cast<CSRValueType>( jdsValues[jdsOffset] );
+                csrValues[offset + jj] = jdsValues[jdsOffset];
                 jdsOffset += jdsDLG[jj];
             }
         }
@@ -464,10 +479,10 @@ void OpenMPJDSUtils::getCSRValues(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename JDSValueType, typename CSRValueType>
+template<typename ValueType>
 void OpenMPJDSUtils::setCSRValues(
     IndexType jdsJA[],
-    JDSValueType jdsValues[],
+    ValueType jdsValues[],
     const IndexType numRows,
     const IndexType jdsPerm[],
     const IndexType jdsILG[],
@@ -475,11 +490,13 @@ void OpenMPJDSUtils::setCSRValues(
     const IndexType jdsDLG[],
     const IndexType csrIA[],
     const IndexType csrJA[],
-    const CSRValueType csrValues[] )
+    const ValueType csrValues[] )
 {
     SCAI_LOG_INFO( logger,
-                   "set CSRValues<" << TypeTraits<JDSValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
+                   "set CSRValues<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
+
     // parallelization possible as offset array csrIA is available
+
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.JDS.setCSR" )
@@ -493,7 +510,7 @@ void OpenMPJDSUtils::setCSRValues(
             for ( IndexType jdsJJ = 0, csrJJ = csrIA[i]; jdsJJ < jdsILG[ii]; jdsJJ++, csrJJ++ )
             {
                 jdsJA[offset] = csrJA[csrJJ];
-                jdsValues[offset] = static_cast<JDSValueType>( csrValues[csrJJ] );
+                jdsValues[offset] = csrValues[csrJJ];
                 offset += jdsDLG[jdsJJ]; // index for next value of the row
             }
         }
@@ -613,7 +630,7 @@ void OpenMPJDSUtils::jacobi(
     const IndexType numRows,
     const IndexType jdsPerm[],
     const IndexType jdsILG[],
-    const IndexType SCAI_UNUSED( jdsNumDiagonals ),
+    const IndexType jdsNumDiagonals,
     const IndexType jdsDLG[],
     const IndexType jdsJA[],
     const ValueType jdsValues[],
@@ -623,11 +640,18 @@ void OpenMPJDSUtils::jacobi(
 {
     SCAI_LOG_INFO( logger,
                    "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #rows = " << numRows << ", omega = " << omega )
+
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken != NULL )
     {
-        SCAI_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
+        // run this method with exactly this arguments by an own thread
+
+        syncToken->run( std::bind( jacobi<ValueType>,
+                                   solution, numRows, 
+                                   jdsPerm, jdsILG, jdsNumDiagonals, jdsDLG,
+                                   jdsJA, jdsValues, oldSolution, rhs, omega ) );
+        return;
     }
 
     #pragma omp parallel
@@ -639,12 +663,20 @@ void OpenMPJDSUtils::jacobi(
         {
             const IndexType i = jdsPerm[ii]; // original row index
             ValueType temp = rhs[i];
-            IndexType pos = jdsDLG[0] + ii; // index for jdsValues
-            ValueType diag = jdsValues[ii]; // diagonal element
+            IndexType pos = ii; // index for jdsValues
+            ValueType diag = 0;
 
-            for ( IndexType j = 1; j < jdsILG[ii]; j++ )
+            for ( IndexType j = 0; j < jdsILG[ii]; j++ )
             {
-                temp -= jdsValues[pos] * oldSolution[jdsJA[pos]];
+                if ( jdsJA[pos] == i )
+                {
+                    diag = jdsValues[pos];
+                }
+                else
+                {
+                    temp -= jdsValues[pos] * oldSolution[jdsJA[pos]];
+                }
+
                 pos += jdsDLG[j];
             }
 
@@ -736,10 +768,10 @@ void OpenMPJDSUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     common::ContextType ctx = common::ContextType::Host;
     SCAI_LOG_DEBUG( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
     KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getValuePos>( getValuePos, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::getValuePosRow>( getValuePosRow, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getColumnPositions>( getColumnPositions, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getRowPositions>( getRowPositions, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getDiagonalPositions>( getDiagonalPositions, ctx, flag );
 }
 
 template<typename ValueType>
@@ -753,21 +785,11 @@ void OpenMPJDSUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     KernelRegistry::set<JDSKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getRow<ValueType> >( getRow, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::scaleRows<ValueType> >( scaleRows, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::setRows<ValueType> >( setRows, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::setColumns<ValueType> >( setColumns, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::setRow<ValueType> >( setRow, ctx, flag );
-}
-
-template<typename ValueType, typename OtherValueType>
-void OpenMPJDSUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
-{
-    using kregistry::KernelRegistry;
-    common::ContextType ctx = common::ContextType::Host;
-
-    SCAI_LOG_DEBUG( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag
-                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
-
-    KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType> >( setCSRValues, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType> >( getCSRValues, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -781,7 +803,6 @@ OpenMPJDSUtils::OpenMPJDSUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 OpenMPJDSUtils::~OpenMPJDSUtils()
@@ -791,7 +812,6 @@ OpenMPJDSUtils::~OpenMPJDSUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 /* --------------------------------------------------------------------------- */

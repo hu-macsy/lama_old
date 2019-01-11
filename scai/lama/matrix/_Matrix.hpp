@@ -2,29 +2,24 @@
  * @file _Matrix.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Abstract base class for all matrices supported by LAMA.
@@ -212,17 +207,29 @@ public:
      * This method sets a matrix by reading its values from one or multiple files.
      *
      * @param[in] fileName      the filename to read from
-     * @param[in] rowDist       optional, if set it is the distribution of the matrix
+     * @param[in] rowDist       distribution of the matrix
      *
      *   \code
      *      CSRSparseMatrix<double> matrix;
-     *      matrix.readFromFile( "matrix.mtx" )                    ! matrix only on processor 0
-     *      matrix.readFromFile( "matrix_%r.mtx" )                 ! general block distributed matrix, each processor reads it own file
      *      matrix.readFromFile( "matrix.mtx", rowDist )           ! each processor gets its local part of the matrix in one file
      *      matrix.readFromFile( "matrix_%r.mtx", rowDist )        ! read a partitioned matrix with the given distribution
      *   \endcode
      */
-    void readFromFile( const std::string& fileName, dmemo::DistributionPtr rowDist = dmemo::DistributionPtr() );
+    void readFromFile( const std::string& fileName, dmemo::DistributionPtr rowDist );
+
+    /**
+     * This method sets a matrix by reading its values from one or multiple files.
+     *
+     * @param[in] fileName      the filename to read from
+     * @param[in] comm          specifies the involved processes
+     *
+     *   \code
+     *      CSRSparseMatrix<double> matrix;
+     *      matrix.readFromFile( "matrix.mtx" )       ! read matrix only on processor 0, gets a SingleDistribution
+     *      matrix.readFromFile( "matrix_%r.mtx" )    ! general block distributed matrix, each processor reads it own file
+     *   \endcode
+     */
+    void readFromFile( const std::string& fileName, dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr() );
 
     /**
      *  This method sets a matrix a reading its values from one or multiple files and also the distribution from a file
@@ -239,15 +246,6 @@ public:
      *   \endcode
      */
     void readFromFile( const std::string& matrixFileName, const std::string& distributionFileName );
-
-    /** This method resorts column indexes in such a way that the diagonal element is always the
-     *  first one in a row.
-     *
-     *  This method throws an exception if row and column distribution are not equal. Furhtermore
-     *  it throws an exception, if a diagonal element is zero, i.e. there is no entry for the diagonal
-     *  element in a sparse format.
-     */
-    void setDiagonalProperty();
 
     /** @brief Assignment of a matrix to this matrix
      *
@@ -287,6 +285,14 @@ public:
      */
     virtual void assignDistribute( const _MatrixStorage& storage, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist ) = 0;
 
+    /** @brief assignmnet of a matrix with redistribution 
+     *
+     *  The global size of the new row and column distribution must fit the existing sizes of the input matrix.
+     *
+     *  @param[in] other     the matrix that will be assigned and redistributed
+     *  @param[in] rowDist   the new row distribution
+     *  @param[in] colDist   the new column distribution
+     */
     virtual void assignDistribute( const _Matrix& other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist ) = 0;
 
     virtual void assignLocal( const _MatrixStorage& storage, dmemo::DistributionPtr rowDist ) = 0;
@@ -333,12 +339,20 @@ public:
      *  This call is more efficient than redistribute( redistributor.getTargetDistributionPtr(), colDistribution )
      *  as the communication schedule is already available and can be reused.
      */
-    virtual void redistribute( const dmemo::Redistributor& redistributor, dmemo::DistributionPtr colDistributionPtr ) = 0;
+    virtual void redistribute( const dmemo::RedistributePlan& redistributor, dmemo::DistributionPtr colDistributionPtr ) = 0;
 
     /**
      *  @brief Redistribute this matrix with a redistribution, columns are eiter replicated or have same dist as rows
      */
-    virtual void redistribute( const dmemo::Redistributor& redistributor );
+    virtual void redistribute( const dmemo::RedistributePlan& redistributor );
+
+    /**
+     *  @brief Resize a given matrix.
+     *
+     *  This method is very similiar to redistribute but the new distributions might have a different global size.
+     *  Therefore the matrix might be either truncated or filled up with zero in each of its dimension.
+     */
+    virtual void resize( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist ) = 0;
 
     /** @brief This method replaces all elements with its conjugate value. */
 
@@ -363,8 +377,6 @@ public:
     /** @brief Gets the total number of non-zero values in the matrix.
      *
      *  An element is considered to be non-zero if its absolute value
-     *  is greater equal than mEpsilon. Zero diagonal elements are also
-     *  counted if this->hasDiagonalProperty() is given.
      *
      *  This routine does not count zero elements even if they are stored
      *  (e.g. for dense or dia storage data).
@@ -534,7 +546,7 @@ public:
      * @param[in] rowDistribution   new distribution of the rows
      * @param[in] colDistribution   new distribution of the columns
      */
-    virtual _Matrix* copy( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution ) const;
+    virtual _Matrix* copyRedistributed( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution ) const;
 
     /**
      * @brief Queries the keytype to create matrix from factory with same valuetype and storagetype
@@ -555,25 +567,6 @@ public:
      * @brief Query the size of one matrix element
      */
     virtual size_t getValueTypeSize() const = 0;
-
-    /** Returns the diagonalProperty of the local storage.
-     *
-     * @return if the diagonal property is full filled.
-     */
-    virtual bool hasDiagonalProperty() const = 0;
-
-    /**
-     * @brief Rechecks the storages for their diagonal property.
-     *
-     * Usually each matrix has a flag that indicates if the diagonal property is given.
-     * This makes the query hasDiagonalProperty very efficient. Therefore matrices
-     * keep track of this flag for all their operations and reset it if necessary.
-     *
-     * This routine is only available to have a workaround if matrix or storage data
-     * has been modified by the user outside of the class (NOT RECOMMENDED).
-     */
-
-    virtual void resetDiagonalProperty() = 0;
 
     /**
      * @brief Returns the global memory that is allocated to hold this matrix.
@@ -714,15 +707,15 @@ protected:
      */
     _Matrix& operator=( _Matrix&& other ) = delete;
 
-    void readFromSingleFile( const std::string& fileName );
+    void readFromSingleFile( const std::string& fileName, 
+                             dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr()  );
 
     void readFromSingleFile( const std::string& fileName, dmemo::DistributionPtr distribution );
 
-    void readFromPartitionedFile( const std::string& fileName );
+    void readFromPartitionedFile( const std::string& fileName, 
+                                  dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr() );
 
     void resetRowDistribution( dmemo::DistributionPtr distribution );
-
-    void resetRowDistributionByFirstColumn();
 
     void checkSettings() const; // check valid member variables
 

@@ -14,41 +14,94 @@ values (plus the main diagonal zeroes, if needed) (ia) and one for their associa
 
 The ELL format is used for matrices with about equivalent numbers of non-zero-values in each row.
 
+In contrary to the CSR format the ELL format uses the array ``ia`` with the sizes of each row. 
+The offsets become redundant as the position of an entry can be directly determined.
+
+.. code-block:: c++
+
+   #pragma omp parallel for
+   for ( IndexType i = 0; i < numRows; ++i )
+   {
+       // code that operates on row i of the storage
+
+       for ( IndexType k = 0; k < ia[i]; ++k )
+       {
+           ... csrJA[k * numRows + i] for column pos, csrValues[k * numRows + i] for value
+       }
+   }
+
 Example
 -------
 
 Matrix:
 
-.. image:: _images/Storage.png
-    :align: center
-    :width: 200px
-    
-With diagonal element shifting
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-------
 
-The ELL format with diagonal element shifting for the example matrix looks like this:
+.. math::
 
-.. image:: _images/ELLStorageW.png
-    :align: center
-    :width: 200px
-    
-.. image:: _images/ELLStorageWStructure.png
-    :align: center
-    :width: 800px
-    
-Without diagonal element shifting
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    
-The ELL format without diagonal element shifting looks like this:
+  A = \left(\begin{matrix} 6 & 0  & 0 & 4 \\
+    7 & 0 & 0 & 0 \\
+    0 & 0 & -9 & 4 \\
+    2 & 5 & 0 & 3 \\
+    2 & 0 & 0 & 1 \\
+    0 & 0 & 0 & 0 \\
+    0 & 1 & 0 & 2 \end{matrix}\right) 
 
-.. image:: _images/ELLStorageWO.png
-    :align: center
-    :width: 200px
-    
-.. image:: _images/ELLStorageWOStructure.png
-    :align: center
-    :width: 800px  
+The ELL representation of the sparse matrix is:
 
+.. math::
+
+  values_{A} = \left(\begin{matrix} 6 & 4 & - \\
+    7 & - & - \\
+    -9 & 4 & - \\
+    2 & 5 & 3 \\
+    2 & 1 & - \\
+    - & - & - \\
+    1 & 2 & - \end{matrix}\right) 
+  ja_{A} = \left(\begin{matrix} 0 & 3 & - \\
+    0 & - & - \\
+    2 & 3  & - \\
+    0 & 1 & 3 \\
+    0 & 3 & - \\
+    - & - & - \\
+    1 & 3 & - \end{matrix}\right) 
+  ia_{A} = \left(\begin{matrix} 2 \\
+    1  \\
+    2 \\
+    3 \\
+    2 \\
+    0 \\
+    2 \end{matrix}\right) 
+
+Here are the corresponding arrays for the representation:
+
+.. math::
+    
+    \begin{align}
+    numRows &= 7 \\
+    numColums &= 4 \\
+    numValuesPerRow &= 3 \\
+    ia &= [\begin{matrix} 2 & 1 & 2 & 3 & 2 & 0 & 2 \end{matrix} ] \\
+    ja &= \left[\begin{matrix} 
+                 0 & 0 & 2 & 0 & 0 & - & 1 & 
+                 3 & - & 3 & 1 & 3 & - & 3 &
+                 - & - & - & 3 & - & - & -   \end{matrix} \right] \\
+    values &= \left[\begin{matrix} 
+                 6 & 7 & -9 & 2 & 2 & - & 1 & 
+                 4 & - & 4 & 5 & 1 & - & 2 &
+                 - & - & - & 3 & - & - & -   \end{matrix} \right]
+    \end{align}
+
+Remarks
+-------
+
+ * LAMA uses always zero-based indexing within the array ``ja`` for the column indexes.
+ * The arrays ``ja`` and ``values`` are always filled with zero values that allows for 
+   faster matrix-vector multiplication on devices that work in an SIMD mode.
+ * An explicit offset array is never needed as the offset can be computed by a closed formula.
+ * The arrays ``ja`` and ``values`` are stored column-wise. 
+
+    
 ELLKernelTrait
 --------------
 

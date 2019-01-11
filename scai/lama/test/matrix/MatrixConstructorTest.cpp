@@ -2,29 +2,24 @@
  * @file test/matrix/MatrixConstructorTest.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Contains constructor tests for all matrices
@@ -59,6 +54,8 @@ using namespace lama;
 
 using scai::testsupport::uniquePath;
 using scai::testsupport::GlobalTempDir;
+
+using boost::test_tools::per_element;
 
 /* ------------------------------------------------------------------------- */
 
@@ -452,8 +449,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeConstructorTest, MatrixType, MatrixTypes
 {
     typedef typename MatrixType::StorageType StorageType;
 
-    const IndexType numRows = 4;
-    const IndexType numCols = 7;
+    const IndexType numRows = 5;
+    const IndexType numCols = 8;
 
     float fillRate = 0.2;
 
@@ -462,6 +459,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeConstructorTest, MatrixType, MatrixTypes
     utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 10 );
 
     auto globalStorage = convert<StorageType>( DenseStorage<ValueType>( numRows, numCols, std::move( denseData ) ) );
+
+    DenseStorage<ValueType> expStorage;
+    expStorage.assignTranspose( globalStorage );
 
     dmemo::TestDistributions rowDists( numRows );
     dmemo::TestDistributions colDists( numCols );
@@ -480,19 +480,24 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeConstructorTest, MatrixType, MatrixTypes
                 continue; // transpose not supported for replicated matrices with distributed columns
             }
 
-            MatrixType matrix1( globalStorage );
-            matrix1.redistribute( rowDist, colDist );
+            auto matrix1 = distribute<MatrixType>( globalStorage, rowDist, colDist );
 
-            SCAI_LOG_INFO( logger, "transposeConstructorTest with matrix1 = " << matrix1 )
+            SCAI_LOG_DEBUG( logger, "transposeConstructorTest " << irow << " x " << icol << " with matrix1 = " << matrix1 )
 
-            MatrixType matrix2;
-            matrix2.assignTranspose( matrix1 );
+            auto matrix2 = eval<MatrixType>( transpose( matrix1 ) );
 
             const StorageType& localStorage1 = matrix1.getLocalStorage();
             const StorageType& localStorage2 = matrix2.getLocalStorage();
 
             BOOST_REQUIRE_EQUAL( localStorage1.getNumRows(), localStorage2.getNumColumns() );
             BOOST_REQUIRE_EQUAL( localStorage1.getNumColumns(), localStorage2.getNumRows() );
+
+            auto result = distribute<DenseMatrix<ValueType>>( matrix2, 
+                                  std::make_shared<dmemo::NoDistribution>( numCols ),
+                                  std::make_shared<dmemo::NoDistribution>( numRows ) );
+ 
+            BOOST_TEST( hostReadAccess( expStorage.getValues() ) == 
+                        hostReadAccess( result.getLocalStorage().getValues() ), per_element() );
         }
     }
 }
@@ -602,8 +607,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expConstructorTest, MatrixType, MatrixTypes )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ExpMMConstructorTest, MatrixType, MatrixTypes )
+// BOOST_AUTO_TEST_CASE_TEMPLATE( ExpMMConstructorTest, MatrixType, MatrixTypes )
+
+BOOST_AUTO_TEST_CASE( ExpMMConstructorTest )
 {
+    typedef CSRSparseMatrix<ValueType> MatrixType;
+
     typedef typename MatrixType::StorageType StorageType;
 
     const IndexType n = 13;
@@ -635,6 +644,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpMMConstructorTest, MatrixType, MatrixTypes )
         unity.setIdentity( n );
 
         matrix1.redistribute( dist, repColDist );     // only row distribution
+
+        SCAI_LOG_INFO( logger, "build new matrix from " << matrix1 << " * " << unity )
 
         auto matrix2 = eval<MatrixType>( matrix1 * unity );
 
@@ -728,6 +739,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( diagConstructorTest, MatrixType, MatrixTypes )
 
         auto diagonalVector = distribute<DenseVector<ValueType>>( diagonalArray, dist );
 
+        SCAI_LOG_DEBUG( logger, "diagonal vector = " << diagonalVector )
+
         auto matrix = lama::diagonal<MatrixType>( diagonalVector );
 
         SCAI_LOG_DEBUG( logger, "diagonal matrix = " << matrix << ", check for correctness" )
@@ -744,7 +757,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( diagConstructorTest, MatrixType, MatrixTypes )
         hmemo::HArray<ValueType> diagonalM;
         repMatrix.getLocalStorage().getDiagonal( diagonalM );
 
-        BOOST_TEST( hostReadAccess( diagonalArray ) == hostReadAccess( diagonalM ), boost::test_tools::per_element() );
+        BOOST_TEST( hostReadAccess( diagonalArray ) == hostReadAccess( diagonalM ), per_element() );
 
         // set the matrix diagonal to zero in the matrix and it must be a full zero matrix
 

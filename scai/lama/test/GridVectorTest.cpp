@@ -2,29 +2,24 @@
  * @file GridVectorTest.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Contains specific tests for class GridVector 
@@ -100,10 +95,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ioTest, ValueType, scai_numeric_test_types )
     const auto comm = scai::dmemo::Communicator::getCommunicatorPtr();
     const auto fileName = uniquePathSharedAmongNodes(GlobalTempDir::getPath(), *comm, "tmpGrid") + ".mat";
 
-    GridVector<DefaultReal> gv1( common::Grid4D( n1, n2, n3, n4 ) );
+    GridVector<ValueType> gv1( common::Grid4D( n1, n2, n3, n4 ) );
 
     {
-        GridWriteAccess<DefaultReal> wGV1( gv1 );
+        GridWriteAccess<ValueType> wGV1( gv1 );
 
         for ( IndexType i1 = 0; i1 < n1; ++i1 )
         {
@@ -114,22 +109,28 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ioTest, ValueType, scai_numeric_test_types )
                     for ( IndexType i4 = 0; i4 < n4; ++i4 )
                     { 
                         wGV1( i1, i2, i3, i4 ) = 
-                            static_cast<DefaultReal>( 1000 * ( i1 + 1 ) + 100 * ( i2 + 1 ) + 10 * ( i3 + 1 ) + i4 + 1 );
+                            static_cast<ValueType>( 1000 * ( i1 + 1 ) + 100 * ( i2 + 1 ) + 10 * ( i3 + 1 ) + i4 + 1 );
                     }
                 }
             }
         }
     }
 
+    // write the grid vector to a file, might be done by first processor only
+
     gv1.writeToFile( fileName );
 
-    GridVector<DefaultReal> gv2( fileName );
+    // read the grid vector from a file
+
+    GridVector<ValueType> gv2( fileName );
+
+    SCAI_LOG_INFO( logger, "gv2( " << fileName << " ) = " << gv2 )
 
     BOOST_CHECK_EQUAL( gv1.globalGrid(), gv2.globalGrid() );
 
     {
-        GridReadAccess<DefaultReal> rGV1( gv1 );
-        GridReadAccess<DefaultReal> rGV2( gv2 );
+        GridReadAccess<ValueType> rGV1( gv1 );
+        GridReadAccess<ValueType> rGV2( gv2 );
 
         for ( IndexType i = 0; i < gv1.size(); ++i )
         {

@@ -2,29 +2,24 @@
  * @file _Vector.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of an abstract class for distributed vectors of any kind and any type
@@ -66,7 +61,7 @@ namespace scai
 
 namespace dmemo
 {
-class Redistributor;    // forward declaration
+class RedistributePlan;    // forward declaration
 }
 
 namespace lama
@@ -316,7 +311,9 @@ public:
      *      vector.readFromFile( "vector_%r.mtx", rowDist )        ! read a partitioned vector with the given distribution
      *   \endcode
      */
-    void readFromFile( const std::string& fileName, dmemo::DistributionPtr distribution = dmemo::DistributionPtr() );
+    void readFromFile( const std::string& fileName, dmemo::DistributionPtr distribution );
+
+    void readFromFile( const std::string& fileName, dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr() );
 
     /**
      *  This method sets a vector a reading its values from one or multiple files and also the distribution from a file
@@ -573,7 +570,15 @@ public:
      *        must hold before the call, this->getDistribution() == redistributor.getTargetDistribution()
      *        is valid after the call.
      */
-    virtual void redistribute( const dmemo::Redistributor& redistributor ) = 0;
+    virtual void redistribute( const dmemo::RedistributePlan& redistributor ) = 0;
+
+    /**
+     * @brief Resize this vector with a new passed distribution.
+     *
+     * In contrary to redistribute the vector might be truncated or filled up with the zero element.
+     *
+     */
+    virtual void resize( dmemo::DistributionPtr distribution ) = 0;
 
     /** 
      * @brief Replicate this vector, i.e. redistribute with NoDistribution( size() )
@@ -639,7 +644,14 @@ private:
         const common::ScalarType dataType,
         const FileIO::FileMode fileMode ) const;
 
-    void readFromSingleFile( const std::string& fileName );
+    /** Read a vector from a single file, only first processor reads it. The distribution of the
+     *  vector is a SingleDistribution.
+     *
+     *  @param[in] fileName is the name of the input file containing the full vector data
+     *  @param[in] comm     specifies the tartet communicator for the single distribution
+     */
+    void readFromSingleFile( const std::string& fileName, 
+                             dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr() );
 
     /** Read only the local part from a file, no communication here.
      *
@@ -655,11 +667,32 @@ private:
      */
     virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = invalidIndex ) = 0;
 
-    /** In this version each processor reads from input file its local part. */
-
+    /** Read a vector with a certain distribution from a single file.
+     *
+     *  @param[in] fileName is the name of the input file containing the full vector data
+     *  @param[in] dist     will be the final distribution of the vector
+     *
+     *  Note: As the size of the vector in the file must match the global size of the vector, 
+     *        it might be necessary to read in the size of the vector from the file before.
+     *
+     *  If the format of the input file supports parallel reading, i.e. multiple processors
+     *  read individual parts of the vector, this method should take advantage of it. As fallback
+     *  the master process reads the whole file and sends afterwards the data to the owners.
+     */     
     void readFromSingleFile( const std::string& fileName, dmemo::DistributionPtr dist );
 
+    /** Read a vector with a certain distribution from multiple files. Each processor reads
+     *  its corresponding part (specified by its rank) from one file. The file read by a processor
+     *  must contain exactly the owned data. 
+     */
     void readFromPartitionedFile( const std::string& myPartitionFileName, dmemo::DistributionPtr dist );
+
+    /** Read a block 'partitioned' vector from multiple files. Each processor reads
+     *  its corresponding part (specified by its rank) from one file. The vector gets
+     *  a corresponding general block distribution.
+     */
+    void readFromPartitionedFile( const std::string& myPartitionFileName, 
+                                  dmemo::CommunicatorPtr comm = dmemo::CommunicatorPtr() );
 };
 
 /* ========================================================================= */

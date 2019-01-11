@@ -515,6 +515,31 @@ For initializing a Vector, you can assign one value to the whole vector by the a
     x = 1.0;
     y = 2.0;
 
+FFT
+---
+
+The following example shows how to call the Fast Fourier Transform for a vector (in-place):
+
+.. code-block:: c++
+
+   #include<scai/lama/fft.hpp>
+
+   auto x = read<DenseVector<ComplexDouble>>( "input.mtx" );
+
+   // Note: size of x must be a power of 2
+
+   fft( x );    // apply fast fourier transform
+   ifft( x );   // apply inverse fast fourier transform
+
+   x.writeToFile( "output.mtx" );
+
+Here are some remarks about calling fft or ifft for a vector:
+
+ * The size of the vector must be a power of 2
+ * The distribution does not change but it might be redistributed intermeadiately
+ * The value type of the vector must be a complex type.
+
+
 Utility Functions
 -----------------
 

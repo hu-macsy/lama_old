@@ -2,29 +2,24 @@
  * @file Distribution.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of methods for base class Distribution.
@@ -37,6 +32,7 @@
 
 // local library
 #include <scai/dmemo/Distributed.hpp>
+#include <scai/dmemo/NoCommunicator.hpp>
 
 // internal scai libraries
 #include <scai/hmemo.hpp>
@@ -64,16 +60,11 @@ SCAI_LOG_DEF_LOGGER( Distribution::logger, "Distribution" )
 
 /* ------  Constructor  ------------------------------------------------- */
 
-Distribution::Distribution( const IndexType globalSize )
-    : mGlobalSize( globalSize ), mCommunicator( Communicator::getCommunicatorPtr( Communicator::NO ) )
-{
-    SCAI_LOG_INFO( logger, "Distribution(" << mGlobalSize << ") onto NoCommunicator" )
-}
+Distribution::Distribution( const IndexType globalSize, const CommunicatorPtr communicator ) : 
+ 
+    mGlobalSize( globalSize ), 
+    mCommunicator( communicator )
 
-/* ------  Constructor  ------------------------------------------------- */
-
-Distribution::Distribution( const IndexType globalSize, const CommunicatorPtr communicator )
-    : mGlobalSize( globalSize ), mCommunicator( communicator )
 {
     if ( !mCommunicator )
     {
@@ -163,20 +154,9 @@ CommunicatorPtr Distribution::getCommunicatorPtr() const
 
 /* ---------------------------------------------------------------------- */
 
-PartitionId Distribution::getNumPartitions() const
-{
-    SCAI_ASSERT_DEBUG( mCommunicator, "Distribution has NULL communicator" )
-
-    return mCommunicator->getSize();
-}
-
-/* ---------------------------------------------------------------------- */
-
 IndexType Distribution::getMaxLocalSize() const
 {
-    SCAI_ASSERT_DEBUG( mCommunicator, "Distribution has NULL communicator" )
-
-    return mCommunicator->max( getLocalSize() );
+    return getCommunicator().max( getLocalSize() );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -202,30 +182,32 @@ void Distribution::computeOwners( HArray<PartitionId>& owners, const HArray<Inde
     ReadAccess<IndexType> rIndexes( indexes, ctx );
     WriteOnlyAccess<PartitionId> wOwners( owners, ctx, n );
 
-    mCommunicator->computeOwners( wOwners, *this, rIndexes, n );
+    getCommunicator().computeOwners( wOwners, *this, rIndexes, n );
 }
 
 /* ---------------------------------------------------------------------- */
 
 PartitionId  Distribution::findOwner( const IndexType globalIndex ) const
 {
+    const Communicator& comm = getCommunicator();
+
     // sum reduction required for owner as other processors do not know it
 
     IndexType owner = 0;
 
-    IndexType localIndex = global2local( globalIndex );
+    IndexType localIndex = global2Local( globalIndex );
 
     if ( localIndex != invalidIndex )
     {
         SCAI_LOG_INFO( logger,
                        *this << ": owner of " << globalIndex << ", local index = " << localIndex )
 
-        owner = mCommunicator->getRank() + 1;
+        owner = comm.getRank() + 1;
     }
 
-    owner = mCommunicator->sum( owner ) - 1;
+    owner = comm.sum( owner ) - 1;
 
-    SCAI_LOG_INFO( logger, *mCommunicator << ": owner of " << globalIndex << " = " << owner )
+    SCAI_LOG_INFO( logger, comm << ": owner of " << globalIndex << " = " << owner )
 
     return owner;
 }
@@ -236,7 +218,7 @@ void Distribution::allOwners( HArray<PartitionId>& owners, PartitionId root ) co
 {
     HArray<IndexType> indexes;
 
-    if ( getCommunicator().getRank()  == root )
+    if ( getCommunicator().getRank() == root )
     {
         // we need the owners only on the host processor
         // indexes = 0, 1, 2, ..., globalSize - 1
@@ -279,11 +261,11 @@ void Distribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) 
 
 /* ---------------------------------------------------------------------- */
 
-void Distribution::global2localV( hmemo::HArray<IndexType>& localIndexes, const hmemo::HArray<IndexType>& globalIndexes ) const
+void Distribution::global2LocalV( hmemo::HArray<IndexType>& localIndexes, const hmemo::HArray<IndexType>& globalIndexes ) const
 {
-    SCAI_REGION( "Distribution.global2localV" )
+    SCAI_REGION( "Distribution.global2LocalV" )
 
-    // fallback implementation calls global2local for each array element
+    // fallback implementation calls global2Local for each array element
 
     IndexType nnz = globalIndexes.size();
 
@@ -294,13 +276,34 @@ void Distribution::global2localV( hmemo::HArray<IndexType>& localIndexes, const 
 
     for ( IndexType i = 0; i < nnz; ++i )
     {
-        wLocal[i] = global2local( rGlobal[i] );
+        wLocal[i] = global2Local( rGlobal[i] );
     }
 }
 
 /* ---------------------------------------------------------------------- */
 
-void Distribution::getAnyLocal2Global( HArray<IndexType>& offsets, HArray<IndexType>& local2global ) const
+void Distribution::local2GlobalV( hmemo::HArray<IndexType>& globalIndexes, const hmemo::HArray<IndexType>& localIndexes ) const
+{
+    SCAI_REGION( "Distribution.local2GlobalV" )
+
+    // fallback implementation calls local2Global for each array element on the host
+
+    IndexType nnz = localIndexes.size();
+
+    auto rLocal = hostReadAccess( localIndexes );
+    auto wGlobal = hostWriteOnlyAccess( globalIndexes, nnz );
+
+    #pragma omp parallel for
+
+    for ( IndexType i = 0; i < nnz; ++i )
+    {
+        wGlobal[i] = local2Global( rLocal[i] );
+    }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void Distribution::getAnyLocal2Global( HArray<IndexType>& offsets, HArray<IndexType>& local2Global ) const
 {
     HArray<PartitionId> owners;
 
@@ -315,16 +318,16 @@ void Distribution::getAnyLocal2Global( HArray<IndexType>& offsets, HArray<IndexT
         }
     }
 
-    utilskernel::HArrayUtils::bucketSort( offsets, local2global, owners, mCommunicator->getSize() );
+    utilskernel::HArrayUtils::bucketSortOffsets( offsets, local2Global, owners, getCommunicator().getSize() );
 }
 
 /* ---------------------------------------------------------------------- */
 
-void Distribution::getAnyGlobal2Local( HArray<IndexType>& offsets, HArray<IndexType>& global2local ) const
+void Distribution::getAnyGlobal2Local( HArray<IndexType>& offsets, HArray<IndexType>& global2Local ) const
 {
-    HArray<IndexType> local2global;              // temporary array to keep the inverse permutation
-    getAnyLocal2Global( offsets, local2global );
-    utilskernel::HArrayUtils::inversePerm( global2local, local2global );
+    HArray<IndexType> local2Global;              // temporary array to keep the inverse permutation
+    getAnyLocal2Global( offsets, local2Global );
+    utilskernel::HArrayUtils::inversePerm( global2Local, local2Global );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -361,7 +364,7 @@ void Distribution::replicate( T1* allValues, const T2* localValues ) const
 
         for ( IndexType i = 0; i < currentSize; i++ )
         {
-            IndexType globalIndex = local2global( i );
+            IndexType globalIndex = local2Global( i );
             SCAI_ASSERT_DEBUG( globalIndex < getGlobalSize(), *this << ": global index " << globalIndex << " illegal" )
             pIndexesSend[i] = globalIndex;
             pValuesSend[i] = static_cast<T1>( localValues[i] ); // type conversion here
@@ -454,7 +457,7 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
 
         for ( IndexType i = 0; i < currentSize; i++ )
         {
-            IndexType globalIndex = local2global( i );
+            IndexType globalIndex = local2Global( i );
             SCAI_ASSERT_DEBUG( globalIndex < getGlobalSize(), *this << ": global index " << globalIndex << " illegal" )
             pIndexesSend[i] = globalIndex;
 
@@ -569,7 +572,7 @@ void Distribution::replicateRagged(
 
         for ( IndexType i = 0; i < currentElemSize; i++ )
         {
-            pIndexesSend[i] = local2global( i );
+            pIndexesSend[i] = local2Global( i );
         }
 
         // fill my local values in all values
@@ -636,7 +639,7 @@ void Distribution::replicateRagged(
 
 /* ---------------------------------------------------------------------- */
 
-Distribution* Distribution::getDistributionPtr(
+DistributionPtr Distribution::getDistributionPtr(
     const std::string& kind,
     CommunicatorPtr comm,
     const IndexType globalSize,
@@ -645,7 +648,7 @@ Distribution* Distribution::getDistributionPtr(
     return Distribution::create( kind, DistributionArguments( comm, globalSize, NULL, weight ) );
 }
 
-Distribution* Distribution::getDistributionPtr(
+DistributionPtr Distribution::getDistributionPtr(
     const std::string& kind,
     CommunicatorPtr comm,
     const Distributed& matrix,

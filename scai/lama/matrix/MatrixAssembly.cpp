@@ -2,32 +2,27 @@
  * @file MatrixAssembly.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief  to a matrix to add matrix elements
+ * @brief to a matrix to add matrix elements
  * @author Thomas Brandes
  * @date 07.09.2017
  */
@@ -36,7 +31,8 @@
 
 #include <scai/lama/matrix/MatrixAssembly.hpp>
 
-#include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/dmemo/GlobalExchangePlan.hpp>
+#include <scai/sparsekernel/COOUtils.hpp>
 
 #include <scai/common/macros/instantiate.hpp>
 
@@ -122,56 +118,6 @@ IndexType MatrixAssembly<ValueType>::getNumValues() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixAssembly<ValueType>::exchangeCOO( 
-    HArray<IndexType>& outIA,
-    HArray<IndexType>& outJA,
-    HArray<ValueType>& outValues,
-    const HArray<IndexType> inIA,
-    const HArray<IndexType> inJA,
-    const HArray<ValueType> inValues,
-    const dmemo::Distribution& dist ) const
-{
-    using namespace utilskernel;
-
-    HArray<PartitionId> owners;
-
-    dist.computeOwners( owners, inIA );
-
-    const dmemo::Communicator& comm = dist.getCommunicator();
-
-    SCAI_LOG_DEBUG( logger, comm << ": owners = " << owners )
-
-    PartitionId np = comm.getSize();
-
-    HArray<IndexType> perm;
-    HArray<IndexType> offsets;
-
-    HArrayUtils::bucketSort( offsets, perm, owners, np );
-
-    SCAI_LOG_DEBUG( logger, comm << ": sorted, perm = " << perm << ", offsets = " << offsets )
-
-    HArray<IndexType> sendIA;
-    HArray<IndexType> sendJA;
-    HArray<ValueType> sendValues;
-
-    HArrayUtils::gather( sendIA, inIA, perm, common::BinaryOp::COPY );
-    HArrayUtils::gather( sendJA, inJA, perm, common::BinaryOp::COPY );
-    HArrayUtils::gather( sendValues, inValues, perm, common::BinaryOp::COPY );
-
-    auto sendPlan = dmemo::CommunicationPlan::buildByOffsets( hostReadAccess( offsets ).get(), np );
-    auto recvPlan = sendPlan.transpose( comm );
-
-    SCAI_LOG_DEBUG( logger, comm << ": send plan: " << sendPlan )
-    SCAI_LOG_DEBUG( logger, comm << ": recv plan: " << recvPlan )
-
-    comm.exchangeByPlan( outIA, recvPlan, sendIA, sendPlan );
-    comm.exchangeByPlan( outJA, recvPlan, sendJA, sendPlan );
-    comm.exchangeByPlan( outValues, recvPlan, sendValues, sendPlan );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void MatrixAssembly<ValueType>::checkLegalIndexes( const IndexType numRows, const IndexType numColumns ) const
 {
     using namespace utilskernel;
@@ -207,7 +153,8 @@ void MatrixAssembly<ValueType>::checkLegalIndexes( const IndexType numRows, cons
 template<typename ValueType>
 COOStorage<ValueType> MatrixAssembly<ValueType>::buildLocalCOO( 
     const dmemo::Distribution& dist, 
-    const IndexType numColumns ) const
+    const IndexType numColumns,
+    common::BinaryOp op ) const
 {
     SCAI_ASSERT_EQ_ERROR( dist.getCommunicator(), *mComm, "dist has illegal communicator" )
 
@@ -223,9 +170,92 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildLocalCOO(
     HArray<IndexType> ownedJA;
     HArray<ValueType> ownedValues;
 
-    exchangeCOO( ownedIA, ownedJA, ownedValues, ia, ja, values, dist );
+    HArray<PartitionId> owners;
 
-    dist.global2localV( ownedIA, ownedIA );   // translates global row indexes to local ones
+    dist.computeOwners( owners, ia );
+ 
+    // send the COO data to their owners and receive it
+
+    dmemo::globalExchange( ownedIA, ownedJA, ownedValues, ia, ja, values, owners, dist.getCommunicatorPtr() );
+
+    dist.global2LocalV( ownedIA, ownedIA );   // translates global row indexes to local ones
+
+    sparsekernel::COOUtils::normalize( ownedIA, ownedJA, ownedValues, op, Context::getHostPtr() );
+
+    return COOStorage<ValueType>( dist.getLocalSize(), numColumns,
+                                  std::move( ownedIA ), std::move( ownedJA ), std::move( ownedValues ) );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+COOStorage<ValueType> MatrixAssembly<ValueType>::buildOwnedCOO(
+    const dmemo::Distribution& dist,
+    const IndexType numColumns,
+    common::BinaryOp op ) const
+{
+    // These COO arrays will keep the matrix items owned by this processor
+
+    HArray<IndexType> ownedIA;
+    HArray<IndexType> ownedJA;
+    HArray<ValueType> ownedValues;
+
+    if ( dist.isReplicated() )
+    {
+        // all entries are used, we can save overhead for dist.isLocal and dist.global2Local
+
+        IndexType numValues = mIA.size();
+
+        WriteOnlyAccess<IndexType> wIA( ownedIA, numValues );
+        WriteOnlyAccess<IndexType> wJA( ownedJA, numValues );
+        WriteOnlyAccess<ValueType> wValues( ownedValues, numValues );
+
+        for ( IndexType k = 0; k < numValues; ++k )
+        {
+            wIA[k] = mIA[k];
+            wJA[k] = mJA[k];
+            wValues[k] = mValues[k];
+        }
+    }
+    else
+    { 
+        // Step 1 : count number of local entries
+
+        IndexType numValues = 0;
+
+        for ( size_t k = 0; k < mIA.size(); ++k )
+        {
+            if ( dist.isLocal( mIA[k] ) )
+            {
+                numValues++;
+            }
+        }
+    
+        // Step 2 : allocate the COO arrays and copy the local values
+
+        WriteOnlyAccess<IndexType> wIA( ownedIA, numValues );
+        WriteOnlyAccess<IndexType> wJA( ownedJA, numValues );
+        WriteOnlyAccess<ValueType> wValues( ownedValues, numValues );
+
+        IndexType count = 0;
+
+        for ( size_t k = 0; k < mIA.size(); ++k )
+        {
+            const IndexType local = dist.global2Local( mIA[k] );
+
+            if ( local != invalidIndex )
+            {
+                wIA[count] = local;       // IMPORTANT: global->local index required
+                wJA[count] = mJA[k];
+                wValues[count] = mValues[k];
+                count++;
+            }
+        }
+
+        SCAI_ASSERT_EQ_ERROR( count, numValues, "serious mismatch" )
+    }
+
+    sparsekernel::COOUtils::normalize( ownedIA, ownedJA, ownedValues, op, Context::getHostPtr() );
 
     return COOStorage<ValueType>( dist.getLocalSize(), numColumns,
                                   std::move( ownedIA ), std::move( ownedJA ), std::move( ownedValues ) );
@@ -236,7 +266,8 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildLocalCOO(
 template<typename ValueType>
 COOStorage<ValueType> MatrixAssembly<ValueType>::buildGlobalCOO( 
     const IndexType numRows,
-    const IndexType numColumns ) const
+    const IndexType numColumns,
+    common::BinaryOp op ) const
 {
     using utilskernel::HArrayUtils;
 
@@ -313,8 +344,76 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildGlobalCOO(
     SCAI_ASSERT_EQ_ERROR( allJA.size(), numValues, "serious mismatch" )
     SCAI_ASSERT_EQ_ERROR( allValues.size(), numValues, "serious mismatch" )
 
+    sparsekernel::COOUtils::normalize( allIA, allJA, allValues, op, Context::getHostPtr() );
+
     return COOStorage<ValueType>( numRows, numColumns,
                                   std::move( allIA ), std::move( allJA ), std::move( allValues ) );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+COOStorage<ValueType> MatrixAssembly<ValueType>::buildCOO( 
+    const dmemo::Distribution& dist, 
+    const IndexType numColumns,
+    common::BinaryOp op ) const
+{
+    if ( mComm->getType() == dmemo::Communicator::NO )
+    {
+        // replicated assembly, so just select the owned entries
+
+        SCAI_LOG_INFO( logger, "build (distributed) COO from replicated assembly, select owned entries" )
+
+        return buildOwnedCOO( dist, numColumns, op );
+    }
+    else if ( dist.getCommunicator() == *mComm )
+    {
+        SCAI_LOG_INFO( logger, "build COO from assembly, same processor set" )
+
+        // distributed assembly -> distributed matrix, sends non-local entries to owners
+
+        return buildLocalCOO( dist, numColumns, op );
+    }
+    else if ( dist.getCommunicator().getType() == dmemo::Communicator::NO )
+    {
+        // distributed assembly -> replicated matrix 
+
+        SCAI_LOG_INFO( logger, "build replicated COO from distributed assembly, circular shift it around" )
+
+        return buildGlobalCOO( dist.getGlobalSize(), numColumns, op );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "unhandled, mismatch of assembly processor set and new processor set" )
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatrixAssembly<ValueType>::truncate( 
+    const IndexType numRows,
+    const IndexType numColumns )
+{
+    IndexType offset = 0;
+
+    for ( size_t k = 0; k < mIA.size(); ++k )
+    {
+        if ( mIA[k] >= numRows || mJA[k] >= numColumns )
+        {
+            continue;   // skip this element
+        }
+
+        mIA[offset] = mIA[k];
+        mJA[offset] = mJA[k];
+        mValues[offset] = mValues[k];
+
+        ++offset;
+    }
+
+    mIA.resize( offset );
+    mJA.resize( offset );
+    mValues.resize( offset );
 }
 
 /* ================================================================================ */

@@ -2,29 +2,24 @@
  * @file JDSKernelTrait.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Struct with traits for all JDS storage methods provided as kernels.
@@ -133,7 +128,7 @@ struct JDSKernelTrait
         }
     };
 
-    template<typename JDSValueType, typename CSRValueType>
+    template<typename ValueType>
     struct getCSRValues
     {
         /** Conversion of JDS storage data to CSR data
@@ -150,14 +145,14 @@ struct JDSKernelTrait
          */
 
         typedef void ( *FuncType ) ( IndexType csrJA[],
-                                     CSRValueType csrValues[],
+                                     ValueType csrValues[],
                                      const IndexType csrIA[],
                                      const IndexType numRows,
                                      const IndexType jdsPerm[],
                                      const IndexType jdsILG[],
                                      const IndexType jdsDLG[],
                                      const IndexType jdsJA[],
-                                     const JDSValueType jdsValues[] );
+                                     const ValueType jdsValues[] );
 
         static const char* getId()
         {
@@ -165,7 +160,7 @@ struct JDSKernelTrait
         }
     };
 
-    template<typename JDSValueType, typename CSRValueType>
+    template<typename ValueType>
     struct setCSRValues
     {
 
@@ -184,7 +179,7 @@ struct JDSKernelTrait
          */
 
         typedef void( *FuncType ) ( IndexType jdsJA[],
-                                    JDSValueType jdsValues[],
+                                    ValueType jdsValues[],
                                     const IndexType numRows,
                                     const IndexType jdsPerm[],
                                     const IndexType jdsILG[],
@@ -192,7 +187,7 @@ struct JDSKernelTrait
                                     const IndexType jdsDLG[],
                                     const IndexType csrIA[],
                                     const IndexType csrJA[],
-                                    const CSRValueType csrValues[] );
+                                    const ValueType csrValues[] );
 
         static const char* getId()
         {
@@ -294,7 +289,26 @@ struct JDSKernelTrait
         }
     };
 
-    struct getValuePosRow
+    struct getDiagonalPositions
+    {
+        /** Get all positions for the diagonal entries of a JDS storage. 
+         */
+        typedef IndexType ( *FuncType ) ( 
+            IndexType diagonalPositions[],
+            const IndexType numDiagonals,
+            const IndexType numRows,
+            const IndexType jdsDLG[],
+            const IndexType jdsILG[],
+            const IndexType jdsPerm[],
+            const IndexType jdsJA[] );
+
+        static const char* getId()
+        {
+            return "JDS.getDiagonalPositions";
+        }
+    };
+
+    struct getRowPositions
     {
         /** This method returns for a certain row of the JDS matrix all
          *  corresponding positions in the jdsJA/jdsValues array belonging to the row
@@ -317,18 +331,18 @@ struct JDSKernelTrait
 
         static const char* getId()
         {
-            return "JDS.getValuePosRow";
+            return "JDS.getRowPositions";
         }
     };
 
-    struct getValuePosCol
+    struct getColumnPositions
     {
         /** This method returns for a certain column of the JDS matrix all
          *  row indexes for which elements exist and the corresponding positions
          *  in the jdsJA/jdsValues array
          *
          *  @param[out] row indexes of rows that have an entry for column j
-         *  @param[out] pos positions of entries with col = j in csrJA,
+         *  @param[out] pos positions of entries with jdsJA[pos[i]] = j
          *  @param[in] j is the column of which positions are required
          *  @param[in] numRows is the number of rows
          *  @param[in] ilg
@@ -349,47 +363,63 @@ struct JDSKernelTrait
 
         static const char* getId()
         {
-            return "JDS.getValuePosCol";
+            return "JDS.getColumnPositions";
         }
     };
 
     template<typename ValueType>
-    struct scaleRows
+    struct setRows
     {
         /** This method scales each row of the matrix with a certain value
          *
-         * @param[in]     numRows    is the number of rows
-         * @param[in]     perm       perm[i] is the original position of row i
-         * @param[in]     ilg        ilg[i] number of entries in row i
-         * @param[in]     dlg        diagonals
          * @param[in,out] jdsValues  array containing all non-zero values, are scaled row-wise
-         * @param[in]     rowValues  rowvalues[i] is used to scale row i
+         * @param[in]     numRows    is the number of rows
+         * @param[in]     jdsPerm    jdspPrm[i] is the original position of row i
+         * @param[in]     jdsILG     jdsILG[i] number of entries in row i
+         * @param[in]     jdsDLG     diagonals
+         * @param[in]     rowValues  rowvalues[i] is applied to  row i
+         * @param[in]     op         binary operation specifies how to update
          */
         typedef void ( *FuncType ) ( ValueType jdsValues[],
                                      const IndexType numRows,
-                                     const IndexType perm[],
-                                     const IndexType ilg[],
-                                     const IndexType dlg[],
-                                     const ValueType rowValues[] );
+                                     const IndexType jdsPerm[],
+                                     const IndexType jdsILG[],
+                                     const IndexType jdsDLG[],
+                                     const ValueType rowValues[],
+                                     const common::BinaryOp op );
 
         static const char* getId()
         {
-            return "JDS.scaleRows";
+            return "JDS.setRows";
         }
     };
 
-    struct checkDiagonalProperty
+    template<typename ValueType>
+    struct setColumns
     {
-        typedef bool ( *FuncType ) ( const IndexType numDiagonals,
+        /** This method scales each column of the matrix with a certain value
+         *
+         * @param[in,out] jdsValues  array containing all non-zero values, are scaled row-wise
+         * @param[in]     numRows    is the number of rows
+         * @param[in]     jdsPerm    jdspPrm[i] is the original position of row i
+         * @param[in]     jdsILG     ilg[i] number of entries in row i
+         * @param[in]     jdsDLG     diagonals
+         * @param[in]     jdsJA      column positions of the non-zero entries
+         * @param[in]     colValues  colvalues[j] is applied to  column j
+         * @param[in]     op         binary operation specifies how to update
+         */
+        typedef void ( *FuncType ) ( ValueType jdsValues[],
                                      const IndexType numRows,
-                                     const IndexType numColumns,
-                                     const IndexType perm[],
-                                     const IndexType ja[],
-                                     const IndexType dlg[] );
+                                     const IndexType jdsPerm[],
+                                     const IndexType jdsILG[],
+                                     const IndexType jdsDLG[],
+                                     const IndexType jdsJA[],
+                                     const ValueType columnValues[],
+                                     const common::BinaryOp op );
 
         static const char* getId()
         {
-            return "JDS.checkDiagonalProperty";
+            return "JDS.setColumns";
         }
     };
 };

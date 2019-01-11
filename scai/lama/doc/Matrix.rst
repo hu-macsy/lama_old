@@ -13,6 +13,40 @@ A specific representation of a matrix can be a DenseMatrix or a sparse matrix of
  - :ref:`ELL <scaisparsekernel:sparsekernel_ELL>` (ELLPACK-R)
  - :ref:`JDS <scaisparsekernel:sparsekernel_JDS>` (Jagged Diagonal Storage)
 
+Distribution of Matrices
+------------------------
+
+Each matrix has two distributions.
+
+ - the target or row distribution specifies the distribution of the target vector.
+ - the source or column distribution specifies the distribution of the source vector,
+
+In contrary to the column distribution, the row distribution is internally used to map the matrix data to the different
+processors.
+
+.. figure:: _images/matrix_distribution_row.svg
+    :width: 600px
+    :align: center
+  
+    Row distribution of a matrix.
+
+For a matrix-vector multiplication each processor computes only its part of the target vector 
+and so it needs only the values of the corresponding rows of the matrix. 
+Communication is only required for the source vector as each processor might need values from
+the other processors.
+
+The column distribution is used internally on each processor to split up the matrix data into 
+local and non-local parts (sparse matrix) or to chunks to deal with each part of the source vector individiually (dense matrix).
+
+.. figure:: _images/matrix_distribution_col.svg
+    :width: 600px
+    :align: center
+  
+    Column distribution of a matrix.
+
+The column distribution determines the communication pattern that becomes necessary
+for a matrix-vector multiplication. The splitting of the columns allows overlapping of computation and communication.
+
 Constructors
 ------------
 

@@ -2,29 +2,24 @@
  * @file ELLKernelTrait.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Struct with traits for all ELL storage methods provided as kernels.
@@ -134,7 +129,7 @@ struct ELLKernelTrait
 
     /** Conversion routines between ELL and CSR storage format. */
 
-    template<typename ELLValueType, typename CSRValueType>
+    template<typename ValueType>
     struct getCSRValues
     {
         /** Conversion from ELL data to CSR data
@@ -149,13 +144,13 @@ struct ELLKernelTrait
          */
         typedef void ( *FuncType ) (
             IndexType csrJA[],
-            CSRValueType csrValues[],
+            ValueType csrValues[],
             const IndexType csrIA[],
             const IndexType numRows,
             const IndexType numValuesPerRow,
             const IndexType ellSizes[],
             const IndexType ellJA[],
-            const ELLValueType ellValues[] );
+            const ValueType ellValues[] );
 
         static const char* getId()
         {
@@ -163,20 +158,20 @@ struct ELLKernelTrait
         }
     };
 
-    template<typename ELLValueType, typename CSRValueType>
+    template<typename ValueType>
     struct setCSRValues
     {
         /** Conversion from CSR data to ELL data      */
 
         typedef void ( *FuncType ) (
             IndexType ellJA[],
-            ELLValueType ellValues[],
+            ValueType ellValues[],
             const IndexType ellSizes[],
             const IndexType numRows,
             const IndexType numValuesPerRow,
             const IndexType csrIA[],
             const IndexType csrJA[],
-            const CSRValueType csrValues[] );
+            const ValueType csrValues[] );
 
         static const char* getId()
         {
@@ -196,7 +191,6 @@ struct ELLKernelTrait
          * @param[in]  numRows number of rows
          * @param[in]  numValuesPerRow for maximal number of entries in one row
          * @param[in]  eps threshold, abs value of entry must be greater than eps to be non-zero
-         * @param[in]  keepDiagonal if true do not remove diagonal elements
          */
         typedef void ( *FuncType ) (
             IndexType newSizes[],
@@ -205,8 +199,7 @@ struct ELLKernelTrait
             const ValueType ellValues[],
             const IndexType numRows,
             const IndexType numValuesPerRow,
-            const RealType<ValueType> eps,
-            const bool keepDiagonal );
+            const RealType<ValueType> eps );
 
         static const char* getId()
         {
@@ -239,8 +232,7 @@ struct ELLKernelTrait
             const ValueType ellValues[],
             const IndexType numRows,
             const IndexType numValuesPerRow,
-            const RealType<ValueType> eps,
-            const bool keepDiagonal );
+            const RealType<ValueType> eps );
 
         static const char* getId()
         {
@@ -304,7 +296,28 @@ struct ELLKernelTrait
         }
     };
 
-    struct getValuePosCol
+    struct getDiagonalPositions
+    {
+        /** Get an array with all postions of the diagonal elements.
+         *
+         *  If postions[i] == invalidIndex, the diagonal element is missing.
+         *  Otherwise ellJA[positions[i]] == i holds. 
+         */
+        typedef IndexType ( *FuncType ) (
+            IndexType positions[],
+            const IndexType numDiagonals,
+            const IndexType numRows,
+            const IndexType numValuesPerRow,
+            const IndexType ellSizes[],
+            const IndexType ellJA[] );
+
+        static const char* getId()
+        {
+            return "ELL.getDiagonalPositions";
+        }
+    };
+
+    struct getColumnPositions
     {
         /** This method returns for a certain column of the CSR matrix all
          *  row indexes for which elements exist and the corresponding positions
@@ -330,19 +343,7 @@ struct ELLKernelTrait
 
         static const char* getId()
         {
-            return "ELL.getValuePosCol";
-        }
-    };
-
-    struct hasDiagonalProperty
-    {
-        typedef bool ( *FuncType ) (
-            const IndexType numDiagonals,
-            const IndexType ellJA[] );
-
-        static const char* getId()
-        {
-            return "ELL.hasDiagonalProperty";
+            return "ELL.getColumnPositions";
         }
     };
 
@@ -455,18 +456,56 @@ struct ELLKernelTrait
     };
 
     template<typename ValueType>
-    struct scaleRows
+    struct setRows
     {
+        /** This method updates each row of the matrix with an individual value. 
+         *
+         *  @param[in,out] ellValues  the ELL matrix values that are updated
+         *  @param[in]     ellIA             row sizes
+         *  @param[in]     numRows           number of rows
+         *  @param[in]     numValuesPerRow   maximal number of non-zero values per row
+         *  @param[in]     rowValues         one entry for each row 
+         *  @param[in]     op                specifies how to update the row values
+         */
         typedef void ( *FuncType ) (
             ValueType ellValues[],
             const IndexType numRows,
             const IndexType numValuesPerRow,
             const IndexType ellSizes[],
-            const ValueType values[] );
+            const ValueType rowValues[],
+            const common::BinaryOp op );
 
         static const char* getId()
         {
-            return "ELL.scaleRows";
+            return "ELL.setRows";
+        }
+    };
+
+    template<typename ValueType>
+    struct setColumns
+    {
+        /** This method updates each column of the matrix with an individual value. 
+         *
+         *  @param[in,out] ellValues  the ELL matrix values that are updated
+         *  @param[in]     ellIA             row sizes
+         *  @param[in]     ellJA             column indexes of the non-zero entries
+         *  @param[in]     numRows           number of rows
+         *  @param[in]     numValuesPerRow   maximal number of non-zero values per row
+         *  @param[in]     columnValues      one entry for each column
+         *  @param[in]     op                specifies how to update the values
+         */
+        typedef void ( *FuncType ) (
+            ValueType ellValues[],
+            const IndexType numRows,
+            const IndexType numValuesPerRow,
+            const IndexType ellSizes[],
+            const IndexType ellJA[],
+            const ValueType columnValues[],
+            const common::BinaryOp op );
+
+        static const char* getId()
+        {
+            return "ELL.setColumns";
         }
     };
 

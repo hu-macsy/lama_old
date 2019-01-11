@@ -2,29 +2,24 @@
  * @file utilskernel/FFTUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Fast fourier transformation for heterorgeneous arrays
@@ -51,22 +46,6 @@ public:
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 
-/** Compute the discrete fourier transform of an array using the FFT algorithm
- *
- *  @param[out] result is the result array
- *  @param[in]  x  is the input array
- *  @param[in]  n  padding length (n > x.size()) or truncate length , optional
- *  @param[in]  direction must be either 1 (forward) or -1 (backward, inverse)
- *  @param[in]  ctx preferred context for execution   
- */
-template<typename ValueType>
-static void fft( 
-    hmemo::HArray<common::Complex<RealType<ValueType>>>& result, 
-    const hmemo::HArray<ValueType>& x, 
-    const IndexType n,
-    const int direction,
-    const hmemo::ContextPtr ctx = hmemo::ContextPtr() );
-
 /** Compute the discrete fourier transform multiple vectors using the FFT algorithm
  *
  *  @param[out] result is the result array, size will be many * n
@@ -83,6 +62,15 @@ static void fft_many(
     const IndexType many,
     const IndexType n, 
     const int direction,
+    const hmemo::ContextPtr ctx = hmemo::ContextPtr() );
+
+template<typename ValueType>
+static void fftcall(
+    hmemo::HArray<common::Complex<RealType<ValueType>>>& data,
+    const IndexType k,
+    const IndexType n,
+    const IndexType m,
+    int direction,
     const hmemo::ContextPtr ctx = hmemo::ContextPtr() );
 
 #endif

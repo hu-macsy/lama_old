@@ -2,29 +2,24 @@
  # @file run_tests.py
  #
  # @license
- # Copyright (c) 2009-2017
+ # Copyright (c) 2009-2018
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
  # This file is part of the SCAI framework LAMA.
  #
  # LAMA is free software: you can redistribute it and/or modify it under the
- # terms of the GNU Affero General Public License as published by the Free
+ # terms of the GNU Lesser General Public License as published by the Free
  # Software Foundation, either version 3 of the License, or (at your option)
  # any later version.
  #
  # LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- # FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ # FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  # more details.
  #
- # You should have received a copy of the GNU Affero General Public License
+ # You should have received a copy of the GNU Lesser General Public License
  # along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- #
- # Other Usage
- # Alternatively, this file may be used in accordance with the terms and
- # conditions contained in a signed written agreement between you and
- # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
  # @brief Main test runner for LAMA.
@@ -51,24 +46,32 @@ Test = collections.namedtuple('Test', ['name', 'args', 'is_boost_test'])
 
 
 NORMAL_TESTS = [
-    Test('commonTest', [ 'common/test/commonTest' ], is_boost_test=True),
-    Test('loggingTest', [ 'logging/test/test.sh' ], is_boost_test=False),
-    Test('tracingTest', [ 'tracing/test/test.sh' ], is_boost_test=False),
-    Test('taskingTest', [ 'tasking/test/taskingTest' ], is_boost_test=True),
-    Test('kregistryTest', [ 'kregistry/test/kregistryTest' ], is_boost_test=True),
-    Test('hmemoTest', [ 'hmemo/test/hmemoTest' ], is_boost_test=True),
-    Test('blaskernelTest', [ 'blaskernel/test/blaskernelTest' ], is_boost_test=True),
-    Test('utilskernelTest', [ 'utilskernel/test/utilskernelTest' ], is_boost_test=True),
-    Test('sparsekernelTest', [ 'sparsekernel/test/sparsekernelTest' ], is_boost_test=True),
-    Test('lamaStorageTest', [ 'lama/test/storage/lamaStorageTest' ], is_boost_test=True)
+    Test( 'commonTest', [ 'common/test/commonTest' ], is_boost_test=True ),
+    Test( 'loggingTest', [ 'logging/test/test.sh' ], is_boost_test=False ),
+    Test( 'tracingTest', [ 'tracing/test/test.sh' ], is_boost_test=False ),
+    Test( 'taskingTest', [ 'tasking/test/taskingTest' ], is_boost_test=True ),
+    Test( 'kregistryTest', [ 'kregistry/test/kregistryTest' ], is_boost_test=True ),
+    Test( 'hmemoTest', [ 'hmemo/test/hmemoTest' ], is_boost_test=True ),
+    Test( 'blaskernelTest', [ 'blaskernel/test/blaskernelTest' ], is_boost_test=True ),
+    Test( 'utilskernelTest', [ 'utilskernel/test/utilskernelTest' ], is_boost_test=True ),
+    Test( 'sparsekernelTest', [ 'sparsekernel/test/sparsekernelTest' ], is_boost_test=True ),
+    Test( 'lamaStorageTest', [ 'lama/test/storage/lamaStorageTest' ], is_boost_test=True )
+]
+
+# ToDo: Test( 'ipbclsTest', [ 'ipbcls/test/lsbctest' ], is_boost_test=False )
+
+GPU_ONLY_TESTS = [
+    Test( 'commonCUDATest', [ 'common/test/cuda/commonCUDATest' ], is_boost_test=True ),
+    Test( 'taskingCUDATest', [ 'tasking/test/cuda/taskingCUDATest' ], is_boost_test=True ),
+    Test( 'hmemoCUDATest', [ 'hmemo/test/cuda/hmemoCUDATest' ], is_boost_test=True )
 ]
 
 MPI_TESTS = [
-    Test('dmemoTest', [ 'dmemo/test/dmemoTest' ], is_boost_test=True),
-    Test('lamaTest', [ 'lama/test/lamaTest' ], is_boost_test=True),
-    Test('lamaMatrixTest', [ 'lama/test/matrix/lamaMatrixTest' ], is_boost_test=True),
-    Test('partitioningTest', [ 'partitioning/test/partitioningTest' ], is_boost_test=True),
-    Test('solverTest', [ 'solver/test/solverTest' ], is_boost_test=True)
+    Test( 'dmemoTest', [ 'dmemo/test/dmemoTest' ], is_boost_test=True ),
+    Test( 'lamaTest', [ 'lama/test/lamaTest' ], is_boost_test=True ),
+    Test( 'lamaMatrixTest', [ 'lama/test/matrix/lamaMatrixTest' ], is_boost_test=True ),
+    Test( 'partitioningTest', [ 'partitioning/test/partitioningTest' ], is_boost_test=True ),
+    Test( 'solverTest', [ 'solver/test/solverTest' ], is_boost_test=True )
 ]
 
 PASSED = " " + colors.PASS + "[ PASSED ]" + colors.NOCOLOR + " "
@@ -154,6 +157,9 @@ def run_mpi_tests(tests, output_dir, np, intel, temp_dir=None):
         failed_tests += failed
     return (passed_tests, failed_tests)
 
+def run_gpu_tests(tests, output_dir, temp_dir=None):
+    (passed_tests, failed_tests) = run_tests(tests, output_dir, temp_dir=temp_dir)
+    return (passed_tests, failed_tests)
 
 def test_exists(name):
     all_tests = NORMAL_TESTS + MPI_TESTS
@@ -167,6 +173,8 @@ def main():
                         help='The directory in which to store the standard output, test logs and test reports.')
     parser.add_argument('--temp_dir', dest='temp_dir', default=None,
                         help='The directory in which to store temporary files used by tests.')
+    parser.add_argument('--gpu', dest='gpu', action='store_true',
+                        help='Whether or not to run tests on GPU device.')
     parser.add_argument('--mpi', dest='mpi', action='store_true',
                         help='Whether or not to use MPI for MPI-enabled tests.')
     parser.add_argument('--intel', dest='intel', action='store_true',
@@ -190,6 +198,12 @@ def main():
     print("Output directory:          {}".format(output_dir))
     print("Temporary files directory: {}\n".format(args.temp_dir if args.temp_dir else "Not specified. Determined by test binary."))
     print()
+
+    #  For running tests on GPU we set the environment variable for context to CUDA
+    #  Do not use cusparse library as entries in CSR data are not always sorted yet
+    if args.gpu:
+        os.environ[ "SCAI_CONTEXT" ] = "CUDA"
+        os.environ[ "SCAI_CUDA_USE_CUSPARSE" ] = "0"
 
     if args.tests:
         for name in args.tests:
@@ -215,9 +229,16 @@ def main():
     else:
         print("MPI tests not requested. Skipping ...")
 
-    all_tests = normal_passed + normal_failed + mpi_passed + mpi_failed
-    passed = normal_passed + mpi_passed
-    failed = normal_failed + mpi_failed
+    gpu_passed = []
+    gpu_failed = []
+    if args.gpu:
+        (gpu_passed, gpu_failed ) = run_gpu_tests(GPU_ONLY_TESTS, output_dir, temp_dir=args.temp_dir)
+    else:
+        print("GPU/Cuda tests not requested. Skipping ...")
+
+    all_tests = normal_passed + normal_failed + mpi_passed + mpi_failed + gpu_passed + gpu_failed
+    passed = normal_passed + mpi_passed + gpu_passed
+    failed = normal_failed + mpi_failed + gpu_failed
     all_tests_passed = len(failed) == 0
     result_label = PASSED if all_tests_passed else FAILED
     print()

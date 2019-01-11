@@ -2,29 +2,24 @@
  * @file lama/io/PartitionIO.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief IO support for partitioned read/write of vectors, matrices, distributions
@@ -104,6 +99,18 @@ void PartitionIO::getPartitionFileName( string& fileName, bool& isPartitioned, c
         }
 
         fileName.replace( pos, 2, rankStr.str() );
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void PartitionIO::getSingleFileName( string& fileName )
+{
+    size_t pos = fileName.find( "%r" );
+
+    if ( pos != string::npos )
+    {
+        fileName.replace( pos, 2, "" );
     }
 }
 
@@ -280,13 +287,14 @@ DistributionPtr PartitionIO::readSDistribution( const string& inFileName, Commun
         IndexType localSize;
         hmemo::ReadAccess<IndexType> rSizes( localSizes );
         comm->scatter( &localSize, 1, MASTER, rSizes.get() );
-        dist.reset( new GenBlockDistribution ( globalSize, localSize, comm ) );
+        dist = genBlockDistributionBySize( localSize, comm );
+        SCAI_ASSERT_EQ_ERROR( globalSize, dist->getGlobalSize(), "serious mismatch" )
     }
     else
     {
         // general distribution can be
 
-        dist.reset( new GeneralDistribution( owners, comm ) );
+        dist = generalDistributionBySingleOwners( owners, MASTER, comm );
     }
 
     return dist;
@@ -325,9 +333,9 @@ DistributionPtr PartitionIO::readPDistribution( const string& inFileName, Commun
 
     IndexType globalSize = comm->sum( myIndexes.size() );
 
-    DistributionPtr dist( new GeneralDistribution( globalSize, myIndexes, comm ) );
+    // use in any case the version of construction with global checks
 
-    return dist;
+    return generalDistribution( globalSize, myIndexes, comm );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -378,7 +386,7 @@ void PartitionIO::writeSDistribution( const Distribution& distribution, const st
 {
     using namespace hmemo;
 
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    CommunicatorPtr comm = distribution.getCommunicatorPtr();
 
     PartitionId rank = comm->getRank();
 

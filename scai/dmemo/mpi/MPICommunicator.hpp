@@ -2,29 +2,24 @@
  * @file MPICommunicator.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief MPICommunicator.hpp
@@ -59,6 +54,13 @@ namespace scai
 namespace dmemo
 {
 
+enum class MPICommKind
+{
+    EXTERNAL,   //!<  communicator was already initialized 
+    INTERNAL,   //!<  comm world created
+    CREATED     //!<  comm created
+};
+
 /** Communicator class that implements communication and data exchange via MPI.
  *
  *  MPI_Init is called in the constructor, MPI_Finalize is called in the destructor.
@@ -79,14 +81,6 @@ public:
 
     MPI_Comm getMPIComm() const;
 
-    /** All-to-all exchange of an integer value between all processors.
-     *
-     * @param[out] recvValues will contain one value from each processor
-     * @param[in]  sendValues must contain one value for each processor
-     *
-     * recvValues and sendValues must both have a size of communicator size.
-     * recvValues[i] on processor j contains sendValues[j] of processor i.
-     */
     /** MPI Implementation for pure method Communciator::all2allImpl */
 
     void all2allImpl( void* recvBuffer, 
@@ -243,17 +237,21 @@ private:
 
 protected:
 
+    /** Implementation of pure method Communicator::splitIt */
+
+    virtual MPICommunicator* splitIt( PartitionId color, PartitionId key ) const;
+
     MPICommunicator( int& argc, char** & argv, const CommunicatorKind& type );
 
     MPICommunicator();
 
+    MPICommunicator( const MPICommunicator& comm, const PartitionId color, const PartitionId key );
+
     virtual hmemo::ContextPtr getCommunicationContext( const hmemo::_HArray& array ) const;
 
-    bool mExternInitialization;
+    MPICommKind mKind;    // kind of communicator needed for destructor
 
-    MPI_Comm mCommWorld;
     MPI_Comm mComm;
-    MPI_Comm mCommTask;
 
 #ifdef SCAI_COMPLEX_SUPPORTED
     static MPI_Op mSumComplexLongDouble;
@@ -267,7 +265,7 @@ protected:
 
     Communicator::ThreadSafetyLevel mThreadSafetyLevel;
 
-    bool isCUDAAware;// if true data on CUDA context can be communicated
+    bool isCUDAAware;   // if true data on CUDA context can be communicated
 
 public:
 
@@ -314,10 +312,19 @@ inline MPI_Datatype MPICommunicator::getMPIType( const common::ScalarType stype 
         case common::ScalarType::LONG_DOUBLE         :
             return MPI_LONG_DOUBLE;
 #ifdef SCAI_COMPLEX_SUPPORTED
+
+#ifndef MPI_C_COMPLEX
+   #define MPI_C_COMPLEX MPI_COMPLEX
+#endif
+
+#ifndef MPI_C_DOUBLE_COMPLEX
+   #define MPI_C_DOUBLE_COMPLEX MPI_DOUBLE_COMPLEX
+#endif
+
         case common::ScalarType::COMPLEX             :
-            return MPI_COMPLEX;
+            return MPI_C_COMPLEX;
         case common::ScalarType::DOUBLE_COMPLEX      :
-            return MPI_DOUBLE_COMPLEX;
+            return MPI_C_DOUBLE_COMPLEX;
         case common::ScalarType::LONG_DOUBLE_COMPLEX :
             return mComplexLongDoubleType;
 #endif

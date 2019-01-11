@@ -2,29 +2,24 @@
  * @file PartitionIOTest.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Test of PartitionIO methods for write/read of partitioned data
@@ -312,6 +307,8 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
             PartitionIO::write( *dist, distFileName );
         }
 
+        SCAI_LOG_INFO( logger, *comm << ": write vector to file " << vectorFileName << ": " << vector )
+
         vector.writeToFile( vectorFileName, "", common::ScalarType::INTERNAL, FileIO::BINARY );
 
         DenseVector<ValueType> readVector;
@@ -320,14 +317,14 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
         {
             readVector.readFromFile( vectorFileName, distFileName );
 
-            SCAI_LOG_INFO( logger, "Read vector ( " << vectorFileName
+            SCAI_LOG_INFO( logger, *comm << ": read vector ( " << vectorFileName
                            << " ) with dist ( " << distFileName << " ): " << readVector )
         }
         else
         {
             readVector.readFromFile( vectorFileName );
 
-            SCAI_LOG_INFO( logger, "Read vector ( " << vectorFileName << " ): " << readVector )
+            SCAI_LOG_INFO( logger, *comm << ": read vector ( " << vectorFileName << " ): " << readVector )
         }
 
         // we replicate now the vector, proves same distribution and same values
@@ -382,6 +379,8 @@ BOOST_AUTO_TEST_CASE( SparseVectorPartitionIO )
         float fillRate = 0.2;
 
         vector.setSparseRandom( dist, 0, fillRate, 1 );
+
+        // find out it we have also to write a distribution file 
 
         bool withDist = dist->getBlockDistributionSize() == invalidIndex;
 
@@ -456,7 +455,7 @@ BOOST_AUTO_TEST_CASE( _MatrixSingleIO )
     for ( size_t i = 0; i < testDists.size(); ++i )
     {
         DistributionPtr rowDist = testDists[i];
-        CommunicatorPtr comm = rowDist->getCommunicatorPtr();
+        const Communicator& comm = rowDist->getCommunicator();
 
         auto matrix = zero<CSRSparseMatrix<ValueType>>( rowDist, colDist );
 
@@ -484,13 +483,13 @@ BOOST_AUTO_TEST_CASE( _MatrixSingleIO )
 
         BOOST_CHECK_EQUAL( local.maxDiffNorm( readLocal ), 0 );
 
-        int rc = PartitionIO::removeFile( matrixFileName, *comm );
+        int rc = PartitionIO::removeFile( matrixFileName, comm );
         BOOST_CHECK_EQUAL( 0, rc );
-        BOOST_CHECK( !PartitionIO::fileExists( matrixFileName, *comm ) );
+        BOOST_CHECK( !PartitionIO::fileExists( matrixFileName, comm ) );
 
-        rc = PartitionIO::removeFile( distFileName, *comm );
+        rc = PartitionIO::removeFile( distFileName, comm );
         BOOST_CHECK_EQUAL( 0, rc );
-        BOOST_CHECK( !PartitionIO::fileExists( distFileName, *comm ) );
+        BOOST_CHECK( !PartitionIO::fileExists( distFileName, comm ) );
     }
 }
 
@@ -582,70 +581,6 @@ BOOST_AUTO_TEST_CASE( _MatrixPartitionIO )
             BOOST_CHECK_EQUAL( 0, rc );
             BOOST_CHECK( !PartitionIO::fileExists( distFileName, *comm ) );
         }
-    }
-}
-
-/* ------------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( _MatrixColPartitionIO )
-{
-    typedef DefaultReal ValueType;   // no focus here on type
-
-    CSRSparseMatrix<ValueType> stencilMatrix;
-
-    MatrixCreator::buildPoisson2D( stencilMatrix, 5, 10, 10 );
-
-    dmemo::TestDistributions testDists( stencilMatrix.getNumRows() );
-    removeReplicatedDistributions( testDists );
-
-    DistributionPtr colDist( new NoDistribution( stencilMatrix.getNumColumns() ) );
-
-    const std::string matrixFileName = "TestMatrix%r.frm";
-
-    for ( size_t i = 0; i < testDists.size(); ++i )
-    {
-        DistributionPtr rowDist = testDists[i];
-
-        CommunicatorPtr comm = rowDist->getCommunicatorPtr();
-
-        auto matrix = distribute<CSRSparseMatrix<ValueType>>( stencilMatrix, rowDist, colDist );
-
-        // Stencil matrix has diagonal property so we know the distribution
-
-        matrix.writeToFile( matrixFileName, "", common::ScalarType::INTERNAL, common::ScalarType::INTERNAL, FileIO::BINARY );
-
-        SCAI_LOG_INFO( logger, "written matrix " << matrix << " to partitioned file, dist in col indexes" )
-
-        CSRSparseMatrix<ValueType> readMatrix;
-
-        // read partitioned matrix and its distribution from first column indexes
-
-        readMatrix.readFromFile( matrixFileName, "" );
-
-        SCAI_LOG_INFO( logger, "Read matrix ( " << matrixFileName << " ): " << readMatrix )
-
-        // we replicate now the matrix, proves same distribution and same values
-
-        DistributionPtr repDist( new NoDistribution( matrix.getNumRows() ) );
-
-        matrix.redistribute( repDist, colDist );
-        readMatrix.redistribute( repDist, colDist );
-
-        // The local parts of the two matrices must be exactly the same
-
-        const CSRStorage<ValueType>& local = matrix.getLocalStorage();
-        const CSRStorage<ValueType>& readLocal = readMatrix.getLocalStorage();
-
-        BOOST_REQUIRE_EQUAL( local.getNumRows(), readLocal.getNumRows() );
-        BOOST_REQUIRE_EQUAL( local.getNumColumns(), readLocal.getNumColumns() );
-
-        ValueType diff = local.maxDiffNorm( readLocal );
-
-        BOOST_CHECK( diff == ValueType( 0 ) );
-
-        int rc = PartitionIO::removeFile( matrixFileName, *comm );
-        BOOST_CHECK_EQUAL( 0, rc );
-        BOOST_CHECK( !PartitionIO::fileExists( matrixFileName, *comm ) );
     }
 }
 

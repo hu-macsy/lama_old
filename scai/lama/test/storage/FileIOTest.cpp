@@ -2,29 +2,24 @@
  * @file FileIOTest.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Test of all FileIO classes that have been registered in the FileIO factory
@@ -92,9 +87,14 @@ static void setDenseData( MatrixStorage<ValueType>& storage )
 
     SCAI_LOG_INFO( logger, "setDenseData, values = " << values )
 
-    // Note: diagonal property of sparse matrices will be set due to square matrix
-
     storage.assign( DenseStorage<ValueType>( numRows, numColumns, std::move( values ) ) );
+  
+    // force diagonal elements
+
+    HArray<IndexType> diagPos;
+    HArrayUtils::setSequence<IndexType>( diagPos, 0, 1, numRows );
+    HArray<ValueType> diagValues( numRows, ValueType( 0 ) );
+    storage.fillCOO( diagPos, diagPos, diagValues, common::BinaryOp::ADD );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -258,8 +258,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
         CSRStorage<ValueType> csrStorage;
         setDenseData( csrStorage );
 
-        BOOST_CHECK( csrStorage.hasDiagonalProperty() );
-
         const std::string typeName = TypeTraits<ValueType>::id();
         const std::string fileName = uniquePath(GlobalTempDir::getPath(), "outStorageFormatted_" + typeName) + fileSuffix;
         BOOST_TEST_MESSAGE("FormattedStorage: fileName = " << fileName);
@@ -286,6 +284,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
 
             fileIO->readStorageInfo( numRows, numCols, numValues, fileName );
 
+            SCAI_LOG_DEBUG( logger, "read storage info for file " << fileName 
+                                    << " m = " << numRows << " n = " << numCols << ", nnz = " << numValues )
+
             BOOST_REQUIRE_EQUAL( numRows, csrStorage.getNumRows() );
         }
 
@@ -293,8 +294,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
 
         CSRStorage<ValueType> readStorage;
         readStorage.readFromFile( fileName );
-
-        BOOST_CHECK( readStorage.hasDiagonalProperty() );
 
         BOOST_REQUIRE_EQUAL( readStorage.getNumRows(), csrStorage.getNumRows() );
         BOOST_REQUIRE_EQUAL( readStorage.getNumColumns(), csrStorage.getNumColumns() );
@@ -370,8 +369,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryStorage, ValueType, scai_numeric_test_types
         CSRStorage<ValueType> csrStorage;
         setDenseData( csrStorage );
 
-        BOOST_CHECK( csrStorage.hasDiagonalProperty() );
-
         const std::string typeName = TypeTraits<ValueType>::id();
         const std::string fileName = uniquePath(GlobalTempDir::getPath(), "outStorageBinary_" + typeName) + fileSuffix;
         BOOST_TEST_MESSAGE("BinaryStorage: fileName = " << fileName);
@@ -393,7 +390,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryStorage, ValueType, scai_numeric_test_types
 
         CSRStorage<ValueType> readStorage;
         readStorage.readFromFile( fileName );
-        BOOST_CHECK( readStorage.hasDiagonalProperty() );
 
         BOOST_REQUIRE_EQUAL( readStorage.getNumRows(), csrStorage.getNumRows() );
         BOOST_REQUIRE_EQUAL( readStorage.getNumColumns(), csrStorage.getNumColumns() );
@@ -448,9 +444,6 @@ BOOST_AUTO_TEST_CASE( NonSquareStorage )
         CSRStorage<ValueType> csrStorage;
         setNonSquareData( csrStorage );
 
-        HArray<IndexType> firstColIndexes1;
-        csrStorage.getFirstColumnIndexes( firstColIndexes1 );
-
         const std::string typeName = TypeTraits<ValueType>::id();
         const std::string fileName = uniquePath(GlobalTempDir::getPath(), "outStorageNonSquare_" + typeName) + fileSuffix;
         BOOST_TEST_MESSAGE("NonSquareStorage: fileName = " << fileName);
@@ -478,21 +471,12 @@ BOOST_AUTO_TEST_CASE( NonSquareStorage )
 
         // We verify that the order of the column indexes has not changed
 
-        HArray<IndexType> firstColIndexes2;
-        readStorage.getFirstColumnIndexes( firstColIndexes2 );
+        csrStorage.sortRows();
+        readStorage.sortRows();
 
-        for ( IndexType i = 0; i < csrStorage.getNumRows(); ++i )
-        {
-            if ( fileSuffix != ".mat" )
-            {
-                BOOST_CHECK_EQUAL( firstColIndexes1[i], firstColIndexes2[i] );
-            }
-
-            for ( IndexType j = 0; j < readStorage.getNumColumns(); ++j )
-            {
-                BOOST_CHECK_EQUAL( csrStorage.getValue( i, j ), readStorage.getValue( i, j ) );
-            }
-        }
+        BOOST_TEST( hostReadAccess( csrStorage.getIA() ) == hostReadAccess( readStorage.getIA() ), per_element() );
+        BOOST_TEST( hostReadAccess( csrStorage.getJA() ) == hostReadAccess( readStorage.getJA() ), per_element() );
+        BOOST_TEST( hostReadAccess( csrStorage.getValues() ) == hostReadAccess( readStorage.getValues() ), per_element() );
 
 #ifdef DELETE_OUTPUT_FILES
         int rc = FileIO::removeFile( fileName );
@@ -532,9 +516,6 @@ BOOST_AUTO_TEST_CASE( SymmetricStorage )
         setSymmetricData( csrStorage );
 
         BOOST_CHECK( csrStorage.checkSymmetry() );
-
-        HArray<IndexType> firstColIndexes1;
-        csrStorage.getFirstColumnIndexes( firstColIndexes1 );
 
         const std::string typeName = TypeTraits<ValueType>::id();
         const std::string fileName = uniquePath(GlobalTempDir::getPath(), "outStorageSymmetric_" + typeName) + fileSuffix;

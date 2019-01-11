@@ -2,29 +2,24 @@
  * @file CSRStorageTest.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Test cases for CSRStorage( only specific ones )
@@ -79,7 +74,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_typ
     BOOST_REQUIRE_EQUAL( numRows, csrStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, csrStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numValues, csrStorage.getNumValues() );
-    BOOST_CHECK( csrStorage.hasDiagonalProperty() );
     {
         ReadAccess<IndexType> csrIA( csrStorage.getIA() );
         ReadAccess<IndexType> csrJA( csrStorage.getJA() );
@@ -105,7 +99,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_typ
     BOOST_REQUIRE_EQUAL( numRows, csrStorageCopy.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, csrStorageCopy.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numValues, csrStorageCopy.getNumValues() );
-    BOOST_CHECK( csrStorageCopy.hasDiagonalProperty() );
     {
         ReadAccess<IndexType> csrIA( csrStorageCopy.getIA() );
         ReadAccess<IndexType> csrJA( csrStorageCopy.getJA() );
@@ -160,7 +153,6 @@ BOOST_AUTO_TEST_CASE( moveConstructorTest )
     BOOST_REQUIRE_EQUAL( numRows, csrStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, csrStorage.getNumColumns() );
     BOOST_REQUIRE_EQUAL( numValues, csrStorage.getNumValues() );
-    BOOST_CHECK( csrStorage.hasDiagonalProperty() );
 
     // verify that move was okay
 
@@ -345,9 +337,7 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
     BOOST_CHECK_EQUAL( IndexType( 0 ), csrValues.size() );
     BOOST_CHECK_EQUAL( numValues, csrStorage.getNumValues() );
 
-    bool diagonalProperty = csrStorage.hasDiagonalProperty();
-
-    csrStorage.sortRows( diagonalProperty );
+    csrStorage.sortRows( );
 
     const HArray<IndexType>& sortedJA = csrStorage.getJA();
     const HArray<ValueType>& sortedVals = csrStorage.getValues();
@@ -361,45 +351,6 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
         BOOST_CHECK_EQUAL( ValueType( sorted_ja[i] ), sortedVals[i] );
     }
 }
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-BOOST_AUTO_TEST_CASE( getFirstColTest )
-{
-    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
-    ContextPtr context = Context::getContextPtr();
-    const IndexType numRows = 4;
-    const IndexType numColumns = 8;
-    const IndexType ia[] = { 0,    2,       5, 6,    8 };
-    const IndexType ja[] = { 1, 2, 3, 2, 4, 5, 7, 4 };
-    const IndexType firstCols[] = { 1, 3, 5, 7 };
-    const IndexType numValues = ia[numRows];
-    HArray<IndexType> csrIA( numRows + 1, ia, context );
-    HArray<IndexType> csrJA( numValues, ja, context );
-    HArray<ValueType> csrValues( numValues, ValueType( 1 ), context );
-    CSRStorage<ValueType> csrStorage;
-    csrStorage.setContextPtr( context );
-    csrStorage.allocate( numRows, numColumns );
-    csrStorage.swap( csrIA, csrJA, csrValues );
-
-    // we check both, base class and derived class method
-
-    HArray<IndexType> firstColIndexes1;
-    HArray<IndexType> firstColIndexes2;
-    csrStorage.getFirstColumnIndexes( firstColIndexes1 );
-    csrStorage.MatrixStorage<ValueType>::getFirstColumnIndexes( firstColIndexes2 );
-
-    BOOST_REQUIRE_EQUAL( numRows, firstColIndexes1.size() );
-    BOOST_REQUIRE_EQUAL( numRows, firstColIndexes2.size() );
-
-    for ( IndexType i = 0; i < numRows; ++i )
-    {
-        BOOST_CHECK_EQUAL( firstColIndexes1[i], firstCols[i] );
-        BOOST_CHECK_EQUAL( firstColIndexes2[i], firstCols[i] );
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_CASE( CSRCopyTest )
 {

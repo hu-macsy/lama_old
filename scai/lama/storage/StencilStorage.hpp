@@ -2,29 +2,24 @@
  * @file StencilStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of a structure for a (non-distributed) sparse matrix based on a grid and a stencil on it
@@ -101,16 +96,9 @@ public:
      */
     StencilStorage( const common::Grid& grid, const common::Stencil<ValueType>&  stencil );
 
-    /** Override default copy constructor to guarantee same behavior */
+    /** Override default copy constructor */
 
-    StencilStorage( const StencilStorage<ValueType>& other ) : 
-
-        MatrixStorage<ValueType>( other ),
-        mGrid( other.mGrid ),
-        mStencil( other.mStencil )
-
-    {
-    }
+    StencilStorage( const StencilStorage<ValueType>& other );
 
     /** 
      * @brief Implementation of pure method _MatrixStorage::allocate
@@ -186,13 +174,6 @@ public:
         setIdentity( common::Grid1D( n ) );
     }
 
-    /** Implementation of pure method _MatrixStorage::checkDiagonalProperty */
-
-    virtual bool checkDiagonalProperty() const
-    {
-        COMMON_THROWEXCEPTION( "checkDiagonalProperty unsuported" )
-    }
-
     /******************************************************************/
     /*  set / get diagonal                                            */
     /******************************************************************/
@@ -220,9 +201,14 @@ public:
 
     /** _MatrixStorage */
 
- 	virtual void scaleRows(const scai::hmemo::HArray<ValueType>&)
+    virtual void scaleRows( const scai::hmemo::HArray<ValueType>& )
     {
         COMMON_THROWEXCEPTION( "scaleRows cannot be applied for stencil storage" )
+    }
+
+    virtual void scaleColumns( const scai::hmemo::HArray<ValueType>& )
+    {
+        COMMON_THROWEXCEPTION( "scaleColumns cannot be applied for stencil storage" )
     }
 
     /** Implementation of _MatrixStorage::buildCSRSizes */
@@ -345,18 +331,16 @@ public:
      *  a CSRStroage. Furthermore, colDist must be a grid distribution that fits 
      *  to the grid of this stencil storage.
      */
-
     virtual void splitHalo(
-        MatrixStorage<ValueType>& /* localData */,
-        MatrixStorage<ValueType>& /* haloData */,
-        dmemo::Halo& /* halo */,
+        MatrixStorage<ValueType>&  /* localData */,
+        MatrixStorage<ValueType>&  /* haloData */,
+        dmemo::HaloExchangePlan&   /* haloPlan */,
         const dmemo::Distribution& /* colDist */,
         const dmemo::Distribution* /* rowDist */ ) const
     {
-        COMMON_THROWEXCEPTION( "print unsupported" )
+        COMMON_THROWEXCEPTION( "illegal operation for StencilStorage" )
     }
     
-
     /** General routine to build a CSR version of this stroage
      *
      *  @param[out] ia is the CSR offset array
@@ -445,14 +429,18 @@ public:
     using _MatrixStorage::prefetch;
     using _MatrixStorage::getContextPtr;
 
-protected:
+private:
 
-    using MatrixStorage<ValueType>::mDiagonalProperty;
+    // member variables that define the stencil
 
     common::Grid mGrid;                    //! grid for which this matrix storage stands
     common::Stencil<ValueType> mStencil;   //! stencil that specifies the linear mapping  with involved neighbors
 
-private:
+    // member variables that are computed by constructor to optimize gemv
+
+    hmemo::HArray<IndexType> mGridInfo;   
+    hmemo::HArray<int> mStencilInfo;   
+    hmemo::HArray<ValueType> mStencilValues;   
 
     static std::string initTypeName();
 

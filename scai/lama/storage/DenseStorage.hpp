@@ -2,29 +2,24 @@
  * @file DenseStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of a structure for a dense matrix.
@@ -248,11 +243,7 @@ public:
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::_HArray& values )
-    {
-        mepr::StorageWrapper<DenseStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
-            setCSRDataImpl( this, numRows, numColumns, ia, ja, values, getContextPtr() );
-    }
+        const hmemo::_HArray& values );
 
     /**
      * @brief template (non-virtual) version of setCSRData with explicit other value type.
@@ -262,16 +253,13 @@ public:
      * @param[in] ia         row pointer of the input csr sparse matrix
      * @param[in] ja         column indexes of the input csr sparse matrix
      * @param[in] values     the data values of the input csr sparse matrix
-     * @param[in] loc        is the context where filling takes place
      */
-    template<typename OtherValueType>
     void setCSRDataImpl(
         const IndexType numRows,
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::HArray<OtherValueType>& values,
-        const hmemo::ContextPtr loc );
+        const hmemo::HArray<ValueType>& values );
 
     /* ==================================================================== */
     /*  build CSR data                                                      */
@@ -279,35 +267,11 @@ public:
 
     /** Implementation for _MatrixStorage::buildCSRSizes */
 
-    void buildCSRSizes( hmemo::HArray<IndexType>& ia ) const
-    {
-        hmemo::HArray<IndexType>* ja = NULL;
-        hmemo::HArray<ValueType>* values = NULL;
-        buildCSR( ia, ja, values, getContextPtr() );
-    }
+    void buildCSRSizes( hmemo::HArray<IndexType>& ia ) const;
 
     /** Implementation for _MatrixStorage::buildCSRData */
 
-    void buildCSRData( hmemo::HArray<IndexType>& csrIA, hmemo::HArray<IndexType>& csrJA, hmemo::_HArray& csrValues ) const
-    {
-        mepr::StorageWrapper<DenseStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
-            buildCSRDataImpl( this, csrIA, csrJA, csrValues, getContextPtr() );
-    }
-
-    /** 
-     *  @brief Template (non-virtual) version of building CSR data
-     *
-     *  @param[out] ia is the CSR offset array
-     *  @param[out] ja is the array with the column indexes (optional)
-     *  @param[out] values is the array with the non-zero matrix values (optional)
-     *  @param[in]  loc is the Context where conversion should be done
-     */
-    template<typename OtherValueType>
-    void buildCSR(
-        hmemo::HArray<IndexType>& ia,
-        hmemo::HArray<IndexType>* ja,
-        hmemo::HArray<OtherValueType>* values,
-        const hmemo::ContextPtr loc ) const;
+    void buildCSRData( hmemo::HArray<IndexType>& csrIA, hmemo::HArray<IndexType>& csrJA, hmemo::_HArray& csrValues ) const;
 
     /* Print relevant information about matrix storage format. */
 
@@ -355,7 +319,6 @@ public:
     {
         _MatrixStorage::setDimension( 0, 0 );
         mData.clear();
-        mDiagonalProperty = checkDiagonalProperty();
     }
 
     /**
@@ -365,12 +328,7 @@ public:
     {
         _MatrixStorage::setDimension( 0, 0 );
         mData.purge();
-        mDiagonalProperty = checkDiagonalProperty();
     }
-
-    /** Override MatrixStorage<ValueType>::getFirstColumnIndexes */
-
-    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
 
     /* ========================================================================= */
     /*       Filling dense storage with assembled COO data                      */
@@ -415,6 +373,29 @@ public:
         const MatrixStorage<ValueType>& b,
         const ValueType beta,
         const MatrixStorage<ValueType>& c );
+
+    /** Implementation of MatrixStorage::jacobiIterate for Dense */
+
+    virtual void jacobiIterate(
+        hmemo::HArray<ValueType>& solution,
+        const hmemo::HArray<ValueType>& oldSolution,
+        const hmemo::HArray<ValueType>& rhs,
+        const ValueType omega ) const;
+
+    /** Implementation of MatrixStorage::jacobiIterateHalo for Dense */
+
+    virtual void jacobiIterateHalo(
+        hmemo::HArray<ValueType>& localSolution,
+        const hmemo::HArray<ValueType>& localDiagonal,
+        const hmemo::HArray<ValueType>& haloOldSolution,
+        const ValueType omega ) const;
+
+    /** Implementation of element-wise binary operation for dense storage */
+
+    virtual void binaryOp(
+        const MatrixStorage<ValueType>& a,
+        const common::BinaryOp op,
+        const MatrixStorage<ValueType>& b );
 
     /** Implementation for MatrixStorage::l1Norm */
 
@@ -487,9 +468,13 @@ public:
      *  Scaling of elements in a matrix                                *
      ******************************************************************/
 
-    /** Template version used for virtual routine scale with known value type. */
+    /** Implementation of pure method MatrixStorage<ValueType>::scaleRows */
 
     void scaleRows( const hmemo::HArray<ValueType>& values );
+
+    /** Implementation of pure method MatrixStorage<ValueType>::scaleColumns */
+
+    void scaleColumns( const hmemo::HArray<ValueType>& values );
 
     /** Implementation of pure method.  */
 
@@ -520,7 +505,6 @@ public:
 
 protected:
 
-    using MatrixStorage<ValueType>::mDiagonalProperty;
     using MatrixStorage<ValueType>::mContext;
 
     hmemo::HArray<ValueType> mData;  //!<  matrix data as HArray, stored row-wise
@@ -528,10 +512,6 @@ protected:
     /** Logger just for this class / matrix format. */
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
-    /** Override MatrixStorage::checkDiagonalProperty method. */
-
-    virtual    bool checkDiagonalProperty() const;
 
 private:
 
@@ -542,6 +522,21 @@ private:
                                  const DenseStorage<ValueType>& b,
                                  const ValueType beta,
                                  const DenseStorage<ValueType>& c );
+
+    /** Implementation of matrix times matrix for dense * sparse */
+
+    void matrixTimesMatrixCSR( const ValueType alpha,
+                               const DenseStorage<ValueType>& a,
+                               const CSRStorage<ValueType>& b,
+                               const ValueType beta,
+                               const DenseStorage<ValueType>& c );
+
+    /** Implementation of elementwise binary operation for dense matrices. */
+
+    void binaryOpDense(
+        const DenseStorage<ValueType>& a,
+        const common::BinaryOp op,
+        const DenseStorage<ValueType>& b );
 
     /** @brief invert only for DenseStorage. */
 

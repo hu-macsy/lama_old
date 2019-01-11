@@ -2,29 +2,24 @@
  * @file _MatrixStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of a common base class for all matrix storage classes.
@@ -65,7 +60,7 @@ namespace dmemo
 {
 class Distribution;
 class Halo;
-class Redistributor;
+class RedistributePlan;
 }
 
 namespace lama
@@ -212,46 +207,33 @@ public:
 
     inline IndexType getNumColumns() const;
 
+    /** Getter routine for the size of main diagonal */
+
+    inline IndexType getDiagonalSize() const;
+
     virtual void writeAt( std::ostream& stream ) const;
 
-    void resetDiagonalProperty();
-
-    /** @brief Query if a matrix storage format has diagonal property, i.e. entries for each diagonal element.
+    /**
+     *  @brief Query the format that also stands for the identification of a derived class.
      *
-     *  Only if the diagonal property is given, the set/getDiagonal methods might be used to access it.
+     *  Each derived class should return its individual enum value for the format.
      *
-     * The diagonal property for a dense matrix storage is always given but for a sparse matrix storage only
-     * if the sparsity pattern includes all diagonal elements.
-     *
-     * Note for implementors: derived classes must set the flag mDiagonalProperty correctly.
+     *  \code
+     *     MatrixStorage<ValueType>& storage = ...
+     *     if ( storage.getFormat() == Format::CSR )
+     *     {
+     *         CSRStorage<ValueType>& csrStorage = static_cast<CSRStorage<ValueType>&>( storage );
+     *         ....
+     *     }
+     *  \endcode
      */
-    inline bool hasDiagonalProperty() const;
-
     virtual Format getFormat() const = 0;
 
     /** This method sets storage for the identity matrix
      *
      *  @param[in] n is the size of the square matrix
      */
-
     virtual void setIdentity( const IndexType n ) = 0;
-
-    /** This method resorts column indexes in such a way that the diagonal element is always the
-     *  first one in a row.
-     *
-     *  This method throws an exception if the matrix storage is not square. Furthermore
-     *  it throws an exception, if a diagonal element is zero, i.e. there is no entry for the diagonal
-     *  element in a sparse format.
-     */
-    virtual void setDiagonalProperty();
-
-    /** Get for each row the first column index with value entry.
-     *  If diagonal flag is set, the column index will be the same as the (global) row
-     *  index. I.e. for a local storage this routine gives the owned indexes to reconstruct
-     *  the distribution.
-     */
-
-    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const = 0;
 
     /******************************************************************
      *  General operations on a matrix                                 *
@@ -274,9 +256,7 @@ public:
      *  @return total number of non-zero values
      *
      *  An element is considered to be zero if its value is not stored explicitly
-     *  (sparse format) or if its 'stored' value is explicitly zero. There is 
-     *  the only exception that zero diagonal elements are also counted if 
-     *  this->hasDiagonalProperty() is given.
+     *  (sparse format) or if its 'stored' value is explicitly zero ( dense, diagonal)
      *
      *  This routine gives exactly the same number of elements that will be
      *  the size of the ja and values array when calling buildCSRData.
@@ -289,11 +269,9 @@ public:
     inline const hmemo::HArray<IndexType>& getRowIndexes() const;
 
     /**
-     * @brief Get the number of entries in each row.
+     * @brief Get the number of non-zero entries in each row.
      *
      * @param[out] csrIA size array for rows, csrIA.size() == numRows
-     *
-     * If this->hasDiagonalProperty() is true, diagonal elements are also counted.
      *
      * \code
      *     DenseStorage<double> dense( ... )
@@ -303,7 +281,6 @@ public:
      *
      * This routine must be provided by each matrix storage format.
      */
-
     virtual void buildCSRSizes( hmemo::HArray<IndexType>& csrIA ) const = 0;
 
     /**
@@ -312,8 +289,6 @@ public:
      * @param[out] csrIA offset array for rows, csrIA.size() == numRows + 1
      * @param[out] csrJA column indexes, csrJA.size() == csrIA[ csrIA.size() ]
      * @param[out] csrValues are the non-zero matrix values, csrJA.size() == csrValues.size()
-     *
-     * The csr data will have the diagonal property if this->hasDiagonalProperty() is true.
      *
      * Note: This routine supports also type conversion between different value types.
      *
@@ -396,18 +371,8 @@ public:
     _MatrixStorage& operator=( _MatrixStorage&& other ) = delete;
 
     /******************************************************************
-     *   Help routines (ToDo: -> HArrayUtils ?? )                   *
+     *   Query routines                                                *
      ******************************************************************/
-
-    /** Help routines to convert arrays with sizes to offsets and vice versa */
-
-    static void offsets2sizes( hmemo::HArray<IndexType>& offsets );
-
-    static void offsets2sizes( hmemo::HArray<IndexType>& sizes, const hmemo::HArray<IndexType>& offsets );
-
-    static IndexType sizes2offsets( hmemo::HArray<IndexType>& offsets );
-
-    static IndexType sizes2offsets( hmemo::HArray<IndexType>& offsets, const hmemo::HArray<IndexType>& sizes, const hmemo::ContextPtr loc );
 
     /** Returns the number of bytes needed for the current matrix.
      *
@@ -415,10 +380,6 @@ public:
      *        might be allocated on more than one device. Furthermore, it is possible that
      *        arrays have more memory reserved than needed for its current size.
      */
-
-    /******************************************************************
-     *   Query routines                                                *
-     ******************************************************************/
 
     size_t getMemoryUsage() const;
 
@@ -578,21 +539,9 @@ protected:
 
     float mCompressThreshold; //!< ratio at which compression is done, 0 for never, 1 for always
 
-    bool mDiagonalProperty; //!< if true, diagonal elements are always stored at first position in each row
-
     hmemo::ContextPtr mContext;//!< preferred context for the storage
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger ); //!< logger for this matrix format
-
-protected:
-
-    /** checkDiagonalProperty checks if the diagonal property of this is full filled.
-     *
-     * @return true if the diagonal property is fulfilled for the matrix data
-     */
-
-    virtual bool checkDiagonalProperty() const = 0;
-
 };
 
 /* ------------------------------------------------------------------------- */
@@ -614,9 +563,10 @@ IndexType _MatrixStorage::getNumColumns() const
     return mNumColumns;
 }
 
-bool _MatrixStorage::hasDiagonalProperty() const
+IndexType _MatrixStorage::getDiagonalSize() const
 {
-    return mDiagonalProperty;
+    // using std::min might not work if IndexType is not a standard type.
+    return common::Math::min( mNumRows, mNumColumns );
 }
 
 const hmemo::HArray<IndexType>& _MatrixStorage::getRowIndexes() const

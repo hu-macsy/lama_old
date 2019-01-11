@@ -2,29 +2,24 @@
  * @file _MatrixStorage.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of methods for common base class of all matrix storage formats.
@@ -38,13 +33,9 @@
 #include <scai/dmemo/Distribution.hpp>
 #include <scai/hmemo/Context.hpp>
 
-#include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/openmp/OpenMPUtils.hpp>
-
-#include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
-#include <scai/sparsekernel/CSRKernelTrait.hpp>
 
 namespace scai
 {
@@ -54,12 +45,8 @@ using namespace dmemo;
 
 using common::BinaryOp;
 
-using utilskernel::LAMAKernel;
 using utilskernel::UtilKernelTrait;
 using utilskernel::OpenMPUtils;
-
-using sparsekernel::CSRKernelTrait;
-using sparsekernel::OpenMPCSRUtils;
 
 namespace lama
 {
@@ -76,7 +63,6 @@ _MatrixStorage::_MatrixStorage( IndexType numRows, IndexType numColumns, Context
     mNumColumns( numColumns ),
     mRowIndexes(), 
     mCompressThreshold( 0.0f ), 
-    mDiagonalProperty( false ), 
     mContext( ctx )
 
 {
@@ -90,7 +76,6 @@ _MatrixStorage::_MatrixStorage( const _MatrixStorage& other ) :
     mNumColumns( other.mNumColumns ),
     mRowIndexes(),
     mCompressThreshold( other.mCompressThreshold ),
-    mDiagonalProperty( other.mDiagonalProperty ),
     mContext( other.mContext )
 
 {
@@ -103,7 +88,6 @@ _MatrixStorage::_MatrixStorage( _MatrixStorage&& other ) noexcept :
     mNumColumns( other.mNumColumns ),
     mRowIndexes( std::move( other.mRowIndexes ) ),
     mCompressThreshold( other.mCompressThreshold ),
-    mDiagonalProperty( other.mDiagonalProperty ),
     mContext( other.mContext )
 
 {
@@ -127,8 +111,6 @@ void _MatrixStorage::setDimension( const IndexType numRows, const IndexType numC
     // in any case set dimensions
     mNumRows = numRows;
     mNumColumns = numColumns;
-    // due to new settings assume that diagonalProperty, rowIndexes become invalid
-    mDiagonalProperty = false;
     mRowIndexes.clear();
     // but do not reset threshold
 }
@@ -187,7 +169,6 @@ void _MatrixStorage::swap( _MatrixStorage& other )
     std::swap( mNumColumns, other.mNumColumns );
     mRowIndexes.swap( other.mRowIndexes );
     std::swap( mCompressThreshold, other.mCompressThreshold );
-    std::swap( mDiagonalProperty, other.mDiagonalProperty );
     std::swap( mContext, other.mContext );
 }
 
@@ -201,7 +182,6 @@ void _MatrixStorage::_assignTranspose( const _MatrixStorage& other )
     mNumColumns = tmpNumRows;
     mRowIndexes.clear();
     // remains unchanged: mCompressThreshold = other.mCompressThreshold;
-    mDiagonalProperty = false;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -212,7 +192,6 @@ void _MatrixStorage::_assign( const _MatrixStorage& other )
     mNumColumns = other.mNumColumns;
     mRowIndexes.clear();
     // remains unchanged: mCompressThreshold = other.mCompressThreshold;
-    mDiagonalProperty = false;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -239,31 +218,8 @@ void _MatrixStorage::moveImpl( _MatrixStorage&& other )
 
     mContext = other.mContext;
 
-    mDiagonalProperty = other.mDiagonalProperty;
     mRowIndexes = std::move( other.mRowIndexes );
     mCompressThreshold = other.mCompressThreshold;
-}
-
-/* --------------------------------------------------------------------------- */
-
-void _MatrixStorage::setDiagonalProperty()
-{
-    // default implementation just throw an exception if diagonal property is not given
-
-    mDiagonalProperty = checkDiagonalProperty();
-
-    if ( !mDiagonalProperty )
-    {
-        COMMON_THROWEXCEPTION( *this << ": has not diagonal property, cannot set it" )
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-void _MatrixStorage::resetDiagonalProperty()
-{
-    mDiagonalProperty = checkDiagonalProperty();
-    SCAI_LOG_DEBUG( logger, *this << ": diagonal property = " << mDiagonalProperty )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -292,80 +248,14 @@ void _MatrixStorage::localize( const _MatrixStorage& global, const Distribution&
 IndexType _MatrixStorage::getNumValues() const
 {
     // Default implementation builds sum of row sizes, derived classes have more efficient routines
+
     HArray<IndexType> sizes;
+
     buildCSRSizes( sizes );
-    static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
-    ContextPtr loc = sizes.getValidContext();
-    reduce.getSupportedContext( loc );
-    ReadAccess<IndexType> csrSizes( sizes, loc );
-    IndexType numValues = reduce[ loc ]( csrSizes.get(), mNumRows, 0, BinaryOp::ADD );
+
+    IndexType numValues = utilskernel::HArrayUtils::reduce( sizes, BinaryOp::ADD );
+
     return numValues;
-}
-
-/* ---------------------------------------------------------------------------------- */
-
-void _MatrixStorage::offsets2sizes( HArray<IndexType>& offsets )
-{
-    const IndexType n = offsets.size() - 1;
-    WriteAccess<IndexType> writeSizes( offsets );
-
-    // the following loop  is not parallel
-
-    for ( IndexType i = 0; i < n; i++ )
-    {
-        writeSizes[i] = writeSizes[i + 1] - writeSizes[i];
-    }
-
-    writeSizes.resize( n );
-}
-
-/* ---------------------------------------------------------------------------------- */
-
-void _MatrixStorage::offsets2sizes( HArray<IndexType>& sizes, const HArray<IndexType>& offsets )
-{
-    if ( &sizes == &offsets )
-    {
-        SCAI_LOG_WARN( logger, "offset2sizes: sizes and offsets are same array" )
-        offsets2sizes( sizes );
-        return;
-    }
-
-    const IndexType n = offsets.size() - 1;
-
-    ReadAccess<IndexType> readOffsets( offsets );
-
-    WriteAccess<IndexType> writeSizes( sizes );
-
-    writeSizes.clear(); // old values are not used
-
-    writeSizes.resize( n );
-
-    for ( IndexType i = 0; i < n; i++ )
-    {
-        writeSizes[i] = readOffsets[i + 1] - readOffsets[i];
-    }
-}
-
-/* ---------------------------------------------------------------------------------- */
-
-IndexType _MatrixStorage::sizes2offsets( HArray<IndexType>& sizes )
-{
-    IndexType n = sizes.size();
-    WriteAccess<IndexType> writeOffsets( sizes );
-    writeOffsets.resize( n + 1 );
-    return OpenMPCSRUtils::sizes2offsets( writeOffsets, n );
-}
-
-/* ---------------------------------------------------------------------------------- */
-
-IndexType _MatrixStorage::sizes2offsets( HArray<IndexType>& offsets, const HArray<IndexType>& sizes, ContextPtr loc )
-{
-    {
-        // allocate offsets with one more element that sizes
-        WriteOnlyAccess<IndexType> wOffsets( offsets, loc, sizes.size() + 1 );
-    }
-    utilskernel::HArrayUtils::assign( offsets, sizes, loc );
-    return utilskernel::HArrayUtils::scan1( offsets, loc );
 }
 
 /* ---------------------------------------------------------------------------------- */

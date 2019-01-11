@@ -39,21 +39,45 @@ Contents
    DIAKernelTrait
    ELLKernelTrait
    JDSKernelTrait
+   StencilKernelTrait
 
 *******
 Example
 *******
 
-Calculate matrix-vector multiplication with given ELL input-set on host.
+Calculate matrix-vector multiplication with a matrix stored in CSR format, where the
+CSR data is converted from the following dense matrix:
+
+.. math::
+
+  A = \left(\begin{matrix} 
+    6  &  1 &  0 &  4  \\
+    -2 &  8 &  3 &  0  \\
+     0 &  1 &  9 &  4  \\
+     -1 &  0 &  1 &  3  \\
+    \end{matrix}\right) 
 
 .. code-block:: c++
 
-	// Get function from Registry
-	kregistry::KernelTraitContextFunction<ELLKernelTrait::normalGEMV<ValueType> > gemv;
-	
-	// Call function on host
-	gemv[context::Host]( b, one, x, zero, b, m, max_nnz, sizes, ja, values );
-	
+    ContextPtr ctx = Context::getContextPtr();  // default context
+    
+    HArray<double> values( {  6,  1,  0, 4,  -2,  8,  3, 0 , 0,  1,  9,  4, -1, 0, 1, 3 }, ctx );
+
+    HArray<IndexType> csrIA;
+    HArray<IndexType> csrJA;
+    HArray<double> csrValues;
+
+    const IndexType M = 4;
+    const IndexType N = 4;
+
+    DenseUtils::convertDense2CSR( csrIA, csrJA, csrValues, M, N, denseValues, ctx );
+
+    HArray<double> x( N, 4.0 );
+    HArray<double> b( M, 2.0 );
+
+    // compute b = b + A * x 
+
+    CSRUtils::gemv( b, 1, x, 1, b, csrIA, csrJA, csrValues, ctx );
 
 *********************
 Environment-Variables

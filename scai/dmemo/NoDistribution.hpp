@@ -2,29 +2,24 @@
  * @file NoDistribution.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief NoDistribution.hpp
@@ -55,8 +50,8 @@ namespace dmemo
  *  processor.
  *
  *  Usually, methods should take care of consistency among
- *  all processors, i.e. writes and update operations must be
- *  done on all partitions. But a replicated object can also be used
+ *  all processors of the current communicator, i.e. writes and update operations must be
+ *  done on all processes. But a non-distributed object can also be used
  *  like a private incarnation on each processor.
  */
 class COMMON_DLL_IMPORTEXPORT NoDistribution:
@@ -67,8 +62,10 @@ class COMMON_DLL_IMPORTEXPORT NoDistribution:
 {
 public:
 
-    /** Constructor of NoDistribution requires only the global size */
-
+    /** Constructor of NoDistribution 
+     *
+     *  @param[in] globalSize is the global size of the distributed object
+     */
     NoDistribution( const IndexType globalSize );
 
     virtual ~NoDistribution();
@@ -77,9 +74,9 @@ public:
 
     virtual IndexType getLocalSize() const;
 
-    virtual IndexType local2global( const IndexType localIndex ) const;
+    virtual IndexType local2Global( const IndexType localIndex ) const;
 
-    virtual IndexType global2local( const IndexType globalIndex ) const;
+    virtual IndexType global2Local( const IndexType globalIndex ) const;
 
     /** Implementation of pure function Distribution::getBlockDistributionSize, here same as getLocalSize */
 
@@ -93,7 +90,7 @@ public:
 
     /** Static method required for create to use in Distribution::Register */
 
-    static Distribution* create( const DistributionArguments args );
+    static DistributionPtr create( const DistributionArguments args );
 
     /** Static method required for Distribution::Register */
 
@@ -101,7 +98,7 @@ public:
 
     virtual inline const char* getKind() const;
 
-    static inline const char* getId();
+    static const char* getId();
 
     /** Implementation of pure method Distribution::hasAnyAddressing */
     virtual bool hasAnyAddressing() const;
@@ -148,9 +145,11 @@ std::string NoDistribution::createValue()
     return getId();
 }
 
-const char* NoDistribution::getId()
+/** Inline function for convenience */
+
+inline DistributionPtr noDistribution( const IndexType globalSize )
 {
-    return "NO";
+    return std::make_shared<NoDistribution>( globalSize );
 }
 
 } /* end namespace dmemo */

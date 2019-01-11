@@ -2,29 +2,24 @@
  * @file Math.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of struct that contains math routines overloaded for all SCAI types
@@ -130,6 +125,12 @@ struct Math
     static inline ValueType ceil( const ValueType& x );
 
     /*
+     * sign function for ValueType
+     */
+    template<typename ValueType>
+    static inline ValueType sign( const ValueType& x );
+
+    /*
      * sin-function for ValueType
      */
 
@@ -214,7 +215,7 @@ struct Math
      */
     static inline bool randomBool( const float trueRatio );
  
-    /** @brief return the exponent p for the smallest power that satisfies $2^p \ge n$ */
+    /** @brief return the exponent p for the smallest power that satisfies \f$2^p \ge n\f$ */
 
     template<typename ValueType>
     static inline CUDA_CALLABLE_MEMBER ValueType nextpow2( ValueType n );
@@ -466,6 +467,35 @@ inline
 long double Math::ceil( const long double& x )
 {
     return ceill( x );
+}
+
+// -------------------------------- sign -----------------------------
+
+template<>
+inline CUDA_CALLABLE_MEMBER
+float Math::sign( const float& x )
+{
+    if ( x < 0 ) return -1;
+    if ( x > 0 ) return 1;
+    return 0;
+}
+
+template<>
+inline CUDA_CALLABLE_MEMBER
+double Math::sign( const double& x )
+{
+    if ( x < 0 ) return -1;
+    if ( x > 0 ) return 1;
+    return 0;
+}
+
+template<>
+inline
+long double Math::sign( const long double& x )
+{
+    if ( x < 0 ) return -1;
+    if ( x > 0 ) return 1;
+    return 0;
 }
 
 // -------------------------------- sin -----------------------------
@@ -1097,6 +1127,50 @@ inline
 Complex<long double> Math::ceil( const Complex<long double>& x )
 {
     return Complex<long double>( Math::ceil( x.real() ), Math::ceil( x.imag() ) );
+}
+
+// ------------------ Math::sign --------------------------------
+
+template<>
+inline CUDA_CALLABLE_MEMBER
+Complex<float> Math::sign( const Complex<float>& x )
+{
+    if ( x == 0 )
+    {
+        return x;
+    }
+    else
+    {
+        return x / common::Math::abs( x );
+    }
+}
+
+template<>
+inline CUDA_CALLABLE_MEMBER
+Complex<double> Math::sign( const Complex<double>& x )
+{
+    if ( x == 0 )
+    {
+        return x;
+    }
+    else
+    {
+        return x / common::Math::abs( x );
+    }
+}
+
+template<>
+inline
+Complex<long double> Math::sign( const Complex<long double>& x )
+{
+    if ( x == 0 )
+    {
+        return x;
+    }
+    else
+    {
+        return x / common::Math::abs( x );
+    }
 }
 
 // ------------------ Math::sin --------------------------------

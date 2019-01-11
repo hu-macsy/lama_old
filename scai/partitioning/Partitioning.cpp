@@ -2,29 +2,24 @@
  * @file Partitioning.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of general methods for partitioning classes.
@@ -35,7 +30,7 @@
 #include <scai/partitioning/Partitioning.hpp>
 
 #include <scai/dmemo/GeneralDistribution.hpp>
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -114,13 +109,14 @@ void Partitioning::rectangularRedistribute( lama::_Matrix& matrix, const float w
 {
     SCAI_REGION( "partitioning.rect" )
 
-    CommunicatorPtr comm = matrix.getRowDistribution().getCommunicatorPtr();
-
-    if ( comm->getSize() < 2 )
+    if ( matrix.getRowDistribution().isReplicated() )
     {
         // no repartitioning for a single processor
+
         return;
     }
+
+    CommunicatorPtr comm = matrix.getRowDistribution().getCommunicatorPtr();
 
     hmemo::HArray<PartitionId> rowOwners;
     hmemo::HArray<PartitionId> colOwners;
@@ -141,8 +137,11 @@ void Partitioning::rectangularRedistribute( lama::_Matrix& matrix, const float w
 
     {
         SCAI_REGION( "partitioning.rect_redist" )
-        DistributionPtr rowDist( new GeneralDistribution( rowOwners, comm ) );
-        DistributionPtr colDist( new GeneralDistribution( colOwners, comm ) );
+
+        const PartitionId root = 0;
+
+        auto rowDist = generalDistributionBySingleOwners( rowOwners, root, comm );
+        auto colDist = generalDistributionBySingleOwners( colOwners, root, comm );
 
         matrix.redistribute( rowDist, colDist );
     }
@@ -188,11 +187,9 @@ dmemo::DistributionPtr Partitioning::partitionIt(
 
     squarePartitioning( newLocalOwners, matrix, processorWeights );
 
-    // build a new distribution by the new owners
+    // build a new 'general' distribution by the new owners
 
-    dmemo::Redistributor redist( newLocalOwners, matrix.getRowDistributionPtr() );
-
-    return redist.getTargetDistributionPtr();
+    return dmemo::generalDistributionByNewOwners( matrix.getRowDistribution(), newLocalOwners );
 }
 
 /* ------  Constructors  ------------------------------------------------ */

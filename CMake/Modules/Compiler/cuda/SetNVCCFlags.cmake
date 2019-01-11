@@ -2,29 +2,24 @@
  # @file SetNVCCFlags.cmake
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2018
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
  # This file is part of the SCAI framework LAMA.
  #
  # LAMA is free software: you can redistribute it and/or modify it under the
- # terms of the GNU Affero General Public License as published by the Free
+ # terms of the GNU Lesser General Public License as published by the Free
  # Software Foundation, either version 3 of the License, or (at your option)
  # any later version.
  #
  # LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- # FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ # FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  # more details.
  #
- # You should have received a copy of the GNU Affero General Public License
+ # You should have received a copy of the GNU Lesser General Public License
  # along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- #
- # Other Usage
- # Alternatively, this file may be used in accordance with the terms and
- # conditions contained in a signed written agreement between you and
- # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
  # @brief CompilerFlags for LAMA
@@ -77,8 +72,8 @@ if    ( CUDA_FOUND AND USE_CUDA )
         # Note: -Xcompiler;-fno-inline is used because of compability issues of CUDA with gcc-4.4
 
         if    ( CXX_SUPPORTS_C11 )
-            if ( CUDA_VERSION STRLESS "7.0" )
-                message ( FATAL_ERROR "CUDA version ${CUDA_VERSION} does not support -std=c++11, please call cmake with -DCXX_SUPPORTS_C11=0" )
+            if ( CUDA_VERSION_MAJOR LESS 7 )
+                message ( FATAL_ERROR "CUDA version ${CUDA_VERSION} does not support -std=c++11, upgrade to CUDA 7.0 or higher" )
             else ()
                 list ( APPEND SCAI_NVCC_FLAGS "-std=c++11" )
                 if ( CMAKE_CXX_COMPILER_ID MATCHES Clang )

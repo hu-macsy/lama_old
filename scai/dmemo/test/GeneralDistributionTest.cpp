@@ -2,29 +2,24 @@
  * @file GeneralDistributionTest.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Specific tests for derived distribution class GeneralDistributionTest.
@@ -67,7 +62,7 @@ struct GeneralDistributionTestConfig
 
         utilskernel::HArrayUtils::setSequence( localIndexes, first, inc, elemsPerPartition );
 
-        dist = DistributionPtr( new GeneralDistribution( globalSize, localIndexes, comm ) );
+        dist = DistributionPtr( new GeneralDistribution( globalSize, localIndexes, false, comm ) );
     }
 
     ~GeneralDistributionTestConfig()
@@ -94,9 +89,32 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.GeneralDistributionTest" );
 
 /* --------------------------------------------------------------------- */
 
+std::shared_ptr<GeneralDistribution> buildCyclic( 
+    const IndexType elemsPerProcessor, 
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr() )
+
+{
+    const IndexType rank = comm->getRank();
+    const IndexType NP   = comm->getSize();
+
+    hmemo::HArray<IndexType> localIndexes;
+    utilskernel::HArrayUtils::setSequence( localIndexes, rank, NP, elemsPerProcessor );
+
+    return generalDistributionUnchecked( elemsPerProcessor * NP, std::move( localIndexes ), comm );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( generalSizeTest )
 {
-    BOOST_CHECK( dist->getLocalSize() == elemsPerPartition );
+    const IndexType elemsPerProcessor = 10;
+
+    auto dist = buildCyclic( elemsPerProcessor );
+
+    const Communicator& comm = dist->getCommunicator();
+
+    BOOST_CHECK_EQUAL( dist->getLocalSize(), elemsPerProcessor );
+    BOOST_CHECK_EQUAL( dist->getGlobalSize(), comm.sum( dist->getLocalSize() ) );
 }
 
 /* --------------------------------------------------------------------- */
@@ -113,11 +131,13 @@ BOOST_AUTO_TEST_CASE( isEqualTest )
     const IndexType first = rank * N;
     const IndexType inc   = 1;
 
+    bool checkFlag = true;   // not really need but for convenience
+
     utilskernel::HArrayUtils::setSequence( localIndexes, first, inc, N );
 
-    GeneralDistribution genDist1( size * N, localIndexes, comm );
+    GeneralDistribution genDist1( size * N, localIndexes, checkFlag, comm );
     const GeneralDistribution& genDist2 = genDist1;
-    GeneralDistribution genDist3( size * N, localIndexes, comm );
+    GeneralDistribution genDist3( size * N, localIndexes, checkFlag, comm );
 
     // general distributions can be compared with each other
 
@@ -186,23 +206,214 @@ BOOST_AUTO_TEST_CASE( redistConstructorTest )
             {
                 // choose owner as if it will be a Cyclic(1) distribution
 
-                IndexType globalIndex = dist.local2global( i );
+                IndexType globalIndex = dist.local2Global( i );
                 wOwners[i] = globalIndex % size;
             }
         }
 
         SCAI_LOG_DEBUG( logger, "redistribute, dist = " << dist << ", owners = " << owners )
 
-        GeneralDistribution gdist( dist, owners );
+        auto gdist = generalDistributionByNewOwners( dist, owners );
+        auto cdist = cyclicDistribution( N, 1, comm );
 
-        CyclicDistribution cyclic( N, 1, comm );
+        BOOST_REQUIRE_EQUAL( gdist->getLocalSize(), cdist->getLocalSize() );
 
-        BOOST_REQUIRE_EQUAL( gdist.getLocalSize(), cyclic.getLocalSize() );
-
-        for ( IndexType i = 0; i < cyclic.getLocalSize(); ++i )
+        for ( IndexType i = 0; i < cdist->getLocalSize(); ++i )
         {
-            BOOST_CHECK_EQUAL( cyclic.local2global( i ), gdist.local2global( i ) );
+            BOOST_CHECK_EQUAL( cdist->local2Global( i ), gdist->local2Global( i ) );
         }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( buildByOwnersTest )
+{
+    auto comm = Communicator::getCommunicatorPtr();
+
+    const IndexType N = 15;
+
+    auto size = comm->getSize();
+    auto rank = comm->getRank();
+
+    hmemo::HArray<PartitionId> owners;
+
+    decltype( rank ) root = 0;
+
+    if ( rank == root )
+    {
+        // define cylcic(1) ownership
+
+        auto wOwners = hostWriteOnlyAccess( owners, N );  
+
+        for ( IndexType i = 0; i < N; ++i )
+        {
+            wOwners[i] = i % size;
+        }
+    }
+
+    auto dist = generalDistributionBySingleOwners( owners, root, comm );
+
+    // now prove that each processor has the right local values
+
+    hmemo::HArray<IndexType> myIndexes;
+
+    dist->getOwnedIndexes( myIndexes );
+
+    for ( auto myIndex : hostReadAccess( myIndexes ) )
+    {
+        BOOST_CHECK_EQUAL( static_cast<decltype( rank )>( myIndex % size ), rank );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( buildByOwnersFailTest )
+{
+    auto comm = Communicator::getCommunicatorPtr();
+
+    auto size = comm->getSize();
+    decltype( size ) root = 0;
+
+    hmemo::HArray<PartitionId> owners;   // default is empty array
+
+    if ( rank == root )
+    {
+        owners = hmemo::HArray<PartitionId>( { 0, 0, size, 0 } );   // out-of-range owner
+    }
+
+    BOOST_CHECK_THROW(
+    {
+        dist = generalDistributionBySingleOwners( owners, root, comm );
+    }, common::Exception );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( buildTest )
+{
+    using namespace hmemo;
+
+    auto comm = Communicator::getCommunicatorPtr();
+ 
+    auto size = comm->getSize();
+
+    DistributionPtr dist;
+
+    if ( size < 2 )
+    {
+        return;
+    }
+
+    const IndexType N = 8;
+
+    if ( rank == 0 )
+    {
+        dist = generalDistribution( N, HArray<IndexType>( { 1, 3, 7, 4 } ), comm );
+    }
+    else if ( rank == 1 )
+    {
+        dist = generalDistribution( N, HArray<IndexType>( { 6, 5, 0, 2 } ), comm );
+    }
+    else 
+    {
+        dist = generalDistribution( N, HArray<IndexType>( {} ), comm );
+    }
+    
+    // now prove that each processor has the right local values
+
+    hmemo::HArray<PartitionId> owners;
+
+    PartitionId root = size - 1;  // last processor
+
+    dist->allOwners( owners, root );
+
+    hmemo::HArray<PartitionId> expOwners( { 1, 0, 1, 0, 0, 1, 1, 0 } );
+
+    if ( rank == root )
+    {
+        BOOST_TEST( hostReadAccess( owners ) == hostReadAccess( expOwners ), boost::test_tools::per_element() );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( checkTest )
+{
+    using namespace hmemo;
+
+    auto comm = Communicator::getCommunicatorPtr();
+ 
+    auto size = comm->getSize();
+    auto rank = comm->getRank();
+
+    DistributionPtr dist;
+
+    if ( size < 2 )
+    {
+        BOOST_CHECK_THROW(
+        {
+            dist = generalDistribution( 5, HArray<IndexType>( { 0, 2, 4, 3 } ), comm );
+        }, common::Exception );
+
+        BOOST_CHECK_THROW(
+        {
+            dist = generalDistribution( 5, HArray<IndexType>( { 0, 2, 4, 3, 2 } ), comm );
+        }, common::Exception );
+
+        dist = generalDistribution( 5, HArray<IndexType>( { 0, 2, 4, 3, 1 } ), comm );
+    }
+
+    if ( size == 2 )
+    {
+        HArray<IndexType> myIndexes;
+
+        // generate wrong data where global index 2 has two owners
+        if ( rank == 0 )
+        {
+            myIndexes = HArray<IndexType>( { 0, 1, 2 } );
+        }
+        else
+        {
+            myIndexes = HArray<IndexType>( { 2, 3, 4 } ); 
+        }
+
+        BOOST_CHECK_THROW(
+        {
+            dist = generalDistribution( 5, myIndexes, comm );
+        }, common::Exception );
+
+        // generate wrong data where global index 2 has no owners
+        if ( rank == 0 )
+        {
+            myIndexes = HArray<IndexType>( { 0, 1 } );
+        }
+        else
+        {
+            myIndexes = HArray<IndexType>( { 3, 4 } ); 
+        }
+
+        BOOST_CHECK_THROW(
+        {
+            dist = generalDistribution( 5, myIndexes, comm );
+        }, common::Exception );
+
+        // generate wrong data where global index 2 has two and 3 no owners
+        // but we have at least sum ( myIndexes.size() ) = globalSize
+
+        if ( rank == 0 )
+        {
+            myIndexes = HArray<IndexType>( { 0, 1, 2 } );
+        }
+        else
+        {
+            myIndexes = HArray<IndexType>( { 2, 4 } ); 
+        }
+
+        BOOST_CHECK_THROW(
+        {
+            dist = generalDistribution( 5, myIndexes, comm );
+        }, common::Exception );
     }
 }
 

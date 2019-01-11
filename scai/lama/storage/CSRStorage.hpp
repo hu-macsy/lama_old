@@ -2,29 +2,24 @@
  * @file CSRStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of a structure for a (non-distributed) CSR sparse matrix.
@@ -43,10 +38,14 @@
 
 // scai libraries
 #include <scai/hmemo/HArray.hpp>
-#include <scai/dmemo/Redistributor.hpp>
 
 namespace scai
 {
+
+namespace dmemo
+{
+    class RedistributePlan;
+}
 
 namespace lama
 {
@@ -211,7 +210,7 @@ public:
         const hmemo::_HArray& values )
     {
         mepr::StorageWrapper<CSRStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
-            setCSRDataImpl( this, numRows, numColumns, ia, ja, values, this->getContextPtr() );
+            setCSRDataImpl( this, numRows, numColumns, ia, ja, values );
     }
 
     /**
@@ -222,7 +221,6 @@ public:
      * @param[in] ia         row pointer of the input csr sparse matrix
      * @param[in] ja         column indexes of the input csr sparse matrix
      * @param[in] values     the data values of the input csr sparse matrix
-     * @param[in] loc        is the context where filling takes place
      */
     template<typename OtherValueType>
     void setCSRDataImpl(
@@ -230,8 +228,7 @@ public:
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::HArray<OtherValueType>& values,
-        const hmemo::ContextPtr loc );
+        const hmemo::HArray<OtherValueType>& values );
 
     /* ==================================================================== */
     /*  build CSR data                                                      */
@@ -335,21 +332,22 @@ public:
 
     /** This method sorts entries in each row by column indexes.
      *
-     *  @param[in] diagonalProperty if true first entry in a row is diagonal element if available
-     *
-     *  This method does not force diagonal property for the storage as it will not fill up
-     *  a diagonal element if it is not available.
-     *
-     *  Note: matrix multiplication with CUSparse requires sorted rows, diagonalProperty = false
+     *  Note: matrix multiplication with CUSparse requires sorted rows
      */
-    void sortRows( bool diagonalProperty );
+    void sortRows();
 
-    /** This method overrides _MatrixStorage::setDiagonalProperty
-     *
-     *  This routine only moves the diagonal elements at the beginning of each rows.
-     *  It throws an exception if there is no entry for the diagonal element.
+    /** 
+     *  @brief Query if the entries in each row are sorted according to the column indexes. 
      */
-    virtual void setDiagonalProperty();
+    bool hasSortedRows();
+
+    /** 
+     *  @brief Set the diagonal element as first entry in each row.
+     * 
+     *  This operation might be used to optimize the access to the diagonal of the storage.
+     *  The methods setDiagonal(V) and getDiagonal might be significantly faster. 
+     */
+    void setDiagonalFirst();
 
     /******************************************************************/
     /*  set - get  row - column                                       */
@@ -385,16 +383,25 @@ public:
 
     /** 
      * Implementation of pure method MatrixStorage<ValueType>::getDiagonal
+     *
+     * This method might be faster if either the diagonal element is the first entry in a row
+     * or if the entries of each row are sorted.
      */
     virtual void getDiagonal( hmemo::HArray<ValueType>& diagonal ) const;
 
     /** 
      * Implementation of pure method MatrixStorage<ValueType>::setDiagonalV
+     *
+     * This method does not change the sparsity pattern. So it throws an
+     * exception if a non-zero value is set for a non existing entry.
      */
     virtual void setDiagonalV( const hmemo::HArray<ValueType>& diagonal );
 
     /** 
      * Implementation of pure method MatrixStorage<ValueType>::setDiagonal
+     *
+     * This method does not change the sparsity pattern. So it throws an
+     * exception if a non-zero value is set for a non existing entry.
      */
     virtual void setDiagonal( const ValueType value );
 
@@ -402,9 +409,13 @@ public:
      *  Scaling of elements in a matrix                                *
      ******************************************************************/
 
-    /** Template version used for virtual routine scale with known value type. */
+    /** Implementation of pure method MatrixStorage<ValueType>::scaleRows */
 
     void scaleRows( const hmemo::HArray<ValueType>& values );
+
+    /** Implementation of pure method MatrixStorage<ValueType>::scaleColumns */
+
+    void scaleColumns( const hmemo::HArray<ValueType>& values );
 
     /** Implementation of pure method.  */
 
@@ -447,15 +458,7 @@ public:
     /**
      *  @brief Override default implementation MatrixStorage<ValueType>::compress 
      */
-    virtual void compress( const RealType<ValueType> eps = 0, bool keepDiagonal = false );
-
-    static void compress( 
-        hmemo::HArray<IndexType>& ia, 
-        hmemo::HArray<IndexType>& ja, 
-        hmemo::HArray<ValueType>& values,
-        const bool diagonalFlag, 
-        const RealType<ValueType> eps, 
-        hmemo::ContextPtr prefContext );
+    virtual void compress( const RealType<ValueType> eps = 0 );
 
     /** Swap this CSR storage data with another CSR storage.
      *
@@ -467,7 +470,7 @@ public:
      * @brief Swap the CSR arrays with new arrays.
      *
      * This routine can be used to build a CSR storage with new values. Other member variables
-     * (e.g. mDiagonalProperty, rowIndexes, ... ) will be defined correctly.
+     * will be defined correctly.
      */
     void swap( hmemo::HArray<IndexType>& ia, hmemo::HArray<IndexType>& ja, hmemo::HArray<ValueType>& values );
 
@@ -515,14 +518,14 @@ public:
 
     /** Redistribution of CSR avoids unnecessary conversions. */
 
-    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::Redistributor& redistributor );
+    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::RedistributePlan& redistributor );
 
     /** Override splitHalo with version that avoids unnecessary conversions. */
 
     virtual void splitHalo(
         MatrixStorage<ValueType>& localData,
         MatrixStorage<ValueType>& haloData,
-        dmemo::Halo& halo,
+        dmemo::HaloExchangePlan& haloPlan,
         const dmemo::Distribution& colDist,
         const dmemo::Distribution* rowDist ) const;
 
@@ -531,11 +534,7 @@ public:
      *
      *  This solution is more efficient as temporary CSR data is completely avoided.
      */ 
-    virtual void globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns );
-
-    /** Own implementation to get global owners of the row */
-
-    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
+    virtual void globalizeHaloIndexes( const dmemo::HaloExchangePlan& haloPlan, const IndexType globalNumColumns );
 
     /**
      *   This routine builds compressed sparse column format data.
@@ -576,6 +575,13 @@ public:
         const hmemo::HArray<ValueType>& y, 
         const common::MatrixOp op ) const;
 
+    /** Implementation of element-wise binary operation for CSR */
+
+    virtual void binaryOp(
+        const MatrixStorage<ValueType>& a,
+        const common::BinaryOp op,
+        const MatrixStorage<ValueType>& b );
+
     /** Implementation of MatrixStorage::matrixPlusMatrix for CSR */
 
     virtual void matrixPlusMatrix(
@@ -602,7 +608,7 @@ public:
      *        op == common::BinaryOp::COPY for replacing
      *        op == common::BinaryOp::MIN  for minimal values
      */
-    void binaryOpCSR( const CSRStorage<ValueType>& a, const CSRStorage<ValueType>& b, common::BinaryOp op );
+    void binaryOpCSR( const CSRStorage<ValueType>& a, common::BinaryOp op, const CSRStorage<ValueType>& b );
 
     /** solution = xxx */
 
@@ -611,14 +617,6 @@ public:
         const hmemo::HArray<ValueType>& oldSolution,
         const hmemo::HArray<ValueType>& rhs,
         const ValueType omega ) const;
-
-    virtual void jacobiIterateHalo(
-        hmemo::HArray<ValueType>& localSolution,
-        const MatrixStorage<ValueType>& localStorage,
-        const hmemo::HArray<ValueType>& haloOldSolution,
-        const ValueType omega ) const;
-
-    /** @since 1.1.0 */
 
     virtual void jacobiIterateHalo(
         hmemo::HArray<ValueType>& localSolution,
@@ -682,8 +680,6 @@ public:
         hmemo::HArray<ValueType> values,
         const common::BinaryOp op = common::BinaryOp::COPY );
 
-    using _MatrixStorage::hasDiagonalProperty;
-
     using _MatrixStorage::prefetch;
     using _MatrixStorage::getContextPtr;
 
@@ -704,23 +700,15 @@ private:
 
     bool mSortedRows; //!< if true, the column indexes in each row are sorted
 
-    using MatrixStorage<ValueType>::mDiagonalProperty;
     using MatrixStorage<ValueType>::mRowIndexes;
     using MatrixStorage<ValueType>::mCompressThreshold;
 
     static std::string initTypeName();
 
-    /**
-     * @brief checks if in each row the diagonal element is stored first.
-     *
-     */
-    virtual bool checkDiagonalProperty() const;
-
     /** Help routine that computes array with row indexes for non-empty rows.
      *  The array is only built if number of non-zero rows is smaller than
      *  a certain percentage ( mThreshold ).
      */
-
     void buildRowIndexes();
 
     /** Logger for this class. */
@@ -738,34 +726,7 @@ private:
 
     void matrixTimesMatrixCSR( const ValueType alpha,
                                const CSRStorage<ValueType>& a,
-                               const CSRStorage<ValueType>& b,
-                               const hmemo::ContextPtr loc );
-
-    /** result += alpha * (*this) * x, where this storage has sparse rows */
-
-    tasking::SyncToken* sparseGEMV( hmemo::HArray<ValueType>& result,
-                                    const ValueType alpha,
-                                    const hmemo::HArray<ValueType>& x,
-                                    const common::MatrixOp op,
-                                    bool async ) const;
-
-    /** result = alpha * (*this) * x  */
-
-    tasking::SyncToken* normalGEMV( hmemo::HArray<ValueType>& result,
-                                    const ValueType alpha,
-                                    const hmemo::HArray<ValueType>& x,
-                                    const common::MatrixOp op,
-                                    bool async ) const;
-
-    /** result = alpha * (*this) * x + beta * y */
-
-    tasking::SyncToken* normalGEMV( hmemo::HArray<ValueType>& result,
-                                    const ValueType alpha,
-                                    const hmemo::HArray<ValueType>& x,
-                                    const ValueType beta,
-                                    const hmemo::HArray<ValueType>& y,
-                                    const common::MatrixOp op,
-                                    bool async ) const;
+                               const CSRStorage<ValueType>& b );
 
     /** matrixTimesVector for synchronous and asynchronous execution */
 
@@ -793,7 +754,6 @@ CSRStorage<ValueType>::CSRStorage( const CSRStorage<ValueType>& other ) :
     mJA     = other.mJA;
     mValues = other.mValues;
 
-    mDiagonalProperty = other.mDiagonalProperty;
     mSortedRows       = other.mSortedRows;
     buildRowIndexes();
 }

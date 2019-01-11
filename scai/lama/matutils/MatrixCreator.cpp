@@ -2,29 +2,24 @@
  * @file MatrixCreator.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief MatrixCreator.cpp
@@ -314,7 +309,7 @@ void MatrixCreator::buildPoisson(
     for ( IndexType i = 0; i < localSize; ++i )
     {
         localGrid.gridPos( localGridPos, i );
-        gridDistribution->local2global( globalGridPos, localGridPos );
+        gridDistribution->local2Global( globalGridPos, localGridPos );
 
         const IndexType numNonZeros = getNStencilValues( globalGridPos, globalGrid, length, maxDistance );
 
@@ -352,7 +347,7 @@ void MatrixCreator::buildPoisson(
         for ( IndexType i = 0; i < localSize; ++i )
         {
             localGrid.gridPos( localGridPos, i );
-            gridDistribution->local2global( globalGridPos, localGridPos );
+            gridDistribution->local2Global( globalGridPos, localGridPos );
 
             // get column positions and values of matrix, diagonal element is first
 
@@ -388,10 +383,6 @@ void MatrixCreator::buildPoisson(
     SCAI_LOG_DEBUG( logger, "replace owned data with " << localMatrix )
     matrix.assignLocal( localMatrix, gridDistribution );   
     matrix.redistribute( gridDistribution, gridDistribution );     // builds also halo
-
-    // but now the local part of matrixA should have the diagonal property as global column // indexes have been localized
-    // is not for each storage format the case
-    // SCAI_ASSERT_DEBUG( matrix.getLocalStorage().hasDiagonalProperty(), "local storage data has not diagonal property: " << matrix )
 
     SCAI_LOG_INFO( logger, "built matrix A = " << matrix )
 }
@@ -718,9 +709,6 @@ void MatrixCreator::buildReplicatedDiag(
 
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr( );
 
-    IndexType nRows     = storage.getNumRows() * nRepeat;
-    IndexType nCols     = storage.getNumColumns() * nRepeat;
-
     IndexType nChunks;  // will be number of chunks for this processor
 
     // this replication will never split any of the storages
@@ -733,11 +721,11 @@ void MatrixCreator::buildReplicatedDiag(
 
     // we will take a general block distribution for the rows
 
-    dmemo::DistributionPtr rowDist( new dmemo::GenBlockDistribution( nRows, nChunks * storage.getNumRows(), comm ) );
+    dmemo::DistributionPtr rowDist = genBlockDistributionBySize( nChunks * storage.getNumRows(), comm );
 
     // we will take also a general block distribution for the columns to avoid the translation into global indexes
 
-    dmemo::DistributionPtr colDist( new dmemo::GenBlockDistribution( nCols, nChunks * storage.getNumColumns(), comm ) );
+    dmemo::DistributionPtr colDist = genBlockDistributionBySize( nChunks * storage.getNumColumns(), comm );
 
     SCAI_LOG_DEBUG( logger, *comm << ": row dist = " << *rowDist )
     SCAI_LOG_DEBUG( logger, *comm << ": col dist = " << *colDist )
@@ -792,8 +780,8 @@ void MatrixCreator::buildReplicated( SparseMatrix<ValueType>& matrix,
 
     // we will take a general block distribution
 
-    dmemo::DistributionPtr rowDist( new dmemo::GenBlockDistribution( nGlobal, nLocal, comm ) );
-    dmemo::DistributionPtr colDist( new dmemo::NoDistribution( storage.getNumColumns() * nRepeatCol  ) );
+    dmemo::DistributionPtr rowDist = dmemo::genBlockDistributionBySize( nLocal, comm );
+    dmemo::DistributionPtr colDist = dmemo::noDistribution( storage.getNumColumns() * nRepeatCol  );
 
     SCAI_LOG_DEBUG( logger, *comm << ": rowDist for replicated matrix = " << *rowDist )
 

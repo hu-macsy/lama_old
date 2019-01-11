@@ -2,29 +2,24 @@
  * @file BlockPartitioning.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief BlockPartitioning.cpp
@@ -97,7 +92,7 @@ void BlockPartitioning::rectangularPartitioning(
 
     for ( IndexType i = 0; i < numLocalRows; ++i )
     {
-        IndexType globalI = rowDist.local2global( i );
+        IndexType globalI = rowDist.local2Global( i );
         wRowMapping[i] = globalI / rowBlockSize;
     }
 
@@ -105,7 +100,7 @@ void BlockPartitioning::rectangularPartitioning(
 
     for ( IndexType j = 0; j < numLocalCols; ++j )
     {
-        IndexType globalJ = colDist.local2global( j );
+        IndexType globalJ = colDist.local2Global( j );
         wColMapping[j] = globalJ / colBlockSize;
     }
 }
@@ -148,13 +143,13 @@ void BlockPartitioning::squarePartitioning(
 
 void BlockPartitioning::rectangularRedistribute( _Matrix& matrix, const float weight ) const
 {
-    CommunicatorPtr comm = matrix.getRowDistribution().getCommunicatorPtr();
-
-    if ( comm->getSize() < 2 )
+    if ( matrix.getRowDistribution().isReplicated() )
     {
         // no repartitioning for a single processor
         return;
     }
+
+    CommunicatorPtr comm = matrix.getRowDistribution().getCommunicatorPtr();
 
     IndexType numRows    = matrix.getRowDistribution().getGlobalSize();
     IndexType numColumns = matrix.getColDistribution().getGlobalSize();
@@ -162,8 +157,8 @@ void BlockPartitioning::rectangularRedistribute( _Matrix& matrix, const float we
     // Block partitioning : just create a 'general' block distribution
     // Note: this does not take the connections into account 
 
-    DistributionPtr rowDist( new GenBlockDistribution( numRows, weight, comm ) );
-    DistributionPtr colDist( new GenBlockDistribution( numColumns, weight, comm ) );
+    auto rowDist = genBlockDistributionByWeight( numRows, weight, comm );
+    auto colDist = genBlockDistributionByWeight( numColumns, weight, comm );
 
     matrix.redistribute( rowDist, colDist );
 }

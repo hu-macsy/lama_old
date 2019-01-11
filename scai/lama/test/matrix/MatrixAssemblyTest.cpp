@@ -2,29 +2,24 @@
  * @file test/matrix/MatrixAssemblyTest.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Test routines for MatrixAssembly
@@ -168,7 +163,7 @@ BOOST_AUTO_TEST_CASE( globalTest )
         }
     }
 
-    COOStorage<ValueType> cooGlobal = assembly.buildGlobalCOO( numRows, numColumns );
+    COOStorage<ValueType> cooGlobal = assembly.buildGlobalCOO( numRows, numColumns, common::BinaryOp::COPY );
  
     BOOST_REQUIRE_EQUAL( numRows, cooGlobal.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, cooGlobal.getNumColumns() );
@@ -213,14 +208,14 @@ BOOST_AUTO_TEST_CASE( failTest )
 
     COOStorage<ValueType> localStorage;
 
-    localStorage = assembly.buildLocalCOO( *dist, numColumns );
+    localStorage = assembly.buildLocalCOO( *dist, numColumns, common::BinaryOp::COPY );
 
     BOOST_CHECK_EQUAL( comm->sum( localStorage.getNumValues() ), nnz );
 
     // number of columns too small
 
     BOOST_CHECK_THROW( {
-        localStorage = assembly.buildLocalCOO( *dist, 5 );
+        localStorage = assembly.buildLocalCOO( *dist, 5, common::BinaryOp::COPY );
     }, common::Exception );
 
     // number of rows too small
@@ -228,7 +223,7 @@ BOOST_AUTO_TEST_CASE( failTest )
     dist = std::make_shared<dmemo::BlockDistribution>( 5, comm);
 
     BOOST_CHECK_THROW( {
-        localStorage = assembly.buildLocalCOO( *dist, numColumns );
+        localStorage = assembly.buildLocalCOO( *dist, numColumns, common::BinaryOp::COPY );
     }, common::Exception );
 
     // building local data only with distribution that has same communicator
@@ -240,7 +235,7 @@ BOOST_AUTO_TEST_CASE( failTest )
         SCAI_LOG_INFO( logger, "noDist::comm = " << noDist->getCommunicator() <<
                                " != assembly::comm = " << assembly.getCommunicator() )
         BOOST_CHECK_THROW( {
-            localStorage = assembly.buildLocalCOO( *noDist, numColumns );
+            localStorage = assembly.buildLocalCOO( *noDist, numColumns, common::BinaryOp::COPY );
         }, common::Exception );
     }
 }

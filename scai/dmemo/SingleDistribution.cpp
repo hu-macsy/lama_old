@@ -2,29 +2,24 @@
  * @file SingleDistribution.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of methods for single distribution class.
@@ -115,14 +110,14 @@ IndexType SingleDistribution::getMaxLocalSize() const
 
 /* ---------------------------------------------------------------------- */
 
-IndexType SingleDistribution::local2global( const IndexType localIndex ) const
+IndexType SingleDistribution::local2Global( const IndexType localIndex ) const
 {
     return localIndex;
 }
 
 /* ---------------------------------------------------------------------- */
 
-IndexType SingleDistribution::global2local( const IndexType globalIndex ) const
+IndexType SingleDistribution::global2Local( const IndexType globalIndex ) const
 {
     IndexType localIndex = invalidIndex;
 
@@ -244,13 +239,13 @@ std::string SingleDistribution::createValue()
     return getId();
 }
 
-Distribution* SingleDistribution::create( const DistributionArguments arg )
+DistributionPtr SingleDistribution::create( const DistributionArguments arg )
 {
     SCAI_LOG_INFO( logger, "create" )
 
     // by default we create one where processor 0 is owner
 
-    return new SingleDistribution( arg.globalSize, arg.communicator, 0 );
+    return std::make_shared<SingleDistribution>( arg.globalSize, arg.communicator, 0 );
 }
 
 } /* end namespace dmemo */

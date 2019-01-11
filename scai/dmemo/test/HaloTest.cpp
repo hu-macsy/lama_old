@@ -2,29 +2,24 @@
  * @file HaloTest.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Test routines for the class Halo.
@@ -47,7 +42,7 @@
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
 
-#include <scai/common/test/TestMacros.hpp>
+#include <scai/dmemo/test/TestMacros.hpp>
 
 #include <scai/hmemo/HostReadAccess.hpp>
 #include <scai/hmemo/HostWriteAccess.hpp>
@@ -81,7 +76,7 @@ struct HaloTestConfig
 
         {
             HArrayRef<IndexType> arrRequiredIndexes( requiredIndexes );
-            HaloBuilder::build( *dist, arrRequiredIndexes, halo );
+            HaloBuilder::buildFromRequired( halo, *dist, arrRequiredIndexes );
         }
     }
 
@@ -195,38 +190,6 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
     }
 }
 
-// TODO: Move to dmemo testsupport...?
-#define CHECK_COMMUNICATION_PLANS_EQUAL(plan1, plan2)                       \
-    BOOST_TEST_CONTEXT(" CommunicationPlan instances do not match ")        \
-    {                                                                       \
-        BOOST_TEST(plan1.allocated() == plan2.allocated());                 \
-        BOOST_TEST(plan1.compressed() == plan2.compressed());               \
-        BOOST_TEST(plan1.totalQuantity() == plan2.totalQuantity());         \
-        BOOST_TEST(plan1.size() == plan2.size());                           \
-                                                                            \
-        if (plan1.size() == plan2.size())                                   \
-        {                                                                   \
-            for (PartitionId i = 0; i < plan1.size(); ++i)                  \
-            {                                                               \
-                BOOST_TEST_CONTEXT("mismatch at entry " << i)               \
-                {                                                           \
-                    const auto entry1 = plan1[i];                           \
-                    const auto entry2 = plan2[i];                           \
-                                                                            \
-                    BOOST_TEST(entry1.partitionId == entry2.partitionId);   \
-                    BOOST_TEST(entry1.quantity == entry2.quantity);         \
-                    BOOST_TEST(entry1.offset == entry2.offset);             \
-                }                                                           \
-            }                                                               \
-        }                                                                   \
-        else                                                                \
-        {                                                                   \
-            BOOST_TEST(plan1.size() == plan2.size());                       \
-        }                                                                   \
-    }
-
-
-
 // Helper struct to simplify building expected values
 // on multiple processors
 struct HaloExpectedResult
@@ -240,8 +203,8 @@ struct HaloExpectedResult
 
 void checkHaloAgainstExpected( const Halo& halo, const HaloExpectedResult& expected )
 {
-    const auto expectedProvidedPlan = CommunicationPlan::buildBySizes( expected.providedQuantities.data(), expected.providedQuantities.size() );
-    const auto expectedRequiredPlan = CommunicationPlan::buildBySizes( expected.requiredQuantities.data(), expected.requiredQuantities.size() );
+    const auto expectedProvidedPlan = CommunicationPlan( expected.providedQuantities );
+    const auto expectedRequiredPlan = CommunicationPlan( expected.requiredQuantities );
 
     CHECK_COMMUNICATION_PLANS_EQUAL( expectedProvidedPlan, halo.getProvidesPlan() );
     CHECK_COMMUNICATION_PLANS_EQUAL( expectedRequiredPlan, halo.getRequiredPlan() );
@@ -274,125 +237,6 @@ std::ostream& operator <<( std::ostream& o, const BuildFromProvidedOwnersData& d
 {
     o << data.testCaseName << std::endl;
     return o;
-}
-
-std::vector< BuildFromProvidedOwnersData > buildFromProvidedOwnersTestData()
-{
-    const auto comm = Communicator::getCommunicatorPtr();
-    const auto rank = comm->getRank();
-
-    std::vector< BuildFromProvidedOwnersData > testData;
-
-    if ( comm->getSize() == 1 )
-    {
-        auto data = BuildFromProvidedOwnersData();
-        data.testCaseName = "TestCase1";
-        data.halo2global = { 0, 1, 2 };
-        data.ownersOfProvided = { 0, 0, 0 };
-        data.expected.providedIndexes = { 0, 1, 2 };
-        data.expected.providedQuantities = { 3 };
-        data.expected.requiredIndexes = { 0, 1, 2 };
-        data.expected.requiredQuantities = { 3 };
-        data.expected.global2halo = { { 0, 0 }, { 1, 1 }, { 2, 2 } };
-        testData.push_back( data );
-    }
-    else if ( comm->getSize() == 2 )
-    {
-        auto data = BuildFromProvidedOwnersData();
-        data.testCaseName = "TestCase2";
-
-        if ( rank == 0 )
-        {
-            data.halo2global = { 0, 2, 4 };
-            data.ownersOfProvided = { 1, 1, 0 };
-            data.expected.providedIndexes = { 2, 0, 1 };
-            data.expected.requiredIndexes = { 4, 1 };
-            data.expected.providedQuantities = { 1, 2 };
-            data.expected.requiredQuantities = { 1, 1 };
-            data.expected.global2halo = { { 4, 0 }, { 1, 1 } };
-        }
-        else if ( rank == 1 )
-        {
-            data.halo2global = { 1, 3 };
-            data.ownersOfProvided = { 0, 1 };
-            data.expected.providedIndexes = { 0, 1 };
-            data.expected.requiredIndexes = { 0, 2, 3 };
-            data.expected.providedQuantities = { 1, 1 };
-            data.expected.requiredQuantities = { 2, 1 };
-            data.expected.global2halo = { { 0, 0 }, { 2, 1 }, { 3, 2 } };
-        }
-
-        testData.push_back( data );
-    }
-    else if ( comm->getSize() == 3 )
-    {
-        auto data = BuildFromProvidedOwnersData();
-        data.testCaseName = "TestCase3";
-
-        if ( rank == 0 )
-        {
-            data.halo2global = { 0, 3, 6, 9};
-            data.ownersOfProvided = { 2, 2, 1, 0 };
-            data.expected.providedIndexes = { 3, 2, 0, 1 };
-            data.expected.requiredIndexes = { 9, 1, 5, 8 };
-            data.expected.providedQuantities = { 1, 1, 2 };
-            data.expected.requiredQuantities = { 1, 1, 2 };
-            data.expected.global2halo = { { 9, 0 }, { 1, 1 }, { 5, 2 }, { 8, 3 } };
-        }
-        else if ( rank == 1 )
-        {
-            data.halo2global = { 1, 4, 7 };
-            data.ownersOfProvided = { 0, 1, 2 };
-            data.expected.providedIndexes = { 0, 1, 2 };
-            data.expected.requiredIndexes = { 6, 4, 2 };
-            data.expected.providedQuantities = { 1, 1, 1 };
-            data.expected.requiredQuantities = { 1, 1, 1 };
-            data.expected.global2halo = { { 6, 0 }, { 4, 1 }, { 2, 2 } };
-        }
-        else if ( rank == 2 )
-        {
-            data.halo2global = { 2, 5, 8 };
-            data.ownersOfProvided = { 1, 0, 0 };
-            data.expected.providedIndexes = { 1, 2, 0 };
-            data.expected.requiredIndexes = { 0, 3, 7 };
-            data.expected.providedQuantities = { 2, 1, 0 };
-            data.expected.requiredQuantities = { 2, 1, 0 };
-            data.expected.global2halo = { { 0, 0 }, { 3, 1 }, { 7, 2 } };
-        }
-
-        testData.push_back( data );
-    }
-    else
-    {
-        BOOST_TEST_MESSAGE( "No test data for communicator size " << comm->getSize() );
-    }
-
-    return testData;
-}
-
-BOOST_DATA_TEST_CASE( buildFromProvidedOwners, boost::unit_test::data::make( buildFromProvidedOwnersTestData() ), data )
-{
-    const auto comm = Communicator::getCommunicatorPtr();
-    Halo halo;
-    HaloBuilder::buildFromProvidedOwners( *comm, data.halo2global, data.ownersOfProvided, halo );
-    checkHaloAgainstExpected( halo, data.expected );
-}
-
-BOOST_AUTO_TEST_CASE( buildFromProvidedOwners_empty )
-{
-    const auto comm = Communicator::getCommunicatorPtr();
-    const auto halo2global = HArray<IndexType> { };
-    const auto ownersOfProvided = HArray<PartitionId> { };
-
-    HaloExpectedResult expected;
-    expected.providedIndexes = {};
-    expected.providedQuantities = std::vector<IndexType>( comm->getSize(), 0 );
-    expected.requiredIndexes = expected.providedIndexes;
-    expected.requiredQuantities = expected.providedQuantities;
-
-    Halo halo;
-    HaloBuilder::buildFromProvidedOwners( *comm, halo2global, ownersOfProvided, halo );
-    checkHaloAgainstExpected( halo, expected );
 }
 
 /* --------------------------------------------------------------------- */
@@ -480,7 +324,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, scai_numeric_test_type
     Halo halo;
     {
         HArrayRef<IndexType> arrRequiredIndexes( requiredIndexes );
-        HaloBuilder::build( distribution, arrRequiredIndexes, halo );
+        HaloBuilder::buildFromRequired( halo, distribution, arrRequiredIndexes );
     }
 
     SCAI_LOG_INFO( logger, "halo is now available: " << halo );
@@ -520,7 +364,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, scai_numeric_test_type
 
     {
         HArrayRef<IndexType> arrRequiredIndexes( requiredIndexes );
-        HaloBuilder::build( distribution, arrRequiredIndexes, halo );
+        HaloBuilder::buildFromRequired( halo, distribution, arrRequiredIndexes );
     }
 
     {

@@ -2,29 +2,24 @@
  * @file OpenMPDenseUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Class defintion for OpenMP routines to be used for DenseKernelTrait.
@@ -73,76 +68,89 @@ public:
 
     /** OpenMP implementation for DenseKernelTrait::getCSRSizes */
 
-    template<typename DenseValueType>
+    template<typename ValueType>
     static void getCSRSizes(
         IndexType csrSizes[],
-        bool diagonalFlag,
         const IndexType numRows,
         const IndexType numColumns,
-        const DenseValueType denseValues[],
-        const DenseValueType eps );
+        const ValueType denseValues[],
+        const RealType<ValueType> eps );
 
     /** OpenMP implementation for DenseKernelTrait::getCSRValues */
 
-    template<typename CSRValueType, typename DenseValueType>
+    template<typename ValueType>
     static void getCSRValues(
         IndexType csrJA[],
-        CSRValueType csrValues[],
+        ValueType csrValues[],
         const IndexType csrIA[],
-        const bool diagonalFlag,
         const IndexType numRows,
         const IndexType numColumns,
-        const DenseValueType denseValues[],
-        const DenseValueType eps );
-
-    /** OpenMP implementation for DenseKernelTrait::set */
-
-    template<typename DenseValueType1, typename DenseValueType2>
-    static void set(
-        DenseValueType1 newValues[],
-        const IndexType numRows,
-        const IndexType numColumns,
-        const DenseValueType2 oldValues[],
-        const common::BinaryOp op );
+        const ValueType denseValues[],
+        const RealType<ValueType> eps );
 
     /** OpenMP implementation for DenseKernelTrait::setCSRValues */
 
-    template<typename DenseValueType, typename CSRValueType>
+    template<typename ValueType>
     static void setCSRValues(
-        DenseValueType denseValues[],
+        ValueType denseValues[],
         const IndexType numRows,
         const IndexType numColumns,
         const IndexType csrIA[],
         const IndexType csrJA[],
-        const CSRValueType csrValues[] );
+        const ValueType csrValues[] );
 
     /** OpenMP implementation for DenseKernelTrait::setValue */
 
-    template<typename DenseValueType>
+    template<typename ValueType>
     static void setValue(
-        DenseValueType denseValues[],
+        ValueType denseValues[],
         const IndexType numRows,
         const IndexType numColumns,
-        const DenseValueType val,
+        const ValueType val,
         const common::BinaryOp op );
-
-    /** OpenMP implementation for DenseKernelTrait::setDiagonalValue::FuncType */
-
-    template<typename DenseValueType>
-    static void setDiagonalValue(
-        DenseValueType denseValues[],
-        const IndexType numRows,
-        const IndexType numColumns,
-        const DenseValueType val );
 
     /** OpenMP implementation for DenseKernelTrait::scaleRows */
 
     template<typename ValueType>
-    static void scaleRows(
+    static void setRows(
         ValueType denseValues[],
         const IndexType numRows,
         const IndexType numColumns,
-        const ValueType rowValues[] );
+        const ValueType rowValues[],
+        const common::BinaryOp op );
+
+    /** OpenMP implementation for DenseKernelTrait::scaleColumns */
+
+    template<typename ValueType>
+    static void setColumns(
+        ValueType denseValues[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        const ValueType columnValues[],
+        const common::BinaryOp op );
+
+    /** Implementation for DenseKernelTrait::jacobi  */
+
+    template<typename ValueType>
+    static void jacobi(
+        ValueType solution[],
+        const IndexType n,
+        const ValueType denseValues[],
+        const ValueType oldSolution[],
+        const ValueType rhs[],
+        const ValueType omega );
+
+    /** Implementation for DenseKernelTrait::jacobiHalo  */
+
+    template<typename ValueType>
+    static void jacobiHalo(
+        ValueType solution[],
+        const ValueType diagonal[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        const ValueType denseValues[],
+        const ValueType oldSolution[],
+        const ValueType omega );
 
 private:
 
@@ -165,18 +173,6 @@ private:
 
     template<typename ValueType>
     struct RegistratorV
-    {
-        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
-    };
-
-    /** Struct for registration of methods with two template arguments.
-     *
-     *  Registration function is wrapped in struct/class that can be used as template
-     *  argument for metaprogramming classes to expand for all supported types.
-     */
-
-    template<typename ValueType, typename OtherValueType>
-    struct RegistratorVO
     {
         static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
     };

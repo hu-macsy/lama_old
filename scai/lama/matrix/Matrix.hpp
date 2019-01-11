@@ -2,29 +2,24 @@
  * @file Matrix.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Abstract base class for all matrices of a certain value type.
@@ -329,6 +324,15 @@ public:
      */
     virtual void matrixTimesScalar( const Matrix<ValueType>& A, const ValueType alpha ) = 0;
 
+    /** Elementwise binary operation of matrix elements
+     *
+     *  @param[in] matrixA, matrixB are the input matrices, must have the same distribution
+     *  @param[in] op               specifies the binary operation to be applied
+     *
+     *  This matrix becomes the result of the operation, alias with one of the input matrices is supported.
+     */
+    virtual void binaryOp( const Matrix<ValueType>& matrixA, const common::BinaryOp op, const Matrix<ValueType>& matrixB ) = 0;
+
     /**
      * @brief Computes this = alpha * A + beta * B.
      *
@@ -456,6 +460,15 @@ public:
      * pre-multiplying this matrix with a diagonal marix built by the vector scaleY.
      */
     virtual void scaleRows( const DenseVector<ValueType>& scaleY ) = 0;
+
+    /** @brief This method scales the matrix elements individually for each column.
+     *
+     * @param[in] scaleY  is a vector whose distribution must match the column distribution
+     *
+     * This operation corresponds to $this = this * diagonalMatrix( scaleY )$, i.e.
+     * post-multiplying this matrix with a diagonal marix built by the vector scaleY.
+     */
+    virtual void scaleColumns( const DenseVector<ValueType>& scaleY ) = 0;
 
     /* ======================================================================= */
     /*     set/get of rows/columns of a matrix                                 */

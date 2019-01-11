@@ -2,29 +2,24 @@
  * @file Distribution.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of abstract base class for a one-dimensional distribution.
@@ -95,7 +90,7 @@ struct DistributionArguments
  */
 class COMMON_DLL_IMPORTEXPORT Distribution:
 
-    public common::Factory1<std::string, DistributionArguments, Distribution*>,
+    public common::Factory1<std::string, DistributionArguments, DistributionPtr>,
     public common::Printable
 {
 
@@ -109,23 +104,16 @@ public:
      * @param[in] globalSize is the number of elements to distribute
      * @param[in] weight is an individual weight for each partition of the communicator
      *
-     * @returns pointer to a new distribution of the specified kind, NULL if kind is not supported
+     * @returns (shared) pointer to a new distribution of the specified kind, NULL if kind is not supported
      *
      *  /code
-     *  // Using a MetisDistribution requires its availabilty
-     *  Distribution* dist = MetisDistribution( comm, size, weight )
-     *  // code using the factory does not require the availability
-     *  Distribution* dist = Distribution::getDistributionPtr( "METIS", comm, size, weight )
-     *  if ( dist == NULL )
-     *  {
      *      dist = Distribution::getDistributionPtr( "GEN_BLOCK", comm, size, weight )
-     *  }
      *  /endcode
      *
      *  Note: Internally, this routine requires that all derived classes implement a corresponding
      *        create method that will be registered during static initialization.
      */
-    static Distribution* getDistributionPtr(
+    static DistributionPtr getDistributionPtr(
         const std::string& kind,
         const CommunicatorPtr comm,
         const IndexType globalSize,
@@ -143,7 +131,7 @@ public:
      *
      * Note: the current distribution of matrix does not matter.
      */
-    static Distribution* getDistributionPtr(
+    static DistributionPtr getDistributionPtr(
         const std::string& kind,
         const CommunicatorPtr comm,
         const Distributed& matrix,
@@ -156,12 +144,6 @@ public:
      *            are distributed
      */
     Distribution( const IndexType globalSize, const CommunicatorPtr communicator );
-
-    /** Same as Distribution( globalSize, NoCommunicator() )
-     *
-     * @param[in] globalSize is the number of elements to distribute
-     */
-    Distribution( const IndexType globalSize );
 
     /** Distributions should never be copied. */
 
@@ -183,14 +165,14 @@ public:
 
     CommunicatorPtr getCommunicatorPtr() const;
 
-    /** Query for the number of processors/partitions onto which the distribution is done. */
-
-    PartitionId getNumPartitions() const;
-
-    /** Query whether the distribution is a replication, i.e. each processor is owner of all data
+    /** Query for the number of processors/partitions onto which the distribution is done.
      *
-     *  same as getNumPartitions() == 1, always true for NoDistribution, always true when running
-     *  an application on a single processor.
+     *  @returns 1 for replicated distribution and comm->size() for distributed data
+     */
+    inline PartitionId getNumPartitions() const;
+
+    /** Query whether the distribution is a replication, i.e. each processor (of the communicator)
+     *  is owner of all data. 
      */
     inline bool isReplicated() const;
 
@@ -233,7 +215,7 @@ public:
      * This method must be implemented by all base classes. It should throw
      * an exception if the argument is not in the valid range.
      */
-    virtual IndexType local2global( const IndexType localIndex ) const = 0;
+    virtual IndexType local2Global( const IndexType localIndex ) const = 0;
 
     /** This method translates a global index into a local index.
      *
@@ -243,7 +225,7 @@ public:
      * This method must be implemented by all base classes. It should throw
      * an exception if the argument is not in the valid range.
      */
-    virtual IndexType global2local( const IndexType globalIndex ) const = 0;
+    virtual IndexType global2Local( const IndexType globalIndex ) const = 0;
 
     /** This method translates a whole array of global indexes to local indexes.
      *
@@ -253,13 +235,18 @@ public:
      *  \code
      *  for ( IndexType i = 0; i < globalIndexes.size(); ++i )
      *  {
-     *      localIndexes[i] = global2local( globalIndexes[i] );
+     *      localIndexes[i] = global2Local( globalIndexes[i] );
      *  }
      *  \endcode
      *
      *  Note: alias of localIndexes and globalIndexes is supported
      */
-    virtual void global2localV( hmemo::HArray<IndexType>& localIndexes, const hmemo::HArray<IndexType>& globalIndexes ) const;
+    virtual void global2LocalV( hmemo::HArray<IndexType>& localIndexes, const hmemo::HArray<IndexType>& globalIndexes ) const;
+
+    /** 
+     *  @brief This method translates a whole array of local indexes to global indexes.
+     */
+    virtual void local2GlobalV( hmemo::HArray<IndexType>& globalIndexes, const hmemo::HArray<IndexType>& localIndexes ) const;
 
     /** Get the owners for a set of (global) indexes
      *
@@ -272,6 +259,13 @@ public:
      * @param[out] owners are the corresponing processors that own the indexes
      */
     virtual void computeOwners( hmemo::HArray<PartitionId>& owners, const hmemo::HArray<IndexType>& indexes ) const;
+
+    hmemo::HArray<PartitionId> owner( const hmemo::HArray<IndexType>& globalIndexes ) const
+    {
+        hmemo::HArray<PartitionId> owners;
+        computeOwners( owners, globalIndexes );
+        return owners;
+    }
 
     /**
      * Get the owner of a global index, all processors call with same value.
@@ -293,6 +287,16 @@ public:
      *  @param[out] myGlobalIndexes array with localSize 'global' indexes that are owned by this processor
      */
     virtual void getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const;
+
+    /**
+     *  @brief getOwnedIndexes as function that returns the array, for more convenient use
+     */
+    hmemo::HArray<IndexType> ownedGlobalIndexes() const
+    {
+        hmemo::HArray<IndexType> myGlobalIndexes;
+        getOwnedIndexes( myGlobalIndexes );        // calls the virtual function
+        return myGlobalIndexes;
+    }
 
     /** The following function verifies if the distribution is nothing else than a block
      *  or general block distribution.
@@ -345,12 +349,12 @@ public:
      *  (same as bucket sort of array with all owners).
      *
      *  @param[out] offsets local sizes of all partitions as offset array, size is number of partitions + 1
-     *  @param[out] local2global contains all global indexes sorted by the owners, is permutation
+     *  @param[out] local2Global contains all global indexes sorted by the owners, is permutation
      *
      *  With the output arrays, the call of getAnyGlobalIndex can be done directly on heterorgeneous arrays
      *
      *  \code
-     *     getAnyGlobalIndex( localIndex, owner ) == local2global[ offsets[owner] + localIndex]
+     *     getAnyGlobalIndex( localIndex, owner ) == local2Global[ offsets[owner] + localIndex]
      *  \endcode
      *
      *  /code
@@ -359,22 +363,22 @@ public:
      *     for ( IndexType k = offsets[p]; k < offsets[p+1]; ++k )
      *     {
      *         IndexType localIndex = k - offsets[p];
-     *         IndexType globalIndex = local2global[k];
+     *         IndexType globalIndex = local2Global[k];
      *         ....
      *     }
      *  /endcode
      *
      *  Note: If this distribution is a block distribution, the permutation is the identitiy.
      */
-    virtual void getAnyLocal2Global( hmemo::HArray<IndexType>& offsets, hmemo::HArray<IndexType>& local2global ) const;
+    virtual void getAnyLocal2Global( hmemo::HArray<IndexType>& offsets, hmemo::HArray<IndexType>& local2Global ) const;
 
     /** This method returns the inverse permutation as called by getAnyLocal2Global.
      *
      *  \code
-     *     getAnyLocalIndex( globalIndex, owner ) == global2local[globalIndex] - offsets[owner]
+     *     getAnyLocalIndex( globalIndex, owner ) == global2Local[globalIndex] - offsets[owner]
      *  \endcode
      */
-    virtual void getAnyGlobal2Local( hmemo::HArray<IndexType>& offsets, hmemo::HArray<IndexType>& global2local ) const;
+    virtual void getAnyGlobal2Local( hmemo::HArray<IndexType>& offsets, hmemo::HArray<IndexType>& global2Local ) const;
 
     /**
      * Virtual method to check two distributions for equality.
@@ -510,7 +514,19 @@ IndexType Distribution::getGlobalSize() const
     return mGlobalSize;
 }
 
-inline bool Distribution::isReplicated() const
+PartitionId Distribution::getNumPartitions() const
+{
+    if ( strcmp( getKind(), "NO" ) == 0 )
+    {
+        return 1;
+    }
+    else
+    { 
+        return getCommunicator().getSize();
+    }
+}
+
+bool Distribution::isReplicated() const
 {
     return getNumPartitions() == 1;
 }

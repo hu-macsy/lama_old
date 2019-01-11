@@ -2,29 +2,24 @@
  * @file NoCommunicator.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of a communicator class for non-distributed (replicated) objects.
@@ -45,8 +40,11 @@ namespace scai
 namespace dmemo
 {
 
-/** The class NoCommunicator stands for objects that are replicated on each
- *  partition or processor.
+/** 
+ *  The class NoCommunicator stands for a communicator that contains just this single processor.
+ *
+ *  It is used a fallback communicator if no MPI is supported, but is also used in cases
+ *  where trivial communication is required.
  */
 
 class COMMON_DLL_IMPORTEXPORT NoCommunicator:
@@ -191,6 +189,10 @@ public:
     static CommunicatorKind createValue();
 
 protected:
+
+    /** Implementation of pure method NoCommunicator::splitIt */
+
+    virtual NoCommunicator* splitIt( PartitionId color, PartitionId key ) const;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };

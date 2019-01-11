@@ -2,29 +2,24 @@
  * @file TestData2.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Contains test data of one matrix for different formats
@@ -56,20 +51,17 @@ static void getDenseTestData(
                       -1  0  1  3
      */
 
-    const ValueType values[]  = { 6, 1, 0, 4,
-                                  -2, 8, 3, 0,
-                                  0, 1, 9, 4,
-                                  -1, 0, 1, 3
-                                };
+    denseValues = { 6, 1, 0, 4,
+                   -2, 8, 3, 0,
+                    0, 1, 9, 4,
+                   -1, 0, 1, 3   };
 
     numRows    = 4;
     numColumns = 4;
 
-    IndexType numValues  = sizeof( values ) / sizeof( ValueType );
+    IndexType numValues  = denseValues.size();
 
     SCAI_ASSERT_EQ_ERROR( numValues, numRows * numColumns, "size mismatch" )
-
-    denseValues.setRawData( numValues, values );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -88,22 +80,19 @@ static void getCSRTestData(
                        0  1  9  4        2  1  3    9  1  4
                       -1  0  1  3        3  0  2    3 -1  1
 
-         Note: diagonals are always the first entry
+         Note: CSR data is sorted here, but is not mandatory
      */
 
-    const IndexType ia_values[]  = { 0,          3,          6,       9,       12 };
-    const IndexType ja_values[]  = { 0,  1,  3,  1,  0,  2,  2, 1, 3, 3,  0, 2 };
-    const ValueType nz_values[]  = { 6,  1,  4,  8, -2,  3,  9, 1, 4, 3, -1, 1 };
+    csrIA     = { 0,          3,          6,       9,       12 };
+    csrJA     = { 0,  1,  3,  0,  1,  2,  1, 2, 3, 0,  2, 3 };
+    csrValues = { 6,  1,  4,  -2, 8,  3,  1, 9, 4, -1, 1, 3 };
 
-    numRows    = sizeof( ia_values ) / sizeof( IndexType ) - 1;
+    numRows    = csrIA.size() - 1;
     numColumns = 4;
-    numValues  = sizeof( ja_values ) / sizeof( IndexType );
+    numValues  = csrIA[numRows];
 
-    SCAI_ASSERT_EQ_ERROR( numValues, ia_values[numRows], "size mismatch" )
-
-    csrIA.setRawData( numRows + 1, ia_values );
-    csrJA.setRawData( numValues, ja_values );
-    csrValues.setRawData( numValues, nz_values );
+    SCAI_ASSERT_EQ_ERROR( numValues, csrJA.size(), "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( numValues, csrValues.size(), "size mismatch" )
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -118,27 +107,25 @@ static void getELLTestData(
     hmemo::HArray<ValueType>& ellValues )
 {
     /*   Matrix:       6  1  0  4        0  1  3    6  1  4
-                      -2  8  3  0        1  0  2    8 -2  3
-                       0  1  9  4        2  1  3    9  1  4
-                      -1  0  1  3        3  0  2    3 -1  1
+                      -2  8  3  0        0  1  2    -2 8  3
+                       0  1  9  4        1  2  3    1  9  4
+                      -1  0  1  3        0  2  3   -1  1  3
      */
 
-    const IndexType ia_sizes[]   = { 3, 3, 3, 3 };
-    const IndexType ja_values[]  = { 0, 1, 2, 3, 1,  0, 1,  0, 3, 2, 3, 2 };
-    const ValueType nz_values[]  = { 6, 8, 9, 3, 1, -2, 1, -1, 4, 3, 4, 1 };
+    ellIA     = { 3, 3, 3, 3 };
+    ellJA     = { 0, 0, 1, 0, 1,  1, 2,  2, 3, 2, 3, 3 };
+    ellValues = { 6, -2, 1, -1, 1, 8, 9, 1, 4, 3, 4, 3 };
 
-    numRows         = sizeof( ia_sizes ) / sizeof( IndexType );
+    numRows         = ellIA.size();
     numColumns      = 4;
 
-    IndexType numValues  = sizeof( ja_values ) / sizeof( IndexType );
+    SCAI_ASSERT_EQ_ERROR( ellJA.size(), ellValues.size(), "serious size mismatch for ELL data" )
 
-    numValuesPerRow = numValues / numRows;
+    IndexType ellSize = ellJA.size();
 
-    SCAI_ASSERT_EQ_ERROR( numValues, numValuesPerRow * numRows, "size mismatch" )
+    numValuesPerRow = ellSize / numRows;
 
-    ellIA.setRawData( numRows, ia_sizes );
-    ellJA.setRawData( numValues, ja_values );
-    ellValues.setRawData( numValues, nz_values );
+    SCAI_ASSERT_EQ_ERROR( ellSize, numValuesPerRow * numRows, "size of ELL arrays not multiple of numRows = " << numRows )
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -156,15 +143,15 @@ static void getJDSTestData(
 {
     /*   Matrix:       6  1  0  4        0  1  3    6  1  4
                       -2  8  3  0        1  0  2    8 -2  3
-                       0  1  9  4        2  1  3    9  1  4
+                       0  1  9  4        1  2  3    1  9  4
                       -1  0  1  3        3  0  2    3 -1  1
      */
 
     const IndexType perm_values[] = { 0, 1, 2, 3 };
     const IndexType ilg_values[]  = { 3, 3, 3, 3 };
     const IndexType dlg_values[]  = { 4, 4, 4 };
-    const IndexType ja_values[]   = { 0, 1, 2, 3, 1,  0, 1,  0, 3, 2, 3, 2 };
-    const ValueType nz_values[]   = { 6, 8, 9, 3, 1, -2, 1, -1, 4, 3, 4, 1 };
+    const IndexType ja_values[]   = { 0, 1, 1, 3, 1,  0, 2,  0, 3, 2, 3, 2 };
+    const ValueType nz_values[]   = { 6, 8, 1, 3, 1, -2, 9, -1, 4, 3, 4, 1 };
 
     numRows         = sizeof( perm_values ) / sizeof( IndexType );
     numColumns      = 4;
@@ -245,19 +232,20 @@ static void getCOOTestData(
                       -2  8  3  -
                        -  1  9  4
                       -1  -  1  3
+
+         Note: COO data is sorted with rows as first key and columns as second key.
      */
 
-    const IndexType ia_values[]  = { 0, 1, 2, 3, 0, 0,  1, 1, 2,  2, 3, 3 };
-    const IndexType ja_values[]  = { 0, 1, 2, 3, 1, 3,  0, 2, 1,  3, 0, 2 };
-    const ValueType nz_values[]  = { 6, 8, 9, 3, 1, 4, -2, 3, 1,  4, -1, 1 };
+    cooIA     = { 0, 0, 0,  1, 1, 1, 2, 2, 2,  3, 3, 3 };
+    cooJA     = { 0, 1, 3,  0, 1, 2, 1, 2, 3,  0, 2, 3 };
+    cooValues = { 6, 1, 4, -2, 8, 3, 1, 9, 4, -1, 1, 3 };
+
+    SCAI_ASSERT_EQ_ERROR( cooIA.size(), cooJA.size(), "serious size mismatch on COO data" )
+    SCAI_ASSERT_EQ_ERROR( cooIA.size(), cooValues.size(), "serious size mismatch on COO data" )
 
     numRows     = 4;
     numColumns  = 4;
-    numValues   = sizeof( nz_values ) / sizeof( ValueType );
-
-    cooIA.setRawData( numValues, ia_values );
-    cooJA.setRawData( numValues, ja_values );
-    cooValues.setRawData( numValues, nz_values );
+    numValues   = cooIA.size();
 }
 
 /* ------------------------------------------------------------------------------------- */

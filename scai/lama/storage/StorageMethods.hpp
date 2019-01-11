@@ -2,29 +2,24 @@
  * @file StorageMethods.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Class providing static routines for matrix storage
@@ -47,9 +42,9 @@ namespace scai
 namespace dmemo
 {
 class Communicator;
-class Halo;
+class HaloExchangePlan;
 class Distribution;
-class Redistributor;
+class RedistributePlan;
 }
 
 namespace lama
@@ -59,10 +54,9 @@ class COMMON_DLL_IMPORTEXPORT _StorageMethods
 {
 public:
 
-    static void buildHalo(
-        class dmemo::Halo& halo,
+    static void buildHaloExchangePlan(
+        class dmemo::HaloExchangePlan& haloPlan,
         hmemo::HArray<IndexType>& haloJA,
-        IndexType& haloSize,
         const dmemo::Distribution& colDist );
 
 protected:
@@ -134,16 +128,14 @@ public:
         const hmemo::HArray<IndexType>& sourceIA,
         const hmemo::HArray<IndexType>& sourceJA,
         const hmemo::HArray<ValueType>& sourceValues,
-        const dmemo::Redistributor& redistributor );
+        const dmemo::RedistributePlan& redistributor );
 
     /** Exchange rows by halo.
      *
-     *  TODO[doxy] Complete Description.
-     *
      *  @param[out]  targetIA, targetJA, targetValues contain the new CSR storage
      *  @param[in]   sourceIA, sourceJA, sourceValues contains the original CSR storage
-     *  @param[in]   halo
-     *  @param[in]   comm
+     *  @param[in]   haloPlan used for data exchange
+     *  @param[in]   comm     specifies the involved processors
      */
 
     static void exchangeHaloCSR(
@@ -153,7 +145,7 @@ public:
         const hmemo::HArray<IndexType>& sourceIA,
         const hmemo::HArray<IndexType>& sourceJA,
         const hmemo::HArray<ValueType>& sourceValues,
-        const dmemo::Halo& halo,
+        const dmemo::HaloExchangePlan& haloPlan,
         const dmemo::Communicator& comm );
 
     /** Splitting CSR storage.
@@ -187,7 +179,6 @@ public:
      *  @param[out] csrIA, csrJA, csrValues will contain the local CSR storage
      *  @param[in]  localIA, localJA, localValues containing the local CSR storage
      *  @param[in]  haloIA, haloJA, haloValues containing the halo CSR storage
-     *  @param[in]  numKeepDiagonals number of rows where diagonal element of local should be taken at first
      *
      *  The data of one row is sorted according to the column indexes.
      */
@@ -201,8 +192,7 @@ public:
         const hmemo::HArray<ValueType>& localValues,
         const hmemo::HArray<IndexType>& haloIA,
         const hmemo::HArray<IndexType>& haloJA,
-        const hmemo::HArray<ValueType>& haloValues,
-        const IndexType numKeepDiagonals );
+        const hmemo::HArray<ValueType>& haloValues );
 };
 
 /* -------------------------------------------------------------------------- */

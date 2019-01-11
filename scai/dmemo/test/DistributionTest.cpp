@@ -2,29 +2,24 @@
  * @file DistributionTest.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Tests that will be applied to all registered distributions of the factory.
@@ -115,11 +110,11 @@ BOOST_AUTO_TEST_CASE( local2GlobalTest )
         {
             if ( dist->isLocal( i ) )
             {
-                BOOST_CHECK_EQUAL( i, dist->local2global( dist->global2local( i ) ) );
+                BOOST_CHECK_EQUAL( i, dist->local2Global( dist->global2Local( i ) ) );
             }
             else
             {
-                BOOST_CHECK_EQUAL( invalidIndex, dist->global2local( i ) );
+                BOOST_CHECK_EQUAL( invalidIndex, dist->global2Local( i ) );
             }
         }
     }
@@ -141,7 +136,7 @@ BOOST_AUTO_TEST_CASE( global2LocalTest )
 
         for ( IndexType i = 0; i < dist->getLocalSize(); i++ )
         {
-            BOOST_CHECK_EQUAL( i, dist->global2local( dist->local2global( i ) ) );
+            BOOST_CHECK_EQUAL( i, dist->global2Local( dist->local2Global( i ) ) );
         }
     }
 }
@@ -164,7 +159,7 @@ BOOST_AUTO_TEST_CASE( global2LocalVTest )
         utilskernel::HArrayUtils::setOrder( globalIndexes, dist->getGlobalSize() );
 
         hmemo::HArray<IndexType> localIndexes;
-        dist->global2localV( localIndexes, globalIndexes );
+        dist->global2LocalV( localIndexes, globalIndexes );
 
         auto rLocal = hostReadAccess( localIndexes );
 
@@ -302,6 +297,38 @@ BOOST_AUTO_TEST_CASE( anyAddressingTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( findOwnerTest )
+{
+    const IndexType globalK = 6;   // element for which we find owner
+
+    TestDistributions allDist( 17 );
+
+    for ( size_t i = 0; i < allDist.size(); ++i )
+    {
+        const auto& dist = *allDist[i];
+
+        // take the expected owner from the array version
+
+        auto owners = dist.owner( hmemo::HArray<IndexType>( { globalK } ) );
+        PartitionId expectedOwner = owners[0];
+
+        PartitionId owner = dist.findOwner( globalK );
+        BOOST_CHECK_EQUAL( expectedOwner, owner );
+
+        // force the use of the default method of base class
+        owner = dist.Distribution::findOwner( globalK );
+        BOOST_CHECK_EQUAL( expectedOwner, owner );
+
+        if ( dist.hasAnyAddressing() )
+        {
+            owner = dist.getAnyOwner( globalK );
+            BOOST_CHECK_EQUAL( expectedOwner, owner );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( computeOwnersTest )
 {
     TestDistributions allDist( 17 );
@@ -428,7 +455,7 @@ BOOST_AUTO_TEST_CASE( replicateTest )
 
             for ( IndexType i = 0; i < localN; ++i )
             {
-                wLocalValues[i] = dist->local2global( i );
+                wLocalValues[i] = dist->local2Global( i );
             }
         }
 
@@ -474,7 +501,7 @@ BOOST_AUTO_TEST_CASE( replicateNTest )
 
             for ( IndexType i = 0; i < localN; ++i )
             {
-                IndexType val = dist->local2global( i );
+                IndexType val = dist->local2Global( i );
 
                 for ( IndexType k = 0; k < repN; ++k )
                 {
@@ -539,7 +566,7 @@ BOOST_AUTO_TEST_CASE( replicateRaggedTest )
 
             for ( IndexType i = 0; i < localN; ++i )
             {
-                IndexType val = dist->local2global( i );
+                IndexType val = dist->local2Global( i );
 
                 for ( IndexType k = 0; k < repN; ++k )
                 {

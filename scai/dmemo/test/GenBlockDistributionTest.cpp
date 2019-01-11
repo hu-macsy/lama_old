@@ -2,29 +2,24 @@
  * @file GenBlockDistributionTest.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Specific tests for GenBlockDistribution.
@@ -66,7 +61,7 @@ struct GenBlockDistributionTestConfig
             }
         }
 
-        dist = DistributionPtr( new GenBlockDistribution( globalSize, localSizes, comm ) );
+        dist = genBlockDistributionBySize( 2 * ( rank + 1 ), comm );
     }
 
     ~GenBlockDistributionTestConfig()
@@ -94,20 +89,59 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.GenBlockDistributionTest" );
 BOOST_AUTO_TEST_CASE( genBlockComputeOwnersTest )
 {
     hmemo::HArray<IndexType> indexes;
-    hmemo::HArray<PartitionId> owners;
 
     utilskernel::HArrayUtils::setOrder( indexes, globalSize );
 
-    dist->computeOwners( owners, indexes );
+    auto owners = dist->owner( indexes );
 
-    BOOST_REQUIRE_EQUAL( globalSize, owners.size() );
-    BOOST_REQUIRE_EQUAL( globalSize, static_cast<IndexType>( theOwners.size() ) );
+    BOOST_TEST( hostReadAccess( owners ) == theOwners, boost::test_tools::per_element() );
+}
 
-    // now check for correct owners
+/* --------------------------------------------------------------------- */
 
-    for ( IndexType i = 0; i < globalSize; i++ )
+BOOST_AUTO_TEST_CASE( genBlockByWeightTest )
+{
+    const IndexType N = 24;
+  
+    auto comm = Communicator::getCommunicatorPtr();
+
+    bool  even   = comm->getRank() % 2 == 0;
+    float weight = even ? 1.0f : 2.0f ;
+
+    if ( comm->getRank() > 3 ) 
     {
-        BOOST_CHECK_EQUAL( theOwners[i], owners[i] );
+        weight = 0.0f;
+    }
+
+    auto dist = genBlockDistributionByWeight( N, weight, comm );
+
+    if ( comm->getSize() == 1 )
+    {
+        IndexType expLocalSize = N;
+        BOOST_CHECK_EQUAL( expLocalSize, dist->getLocalSize() );
+    }
+    else if ( comm->getSize() == 2 )
+    {
+        IndexType expLocalSize = even ? N / 3 : 2 * N / 3; 
+        BOOST_CHECK_EQUAL( expLocalSize, dist->getLocalSize() );
+    }
+    else if ( comm->getSize() == 3 )
+    {
+        IndexType expLocalSize = even ?  N / 4 : 2 * N / 4;
+        BOOST_CHECK_EQUAL( expLocalSize, dist->getLocalSize() );
+    }
+    else 
+    {
+        IndexType expLocalSize = even ?  N / 6 : 2 * N / 6;
+
+        if ( comm->getRank() > 3 )
+        {
+            expLocalSize = 0;
+        }
+
+        SCAI_LOG_DEBUG( logger, *comm << ": exp local size = " << expLocalSize << " for dist = " << *dist )
+
+        BOOST_CHECK_EQUAL( expLocalSize, dist->getLocalSize() );
     }
 }
 
@@ -125,34 +159,38 @@ BOOST_AUTO_TEST_CASE( genBlockSizeTest )
     }
 
     IndexType globalSize = size * ( size + 1 );
-    GenBlockDistribution dist1( globalSize, mlocalSizes, comm );
-    BOOST_CHECK( dist1.getLocalSize() == static_cast<IndexType>( 2 * ( rank + 1 ) ) );
+
+    auto dist1 = genBlockDistributionBySizes( mlocalSizes, comm );
+    auto dist2 = genBlockDistributionBySize( static_cast<IndexType>( 2 * ( rank + 1 ) ), comm );
+
+    BOOST_CHECK_EQUAL( dist1->getGlobalSize(), globalSize );
+    BOOST_CHECK_EQUAL( dist2->getGlobalSize(), globalSize );
+    BOOST_CHECK_EQUAL( dist1->getLocalSize(), static_cast<IndexType>( 2 * ( rank + 1 ) ) );
+    BOOST_CHECK_EQUAL( dist1->getLocalSize(), dist2->getLocalSize() );
+
     IndexType lb1, ub1;
-    dist1.getLocalRange( lb1, ub1 );
-    GenBlockDistribution dist2( globalSize, static_cast<IndexType>( 2 * ( rank + 1 ) ), comm );
+    dist1->getLocalRange( lb1, ub1 );
     IndexType lb2, ub2;
-    dist1.getLocalRange( lb2, ub2 );
-    BOOST_CHECK( lb1 == lb2 );
-    BOOST_CHECK( ub1 == ub2 );
-    SCAI_LOG_INFO( logger, "lb = " << lb1 << ", ub = " << ub1 << ", global = " << globalSize )
-    GenBlockDistribution dist3( globalSize, lb1, ub1, true, comm );
+    dist2->getLocalRange( lb2, ub2 );
+    BOOST_CHECK_EQUAL( lb1, lb2 );
+    BOOST_CHECK_EQUAL( ub1, ub2 );
 }
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( isEqualTest )
 {
-    IndexType globalSize = comm->getSize();
     IndexType localSize = 1;
 
-    DistributionPtr genblockdist1( new GenBlockDistribution( globalSize, localSize, comm ) );
+    auto genblockdist1 = genBlockDistributionBySize( localSize, comm );
     DistributionPtr genblockdist2( genblockdist1 );
-    DistributionPtr genblockdist3( new GenBlockDistribution( globalSize, localSize, comm ) );
-    DistributionPtr genblockdist4( new GenBlockDistribution( 2 * globalSize, 2 * localSize, comm ) );
+    auto genblockdist3 = genBlockDistributionBySize( localSize, comm );
+    auto genblockdist4 = genBlockDistributionBySize( 2 * localSize, comm );
     BOOST_CHECK( ( *genblockdist1 ).isEqual( *genblockdist2 ) );
     BOOST_CHECK( ( *genblockdist1 ).isEqual( *genblockdist3 ) );
     BOOST_CHECK( !( *genblockdist1 ).isEqual( *genblockdist4 ) );
 }
+
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();

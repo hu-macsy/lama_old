@@ -2,29 +2,24 @@
  * @file GridDistribution.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief GridDistribution.hpp
@@ -116,17 +111,17 @@ public:
 
     virtual IndexType getMaxLocalSize() const;
 
-    /** Implementation of pure method Distribution::local2global */
+    /** Implementation of pure method Distribution::local2Global */
 
-    virtual IndexType local2global( const IndexType localIndex ) const;
+    virtual IndexType local2Global( const IndexType localIndex ) const;
 
-    /** This method does the local2global calculation with the grid positions. */
+    /** This method does the local2Global calculation with the grid positions. */
 
-    void local2global( IndexType globalGridPos[], const IndexType localGridPos[] ) const;
+    void local2Global( IndexType globalGridPos[], const IndexType localGridPos[] ) const;
 
-    /** Implementation of pure method Distribution::global2local */
+    /** Implementation of pure method Distribution::global2Local */
 
-    virtual IndexType global2local( const IndexType globalIndex ) const;
+    virtual IndexType global2Local( const IndexType globalIndex ) const;
 
     /** This method does the global to local calculation with the grid positions.
      *
@@ -135,7 +130,7 @@ public:
      *  @return     true if the global position is owned by this processor
      */
 
-    bool global2local( IndexType localGridPos[], const IndexType globalGridPos[] ) const;
+    bool global2Local( IndexType localGridPos[], const IndexType globalGridPos[] ) const;
 
     /** Implementation of pure function Distribution::getBlockDistributionSize
      *
@@ -182,7 +177,7 @@ public:
 
     /** Static method required for create to use in Distribution::Register */
 
-    static Distribution* create( const DistributionArguments args );
+    static DistributionPtr create( const DistributionArguments args );
 
     /** Static method required for Distribution::Register */
 
@@ -201,6 +196,18 @@ public:
     const IndexType* localLB() const
     {
         return mLB;
+    }
+
+    /** Return pointer to array with upper bound pos of the local grid in global grid */
+
+    const IndexType* localUB() const
+    {
+        return mUB;
+    }
+
+    const common::Grid& getProcGrid() const
+    {
+        return mProcGrid;
     }
 
 protected:

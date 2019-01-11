@@ -173,52 +173,6 @@ Reading a matrix
     m.readFromFile( "matrix_%r.mtx", "owners.mtx" )
     m.readFromFile( "matrix_%r.mtx", "myIndexes%r.mtx" )
 
-In contrary to a vector, a partitioned matrix might still contain the info about its
-distribution. This is the case if the data is stored in a sparse format and the first
-column index of a row is the diagonal element. As column indexes are still global, the
-array of first column indexes for each row is the same as the global indexes of each partition
-stored in a partitioned mapping file.
-
-.. code-block:: c++
-
-    m.readFromFile( "matrix_%r.mtx", "" )
-
-Consider the following example of a 16 x 16 matrix:
-
-.. code-block:: c++
-
-   matrix        owner, local index   
-
-   0 0 4             0  0          
-   1 1 4             0  1 
-   2 2 4             1  0
-   3 3 4             1  1
-   4 4 4             0  2
-   5 5 4             0  3
-   6 6 4             1  2
-   7 7 4             1  3
-   8 8 4             2  0
-   9 9 4             2  1
-   10 10 4           3  0 
-   11 11 4           3  1
-   12 12 4           2  2
-   13 13 4           2  3
-   14 14 4           3  2
-   15 15 4           3  3
-   0 1 -1
-   ....
-
-.. code-block:: c++
-
-   matrix_1.0.txt   matrix_1.4.txt    matrix_2.4.txt    matrix_3.4.txt
-
-   0 0 4            0  2  4            0  8  4            0  10  4
-   1 1 4            1  3  4            1  9  4            1  11  4
-   2 4 4            2  6  4            2 12  4            2  14  4
-   3 5 4            3  7  4            3 13  4            3  15  4
-   0 1 -1           0  1 -1            0  4  -1           0  6  -1
-   ....             ...                ...                ...
-
 I/O Methods for Vector and Matrix classes
 -----------------------------------------
 

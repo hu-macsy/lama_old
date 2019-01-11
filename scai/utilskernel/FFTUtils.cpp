@@ -2,29 +2,24 @@
  * @file FFTUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Fast fourier transformation for heterorgeneous arrays
@@ -73,51 +68,33 @@ static void pow2( IndexType& m, IndexType& n2, const IndexType n )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void FFTUtils::fft( 
-    HArray<Complex<RealType<ValueType>>>& result, 
-    const HArray<ValueType>& x, 
+void FFTUtils::fftcall(
+    HArray<Complex<RealType<ValueType>>>& data, 
+    const IndexType k,
     const IndexType n,
+    const IndexType m,
     int direction,
     const ContextPtr context )
 {
-    typedef Complex<RealType<ValueType>> FFTType;
+    ContextPtr loc = context;
 
-    static LAMAKernel<UtilKernelTrait::set<FFTType, ValueType>> set;
-    static LAMAKernel<UtilKernelTrait::setVal<FFTType>> setVal;
     static LAMAKernel<FFTKernelTrait::fft<RealType<ValueType>>> fft;
 
-    ContextPtr loc = context;
+    SCAI_ASSERT_EQ_ERROR( ( IndexType( 1 ) << m ), n, "n = " << n << " != 2 ** m = " << m )
+    SCAI_ASSERT_EQ_ERROR( k * n, data.size(), "size of data must be " << n << " x " << k )
 
     if ( !loc )
     {
-        loc = x.getValidContext();
+        loc = data.getValidContext();
     }
 
-    fft.getSupportedContext( loc, set, setVal );
-
-    IndexType n2;
-    IndexType m;
- 
-    pow2( m, n2, n );
-
-    SCAI_LOG_INFO( logger, "fft<" << common::TypeTraits<ValueType>::id() 
-                    << ">( array[" << n << " -> " << n2 << " = 2 ** " << m << "], dir = " << direction
-                    << " @ ctx = " << *loc ) 
+    fft.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ReadAccess<ValueType> rX( x, loc );
-    WriteOnlyAccess<FFTType> wResult( result, loc, n2 );
+    WriteAccess<Complex<RealType<ValueType>>> wData( data, loc );
 
-    IndexType nx = std::min( n, x.size() );
-
-    SCAI_LOG_DEBUG( logger, "copy x[" << nx << "] and pad to " << n2 )
-    set[loc]( wResult.get(), rX.get(), x.size(), common::BinaryOp::COPY );
-    setVal[loc]( wResult.get() + nx, n2 - nx, FFTType( 0 ), common::BinaryOp::COPY );
-
-    fft[loc]( wResult.get(), 1, n2, m, direction );
-
-    wResult.resize( n );
+    fft[loc]( wData.get(), k, n, m, direction );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -206,11 +183,12 @@ void FFTUtils::fft_many(
 /* --------------------------------------------------------------------------- */
 
 #define FFTUTILS_SPECIFIER( ValueType )                     \
-    template void FFTUtils::fft<ValueType>(                 \
+    template void FFTUtils::fftcall<ValueType>(             \
         hmemo::HArray<Complex<RealType<ValueType>>>&,       \
-        const hmemo::HArray<ValueType>&,                    \
-        const IndexType n,                                  \
-        const int direction,                                \
+        const IndexType,                                    \
+        const IndexType,                                    \
+        const IndexType,                                    \
+        const int,                                          \
         hmemo::ContextPtr);                                 \
     template void FFTUtils::fft_many<ValueType>(            \
         hmemo::HArray<Complex<RealType<ValueType>>>&,       \
@@ -219,7 +197,6 @@ void FFTUtils::fft_many(
         const IndexType,                                    \
         const int,                                          \
         hmemo::ContextPtr);                    
-
 
     SCAI_COMMON_LOOP( FFTUTILS_SPECIFIER, SCAI_FFT_TYPES_HOST )
 

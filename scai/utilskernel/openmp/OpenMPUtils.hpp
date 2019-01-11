@@ -2,29 +2,24 @@
  * @file OpenMPUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of general utilities with OpenMP
@@ -148,6 +143,16 @@ public:
         const IndexType n,
         const common::BinaryOp op );
 
+    /** OpenMP implementation for UtilKernelTrait::fillSection */
+
+    template<typename ValueType>
+    static void fillSection(
+        ValueType out[],
+        const IndexType inc,
+        const ValueType val,
+        const IndexType n,
+        const common::BinaryOp op );
+
     /** OpenMP implementation for UtilKernelTrait::unaryOp */
 
     template<typename ValueType>
@@ -264,6 +269,61 @@ public:
                                const BucketType nBuckets,
                                const BucketType bucketMap[],
                                const IndexType n );
+
+    /** OpenMP implementation of SparseKernelTrait::countAddSparse */
+
+    static IndexType countAddSparse(
+        const IndexType indexes1[],
+        const IndexType n1,
+        const IndexType indexes2[],
+        const IndexType n2 );
+
+    /** OpenMP implementation of SparseKernelTrait::addSparse */
+
+    template<typename ValueType>
+    static IndexType addSparse(
+        IndexType indexes[],
+        ValueType values[],
+        const IndexType indexes1[],
+        const ValueType values1[],
+        const ValueType zero1,
+        const IndexType n1,
+        const ValueType alpha,
+        const IndexType indexes2[],
+        const ValueType values2[],
+        const ValueType zero2,
+        const IndexType n2,
+        const ValueType beta );
+
+    /** OpenMP implementation of SparseKernelTrait::binopSparse */
+
+    template<typename ValueType>
+    static IndexType binopSparse(
+        IndexType indexes[],
+        ValueType values[],
+        const IndexType indexes1[],
+        const ValueType values1[],
+        const ValueType zero1,
+        const IndexType n1,
+        const IndexType indexes2[],
+        const ValueType values2[],
+        const ValueType zero2,
+        const IndexType n2,
+        const common::BinaryOp op );
+
+    /** OpenMP implementation of SparseKernelTrait::joinSparse */
+
+    template<typename ValueType>
+    static IndexType joinSparse(
+        IndexType indexes[],
+        ValueType values[],
+        const IndexType indexes1[],
+        const ValueType values1[],
+        const IndexType n1,
+        const IndexType indexes2[],
+        const ValueType values2[],
+        const IndexType n2 );
+
 private:
 
     /** Optimized reduce for common::BinaryOp::ADD as reduction operator. */
@@ -313,47 +373,6 @@ private:
         const IndexType n,
         const SourceType zero,
         const SourceType eps );
-
-    /** OpenMP implementation of SparseKernelTrait::countAddSparse */
-
-    static IndexType countAddSparse(
-        const IndexType indexes1[],
-        const IndexType n1,
-        const IndexType indexes2[],
-        const IndexType n2 );
-
-    /** OpenMP implementation of SparseKernelTrait::addSparse */
-
-    template<typename ValueType>
-    static IndexType addSparse(
-        IndexType indexes[],
-        ValueType values[],
-        const IndexType indexes1[],
-        const ValueType values1[],
-        const ValueType zero1,
-        const IndexType n1,
-        const ValueType alpha,
-        const IndexType indexes2[],
-        const ValueType values2[],
-        const ValueType zero2,
-        const IndexType n2,
-        const ValueType beta );
-
-    /** OpenMP implementation of SparseKernelTrait::binopSparse */
-
-    template<typename ValueType>
-    static IndexType binopSparse(
-        IndexType indexes[],
-        ValueType values[],
-        const IndexType indexes1[],
-        const ValueType values1[],
-        const ValueType zero1,
-        const IndexType n1,
-        const IndexType indexes2[],
-        const ValueType values2[],
-        const ValueType zero2,
-        const IndexType n2,
-        const common::BinaryOp op );
 
     /** OpenMP implementation of SparseKernelTrait::allCompareSparse */
 

@@ -2,29 +2,24 @@
  * @file common/Stencil.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of stencil classes
@@ -42,6 +37,7 @@
 #include <scai/common/Constants.hpp>
 
 #include <memory>
+#include <vector>
 
 namespace scai
 {
@@ -232,13 +228,15 @@ IndexType Stencil<ValueType>::nDims() const
 template<typename ValueType>
 const int* Stencil<ValueType>::positions() const
 {
-    return &mPositions[0];
+    // Note: return &mPositions[0] causes problems for null pointer if sanitize is enabled
+
+    return mPositions.data();
 }
 
 template<typename ValueType>
 const ValueType* Stencil<ValueType>::values() const
 {
-    return &mValues[0];
+    return mValues.data();
 }
 
 /* ------------------------------------------------------------------------------------ */
@@ -1132,6 +1130,102 @@ Stencil4D<ValueType>::Stencil4D( const IndexType nPoints ) : Stencil<ValueType>(
  
     switch( nPoints ) 
     {
+        case 81: 
+
+            addPoint( -1, -1, -1, -1, minusOne );
+            addPoint( -1, -1, -1,  1, minusOne );
+            addPoint( -1, -1,  1, -1, minusOne );
+            addPoint( -1, -1,  1,  1, minusOne );
+            addPoint( -1,  1, -1, -1, minusOne );
+            addPoint( -1,  1, -1,  1, minusOne );
+            addPoint( -1,  1,  1, -1, minusOne );
+            addPoint( -1,  1,  1,  1, minusOne );
+
+            addPoint(  1, -1, -1, -1, minusOne );
+            addPoint(  1, -1, -1,  1, minusOne );
+            addPoint(  1, -1,  1, -1, minusOne );
+            addPoint(  1, -1,  1,  1, minusOne );
+            addPoint(  1,  1, -1, -1, minusOne );
+            addPoint(  1,  1, -1,  1, minusOne );
+            addPoint(  1,  1,  1, -1, minusOne );
+            addPoint(  1,  1,  1,  1, minusOne );
+
+            // fall through
+
+        case 65: 
+
+            addPoint(  0, -1, -1, -1, minusOne );
+            addPoint(  0, -1, -1,  1, minusOne );
+            addPoint(  0, -1,  1, -1, minusOne );
+            addPoint(  0, -1,  1,  1, minusOne );
+            addPoint(  0,  1, -1, -1, minusOne );
+            addPoint(  0,  1, -1,  1, minusOne );
+            addPoint(  0,  1,  1, -1, minusOne );
+            addPoint(  0,  1,  1,  1, minusOne );
+
+            addPoint( -1,  0, -1, -1, minusOne );
+            addPoint( -1,  0, -1,  1, minusOne );
+            addPoint( -1,  0,  1, -1, minusOne );
+            addPoint( -1,  0,  1,  1, minusOne );
+            addPoint(  1,  0, -1, -1, minusOne );
+            addPoint(  1,  0, -1,  1, minusOne );
+            addPoint(  1,  0,  1, -1, minusOne );
+            addPoint(  1,  0,  1,  1, minusOne );
+
+            addPoint( -1, -1,  0, -1, minusOne );
+            addPoint( -1, -1,  0,  1, minusOne );
+            addPoint( -1,  1,  0, -1, minusOne );
+            addPoint( -1,  1,  0,  1, minusOne );
+            addPoint(  1, -1,  0, -1, minusOne );
+            addPoint(  1, -1,  0,  1, minusOne );
+            addPoint(  1,  1,  0, -1, minusOne );
+            addPoint(  1,  1,  0,  1, minusOne );
+
+            addPoint( -1, -1, -1,  0, minusOne );
+            addPoint( -1, -1,  1,  0, minusOne );
+            addPoint( -1,  1, -1,  0, minusOne );
+            addPoint( -1,  1,  1,  0, minusOne );
+            addPoint(  1, -1, -1,  0, minusOne );
+            addPoint(  1, -1,  1,  0, minusOne );
+            addPoint(  1,  1, -1,  0, minusOne );
+            addPoint(  1,  1,  1,  0, minusOne );
+
+            // fall through
+
+        case 33: 
+
+            addPoint( -1, -1,  0,  0, minusOne );
+            addPoint( -1,  1,  0,  0, minusOne );
+            addPoint(  1, -1,  0,  0, minusOne );
+            addPoint(  1,  1,  0,  0, minusOne );
+
+            addPoint( -1,  0,  1,  0, minusOne );
+            addPoint( -1,  0, -1,  0, minusOne );
+            addPoint(  1,  0,  1,  0, minusOne );
+            addPoint(  1,  0, -1,  0, minusOne );
+
+            addPoint( -1,  0,  0, -1, minusOne );
+            addPoint( -1,  0,  0,  1, minusOne );
+            addPoint(  1,  0,  0, -1, minusOne );
+            addPoint(  1,  0,  0,  1, minusOne );
+
+            addPoint(  0, -1, -1,  0, minusOne );
+            addPoint(  0, -1,  1,  0, minusOne );
+            addPoint(  0,  1, -1,  0, minusOne );
+            addPoint(  0,  1,  1,  0, minusOne );
+
+            addPoint(  0, -1,  0, -1, minusOne );
+            addPoint(  0, -1,  0,  1, minusOne );
+            addPoint(  0,  1,  0, -1, minusOne );
+            addPoint(  0,  1,  0,  1, minusOne );
+
+            addPoint(  0,  0, -1, -1, minusOne );
+            addPoint(  0,  0, -1,  1, minusOne );
+            addPoint(  0,  0,  1, -1, minusOne );
+            addPoint(  0,  0,  1,  1, minusOne );
+
+            // fall through
+
         case 9 :
 
             addPoint( -1,  0,  0,  0, minusOne );

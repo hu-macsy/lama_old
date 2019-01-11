@@ -2,29 +2,24 @@
  * @file DenseKernelTrait.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Struct with traits for all LAMA utilities provided as kernels.
@@ -48,7 +43,7 @@ namespace sparsekernel
 
 struct DenseKernelTrait
 {
-    template <typename DenseValueType>
+    template<typename ValueType>
     struct nonZeroValues
     {
         /** Counting non-zero values in dense storage.
@@ -61,10 +56,10 @@ struct DenseKernelTrait
          */
 
         typedef IndexType ( *FuncType )(
-            const DenseValueType denseValues[],
+            const ValueType denseValues[],
             const IndexType numRows,
             const IndexType numColumns,
-            const DenseValueType eps );
+            const ValueType eps );
 
         static const char* getId()
         {
@@ -72,13 +67,12 @@ struct DenseKernelTrait
         }
     };
 
-    template <typename DenseValueType>
+    template<typename ValueType>
     struct getCSRSizes
     {
         /** Counting non-zero values in dense storage for conversion to CSR
          *
          *  @param[out] csrSizes is an array that contains for each row the number of non-zero elements
-         *  @param[in]  diagonalFlag if true the diagonal elements are counted in any case
          *  @param[in]  numRows number of rows
          *  @param[in]  numColumns number of columns
          *  @param[in]  denseValues size is numRows x numColumns, array with all matrix elements of dense format
@@ -89,11 +83,10 @@ struct DenseKernelTrait
 
         typedef void ( *FuncType )(
             IndexType csrSizes[],
-            bool diagonalFlag,
             const IndexType numRows,
             const IndexType numColumns,
-            const DenseValueType denseValues[],
-            const DenseValueType eps );
+            const ValueType denseValues[],
+            const RealType<ValueType> eps );
 
         static const char* getId()
         {
@@ -101,7 +94,7 @@ struct DenseKernelTrait
         }
     };
 
-    template <typename CSRValueType, typename DenseValueType>
+    template <typename ValueType>
     struct getCSRValues
     {
         /** Convesion of dense matrix to CSR storage format
@@ -118,14 +111,14 @@ struct DenseKernelTrait
          *  Very important: the offsets in csrIA must correspond to the csrSizes computed
          *                  by getCSRSizes.
          */
-        typedef void ( *FuncType ) ( IndexType csrJA[],
-                                     CSRValueType csrValues[],
-                                     const IndexType csrIA[],
-                                     const bool diagonalFlag,
-                                     const IndexType numRows,
-                                     const IndexType numColumns,
-                                     const DenseValueType denseValues[],
-                                     const DenseValueType eps );
+        typedef void ( *FuncType ) ( 
+            IndexType csrJA[],
+            ValueType csrValues[],
+            const IndexType csrIA[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const ValueType denseValues[],
+            const RealType<ValueType> eps );
 
         static const char* getId()
         {
@@ -133,17 +126,17 @@ struct DenseKernelTrait
         }
     };
 
-    template <typename DenseValueType, typename CSRValueType>
+    template <typename ValueType>
     struct setCSRValues
     {
         /** Conversion of CSR format to dense matrix. */
 
-        typedef void ( *FuncType ) ( DenseValueType denseValues[],
+        typedef void ( *FuncType ) ( ValueType denseValues[],
                                      const IndexType numRows,
                                      const IndexType numColumns,
                                      const IndexType csrIA[],
                                      const IndexType csrJA[],
-                                     const CSRValueType csrValues[] );
+                                     const ValueType csrValues[] );
 
         static const char* getId()
         {
@@ -151,36 +144,16 @@ struct DenseKernelTrait
         }
     };
 
-    template<typename DenseValueType1, typename DenseValueType2>
-    struct set
-    {
-        /** Set values of dense matrix with other matrix; supports also conversion.
-         *
-         *  This routine is exactly the same as UtilskernelTrait::set with n = numRows * numColumns.
-         *  The only difference is that OpenMP parallelization is only for rows and not the whole vector.
-         */
-        typedef void ( *FuncType ) ( DenseValueType1 out[],
-                                     const IndexType numRows,
-                                     const IndexType numColumns,
-                                     const DenseValueType2 in[],
-                                     const common::BinaryOp op );
-
-        static const char* getId()
-        {
-            return "Dense.set";
-        }
-    };
-
-    template<typename DenseValueType>
+    template<typename ValueType>
     struct setValue
     {
         /** Set all elements of the dense matrix with a value */
 
         typedef void ( *FuncType ) (
-            DenseValueType denseValues[],
+            ValueType denseValues[],
             const IndexType numRows,
             const IndexType numColumns,
-            const DenseValueType val,
+            const ValueType val,
             const common::BinaryOp op );
 
         static const char* getId()
@@ -189,45 +162,105 @@ struct DenseKernelTrait
         }
     };
 
-    template<typename DenseValueType>
-    struct setDiagonalValue
-    {
-        /** Set diagonal elements with one and the same value. */
-
-        typedef void ( *FuncType ) (
-            DenseValueType denseValues[],
-            const IndexType numRows,
-            const IndexType numColumns,
-            const DenseValueType val );
-
-        static const char* getId()
-        {
-            return "Dense.setDiagonalValue";
-        }
-    };
-
     template<typename ValueType>
-    struct scaleRows
+    struct setRows
     {
-        /** Scale rows of the matrix individually.
+        /** Set/update rows of the matrix individually.
          *
          *  @param[in,out] denseValues  data of the dense matrix, size is numRows * numColumns
          *  @param[in]     numRows      number of rows
          *  @param[in]     numColumns   number of columns
          *  @param[in]     rowValues    scale values for each row, size is numRows
+         *  @param[in]     op           binary operation that is applied 
          */
 
         typedef void ( *FuncType ) (
             ValueType denseValues[],
             const IndexType numRows,
             const IndexType numColumns,
-            const ValueType rowValues[] );
+            const ValueType rowValues[],
+            const common::BinaryOp op );
 
         static const char* getId()
         {
-            return "Dense.scaleRows";
+            return "Dense.setRows";
         }
     };
+
+    template<typename ValueType>
+    struct setColumns
+    {
+        /** Set/update rows of the matrix individually.
+         *
+         *  @param[in,out] denseValues  data of the dense matrix, size is numRows * numColumns
+         *  @param[in]     numRows      number of rows
+         *  @param[in]     numColumns   number of columns
+         *  @param[in]     columnValues scale values for each column, size is numColumns
+         *  @param[in]     op           binary operation that is applied 
+         */
+
+        typedef void ( *FuncType ) (
+            ValueType denseValues[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const ValueType columnValues[],
+            const common::BinaryOp op );
+
+        static const char* getId()
+        {
+            return "Dense.setColumns";
+        }
+    };
+
+    /** Structure with type definitions for solver routines */
+
+    template<typename ValueType>
+    struct jacobi
+    {
+        /** Method to compute one iteration step in Jacobi method
+         *
+         *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
+         *
+         */
+        typedef void ( *FuncType ) (
+            ValueType solution[],
+            const IndexType n,
+            const ValueType denseValues[],
+            const ValueType oldSolution[],
+            const ValueType rhs[],
+            const ValueType omega );
+
+        static const char* getId()
+        {
+            return "Dense.jacobi";
+        }
+    };
+
+    template<typename ValueType>
+    struct jacobiHalo
+    {
+        /** Compute one iteration step in Jacobi method for halo
+         *
+         *  \code
+         *      solution -= omega * ( dia_halo * oldSolution ) ./ diagonal 
+         *  \endcode
+         *
+         */
+        typedef void ( *FuncType ) (
+            ValueType solution[],
+            const ValueType diagonal[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const ValueType denseValues[],
+            const ValueType oldSolution[],
+            const ValueType omega );
+
+        static const char* getId()
+        {
+            return "Dense.jacobiHalo";
+        }
+    };
+
 };
 
 } /* end namespace sparsekernel */

@@ -2,29 +2,24 @@
  * @file DenseStorage.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Instantiation for template class DenseStorage.
@@ -37,11 +32,10 @@
 #include <scai/lama/storage/CSRStorage.hpp>
 
 // internal scai libraries
-#include <scai/sparsekernel/DenseKernelTrait.hpp>
-#include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/DenseUtils.hpp>
+#include <scai/sparsekernel/CSRUtils.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
-#include <scai/utilskernel/UtilKernelTrait.hpp>
-#include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/freeFunction.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/hmemo/ContextAccess.hpp>
 
@@ -57,12 +51,6 @@
 #include <memory>
 #include <cmath>
 
-
-using std::abs;
-// so we can use abs for float and double and own abs for Complex
-
-using std::shared_ptr;
-
 namespace scai
 {
 
@@ -70,12 +58,9 @@ using common::TypeTraits;
 
 using namespace hmemo;
 
-using utilskernel::LAMAKernel;
 using utilskernel::HArrayUtils;
-using utilskernel::UtilKernelTrait;
-
-using sparsekernel::DenseKernelTrait;
-using sparsekernel::CSRKernelTrait;
+using sparsekernel::CSRUtils;
+using sparsekernel::DenseUtils;
 
 using common::BinaryOp;
 
@@ -108,15 +93,7 @@ const HArray<ValueType>& DenseStorage<ValueType>::getValues() const
 template<typename ValueType>
 IndexType DenseStorage<ValueType>::getNumValues() const
 {
-    static LAMAKernel<DenseKernelTrait::nonZeroValues<ValueType> > nonZeroValues;
-    ContextPtr loc = getContextPtr();
-    nonZeroValues.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<ValueType> values( mData, loc );
-    ValueType zero = 0;
-    IndexType count = nonZeroValues[loc]( values.get(), getNumRows(), getNumColumns(), zero );
-    SCAI_LOG_INFO( logger, *this << ": #non-zero values = " << count )
-    return count;
+    return DenseUtils::getNumValues( mData, getNumRows(), getNumColumns(), getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -138,7 +115,7 @@ void DenseStorage<ValueType>::check( const char* /* msg */ ) const
 template<typename ValueType>
 void DenseStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::HArray<ValueType>& values, const IndexType i ) const
 {
-    // ToDo: avoid temporary array row by new version buildSparseArray with offs and inc argument
+// ToDo: avoid temporary array row by new version buildSparseArray with offs and inc argument
 
     HArray<ValueType> row;
     getRow( row, i );
@@ -167,8 +144,8 @@ void DenseStorage<ValueType>::getRow( HArray<ValueType>& row, const IndexType ro
     row.clear();                    // make all data invalid
     row.resize( getNumColumns() );      // resize it
 
-    // inc = denseindex( i, j + 1, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
-    // first = denseindex( rowIndex, 0, numRows, numColumns )
+// inc = denseindex( i, j + 1, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
+// first = denseindex( rowIndex, 0, numRows, numColumns )
 
     const IndexType inc   = 1;
     const IndexType first = rowIndex * getNumColumns();
@@ -182,12 +159,12 @@ void DenseStorage<ValueType>::getRow( HArray<ValueType>& row, const IndexType ro
 
 template<typename ValueType>
 void DenseStorage<ValueType>::setRow( const HArray<ValueType>& row, const IndexType rowIndex,
-        const BinaryOp op )
+                                      const BinaryOp op )
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( rowIndex, getNumRows(), "row index out of range" )
 
-    // inc = denseindex( i, j + 1, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
-    // first = denseindex( i, 0, numRows, numColumns )
+// inc = denseindex( i, j + 1, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
+// first = denseindex( i, 0, numRows, numColumns )
 
     const IndexType inc   = 1;
     const IndexType first = rowIndex * getNumColumns();
@@ -209,8 +186,8 @@ void DenseStorage<ValueType>::getColumn( HArray<ValueType>& column, const IndexT
     column.clear();                 // make all data invalid
     column.resize( getNumRows() );      // resize it
 
-    // inc = denseindex( i + 1, j, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
-    // first = denseindex( 0, j, numRows, numColumns )
+// inc = denseindex( i + 1, j, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
+// first = denseindex( 0, j, numRows, numColumns )
 
     const IndexType inc   = getNumColumns();
     const IndexType first = j;
@@ -229,8 +206,8 @@ void DenseStorage<ValueType>::setColumn( const HArray<ValueType>& column, const 
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, getNumColumns(), "column index out of range" )
 
-    // inc = denseindex( i + 1, j, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
-    // first = denseindex( 0, j, numRows, numColumns )
+// inc = denseindex( i + 1, j, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
+// first = denseindex( 0, j, numRows, numColumns )
 
     const IndexType inc   = getNumColumns();
     const IndexType first = j;
@@ -252,8 +229,8 @@ void DenseStorage<ValueType>::getDiagonal( HArray<ValueType>& diagonal ) const
     diagonal.clear();                       // make all data invalid
     diagonal.resize( numDiagonalValues );   // resize it
 
-    // inc = denseindex( i + 1, i + 1, numRows, numColumns ) - denseindex( i, i, numRows, numColumns )
-    // first = denseindex( 0, 0, numRows, numColumns )
+// inc = denseindex( i + 1, i + 1, numRows, numColumns ) - denseindex( i, i, numRows, numColumns )
+// first = denseindex( 0, 0, numRows, numColumns )
 
     const IndexType inc   = getNumRows() + 1;
     const IndexType first = 0;
@@ -270,14 +247,19 @@ void DenseStorage<ValueType>::getDiagonal( HArray<ValueType>& diagonal ) const
 template<typename ValueType>
 void DenseStorage<ValueType>::setDiagonal( const ValueType value )
 {
-    // Note: dense storage has always diagonal property
+    const IndexType numDiagonalValues = common::Math::min( getNumColumns(), getNumRows() );
 
-    static LAMAKernel<DenseKernelTrait::setDiagonalValue<ValueType> > setDiagonalValue;
-    ContextPtr loc = getContextPtr();
-    setDiagonalValue.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    WriteAccess<ValueType> wData( mData, loc ); // use existing data
-    setDiagonalValue[loc]( wData.get(), getNumRows(), getNumColumns(), value );
+// inc = denseindex( i + 1, i + 1, numRows, numColumns ) - denseindex( i, i, numRows, numColumns )
+// first = denseindex( 0, 0, numRows, numColumns )
+// dense values are stored row-wise
+
+    const IndexType inc   = getNumRows() + 1;
+    const IndexType first = 0;
+
+    HArrayUtils::fillArraySection( mData, first, inc,
+                                   value, numDiagonalValues,
+                                   BinaryOp::COPY,
+                                   mData.getValidContext() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -285,12 +267,12 @@ void DenseStorage<ValueType>::setDiagonal( const ValueType value )
 template<typename ValueType>
 void DenseStorage<ValueType>::setDiagonalV( const HArray<ValueType>& diagonal )
 {
-    IndexType numDiagonalValues = common::Math::min( getNumColumns(), getNumRows() );
+    const IndexType numDiagonalValues = common::Math::min( getNumColumns(), getNumRows() );
 
     SCAI_ASSERT_GE_DEBUG( diagonal.size(), numDiagonalValues, "diagonal array has insufficient size" )
 
-    // inc = denseindex( i + 1, i + 1, numRows, numColumns ) - denseindex( i, i, numRows, numColumns )
-    // first = denseindex( 0, 0, numRows, numColumns )
+// inc = denseindex( i + 1, i + 1, numRows, numColumns ) - denseindex( i, i, numRows, numColumns )
+// first = denseindex( 0, 0, numRows, numColumns )
 
     const IndexType inc   = getNumRows() + 1;
     const IndexType first = 0;
@@ -307,14 +289,7 @@ void DenseStorage<ValueType>::setDiagonalV( const HArray<ValueType>& diagonal )
 template<typename ValueType>
 void DenseStorage<ValueType>::scale( const ValueType value )
 {
-    // not used here: HArrayUtils::scale( mData, value, this->getContextPtr() )
-    // reasoning:     workload distribution would not fit to distribution of rows
-    static LAMAKernel<DenseKernelTrait::setValue<ValueType> > setValue;
-    ContextPtr loc = getContextPtr();
-    setValue.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    WriteAccess<ValueType> wData( mData, loc );
-    setValue[loc]( wData.get(), getNumRows(), getNumColumns(), value, BinaryOp::MULT );
+    DenseUtils::setScalar( mData, getNumRows(), getNumColumns(), value, common::BinaryOp::MULT, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -330,13 +305,19 @@ void DenseStorage<ValueType>::conj()
 template<typename ValueType>
 void DenseStorage<ValueType>::scaleRows( const HArray<ValueType>& values )
 {
-    static LAMAKernel<DenseKernelTrait::scaleRows<ValueType> > denseScaleRows;
-    ContextPtr loc = this->getContextPtr();
-    denseScaleRows.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<ValueType> rDiagonal( values, loc );
-    WriteAccess<ValueType> wData( mData, loc );
-    denseScaleRows[loc]( wData.get(), getNumRows(), getNumColumns(), rDiagonal.get() );
+    SCAI_ASSERT_EQ_ERROR( values.size(), getNumRows(), "not one value for each row" )
+
+    DenseUtils::setRows( mData, getNumRows(), getNumColumns(), values, common::BinaryOp::MULT, getContextPtr() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseStorage<ValueType>::scaleColumns( const HArray<ValueType>& values )
+{
+    SCAI_ASSERT_EQ_ERROR( values.size(), getNumColumns(), "not one value for each column" )
+
+    DenseUtils::setColumns( mData, getNumRows(), getNumColumns(), values, common::BinaryOp::MULT, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -347,17 +328,9 @@ void DenseStorage<ValueType>::transposeImpl()
     SCAI_REGION( "Storage.Dense.transpose" )
 
     HArrayUtils::transpose( mData, getNumColumns(), getNumRows(), mData, false, getContextPtr() );
- 
+
     _MatrixStorage::setDimension( getNumColumns(), getNumRows() );
 };
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-bool DenseStorage<ValueType>::checkDiagonalProperty() const
-{
-    return getNumRows() == getNumColumns();
-}
 
 /* --------------------------------------------------------------------------- */
 
@@ -410,7 +383,7 @@ void DenseStorage<ValueType>::assignDiagonal( const HArray<ValueType>& diagonal 
 template<typename ValueType>
 void DenseStorage<ValueType>::setZero()
 {
-    SCAI_ASSERT_EQ_DEBUG( mData.size(), getNumRows() * getNumColumns(), 
+    SCAI_ASSERT_EQ_DEBUG( mData.size(), getNumRows() * getNumColumns(),
                           "illegal data size for DenseStorage " << getNumRows() << " x " << getNumColumns() )
     ValueType zero = 0;
 
@@ -422,114 +395,91 @@ void DenseStorage<ValueType>::setZero()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-template<typename OtherValueType>
-void DenseStorage<ValueType>::buildCSR(
-    HArray<IndexType>& csrIA,
-    HArray<IndexType>* csrJA,
-    HArray<OtherValueType>* csrValues,
-    const ContextPtr context ) const
+void DenseStorage<ValueType>::buildCSRSizes( hmemo::HArray<IndexType>& ia ) const
 {
-    static LAMAKernel<DenseKernelTrait::getCSRSizes<ValueType> > getCSRSizes;
-    static LAMAKernel<DenseKernelTrait::getCSRValues<OtherValueType, ValueType> > getCSRValues;
-    static LAMAKernel<CSRKernelTrait::sizes2offsets> sizes2offsets;
-    // check if context provides all implementations, otherwise go back to Host
-    ContextPtr loc = context;
-    getCSRValues.getSupportedContext( loc, getCSRSizes, sizes2offsets );
-    SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<ValueType> denseValues( mData, loc );
-    WriteOnlyAccess<IndexType> wIA( csrIA, loc, getNumRows() + 1 );
-    ValueType eps = 0;
-    // Note: mDiagonalProperty == ( getNumRows() == getNumColumns() )
-    getCSRSizes[loc]( wIA.get(), mDiagonalProperty, getNumRows(), getNumColumns(), denseValues.get(), eps );
+    DenseUtils::getSparseRowSizes( ia, getNumRows(), getNumColumns(), mData, getContextPtr() );
+}
 
-    if ( csrJA == NULL || csrValues == NULL )
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseStorage<ValueType>::buildCSRData(
+    hmemo::HArray<IndexType>& csrIA,
+    hmemo::HArray<IndexType>& csrJA,
+    hmemo::_HArray& csrValues ) const
+{
+    if ( csrValues.getValueType() == getValueType() )
     {
-        wIA.resize( getNumRows() );
-        return;
+        HArray<ValueType>& typedCSRValues = static_cast<HArray<ValueType>&>( csrValues );
+
+        DenseUtils::convertDense2CSR( csrIA, csrJA, typedCSRValues,
+                                      getNumRows(), getNumColumns(), mData, getContextPtr() );
     }
+    else
+    {
+        HArray<ValueType> tmpValues;
 
-    // build offset array, get number of non-zero values for size of ja, values
-    IndexType numValues = sizes2offsets[loc]( wIA.get(), getNumRows() );
-    WriteOnlyAccess<IndexType> wJA( *csrJA, loc, numValues );
-    WriteOnlyAccess<OtherValueType> wValues( *csrValues, loc, numValues );
-    getCSRValues[loc]( wJA.get(), wValues.get(), wIA.get(), mDiagonalProperty, getNumRows(), getNumColumns(),
-                       denseValues.get(), eps );
+        DenseUtils::convertDense2CSR( csrIA, csrJA, tmpValues,
+                                      getNumRows(), getNumColumns(), mData, getContextPtr() );
+
+        HArrayUtils::_assign( csrValues, tmpValues );
+    }
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& ) const
+void DenseStorage<ValueType>::setCSRData(
+    const IndexType numRows,
+    const IndexType numColumns,
+    const HArray<IndexType>& ia,
+    const HArray<IndexType>& ja,
+    const _HArray& values )
 {
-    COMMON_THROWEXCEPTION( "getFirstColumnIndexes not possible for DENSE format" )
+    if ( values.getValueType() == getValueType() )
+    {
+        setCSRDataImpl( numRows, numColumns, ia, ja,
+                        static_cast<const HArray<ValueType>&>( values ) );
+    }
+    else
+    {
+        setCSRDataImpl( numRows, numColumns, ia, ja,
+                        utilskernel::convertHArray<ValueType>( values, getContextPtr() ) );
+    }
 }
 
-/* --------------------------------------------------------------------------- */
-
 template<typename ValueType>
-template<typename OtherValueType>
 void DenseStorage<ValueType>::setCSRDataImpl(
     const IndexType numRows,
     const IndexType numColumns,
     const HArray<IndexType>& ia,
     const HArray<IndexType>& ja,
-    const HArray<OtherValueType>& values,
-    const ContextPtr context )
+    const HArray<ValueType>& values )
 {
     IndexType numValues = ja.size();
 
-    static LAMAKernel<DenseKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
-    static LAMAKernel<CSRKernelTrait::validOffsets> validOffsets;
-    static LAMAKernel<UtilKernelTrait::validIndexes> validIndexes;
-
-    // check if context provides all implementations, otherwise go back to Host
-
-    ContextPtr loc = context;
-    setCSRValues.getSupportedContext( loc, validOffsets, validIndexes );
 
     SCAI_LOG_INFO( logger,
                    "setCRSData for dense storage " << numRows << " x " << numColumns << ", nnz = " << numValues )
 
     _MatrixStorage::setDimension( numRows, numColumns );
 
-    std::unique_ptr<HArray<IndexType> > tmpOffsets;
-
-    const HArray<IndexType>* offsets = &ia;
-
     if ( ia.size() == numRows )
     {
-        tmpOffsets.reset( ia.copy() );
-        IndexType total = HArrayUtils::scan1( *tmpOffsets, loc );
+        HArray<IndexType> tmpOffsets;
+        IndexType total = CSRUtils::sizes2offsets( tmpOffsets, ia, getContextPtr() );
         SCAI_ASSERT_EQUAL( total, numValues, "sizes do not sum up correctly" )
-        offsets = tmpOffsets.get();
-    }
-    else
-    {
-        SCAI_ASSERT_EQ_ERROR( ia.size(), numRows + 1, "size mismatch of csr IA array" )
+        setCSRDataImpl( numRows, numColumns, tmpOffsets, ja, values );
+        return;
     }
 
-    {
-        ReadAccess<IndexType> csrIA( *offsets, loc );
-        ReadAccess<IndexType> csrJA( ja, loc );
-        ReadAccess<OtherValueType> csrValues( values, loc );
-        SCAI_CONTEXT_ACCESS( loc )
+    SCAI_ASSERT_EQ_ERROR( ia.size(), numRows + 1, "size mismatch of csr IA array" )
+    SCAI_ASSERT_ERROR( CSRUtils::validOffsets( ia, numValues, getContextPtr() ), "illegal CSR offset array" );
 
-        if ( !validOffsets[loc]( csrIA.get(), numRows, numValues ) )
-        {
-            COMMON_THROWEXCEPTION( "invalid offset array" )
-        }
+    SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( ja, numColumns, getContextPtr() ),
+                       "CSR ja array contains illegal column indexes, #columns = " << numColumns );
 
-        if ( !validIndexes[loc]( csrJA.get(), numValues, numColumns ) )
-        {
-            COMMON_THROWEXCEPTION( "invalid column indexes, #columns = " << numColumns )
-        }
-
-        WriteOnlyAccess<ValueType> data( mData, loc, getNumRows() * getNumColumns() );
-        setCSRValues[loc]( data.get(), getNumRows(), getNumColumns(), csrIA.get(), csrJA.get(), csrValues.get() );
-    }
-
-    mDiagonalProperty = checkDiagonalProperty();
-    // dense storage does not care about diagonal property, is always okay
+    DenseUtils::convertCSR2Dense( mData, numRows, numColumns, ia, ja, values, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -568,16 +518,68 @@ void DenseStorage<ValueType>::invertDense( const DenseStorage<ValueType>& other 
         assignDense( other );
     }
 
-    int nRows = this->getNumRows();
-    int nCols = this->getNumColumns();
-    SCAI_ASSERT_EQUAL_ERROR( nRows, nCols )
-    static LAMAKernel<blaskernel::BLASKernelTrait::getinv<ValueType> > getinv;
-    ContextPtr loc = this->getContextPtr();
-    getinv.getSupportedContext( loc );
-    WriteAccess<ValueType> denseValues( mData, loc );
-    SCAI_CONTEXT_ACCESS( loc );
-    getinv[loc]( nRows, denseValues.get(), nCols );
-    SCAI_LOG_INFO( logger, "invertDense: this = " << *this )
+    SCAI_ASSERT_EQ_ERROR( getNumRows(), getNumColumns(), "invert only for square matrices" )
+
+    DenseUtils::invert( mData, getNumRows(), getContextPtr() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseStorage<ValueType>::binaryOp(
+    const MatrixStorage<ValueType>& a,
+    const common::BinaryOp op,
+    const MatrixStorage<ValueType>& b )
+{
+    if ( a.getFormat() != Format::DENSE )
+    {
+        if ( &b == this )
+        {
+            auto aDense = convert<DenseStorage<ValueType>>( a );
+            binaryOp( aDense, op, b );
+        }
+        else
+        {
+            // reuse this storage for conversion of a
+            assign( a );
+            binaryOp( *this, op, b );
+        }
+    }
+    else if ( b.getFormat() != Format::DENSE )
+    {
+        if ( &a == this )
+        {
+            auto bDense = convert<DenseStorage<ValueType>>( b );
+            binaryOp( a, op, bDense );
+        }
+        else
+        {
+            // reuse this storage for conversion of a
+            assign( b );
+            binaryOp( a, op, *this );
+        }
+    }
+    else
+    {
+        binaryOpDense( static_cast<const DenseStorage<ValueType>&>( a ), op,
+                       static_cast<const DenseStorage<ValueType>&>( b ) );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseStorage<ValueType>::binaryOpDense(
+    const DenseStorage<ValueType>& a,
+    const common::BinaryOp op,
+    const DenseStorage<ValueType>& b )
+{
+    SCAI_ASSERT_EQ_ERROR( a.getNumRows(), b.getNumRows(), "serious size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( a.getNumColumns(), b.getNumColumns(), "serious size mismatch" )
+
+    _MatrixStorage::setDimension( a.getNumRows(), a.getNumColumns() );
+
+    utilskernel::HArrayUtils::binaryOp( mData, a.getValues(), b.getValues(), op, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -594,89 +596,50 @@ void DenseStorage<ValueType>::matrixTimesVector(
     SCAI_LOG_INFO( logger,
                    "Computing z = " << alpha << " * A * x + " << beta << " * y" << ", with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
-    const IndexType nSource = common::isTranspose( op ) ? getNumRows() : getNumColumns();
-    const IndexType nTarget = common::isTranspose( op ) ? getNumColumns() : getNumRows();
+    MatrixStorage<ValueType>::gemvCheck( alpha, x, beta, y, op );  // checks for correct sizes
 
-    if ( alpha == common::Constants::ZERO )
+    // async = false, returns NULL pointer
+
+    DenseUtils::gemv( result, alpha, x, beta, y, getNumRows(), getNumColumns(), mData, op, false, getContextPtr() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseStorage<ValueType>::jacobiIterate(
+    HArray<ValueType>& solution,
+    const HArray<ValueType>& oldSolution,
+    const HArray<ValueType>& rhs,
+    const ValueType omega ) const
+{
+    SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
+
+    if ( &solution == &oldSolution )
     {
-        // so we just have result = beta * y, will be done synchronously
-
-        if ( beta == common::Constants::ZERO )
-        {
-            HArrayUtils::setSameValue( result, nTarget, ValueType( 0 ), this->getContextPtr() );
-        }
-        else
-        {
-            HArrayUtils::compute( result, beta, BinaryOp::MULT, y, this->getContextPtr() );
-        }
-
-        return;
+        COMMON_THROWEXCEPTION( "alias of solution and oldSolution unsupported" )
     }
 
-    SCAI_ASSERT_EQ_ERROR( x.size(), nSource, "vector x in A * x has illegal size" )
+    // matrix must be square
 
-    if ( beta != common::Constants::ZERO )
-    {
-        SCAI_ASSERT_EQ_ERROR( y.size(), nTarget, "size mismatch y, beta = " << beta )
-    }
+    SCAI_ASSERT_EQ_DEBUG( getNumRows(), getNumColumns(), "jacobi iteration step only on square matrix storage" )
 
-    if ( nTarget == 0 )
-    {
-        result.clear();  // result will get size zero
-        return;          // nothing to do
-    }
+    DenseUtils::jacobi( solution, omega, oldSolution, rhs,
+                        getNumRows(), mData, getContextPtr() );
+}
 
-    SCAI_LOG_INFO( logger, *this << ": matrixTimesVector, try on " << *mContext )
+/* --------------------------------------------------------------------------- */
 
-    // using BLAS2 interface requires result and y to be aliased
+template<typename ValueType>
+void DenseStorage<ValueType>::jacobiIterateHalo(
+    HArray<ValueType>& solution,
+    const HArray<ValueType>& localDiagonal,
+    const HArray<ValueType>& oldSolution,
+    const ValueType omega ) const
+{
+    // matrix must be square
 
-    if ( beta == common::Constants::ZERO )
-    {
-        utilskernel::HArrayUtils::setSameValue( result, nTarget, ValueType( 0 ), getContextPtr() );
-    }
-    else if ( &result != &y )
-    {
-        utilskernel::HArrayUtils::assign( result, y, this->getContextPtr() );
-    }
-    else
-    {
-        SCAI_LOG_INFO( logger, "alias of result and y, can use it" )
-    }
-
-    // now we have: result = alpha * A * x + beta * result
-
-    if ( nSource == 0 )
-    {
-        SCAI_LOG_INFO( logger, "empty matrix, so compute result = " << beta << " * result " )
-
-        if ( beta == common::Constants::ZERO )
-        {
-            // nothing more to do, y is already 0
-        }
-        else if ( beta == common::Constants::ONE )
-        {
-            // no scaling required
-        }
-        else
-        {
-            HArrayUtils::compute( result, beta, BinaryOp::MULT, result, this->getContextPtr() );
-        }
-    }
-    else
-    {
-        // mNumColums > 0, mnumRows > 0, so we avoid problems for gemv with m==0 or n==0
-        static LAMAKernel<blaskernel::BLASKernelTrait::gemv<ValueType> > gemv;
-        ContextPtr loc = this->getContextPtr();
-        gemv.getSupportedContext( loc );
-        ReadAccess<ValueType> denseValues( mData, loc );
-        ReadAccess<ValueType> rX( x, loc );
-        int lda = getNumColumns(); // stride for denseValues between rows
-        WriteAccess<ValueType> wResult( result, loc );
-        SCAI_CONTEXT_ACCESS( loc )
-        // gemv:  result = alpha * this * x + beta * result
-        gemv[loc]( op, getNumRows(), getNumColumns(), alpha, denseValues.get(), lda, rX.get(),
-                   1, beta, wResult.get(), 1 );
-    }
+    DenseUtils::jacobiHalo( solution, omega, localDiagonal, oldSolution,
+                            getNumRows(), getNumColumns(), mData, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -718,10 +681,6 @@ void DenseStorage<ValueType>::matrixTimesMatrix(
     {
         matrixTimesMatrix( alpha, convert<DenseStorage<ValueType>>( a ), b, beta, c );
     }
-    else if ( b.getFormat() != Format::DENSE )
-    {
-        matrixTimesMatrix( alpha, a, convert<DenseStorage<ValueType>>( b ), beta, c );
-    }
     else if ( c.getFormat() != Format::DENSE )
     {
         if ( beta == 0 )
@@ -733,11 +692,25 @@ void DenseStorage<ValueType>::matrixTimesMatrix(
             matrixTimesMatrix( alpha, a, b, beta, convert<DenseStorage<ValueType>>( c )  );
         }
     }
+    else if ( b.getFormat() == Format::CSR )
+    {
+        matrixTimesMatrixCSR( alpha, static_cast<const DenseStorage<ValueType>&>( a ),
+                              static_cast<const CSRStorage<ValueType>&>( b ),
+                              beta,  static_cast<const DenseStorage<ValueType>&>( c ) );
+    }
+    else if ( b.getFormat() != Format::DENSE )
+    {
+        // convert 'sparse' matrix b into CSR format
+
+        matrixTimesMatrixCSR( alpha, static_cast<const DenseStorage<ValueType>&>( a ), 
+                              convert<CSRStorage<ValueType>>( b ),
+                              beta,  static_cast<const DenseStorage<ValueType>&>( c ) );
+    }
     else
     {
         // all matrices are now dense
-        matrixTimesMatrixDense( alpha, static_cast<const DenseStorage<ValueType>&>( a ), 
-                                       static_cast<const DenseStorage<ValueType>&>( b ),
+        matrixTimesMatrixDense( alpha, static_cast<const DenseStorage<ValueType>&>( a ),
+                                static_cast<const DenseStorage<ValueType>&>( b ),
                                 beta,  static_cast<const DenseStorage<ValueType>&>( c ) );
     }
 }
@@ -752,99 +725,122 @@ void DenseStorage<ValueType>::matrixTimesMatrixDense(
     const ValueType beta,
     const DenseStorage<ValueType>& c )
 {
-    // shape(a) = m x k,  shape(b) = k x n
-    const DenseStorage<ValueType>* ptrA = &a;
-    const DenseStorage<ValueType>* ptrB = &b;
-    std::shared_ptr<DenseStorage<ValueType> > tmpA;
-    std::shared_ptr<DenseStorage<ValueType> > tmpB;
     SCAI_LOG_INFO( logger,
                    "matrixTimesMatrixDense: " << alpha << " * a * b + " << beta << " * c, with a = " << a << ", b = " << b << ", c = " << c )
 
     if ( &a == this )
     {
-        SCAI_LOG_INFO( logger, "temporary for A in A * B ( dense storages) needed" )
-        tmpA = std::shared_ptr<DenseStorage<ValueType> >( new DenseStorage<ValueType>( a ) );
-        ptrA = tmpA.get();
+        if ( &b == this )
+        {
+            DenseStorage tmp( a );   // only one temporary needed
+            matrixTimesMatrixDense( alpha, tmp, tmp, beta, c );
+            return;
+        }
+        else
+        {
+            DenseStorage tmpA( a );
+            matrixTimesMatrixDense( alpha, tmpA, b, beta, c );
+            return;
+        }
     }
 
     if ( &b == this )
     {
-        // avoid two temporaries
-        if ( &a == &b )
-        {
-            SCAI_LOG_INFO( logger, "same temporary for A and B in A * B ( dense storages) needed" )
-            ptrB = tmpA.get();
-        }
-        else
-        {
-            SCAI_LOG_INFO( logger, "temporary for B in A * B ( dense storages) needed" )
-            tmpB = std::shared_ptr<DenseStorage<ValueType> >( new DenseStorage<ValueType>( b ) );
-            ptrB = tmpB.get();
-        }
+        DenseStorage tmpB( b );
+        matrixTimesMatrixDense( alpha, a, tmpB, beta, c );
+        return;
     }
+
+    SCAI_ASSERT_EQ_ERROR( a.getNumColumns(), b.getNumRows(), "serious size mismatch for a * b" )
 
     IndexType m = a.getNumRows();
     IndexType k = b.getNumRows();
     IndexType n = b.getNumColumns();
 
-    SCAI_ASSERT_EQUAL_ERROR( k, a.getNumColumns() )
- 
     _MatrixStorage::setDimension( m, n );
 
     if ( beta == common::Constants::ZERO )
     {
         // do not care at all about C as it might be any dummy, or aliased to result
-        static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
-        ContextPtr loc = this->getContextPtr();
-        setVal.getSupportedContext( loc );
-        SCAI_LOG_INFO( logger, "init this result with 0, size = " << m * n )
-        WriteOnlyAccess<ValueType> resAccess( mData, loc, m * n );
-        SCAI_CONTEXT_ACCESS( loc )
-        setVal[loc]( resAccess.get(), m * n, ValueType( 0 ), BinaryOp::COPY );
+
+        ValueType zero = 0;
+
+        HArrayUtils::setSameValue( mData, m * n, zero, getContextPtr() );
     }
     else if ( this != &c )
     {
         // force result = C
-        SCAI_ASSERT_EQUAL_ERROR( m, c.getNumRows() )
-        SCAI_ASSERT_EQUAL_ERROR( n, c.getNumColumns() )
 
-        _MatrixStorage::setDimension( m, n );
+        SCAI_ASSERT_EQ_ERROR( m, c.getNumRows(), "serious size mismatch" )
+        SCAI_ASSERT_EQ_ERROR( n, c.getNumColumns(), "serious size mismatch" )
 
-        static LAMAKernel<blaskernel::BLASKernelTrait::copy<ValueType> > copy;
-        ContextPtr loc = this->getContextPtr();
-        copy.getSupportedContext( loc );
-        ReadAccess<ValueType> cAccess( c.getValues(), loc );
-        WriteOnlyAccess<ValueType> resAccess( mData, loc, m * n );
-        SCAI_LOG_TRACE( logger, "Copying: res = c " )
-        SCAI_CONTEXT_ACCESS( loc )
-        copy[loc]( n * m, cAccess.get(), 1, resAccess.get(), 1 );
+        HArrayUtils::setArray( mData, c.getValues(), common::BinaryOp::COPY, getContextPtr() );
     }
     else
     {
         SCAI_LOG_INFO( logger, "results is aliased with C as required for gemm, beta = " << beta )
     }
 
-    // now C used for BLAS3 call of GEMM is this matrix
-    int lda = a.getNumColumns();
-    int ldb = b.getNumColumns();
-    int ldc = getNumColumns();
-    // Now  C = alpha * A * B + beta * C, can use GEMM of BLAS3
-    SCAI_LOG_TRACE( logger,
-                    "GEMM( Normal, Normal, m:" << m << ", n:" << n << ", k:" << k << ", alpha:" << alpha << ", A , lda:" << lda << " ,B ,ldb:" << ldb << " ,beta:" << beta << " C ,ldc:" << ldc << " )" )
+    DenseUtils::gemm( mData, alpha,
+                      a.getValues(), common::MatrixOp::NORMAL,
+                      b.getValues(), common::MatrixOp::NORMAL,
+                      beta, m, n, k, getContextPtr() );
+}
 
-    if ( lda != 0 && n != 0 && m != 0 )
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseStorage<ValueType>::matrixTimesMatrixCSR(
+    const ValueType alpha,
+    const DenseStorage<ValueType>& a,
+    const CSRStorage<ValueType>& b,
+    const ValueType beta,
+    const DenseStorage<ValueType>& c )
+{
+    SCAI_LOG_INFO( logger,
+                   "matrixTimesMatrixCSR: " << alpha << " * a * b + " << beta << " * c, with a = " << a << ", b = " << b << ", c = " << c )
+
+    if ( &a == this )
     {
-        static LAMAKernel<blaskernel::BLASKernelTrait::gemm<ValueType> > gemm;
-        ContextPtr loc = this->getContextPtr();
-        gemm.getSupportedContext( loc );
-        ReadAccess<ValueType> aAccess( ptrA->getValues(), loc );
-        ReadAccess<ValueType> bAccess( ptrB->getValues(), loc );
-        WriteAccess<ValueType> resAccess( mData, loc );
-        SCAI_CONTEXT_ACCESS( loc )
-        gemm[loc]( common::MatrixOp::NORMAL, common::MatrixOp::NORMAL, 
-                   m, n, k, alpha, aAccess.get(), lda, bAccess.get(), ldb, beta,
-                   resAccess.get(), ldc );
+        DenseStorage tmpA( a );
+        matrixTimesMatrixCSR( alpha, tmpA, b, beta, c );
+        return;
     }
+
+    SCAI_ASSERT_EQ_ERROR( a.getNumColumns(), b.getNumRows(), "serious size mismatch for a * b" )
+
+    IndexType m = a.getNumRows();
+    IndexType k = b.getNumRows();
+    IndexType n = b.getNumColumns();
+
+    _MatrixStorage::setDimension( m, n );
+
+    if ( beta == common::Constants::ZERO )
+    {
+        // do not care at all about C as it might be any dummy, or aliased to result
+
+        ValueType zero = 0;
+
+        HArrayUtils::setSameValue( mData, m * n, zero, getContextPtr() );
+    }
+    else if ( this != &c )
+    {
+        // force result = C
+
+        SCAI_ASSERT_EQ_ERROR( m, c.getNumRows(), "serious size mismatch" )
+        SCAI_ASSERT_EQ_ERROR( n, c.getNumColumns(), "serious size mismatch" )
+
+        HArrayUtils::setArray( mData, c.getValues(), common::BinaryOp::COPY, getContextPtr() );
+    }
+    else
+    {
+        SCAI_LOG_INFO( logger, "results is aliased with C as required for gemm, beta = " << beta )
+    }
+
+    CSRUtils::gemmDS( mData, alpha, a.getValues(), beta, 
+                      k, n, m, b.getIA(), b.getJA(), b.getValues(),
+                      common::MatrixOp::NORMAL, false,
+                      getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -867,13 +863,7 @@ RealType<ValueType> DenseStorage<ValueType>::l1Norm() const
         return static_cast<ValueType>( 0 );
     }
 
-    static LAMAKernel<blaskernel::BLASKernelTrait::asum<ValueType> > asum;
-    ContextPtr loc = this->getContextPtr();
-    asum.getSupportedContext( loc );
-    ReadAccess<ValueType> data( mData, loc );
-    SCAI_CONTEXT_ACCESS( loc );
-    IndexType inc = 1;
-    return asum[loc]( n, data.get(), inc );
+    return HArrayUtils::l1Norm( mData, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -881,19 +871,7 @@ RealType<ValueType> DenseStorage<ValueType>::l1Norm() const
 template<typename ValueType>
 RealType<ValueType> DenseStorage<ValueType>::l2Norm() const
 {
-    IndexType n = getNumRows() * getNumColumns();
-
-    if ( n == 0 )
-    {
-        return static_cast<ValueType>( 0 );
-    }
-
-    static LAMAKernel<blaskernel::BLASKernelTrait::dot<ValueType> > dot;
-    ContextPtr loc = this->getContextPtr();
-    dot.getSupportedContext( loc );
-    ReadAccess<ValueType> data( mData, loc );
-    SCAI_CONTEXT_ACCESS( loc );
-    return common::Math::sqrt( dot[loc]( n, data.get(), 1, data.get(), 1 ) );
+    return HArrayUtils::l2Norm( mData, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -901,21 +879,7 @@ RealType<ValueType> DenseStorage<ValueType>::l2Norm() const
 template<typename ValueType>
 RealType<ValueType> DenseStorage<ValueType>::maxNorm() const
 {
-    IndexType n = getNumRows() * getNumColumns();
-
-    if ( n == 0 )
-    {
-        return ValueType( 0 );
-    }
-
-    static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
-    ContextPtr loc = this->getContextPtr();
-    reduce.getSupportedContext( loc );
-    ReadAccess<ValueType> read1( mData, loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    ValueType zero   = 0;
-    RealType<ValueType> maxval = reduce[loc]( read1.get(), n, zero, BinaryOp::ABS_MAX );
-    return maxval;
+    return HArrayUtils::maxNorm( mData, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -947,14 +911,8 @@ RealType<ValueType> DenseStorage<ValueType>::maxDiffNorm( const MatrixStorage<Va
 template<typename ValueType>
 RealType<ValueType> DenseStorage<ValueType>::maxDiffNormImpl( const DenseStorage<ValueType>& other ) const
 {
-    // no more checks needed here
-
-    IndexType n = getNumRows() * getNumColumns();
-
-    if ( n == 0 )
-    {
-        return static_cast<RealType<ValueType> >( 0 );
-    }
+    SCAI_ASSERT_EQ_DEBUG( getNumRows(), other.getNumRows(), "dense storages for maxDiff do not match" )
+    SCAI_ASSERT_EQ_DEBUG( getNumColumns(), other.getNumColumns(), "dense storages for maxDiff do not match" )
 
     return HArrayUtils::maxDiffNorm( mData, other.mData, this->getContextPtr() );
 }
@@ -975,22 +933,9 @@ void DenseStorage<ValueType>::assignDense( const DenseStorage<OtherValueType>& o
 
     _MatrixStorage::_assign( other ); // copy sizes, flags
 
-    LAMAKernel<DenseKernelTrait::set<ValueType, OtherValueType> > set;
+    // copy the dense data, maybe with type conversion
 
-    ContextPtr loc = getContextPtr();
-
-    set.getSupportedContext( loc );
-
-    {
-        SCAI_CONTEXT_ACCESS( loc )
-        WriteOnlyAccess<ValueType> data( mData, loc, getNumRows() * getNumColumns() );
-        ReadAccess<OtherValueType> otherData( other.getValues(), loc );
-        set[loc]( data.get(), getNumRows(), getNumColumns(), otherData.get(), BinaryOp::COPY );
-    }
-
-    SCAI_LOG_INFO( logger, *this << ": assigned dense storage " << other )
-
-    _MatrixStorage::resetDiagonalProperty();
+    HArrayUtils::setArray( mData, other.getValues(), common::BinaryOp::COPY, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1009,8 +954,6 @@ template<typename ValueType>
 template<typename OtherValueType>
 void DenseStorage<ValueType>::assignImpl( const MatrixStorage<OtherValueType>& other )
 {
-    ContextPtr ctx = getContextPtr();   // will force a valid copy in this context
-
     if ( other.getFormat() == Format::DENSE )
     {
         // both storage have COO format, use special method for it
@@ -1021,26 +964,26 @@ void DenseStorage<ValueType>::assignImpl( const MatrixStorage<OtherValueType>& o
     {
         const auto otherCSR = static_cast<const CSRStorage<OtherValueType> & >( other );
 
-        setCSRDataImpl( otherCSR.getNumRows(), otherCSR.getNumColumns(),
-                        otherCSR.getIA(), otherCSR.getJA(), otherCSR.getValues(), ctx );
+        setCSRData( otherCSR.getNumRows(), otherCSR.getNumColumns(),
+                    otherCSR.getIA(), otherCSR.getJA(), otherCSR.getValues() );
 
         SCAI_LOG_INFO( logger, "DenseStorage: assign CSR : " << other << ", this = " << *this );
     }
     else
     {
-        HArray<IndexType>  csrIA( ctx );
-        HArray<IndexType>  csrJA( ctx );
-        HArray<ValueType>  csrValues( ctx );     // might also be OtherValueType, depending on size
+        HArray<IndexType>  csrIA;
+        HArray<IndexType>  csrJA;
+        HArray<ValueType>  csrValues;     // might also be OtherValueType, depending on size
 
         other.buildCSRData( csrIA, csrJA, csrValues );
 
         // just a thought for optimization: use mIA, mJA, mValues instead of csrIA, csrJA, csrValues
         // but does not help much at all as resort of entries requires already temporaries.
 
-        setCSRDataImpl( other.getNumRows(), other.getNumColumns(), csrIA, csrJA, csrValues, ctx );
+        setCSRDataImpl( other.getNumRows(), other.getNumColumns(), csrIA, csrJA, csrValues );
 
-        SCAI_LOG_INFO( logger, "DenseStorage: assign " << other << ", built CSR tmp data with ia = " 
-                                << csrIA << ", ja = " << csrJA << ", values = " << csrValues << ", this = " << *this )
+        SCAI_LOG_INFO( logger, "DenseStorage: assign " << other << ", built CSR tmp data with ia = "
+                       << csrIA << ", ja = " << csrJA << ", values = " << csrValues << ", this = " << *this )
 
     }
 }
@@ -1051,14 +994,12 @@ template<typename ValueType>
 void DenseStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 {
     SCAI_LOG_INFO( logger, "allocate dense storage of size " << numRows << " x " << numColumns )
-  
+
     _MatrixStorage::setDimension( numRows, numColumns );
 
     mData.resize( getNumRows() * getNumColumns() );
 
     setZero();
-
-    mDiagonalProperty = checkDiagonalProperty();
 
     SCAI_LOG_DEBUG( logger, *this << " allocated, #values = " << getNumRows() * getNumColumns() << ", not initialized" )
 }
@@ -1125,9 +1066,7 @@ DenseStorage<ValueType>::DenseStorage( ContextPtr ctx ) :
 
     MatrixStorage<ValueType>( 0, 0, ctx ),
     mData( ctx )
-
 {
-    mDiagonalProperty = checkDiagonalProperty();
 }
 
 template<typename ValueType>
@@ -1138,7 +1077,6 @@ DenseStorage<ValueType>::DenseStorage( const IndexType numRows, const IndexType 
 {
     mData.resize( numRows * numColumns );
     this->setZero();
-    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1147,17 +1085,15 @@ template<typename ValueType>
 DenseStorage<ValueType>::DenseStorage(
     const IndexType numRows,
     const IndexType numColumns,
-    HArray<ValueType> denseData, 
+    HArray<ValueType> denseData,
     ContextPtr ctx ) :
 
     MatrixStorage<ValueType>( numRows, numColumns, ctx ),
     mData( std::move( denseData ) )
 
 {
-    SCAI_ASSERT_EQ_ERROR( mData.size(), numRows * numColumns, 
+    SCAI_ASSERT_EQ_ERROR( mData.size(), numRows * numColumns,
                           "size of array does not fit the shape " << numRows << " x " << numColumns )
-
-    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1174,10 +1110,10 @@ DenseStorage<ValueType>::DenseStorage( const DenseStorage<ValueType>& other ) :
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseStorage<ValueType>::DenseStorage( DenseStorage<ValueType>&& other ) :
+DenseStorage<ValueType>::DenseStorage( DenseStorage<ValueType> && other ) :
 
-   MatrixStorage<ValueType>( std::move( other ) ),
-   mData( std::move( other.mData ) )
+    MatrixStorage<ValueType>( std::move( other ) ),
+    mData( std::move( other.mData ) )
 {
 }
 
@@ -1193,13 +1129,13 @@ DenseStorage<ValueType>& DenseStorage<ValueType>::operator=( const DenseStorage<
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseStorage<ValueType>& DenseStorage<ValueType>::operator=( DenseStorage<ValueType>&& other )
+DenseStorage<ValueType>& DenseStorage<ValueType>::operator=( DenseStorage<ValueType> && other )
 {
     // move of all member variables
-    
+
     mData = std::move( other.mData );
 
-    // call of move assignment for base class 
+    // call of move assignment for base class
 
     MatrixStorage<ValueType>::moveImpl( std::move( other ) );
 
@@ -1317,21 +1253,6 @@ void DenseStorage<ValueType>::fillCOO(
 /* ========================================================================= */
 
 SCAI_COMMON_INST_CLASS( DenseStorage, SCAI_NUMERIC_TYPES_HOST )
-
-#define DENSE_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                   \
-    template void DenseStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType,                   \
-            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&,                                  \
-            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                   \
-    template void DenseStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,     \
-            hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;                                   \
-     
-#define DENSE_STORAGE_INST_LVL1( ValueType )                                                                  \
-    SCAI_COMMON_LOOP_LVL2( ValueType, DENSE_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
-
-SCAI_COMMON_LOOP( DENSE_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
-
-#undef DENSE_STORAGE_INST_LVL2
-#undef DENSE_STORAGE_INST_LVL1
 
 } /* end namespace lama */
 

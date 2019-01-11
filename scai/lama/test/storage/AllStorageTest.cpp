@@ -2,29 +2,24 @@
  * @file AllStorageTest.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Test cases applied to each storage class, i.e. test (virtual) methods of _MatrixStorage
@@ -175,6 +170,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( allocateTest, ValueType, scai_numeric_test_types 
     TypedStorages<ValueType> allMatrixStorages( context );    // is created by factory
     SCAI_LOG_INFO( logger, "Test " << allMatrixStorages.size() << "  storages for setIdentity" )
 
+    HArray<ValueType> zeroColumn( numColumns, zero );
+
     for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
     {
         MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
@@ -188,31 +185,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( allocateTest, ValueType, scai_numeric_test_types 
         for ( IndexType i = 0; i < numRows; ++i )
         {
             storage.getRow( row, i );
-            hmemo::ReadAccess<ValueType> rRow( row );
 
-            for ( IndexType j = 0; j < numColumns; ++j )
-            {
-                BOOST_CHECK_EQUAL( zero, rRow[j] );
-            }
+            BOOST_TEST( hostReadAccess( row ) == hostReadAccess( zeroColumn ), per_element() );
         }
 
         storage.clear();
-        // verify that empty matrix has diagonal property
-        BOOST_CHECK( storage.hasDiagonalProperty() );
-        storage.allocate( 1, 1 );
-
-        if ( storage.getFormat() == Format::DENSE )
-        {
-            // only dense matrix keeps its diagonal property
-            BOOST_CHECK( storage.hasDiagonalProperty() );
-        }
-        else
-        {
-            BOOST_CHECK( !storage.hasDiagonalProperty() );
-        }
-
         storage.purge();
-        BOOST_CHECK( storage.hasDiagonalProperty() );
     }
 }
 
@@ -300,8 +278,8 @@ BOOST_AUTO_TEST_CASE( conversionTest )
 
             initStorage( storage1 );
 
-            SCAI_LOG_DEBUG( logger, "conversionTest " << s1 << " x " << s2 << " of " << n << " x " << n 
-                                    << ", storage1 = " << storage1 << ", -> storage2  = " << storage2 )
+            SCAI_LOG_INFO( logger, "conversionTest " << s1 << " x " << s2 << " of " << n << " x " << n 
+                                   << ", storage1 = " << storage1 << ", -> storage2  = " << storage2 )
 
 
             storage2 = storage1;   // converts both: type and format

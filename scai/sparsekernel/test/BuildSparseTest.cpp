@@ -2,29 +2,24 @@
  * @file sparsekernel/test/BuildSparseTest.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Contains tests for the classes BuildSparseIndexes and BuildSparseVector
@@ -76,13 +71,13 @@ BOOST_AUTO_TEST_CASE( buildSparseIndexesTest )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( buildSparseVectorTest, ValueType, scai_numeric_test_types )
 {
-    BuildSparseVector<ValueType> myVector( 10, common::BinaryOp::ADD );
+    BuildSparseVector<ValueType> myVector( 10, ValueType( 1 ) );
 
     BOOST_CHECK_EQUAL( IndexType( 0 ), myVector.getLength() );
     BOOST_CHECK( myVector.isEmpty() );
 
-    myVector.push( 1, 5 );
-    myVector.push( 1, 3 );
+    myVector.push( 1, 5, common::BinaryOp::MULT );
+    myVector.push( 1, 3, common::BinaryOp::MULT );
 
     BOOST_CHECK_EQUAL( IndexType( 1 ), myVector.getLength() );
     BOOST_CHECK( !myVector.isEmpty() );
@@ -92,8 +87,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildSparseVectorTest, ValueType, scai_numeric_te
 
     myVector.pop( i, v );
 
-    BOOST_CHECK_EQUAL( static_cast<IndexType>( 1 ), i );
-    BOOST_CHECK_EQUAL( static_cast<ValueType>( 8 ), v );
+    BOOST_CHECK_EQUAL( IndexType( 1 ), i );
+    BOOST_CHECK_EQUAL( ValueType( 15 ), v );
 
     BOOST_CHECK_EQUAL( IndexType( 0 ), myVector.getLength() );
     BOOST_CHECK( myVector.isEmpty() );
@@ -103,13 +98,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildSparseVectorTest, ValueType, scai_numeric_te
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( buildSparseVectorTest1, ValueType, scai_numeric_test_types )
 {
-    BuildSparseVector<ValueType> myVector( 10, common::BinaryOp::COPY );
+    BuildSparseVector<ValueType> myVector( 10 );
 
     BOOST_CHECK_EQUAL( IndexType( 0 ), myVector.getLength() );
     BOOST_CHECK( myVector.isEmpty() );
 
-    myVector.push( 1, 5 );
-    myVector.push( 1, 3 );
+    myVector.push( 1, 5, common::BinaryOp::COPY );
+    myVector.push( 1, 3, common::BinaryOp::COPY );
 
     BOOST_CHECK_EQUAL( IndexType( 1 ), myVector.getLength() );
     BOOST_CHECK( !myVector.isEmpty() );

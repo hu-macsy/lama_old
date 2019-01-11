@@ -2,29 +2,24 @@
  * @file DIAKernelTrait.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Struct with traits for all DIA storage methods provided as kernels.
@@ -77,13 +72,11 @@ struct DIAKernelTrait
         /** Type definition of function pointer for counting sparse values in DIA storage
          *
          *  @param[out] csrSizes array with number of non-zero entries in each row
-         *  @param[in]  diagonalFlag if true count also zero diagonal elements
          *  @param[in] numRows is the number of rows
          *  @param[in] numColumns is the number of columns
          *  @param[in] numDiagonals number of diagonals used in the DIA format
          *  @param[in] diaOffsets diagonal offsets, size is numDiagonals
          *  @param[in] diaValues are stored values of the diagonals
-         *  @param[in] eps threshold value when an element should be considered as zero
          *
          *  Note: the diagonals might contain zero entries so the number of non-zero
          *        elements might be less than number of stored elements
@@ -95,13 +88,11 @@ struct DIAKernelTrait
 
         typedef void ( *FuncType )(
             IndexType csrSizes[],
-            bool diagonalFlag,
             const IndexType numRows,
             const IndexType numColumns,
             const IndexType numDiagonals,
             const IndexType diaOffsets[],
-            const ValueType diaValues[],
-            const ValueType eps );
+            const ValueType diaValues[] );
 
         static const char* getId()
         {
@@ -109,7 +100,7 @@ struct DIAKernelTrait
         }
     };
 
-    template<typename DIAValueType, typename CSRValueType>
+    template<typename ValueType>
     struct getCSRValues
     {
         /** Type definition of function pointer for conversion of DIA storage data to CSR data.
@@ -122,23 +113,19 @@ struct DIAKernelTrait
          *  @param[in] numDiagonals number of diagonals used in the DIA format
          *  @param[in] diaOffsets diagonal offsets, size is numDiagonals
          *  @param[in] diaValues are stored values of the diagonals
-         *  @param[in] eps threshold value when an element should be considered as zero
          *
          *   - csrIA has numRows + 1 entries
          *   - csrJA and csrValues must have at least numValues entries, numValues = csrIA[numRows]
          */
-
         typedef void ( *FuncType ) (
             IndexType csrJA[],
-            CSRValueType csrValues[],
+            ValueType csrValues[],
             const IndexType csrIA[],
-            const bool diagonalFlag,
             const IndexType numRows,
             const IndexType numColumns,
             const IndexType numDiagonals,
             const IndexType diaOffsets[],
-            const DIAValueType diaValues[],
-            const DIAValueType eps );
+            const ValueType diaValues[] );
 
         static const char* getId()
         {
@@ -192,19 +179,45 @@ struct DIAKernelTrait
          *
          */
         typedef void ( *FuncType ) (
-            ValueType* solution,
-            const IndexType numColumns,
+            ValueType solution[],
+            const IndexType n,
             const IndexType numDiagonals,
             const IndexType diaOffset[],
             const ValueType diaValues[],
             const ValueType oldSolution[],
             const ValueType rhs[],
-            const ValueType omega,
-            const IndexType numRows );
+            const ValueType omega );
 
         static const char* getId()
         {
             return "DIA.jacobi";
+        }
+    };
+
+    template<typename ValueType>
+    struct jacobiHalo
+    {
+        /** Compute one iteration step in Jacobi method for halo
+         *
+         *  \code
+         *      solution -= omega * ( dia_halo * oldSolution ) ./ diagonal 
+         *  \endcode
+         *
+         */
+        typedef void ( *FuncType ) (
+            ValueType solution[],
+            const ValueType diagonal[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const IndexType numDiagonals,
+            const IndexType diaOffset[],
+            const ValueType diaValues[],
+            const ValueType oldSolution[],
+            const ValueType omega );
+
+        static const char* getId()
+        {
+            return "DIA.jacobiHalo";
         }
     };
 

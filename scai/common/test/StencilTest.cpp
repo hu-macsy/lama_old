@@ -2,29 +2,24 @@
  * @file StencilTest.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Test routines for Stencil classes.
@@ -216,6 +211,51 @@ BOOST_AUTO_TEST_CASE( stencil4Test )
     // now we have the same stencil
 
     BOOST_CHECK( stencil4c == stencil4a );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( stencil4DConstructorTest )
+{
+    typedef double ValueType;
+
+    Stencil4D<ValueType> stencil4a( 81 );
+
+    BOOST_CHECK_THROW(
+    {
+        Stencil4D<ValueType> stencil4b( 80 );
+    }, common::Exception );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( stencilEqualTest )
+{
+    typedef double ValueType;
+
+    Stencil2D<ValueType> stencilA;
+    Stencil2D<ValueType> stencilB;
+
+    stencilA.addPoint( 0, 0, 2 );
+    stencilA.addPoint( -1, 0, -1 );
+    stencilA.addPoint( 0, 1, -1 );
+
+    stencilB.addPoint( -1, 0, -1 );
+    stencilB.addPoint( 0, 1, -1 );
+    stencilB.addPoint( 0, 0, 2 );
+
+    // two stencils should be equal even if elements have been added in different order
+
+    BOOST_CHECK_EQUAL( stencilA, stencilB );
+
+    Stencil3D<ValueType> stencil3A;        // zero matrix
+    Stencil3D<ValueType> stencil3B( 1 );   // diagonal matrix with zero
+    Stencil3D<ValueType> stencil3C( 7 );
+
+    // compare with empty stencils should not cause problems
+
+    BOOST_CHECK_EQUAL( stencil3A, stencil3B );   // value in 1-point stencil is zero
+    BOOST_CHECK( stencil3A != stencil3C );
 }
 
 /* --------------------------------------------------------------------- */

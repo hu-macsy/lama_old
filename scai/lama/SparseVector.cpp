@@ -2,29 +2,24 @@
  * @file SparseVector.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementations of constructors/methods for class SparseVector.
@@ -52,7 +47,7 @@
 
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
-#include <scai/dmemo/Redistributor.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 #include <scai/hmemo/ContextAccess.hpp>
 
 #include <scai/tracing.hpp>
@@ -637,7 +632,7 @@ ValueType SparseVector<ValueType>::getValue( IndexType globalIndex ) const
 {
     ValueType myValue = 0;
 
-    const IndexType localIndex = getDistribution().global2local( globalIndex );
+    const IndexType localIndex = getDistribution().global2Local( globalIndex );
 
     SCAI_LOG_TRACE( logger, *this << ": getValue( globalIndex = " << globalIndex << " ) -> local : " << localIndex )
 
@@ -675,7 +670,7 @@ void SparseVector<ValueType>::setValue( const IndexType globalIndex, const Value
 
     SCAI_LOG_TRACE( logger, *this << ": setValue( globalIndex = " << globalIndex << " ) = " <<  value )
 
-    const IndexType localIndex = getDistribution().global2local( globalIndex );
+    const IndexType localIndex = getDistribution().global2Local( globalIndex );
 
     SCAI_LOG_TRACE( logger, *this << ": set @g " << globalIndex << " is @l " << localIndex << " : " << value )
 
@@ -1572,7 +1567,7 @@ void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
 
                 if ( distribution->isLocal( globalIndex ) )
                 {
-                    const IndexType localIndex = distribution->global2local( globalIndex );
+                    const IndexType localIndex = distribution->global2Local( globalIndex );
                     wNonZeroIndexes[newSize] = localIndex;
                     wNonZeroValues[newSize] = wNonZeroValues[i];
                     newSize++;
@@ -1600,15 +1595,7 @@ void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
 
         const Distribution& currentDist = getDistribution();
 
-        ContextPtr hostContext = Context::getHostPtr();
-        {
-            WriteAccess<IndexType> wNonZeroIndexes( mNonZeroIndexes, hostContext );
-
-            for ( IndexType i = 0; i < nLocalIndexes; ++i )
-            {
-                wNonZeroIndexes[i] = currentDist.local2global( wNonZeroIndexes[i] );
-            }
-        }
+        currentDist.local2GlobalV( mNonZeroIndexes, mNonZeroIndexes );
 
         SCAI_LOG_DEBUG( logger, "translated " << nLocalIndexes << " local indexes to global indexes" )
 
@@ -1633,9 +1620,12 @@ void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
     }
     else
     {
+        SCAI_ASSERT_EQ_ERROR( distribution->getCommunicator(), getDistribution().getCommunicator(),
+                              "redistribute only supported within same communicator" )
+
         SCAI_LOG_INFO( logger, *this << " will be redistributed to " << *distribution << " in two steps: replicate/localize" )
 
-        DistributionPtr repDist ( new NoDistribution( getDistribution().getGlobalSize() ) );
+        auto repDist = std::make_shared<NoDistribution>( getDistribution().getGlobalSize() );
 
         redistribute( repDist );
         redistribute( distribution );
@@ -1647,7 +1637,7 @@ void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
 /* ------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void SparseVector<ValueType>::redistribute( const Redistributor& redistributor )
+void SparseVector<ValueType>::redistribute( const RedistributePlan& redistributor )
 {
     // use a temporary dense vector for redistribution
 
@@ -1656,6 +1646,33 @@ void SparseVector<ValueType>::redistribute( const Redistributor& redistributor )
     auto tmp = convert<DenseVector<ValueType>>( *this );
     tmp.redistribute( redistributor );
     assign( tmp );
+}
+
+/* ------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void SparseVector<ValueType>::resize( DistributionPtr distribution )
+{
+    // disassemble this vector and fill it up again
+
+    VectorAssembly<ValueType> assembly;
+
+    this->disassemble( assembly );
+
+    IndexType newSize = distribution->getGlobalSize();
+
+    // truncate elements if necessary to avoid ERROR messages when we fil up
+
+    if ( newSize < size() )
+    {
+        assembly.truncate( newSize );
+    }
+
+    // and now fill the assembly back
+
+    allocate( distribution );
+
+    this->fillFromAssembly( assembly );
 }
 
 /* -- IO ------------------------------------------------------------------- */

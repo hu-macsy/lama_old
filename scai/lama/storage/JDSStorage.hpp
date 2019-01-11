@@ -2,29 +2,24 @@
  * @file JDSStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of a structure for a (non-distributed) JDS sparse matrix.
@@ -257,30 +252,7 @@ public:
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::_HArray& values )
-    {
-        mepr::StorageWrapper<JDSStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
-            setCSRDataImpl( this, numRows, numColumns, ia, ja, values, this->getContextPtr() );
-    }
-
-    /**
-     * @brief template (non-virtual) version of setCSRData with explicit other value type.
-     *
-     * @param[in] numRows    number of rows
-     * @param[in] numColumns number of columns
-     * @param[in] ia         row pointer of the input csr sparse matrix
-     * @param[in] ja         column indexes of the input csr sparse matrix
-     * @param[in] values     the data values of the input csr sparse matrix
-     * @param[in] loc        is the context where filling takes place
-     */
-    template<typename OtherValueType>
-    void setCSRDataImpl(
-        const IndexType numRows,
-        const IndexType numColumns,
-        const hmemo::HArray<IndexType>& ia,
-        const hmemo::HArray<IndexType>& ja,
-        const hmemo::HArray<OtherValueType>& values,
-        const hmemo::ContextPtr loc );
+        const hmemo::_HArray& values );
 
     /* ==================================================================== */
     /*  build CSR data                                                      */
@@ -288,35 +260,11 @@ public:
 
     /** Implementation for _MatrixStorage::buildCSRSizes */
 
-    void buildCSRSizes( hmemo::HArray<IndexType>& ia ) const
-    {
-        hmemo::HArray<IndexType>* ja = NULL;
-        hmemo::HArray<ValueType>* values = NULL;
-        buildCSR( ia, ja, values, this->getContextPtr() );
-    }
+    void buildCSRSizes( hmemo::HArray<IndexType>& ia ) const;
 
     /** Implementation for _MatrixStorage::buildCSRData */
 
-    void buildCSRData( hmemo::HArray<IndexType>& csrIA, hmemo::HArray<IndexType>& csrJA, hmemo::_HArray& csrValues ) const
-    {
-        mepr::StorageWrapper<JDSStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
-            buildCSRDataImpl( this, csrIA, csrJA, csrValues, getContextPtr() );
-    }
-
-    /** 
-     *  @brief Template (non-virtual) version of building CSR data
-     *
-     *  @param[out] ia is the CSR offset array
-     *  @param[out] ja is the array with the column indexes (optional)
-     *  @param[out] values is the array with the non-zero matrix values (optional)
-     *  @param[in]  loc is the Context where conversion should be done
-     */
-    template<typename OtherValueType>
-    void buildCSR(
-        hmemo::HArray<IndexType>& ia,
-        hmemo::HArray<IndexType>* ja,
-        hmemo::HArray<OtherValueType>* values,
-        const hmemo::ContextPtr loc ) const;
+    void buildCSRData( hmemo::HArray<IndexType>& csrIA, hmemo::HArray<IndexType>& csrJA, hmemo::_HArray& csrValues ) const;
 
     /**
      * Fill up a JDS storage with the given arrays.
@@ -370,16 +318,6 @@ public:
 
     virtual void jacobiIterateHalo(
         hmemo::HArray<ValueType>& localSolution,
-        const MatrixStorage<ValueType>& localStorage,
-        const hmemo::HArray<ValueType>& haloOldSolution,
-        const ValueType omega ) const;
-
-    /** Implementation of MatrixStorage::jacobiIterateHalo for JDS
-     *  @since 1.1.0
-     */
-
-    virtual void jacobiIterateHalo(
-        hmemo::HArray<ValueType>& localSolution,
         const hmemo::HArray<ValueType>& localDiagonal,
         const hmemo::HArray<ValueType>& haloOldSolution,
         const ValueType omega ) const;
@@ -389,7 +327,7 @@ public:
      *
      *  This solution is more efficient as we need only update of the column data
      */
-    virtual void globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns );
+    virtual void globalizeHaloIndexes( const dmemo::HaloExchangePlan& halo, const IndexType globalNumColumns );
 
     /* Print relevant information about matrix storage format. */
 
@@ -462,9 +400,13 @@ public:
      *  Scaling of elements in a matrix                                *
      ******************************************************************/
 
-    /** Template version used for virtual routine scale with known value type. */
+    /** Implementation of pure method MatrixStorage<ValueType>::scaleRows */
 
     void scaleRows( const hmemo::HArray<ValueType>& values );
+
+    /** Implementation of pure method MatrixStorage<ValueType>::scaleColumns */
+
+    void scaleColumns( const hmemo::HArray<ValueType>& values );
 
     /** Implementation of pure method.  */
 
@@ -516,8 +458,6 @@ public:
 
     virtual size_t getMemoryUsageImpl() const;
 
-    using _MatrixStorage::hasDiagonalProperty;
-
     using _MatrixStorage::prefetch;
     using _MatrixStorage::getContextPtr;
 
@@ -525,10 +465,10 @@ public:
     using _MatrixStorage::getNumColumns;
 
     using MatrixStorage<ValueType>::assign;
+    using MatrixStorage<ValueType>::getValueType;
 
 protected:
 
-    using MatrixStorage<ValueType>::mDiagonalProperty;
     using MatrixStorage<ValueType>::mRowIndexes;
     using MatrixStorage<ValueType>::mCompressThreshold;
 
@@ -553,20 +493,6 @@ private:
         const hmemo::HArray<ValueType>& y,
         const common::MatrixOp op,
         bool async ) const;
-
-    /**
-     *  Mandatory routine to check storage data for the diagonal property.
-     */
-    virtual bool checkDiagonalProperty() const;
-
-    /**
-     *  @brief Help routine for stable sort of ilg and setting up perm correctly
-     */
-    void sortRows();
-
-    /** Help routine that sets up mDlg by mIlg and returns the total sum of non-zero entries */
-
-    IndexType setupDiagonals();
 
     void print( std::ostream& ) const;
 

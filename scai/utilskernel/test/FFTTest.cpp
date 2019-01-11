@@ -2,29 +2,24 @@
  * @file FFTTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Tests for FFT operations on arrays
@@ -75,25 +70,23 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftForwardTest, ValueType, scai_fft_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
 
-    // Init Arrays
-
-    HArray<ValueType> in( { 0.2, 0.16 } );
-
     typedef common::Complex<RealType<ValueType>> ComplexType;
 
-    HArray<ComplexType> out;
+    // Init Arrays
 
-    IndexType npad = 8;
+    HArray<ComplexType> data( { 0.2, 0.16, 0, 0, 0, 0, 0, 0 } );
 
-    FFTUtils::fft( out, in, npad, 1, loc );
+    IndexType n = 8;
+
+    FFTUtils::fftcall<ValueType>( data, 1, n, 3, 1, loc );
 
     RealType<ValueType> eps = 0.00001;
 
     {
-        ReadAccess<ComplexType> rOut( out );
+        ReadAccess<ComplexType> rOut( data );
 
         BOOST_CHECK( common::Math::abs( rOut[0] - ComplexType( 0.2 + 0.16 ) ) < eps );
-        BOOST_CHECK( common::Math::abs( rOut[npad-2] - ComplexType( 0.2, 0.16 ) ) < eps );
+        BOOST_CHECK( common::Math::abs( rOut[n-2] - ComplexType( 0.2, 0.16 ) ) < eps );
     }
 }
 
@@ -105,23 +98,25 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftBackwardTest, ValueType, scai_fft_test_types )
 
     // Init Arrays
 
-    HArray<ValueType> in( { 0.2, 0.16 } );
-
     typedef common::Complex<RealType<ValueType>> ComplexType;
 
-    HArray<ComplexType> out;
+    HArray<ComplexType> data( { 0.2, 0.16, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  } );
 
-    IndexType npad = 8;
+    SCAI_LOG_DEBUG( logger, "in = " << common::Wrapper<hmemo::HostReadAccess<ComplexType>>( hmemo::hostReadAccess( data ) ) )
 
-    FFTUtils::fft( out, in, npad, -1, loc );
+    IndexType n = data.size();
+
+    FFTUtils::fftcall<ValueType>( data, 1, n, 3, -1, loc );
+
+    SCAI_LOG_DEBUG( logger, "out = " << common::Wrapper<hmemo::HostReadAccess<ComplexType>>( hmemo::hostReadAccess( data ) ) )
 
     RealType<ValueType> eps = 0.00001;
 
     {
-        ReadAccess<ComplexType> rOut( out );
+        ReadAccess<ComplexType> rOut( data );
 
         BOOST_CHECK( common::Math::abs( rOut[0] - ComplexType( 0.2 + 0.16 ) ) < eps );
-        BOOST_CHECK( common::Math::abs( rOut[npad-2] - ComplexType( 0.2, -0.16 ) ) < eps );
+        BOOST_CHECK( common::Math::abs( rOut[n-2] - ComplexType( 0.2, -0.16 ) ) < eps );
     }
 }
 
@@ -163,17 +158,22 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTest, ValueType, scai_fft_test_types )
         const IndexType n = 1 << m; 
 
         HArray<ComplexType> in( n );
-        HArray<ComplexType> outFFT;
-        HArray<ComplexType> outDFT;
 
         // generate random numbers between -1 and 1
 
         HArrayUtils::fillRandom( in, 2, 1.0f, loc );
-        HArrayUtils::compute(in, in, common::BinaryOp::SUB, ComplexType( 1, 1 ) );
 
-        FFTUtils::fft( outFFT, in, n, dir, loc );
-    
+        HArrayUtils::compute( in, in, common::BinaryOp::SUB, ComplexType( 1, 1 ) );
+
+        HArray<ComplexType> outFFT( in );
+
+        IndexType k = 1;
+
+        FFTUtils::fftcall<ValueType>( outFFT, k, n, m, dir, loc );
+
         BOOST_REQUIRE_EQUAL( outFFT.size(), n );
+
+        HArray<ComplexType> outDFT;
 
         {
             auto rIn = hostReadAccess( in );
@@ -188,20 +188,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fftTest, ValueType, scai_fft_test_types )
         }
 
         {
-            auto rOut1 = hostReadAccess( outFFT );
-            auto rOut2 = hostReadAccess( outDFT );
-
             RealType<ValueType> eps = common::TypeTraits<ComplexType>::small() * m;
 
-            for ( IndexType i = 0; i < n; ++i )
-            {
-                auto diff = common::Math::abs( rOut1[i] - rOut2[i] );
-    
-                // std::cout << "FFT[ " << i << " ] = " << rOut1[i] << ", DFT[ " << i << " ] = " << rOut2[i] 
-                //          << ", diff = " << diff << ", eps = " << eps << std::endl;
-
-                BOOST_CHECK( diff < eps );
-            }
+            SCAI_CHECK_SMALL_ARRAY_DIFF( outFFT, outDFT, eps )
         }
     }
 }

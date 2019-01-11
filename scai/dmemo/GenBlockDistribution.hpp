@@ -2,29 +2,24 @@
  * @file GenBlockDistribution.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief General block distribution where partitions might have different sizes.
@@ -66,64 +61,18 @@ class COMMON_DLL_IMPORTEXPORT GenBlockDistribution:
 {
 public:
 
-
-    /** Construct a general block distribution by a vector of localSizes.
+    /** Construct a general block distribution by an offset array with the sizes
      *
-     *  @param[in] globalSize is the number of elements to distribute
-     *  @param[in] localSizes contains the sizes for each partition
-     *  @param[in] communicator specifies the communicator used for this distribution
+     *  @param[in] offsets is the offset array, must have comm->getSize() + 1 entries
+     *  @param[in] comm specifies the communicator used for this distribution
      *
-     *  Note: All partitions must call this constructor with the 'same' arguments.
-     */
-
-    GenBlockDistribution(
-        const IndexType globalSize,
-        const std::vector<IndexType>& localSizes,
-        const CommunicatorPtr communicator );
-
-    /** Construct a general block distribution by an interval.
+     *  Note: All processors must call this constructor with the 'same' values.
      *
-     *  @param[in] globalSize is the number of elements to distribute
-     *  @param[in] firstGlobalIdx is the smallest global index in partition
-     *  @param[in] lastGlobalIdx is the largest global index in partition
-     *  @param[in] dummy bool value
-     *  @param[in] communicator specifies the communicator used for this distribution
-     *
-     */
-
-    GenBlockDistribution(
-        const IndexType globalSize,
-        const IndexType firstGlobalIdx,
-        const IndexType lastGlobalIdx,
-        bool  dummy,
-        const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() );
-
-    /** Construct a general block distribution by individual localSize
-     *
-     *  @param[in] globalSize is the number of elements to distribute
-     *  @param[in] localSize is the number of elements for this partition
-     *  @param[in] communicator specifies the communicator used for this distribution
-     *
+     *  The global size is given by the entry offsets[size].
      */
     GenBlockDistribution(
-        const IndexType globalSize,
-        const IndexType localSize,
-        const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() );
-
-    /** Construct a general block distribution by a weight so that each partition
-     *  will have a size corresponding to its weight.
-     *
-     *  @param globalSize is the number of elements to distribute
-     *  @param weight is the weight of this partition (must be positive)
-     *  @param communicator specifies the communicator used for this distribution
-     *
-     *  Note: GenBlockDistribution( globalSize, localSize, comm) is the same
-     *        as GenBlockDistribution( globalSize, (float) localSize, comm )
-     */
-    GenBlockDistribution(
-        const IndexType globalSize,
-        const float weight,
-        const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() );
+        std::unique_ptr<IndexType[]>&& offsets,
+        CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
 
     virtual ~GenBlockDistribution();
 
@@ -152,9 +101,13 @@ public:
 
     virtual IndexType getLocalSize() const;
 
-    virtual IndexType local2global( const IndexType localIndex ) const;
+    /** Implementation for pure method Distribution::local2Global */
 
-    virtual IndexType global2local( const IndexType globalIndex ) const;
+    virtual IndexType local2Global( const IndexType localIndex ) const;
+
+    /** Implementation for pure method Distribution::global2Local */
+
+    virtual IndexType global2Local( const IndexType globalIndex ) const;
 
     /** Implementation of pure function Distribution::getBlockDistributionSize, here same as getLocalSize */
 
@@ -200,7 +153,7 @@ public:
 
     /** Static method required for create to use in Distribution::Register */
 
-    static Distribution* create( const DistributionArguments args );
+    static DistributionPtr create( const DistributionArguments args );
 
     /** Static method required for Distribution::Register */
 
@@ -219,10 +172,6 @@ protected:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
-
-    void setOffsets( const PartitionId rank, const PartitionId numPartitions, const IndexType localSizes[] );
-
-    void setOffsets( const PartitionId rank, const PartitionId numPartitions, const IndexType mySize );
 
     GenBlockDistribution(); // disable default destructor
 
@@ -244,6 +193,52 @@ const char* GenBlockDistribution::getId()
     return "GEN_BLOCK";
 }
 
+/** Construct a general block distribution by individual local sizes
+ *
+ *  @param[in] localSize is the number of elements owned by this processor
+ *  @param[in] comm specifies the communicator used for this distribution
+ *
+ */
+std::shared_ptr<GenBlockDistribution> genBlockDistributionBySize( 
+    const IndexType localSize,
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
+
+/** Construct a general block distribution by individual local sizes
+ *
+ *  @param[in] globalSize is the total number of elements, used for check
+ *  @param[in] localSize is the number of elements owned by this processor
+ *  @param[in] comm specifies the communicator used for this distribution
+ *
+ *  In contrary to the function without the global size this function also checks for a
+ *  correct global size.
+ */
+std::shared_ptr<GenBlockDistribution> genBlockDistributionBySize( 
+    const IndexType globalSize,
+    const IndexType localSize,
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
+
+/** Construct a general block distribution by a vector of localSizes.
+ *
+ *  @param[in] localSizes contains the sizes for each partition, must be same for all processors of comm
+ *  @param[in] comm specifies the communicator used for this distribution
+ *
+ *  This constructor does not involve any global communication.
+ */
+std::shared_ptr<GenBlockDistribution> genBlockDistributionBySizes( 
+    const std::vector<IndexType>& localSizes,
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
+
+/**
+ *  Generate a general block distribution by a weight so that each partition
+ *  will have a size proportional to its weight.
+ *
+ *  @param globalSize is the number of elements to distribute, must be same for all processors
+ *  @param weight is the weight of this processor (must not be negative)
+ *  @param comm specifies the communicator used for this distribution
+ */
+std::shared_ptr<GenBlockDistribution> genBlockDistributionByWeight( const IndexType globalSize,
+                                                                    const float weight,
+                                                                    const CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
 
 } /* end namespace dmemo */
 

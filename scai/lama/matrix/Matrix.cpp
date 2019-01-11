@@ -2,29 +2,24 @@
  * @file Matrix.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of methods for the abstract class Matrix<ValueType>
@@ -366,7 +361,7 @@ void Matrix<ValueType>::setRow(
 
     // owner sets the row, maybe each processor for replicated row distribution
 
-    IndexType localRowIndex = this->getRowDistribution().global2local( globalRowIndex );
+    IndexType localRowIndex = this->getRowDistribution().global2Local( globalRowIndex );
 
     if ( localRowIndex != invalidIndex )
     {
@@ -436,7 +431,7 @@ void Matrix<ValueType>::vectorTimesMatrixRepCols(
 
     // this routine is only for non-replicated columns, i.e. mHaloData is empty
 
-    SCAI_ASSERT( 1, colDist.getNumPartitions() );
+    SCAI_ASSERT_ERROR( colDist.isReplicated(), "here only replicated column distribution" );
 
     const Distribution& rowDist = this->getRowDistribution();
     const Communicator& comm = rowDist.getCommunicator();
@@ -796,12 +791,14 @@ void Matrix<ValueType>::vcat( const Matrix<ValueType>& m1, const Matrix<ValueTyp
 template<typename ValueType>
 void Matrix<ValueType>::hcat( const Matrix<ValueType>& m1, const Matrix<ValueType>& m2 )
 {
-    SCAI_ASSERT_EQ_ERROR( m1.getNumColumns(), m2.getNumColumns(), "No horizontal cut possible due to different column sizes" )
+    SCAI_ASSERT_EQ_ERROR( m1.getNumColumns(), m2.getNumColumns(), "No horizontal cat possible due to different column sizes" )
+
+    // ToDo: verify that m1, m2 are distributed onto processor subsets of current communicator
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    DistributionPtr rowDist( new BlockDistribution( m1.getNumRows() + m2.getNumRows(), comm ) );
-    DistributionPtr colDist( new NoDistribution( m1.getNumColumns() ) );
+    auto rowDist = std::make_shared<BlockDistribution>( m1.getNumRows() + m2.getNumRows(), comm );
+    auto colDist = std::make_shared<NoDistribution>( m1.getNumColumns() );
 
     std::vector<const Matrix<ValueType>*> matrices;
 
@@ -846,7 +843,7 @@ void Matrix<ValueType>::fillFromAssembly( const MatrixAssembly<ValueType>& assem
 
     MatrixStorage<ValueType>& localStorage = const_cast<MatrixStorage<ValueType>&>( getLocalStorage() );
 
-    COOStorage<ValueType> cooLocal = assembly.buildLocalCOO( *rowDist, numColumns );
+    COOStorage<ValueType> cooLocal = assembly.buildCOO( *rowDist, numColumns, op );
 
     hmemo::HArray<IndexType> cooIA;
     hmemo::HArray<IndexType> cooJA;

@@ -1,0 +1,422 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: fig2dev Version 3.2 Patchlevel 5 -->
+<!-- CreationDate: Tue Jan  8 11:14:26 2019 -->
+<!-- Magnification: 1.000 -->
+<svg xmlns="http://www.w3.org/2000/svg" width="9.4in" height="3.6in" viewBox="2388 7035 11330 4380">
+<g style="stroke-width:.025in; stroke:black; fill:none">
+<!-- Line: box -->
+<rect x="2400" y="7200" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffff00;
+"/>
+<!-- Line: box -->
+<rect x="3300" y="7200" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffff00;
+"/>
+<!-- Line: box -->
+<rect x="4200" y="7200" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffff00;
+"/>
+<!-- Line: box -->
+<rect x="3300" y="8100" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffff00;
+"/>
+<!-- Line: box -->
+<rect x="2400" y="8100" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffff00;
+"/>
+<!-- Line: box -->
+<rect x="4200" y="8100" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffff00;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="2535" y="7950" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(0,0)</text>
+<!-- Text -->
+<text xml:space="preserve" x="2767" y="7575" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">0</text>
+<!-- Text -->
+<text xml:space="preserve" x="3435" y="7950" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(0,1)</text>
+<!-- Text -->
+<text xml:space="preserve" x="3667" y="7575" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">1</text>
+<!-- Text -->
+<text xml:space="preserve" x="4335" y="7950" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(0,2)</text>
+<!-- Text -->
+<text xml:space="preserve" x="4567" y="7575" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">2</text>
+<!-- Text -->
+<text xml:space="preserve" x="3435" y="8850" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(1,1)</text>
+<!-- Text -->
+<text xml:space="preserve" x="3667" y="8475" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">6</text>
+<!-- Text -->
+<text xml:space="preserve" x="2535" y="8850" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(1,0)</text>
+<!-- Text -->
+<text xml:space="preserve" x="2767" y="8475" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">5</text>
+<!-- Text -->
+<text xml:space="preserve" x="4335" y="8850" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(1,2)</text>
+<!-- Text -->
+<text xml:space="preserve" x="4567" y="8475" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">7</text>
+<!-- Line: box -->
+<rect x="5100" y="7200" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#00ff00;
+"/>
+<!-- Line: box -->
+<rect x="6000" y="7200" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#00ff00;
+"/>
+<!-- Line: box -->
+<rect x="6000" y="8100" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#00ff00;
+"/>
+<!-- Line: box -->
+<rect x="5100" y="8100" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#00ff00;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="5235" y="7950" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(0,3)</text>
+<!-- Text -->
+<text xml:space="preserve" x="5467" y="7575" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">3</text>
+<!-- Text -->
+<text xml:space="preserve" x="6135" y="7950" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(0,4)</text>
+<!-- Text -->
+<text xml:space="preserve" x="6367" y="7575" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">4</text>
+<!-- Text -->
+<text xml:space="preserve" x="6135" y="8850" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(1,4)</text>
+<!-- Text -->
+<text xml:space="preserve" x="6367" y="8475" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">9</text>
+<!-- Text -->
+<text xml:space="preserve" x="5235" y="8850" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(1,3)</text>
+<!-- Text -->
+<text xml:space="preserve" x="5467" y="8475" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">8</text>
+<!-- Line: box -->
+<rect x="5100" y="9000" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#00ffff;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="5235" y="9750" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(2,3)</text>
+<!-- Text -->
+<text xml:space="preserve" x="5385" y="9375" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">13</text>
+<!-- Line: box -->
+<rect x="6000" y="9000" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#00ffff;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="6135" y="9750" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(2,4)</text>
+<!-- Text -->
+<text xml:space="preserve" x="6285" y="9375" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">14</text>
+<!-- Line: box -->
+<rect x="5100" y="9900" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#00ffff;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="5235" y="10650" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(3,3)</text>
+<!-- Text -->
+<text xml:space="preserve" x="5385" y="10275" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">18</text>
+<!-- Line: box -->
+<rect x="6000" y="9900" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#00ffff;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="6135" y="10650" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(3,4)</text>
+<!-- Text -->
+<text xml:space="preserve" x="6285" y="10275" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">19</text>
+<!-- Line: box -->
+<rect x="8400" y="7050" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffff00;
+"/>
+<!-- Line: box -->
+<rect x="9300" y="7050" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffff00;
+"/>
+<!-- Line: box -->
+<rect x="10200" y="7050" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffff00;
+"/>
+<!-- Line: box -->
+<rect x="9300" y="7950" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffff00;
+"/>
+<!-- Line: box -->
+<rect x="8400" y="7950" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffff00;
+"/>
+<!-- Line: box -->
+<rect x="10200" y="7950" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffff00;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="8535" y="7800" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(0,0)</text>
+<!-- Text -->
+<text xml:space="preserve" x="8767" y="7425" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">0</text>
+<!-- Text -->
+<text xml:space="preserve" x="9435" y="7800" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(0,1)</text>
+<!-- Text -->
+<text xml:space="preserve" x="9667" y="7425" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">1</text>
+<!-- Text -->
+<text xml:space="preserve" x="10335" y="7800" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(0,2)</text>
+<!-- Text -->
+<text xml:space="preserve" x="10567" y="7425" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">2</text>
+<!-- Text -->
+<text xml:space="preserve" x="9435" y="8700" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(1,1)</text>
+<!-- Text -->
+<text xml:space="preserve" x="9667" y="8325" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">6</text>
+<!-- Text -->
+<text xml:space="preserve" x="8535" y="8700" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(1,0)</text>
+<!-- Text -->
+<text xml:space="preserve" x="8767" y="8325" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">5</text>
+<!-- Text -->
+<text xml:space="preserve" x="10335" y="8700" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(1,2)</text>
+<!-- Text -->
+<text xml:space="preserve" x="10567" y="8325" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">7</text>
+<!-- Line: box -->
+<rect x="2400" y="9000" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffa1a1;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="2535" y="9750" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(2,0)</text>
+<!-- Text -->
+<text xml:space="preserve" x="2685" y="9375" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">10</text>
+<!-- Line: box -->
+<rect x="3300" y="9000" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffa1a1;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="3435" y="9750" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(2,1)</text>
+<!-- Text -->
+<text xml:space="preserve" x="3585" y="9375" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">11</text>
+<!-- Line: box -->
+<rect x="4200" y="9000" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffa1a1;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="4335" y="9750" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(2,2)</text>
+<!-- Text -->
+<text xml:space="preserve" x="4485" y="9375" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">12</text>
+<!-- Line: box -->
+<rect x="2400" y="9900" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffa1a1;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="2535" y="10650" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(3,0)</text>
+<!-- Text -->
+<text xml:space="preserve" x="2685" y="10275" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">15</text>
+<!-- Line: box -->
+<rect x="3300" y="9900" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffa1a1;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="3435" y="10650" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(3,1)</text>
+<!-- Text -->
+<text xml:space="preserve" x="3585" y="10275" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">16</text>
+<!-- Line: box -->
+<rect x="4200" y="9900" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffa1a1;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="4335" y="10650" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(3,2)</text>
+<!-- Text -->
+<text xml:space="preserve" x="4485" y="10275" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">17</text>
+<!-- Line: box -->
+<rect x="11400" y="9150" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#00ffff;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="11535" y="9900" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(2,3)</text>
+<!-- Text -->
+<text xml:space="preserve" x="11685" y="9525" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">13</text>
+<!-- Line: box -->
+<rect x="12300" y="9150" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#00ffff;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="12435" y="9900" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(2,4)</text>
+<!-- Text -->
+<text xml:space="preserve" x="12585" y="9525" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">14</text>
+<!-- Line: box -->
+<rect x="11400" y="10050" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#00ffff;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="11535" y="10800" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(3,3)</text>
+<!-- Text -->
+<text xml:space="preserve" x="11685" y="10425" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">18</text>
+<!-- Line: box -->
+<rect x="12300" y="10050" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#00ffff;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="12435" y="10800" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(3,4)</text>
+<!-- Text -->
+<text xml:space="preserve" x="12585" y="10425" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">19</text>
+<!-- Line: box -->
+<rect x="11400" y="7050" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#00ff00;
+"/>
+<!-- Line: box -->
+<rect x="12300" y="7050" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#00ff00;
+"/>
+<!-- Line: box -->
+<rect x="12300" y="7950" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#00ff00;
+"/>
+<!-- Line: box -->
+<rect x="11400" y="7950" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#00ff00;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="11535" y="7800" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(0,3)</text>
+<!-- Text -->
+<text xml:space="preserve" x="11767" y="7425" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">3</text>
+<!-- Text -->
+<text xml:space="preserve" x="12435" y="7800" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(0,4)</text>
+<!-- Text -->
+<text xml:space="preserve" x="12667" y="7425" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">4</text>
+<!-- Text -->
+<text xml:space="preserve" x="12435" y="8700" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(1,4)</text>
+<!-- Text -->
+<text xml:space="preserve" x="12667" y="8325" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">9</text>
+<!-- Text -->
+<text xml:space="preserve" x="11535" y="8700" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(1,3)</text>
+<!-- Text -->
+<text xml:space="preserve" x="11767" y="8325" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">8</text>
+<!-- Line: box -->
+<rect x="8400" y="9150" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffa1a1;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="8535" y="9900" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(2,0)</text>
+<!-- Text -->
+<text xml:space="preserve" x="8685" y="9525" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">10</text>
+<!-- Line: box -->
+<rect x="9300" y="9150" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffa1a1;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="9435" y="9900" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(2,1)</text>
+<!-- Text -->
+<text xml:space="preserve" x="9585" y="9525" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">11</text>
+<!-- Line: box -->
+<rect x="10200" y="9150" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffa1a1;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="10335" y="9900" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(2,2)</text>
+<!-- Text -->
+<text xml:space="preserve" x="10485" y="9525" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">12</text>
+<!-- Line: box -->
+<rect x="8400" y="10050" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffa1a1;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="8535" y="10800" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(3,0)</text>
+<!-- Text -->
+<text xml:space="preserve" x="8685" y="10425" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">15</text>
+<!-- Line: box -->
+<rect x="9300" y="10050" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffa1a1;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="9435" y="10800" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(3,1)</text>
+<!-- Text -->
+<text xml:space="preserve" x="9585" y="10425" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">16</text>
+<!-- Line: box -->
+<rect x="10200" y="10050" width="900" height="900" rx="0" 
+style="stroke:#000000;stroke-width:7;
+stroke-linejoin:miter; stroke-linecap:butt;
+fill:#ffa1a1;
+"/>
+<!-- Text -->
+<text xml:space="preserve" x="10335" y="10800" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">(3,2)</text>
+<!-- Text -->
+<text xml:space="preserve" x="10485" y="10425" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">17</text>
+<!-- Text -->
+<text xml:space="preserve" x="7950" y="7275" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P0</text>
+<!-- Text -->
+<text xml:space="preserve" x="13350" y="7275" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P1</text>
+<!-- Text -->
+<text xml:space="preserve" x="13350" y="9375" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P3</text>
+<!-- Text -->
+<text xml:space="preserve" x="7950" y="9375" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">P2</text>
+<!-- Text -->
+<text xml:space="preserve" x="2700" y="11250" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">gridDistribution( [4,5], [2,2])</text>
+<!-- Text -->
+<text xml:space="preserve" x="9300" y="11400" stroke="#000000" fill="#000000"  font-family="Times" font-style="normal" font-weight="normal" font-size="240" text-anchor="start">ownedGlobalIndexes</text>
+</g>
+</svg>

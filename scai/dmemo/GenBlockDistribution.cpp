@@ -2,29 +2,24 @@
  * @file GenBlockDistribution.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief GenBlockDistribution.cpp
@@ -55,6 +50,8 @@ namespace dmemo
 
 SCAI_LOG_DEF_LOGGER( GenBlockDistribution::logger, "Distribution.GenBlockDistribution" )
 
+/* ---------------------------------------------------------------------- */
+
 GenBlockDistribution::~GenBlockDistribution()
 {
     SCAI_LOG_INFO( logger, "~GenBlockDistribution" )
@@ -62,149 +59,104 @@ GenBlockDistribution::~GenBlockDistribution()
 
 /* ---------------------------------------------------------------------- */
 
-void GenBlockDistribution::setOffsets(
-    const PartitionId rank,
-    const PartitionId numPartitions,
-    const IndexType localSizes[] )
+GenBlockDistribution::GenBlockDistribution( std::unique_ptr<IndexType[]>&& offsets, CommunicatorPtr comm ) :
+  
+    Distribution( offsets[comm->getSize()], comm ),
+    mOffsets( std::move( offsets ) )
 {
-    mOffsets.reset( new IndexType[numPartitions + 1] );
-    IndexType sumSizes = 0;
+    PartitionId rank = comm->getRank();
+    mLB = mOffsets[ rank ];
+    mUB = mOffsets[ rank + 1 ];
+}
 
-    mOffsets[0] = 0;   // just filling element for more convenient use of offset array
+/* ---------------------------------------------------------------------- */
 
-    for ( PartitionId p = 0; p < numPartitions; p++ )
+std::shared_ptr<GenBlockDistribution> genBlockDistributionBySize( 
+    const IndexType localSize, 
+    CommunicatorPtr comm )
+{
+    SCAI_ASSERT_DEBUG( comm, "Null pointer for commmunicator" )
+
+    PartitionId size = comm->getSize();
+
+    std::unique_ptr<IndexType[]> offsets( new IndexType[ size + 1 ] );
+
+    offsets[0] = 0;  // local sizes will be added after this entry
+
+    IndexType* allLocalSizes = offsets.get() + 1;
+
+    comm->gather( allLocalSizes, 1, 0, &localSize );
+    comm->bcast( allLocalSizes, size, 0 );
+
+    SCAI_ASSERT_EQ_DEBUG( allLocalSizes[comm->getRank()], localSize, "wrongly gathered values" )
+
+    // sizes to offsets, e.g.  0  5  3  4  1  ->  0  5  8  12 13
+
+    for ( PartitionId p = 0; p < size; ++p )
     {
-        sumSizes += localSizes[p];
-        mOffsets[p + 1] = sumSizes;
-        SCAI_LOG_TRACE( logger,
-                        "Partition " << p << ": local size =  " << localSizes[p] << ", offset = " << mOffsets[p + 1] )
+        offsets[ p + 1 ] += offsets[p];
     }
 
-    SCAI_ASSERT_EQUAL( sumSizes, getGlobalSize(), "sum over local sizes must be global size" )
-
-    // mUB is first element not in the local range
-
-    mUB = mOffsets[rank + 1];
-    mLB = mOffsets[rank];
+    return std::make_shared<GenBlockDistribution>( std::move( offsets ), comm );
 }
 
 /* ---------------------------------------------------------------------- */
 
-void GenBlockDistribution::setOffsets( const PartitionId rank, const PartitionId numPartitions, const IndexType mySize )
-{
-    std::unique_ptr<IndexType[]> localSizes( new IndexType[numPartitions] );
-    // rank 0 is root
-    mCommunicator->gather( localSizes.get(), 1, 0, &mySize );
-    mCommunicator->bcast( localSizes.get(), numPartitions, 0 );
-    SCAI_ASSERT_EQ_DEBUG( localSizes[rank], mySize, "wrongly gathered values" )
-    setOffsets( rank, numPartitions, localSizes.get() );
-}
-
-/* ---------------------------------------------------------------------- */
-
-GenBlockDistribution::GenBlockDistribution(
+std::shared_ptr<GenBlockDistribution> genBlockDistributionBySize( 
     const IndexType globalSize,
+    const IndexType localSize, 
+    CommunicatorPtr comm )
+{
+    auto dist = genBlockDistributionBySize( localSize, comm );
+    SCAI_ASSERT_EQUAL( dist->getGlobalSize(), globalSize, "local sizes do not sum up to expected global size" )
+    return dist;
+}
+
+/* ---------------------------------------------------------------------- */
+
+std::shared_ptr<GenBlockDistribution> genBlockDistributionBySizes( 
     const std::vector<IndexType>& localSizes,
-    const CommunicatorPtr communicator ) :
-
-    Distribution( globalSize, communicator )
+    CommunicatorPtr comm )
 {
-    PartitionId size = mCommunicator->getSize();
-    PartitionId rank = mCommunicator->getRank();
-    SCAI_LOG_INFO( logger, "GenBlockDistribution of " << getGlobalSize() << " elements" )
-    SCAI_ASSERT_EQ_ERROR( size, static_cast<PartitionId>( localSizes.size() ), "size mismatch" )
-    setOffsets( rank, size, &localSizes[0] );
-    SCAI_LOG_INFO( logger, *this << ": constructed by local sizes" )
-}
+    SCAI_ASSERT_DEBUG( comm, "Null pointer for commmunicator" )
 
-/* ---------------------------------------------------------------------- */
+    PartitionId size = comm->getSize();
 
-GenBlockDistribution::GenBlockDistribution(
-    const IndexType globalSize,
-    const IndexType firstGlobalIdx,
-    const IndexType lastGlobalIdx,
-    bool,
-    const CommunicatorPtr communicator ) :
+    SCAI_ASSERT_EQ_DEBUG( static_cast<PartitionId>( localSizes.size() ), size, "illegal vector for local sizes" )
 
-    Distribution( globalSize, communicator )
+    std::unique_ptr<IndexType[]> offsets( new IndexType[ size + 1 ] );
 
-{
-    SCAI_ASSERT_LE_ERROR( firstGlobalIdx, lastGlobalIdx, "illegal local range" )
+    offsets[0] = 0;  // local sizes will be added after this entry
 
-    PartitionId size = mCommunicator->getSize();
-    PartitionId rank = mCommunicator->getRank();
-    setOffsets( rank, size, lastGlobalIdx - firstGlobalIdx );
-    SCAI_ASSERT_EQUAL( mLB, firstGlobalIdx, "serious mismatch in index range" )
-    SCAI_ASSERT_EQUAL( mUB, lastGlobalIdx, "serious mismatch in index range" )
-    SCAI_LOG_INFO( logger, *this << ": constructed by local range " << firstGlobalIdx << ":" << lastGlobalIdx )
-}
+    IndexType* allLocalSizes = offsets.get() + 1;
 
-/* ---------------------------------------------------------------------- */
-
-GenBlockDistribution::GenBlockDistribution(
-    const IndexType globalSize,
-    const IndexType localSize,
-    const CommunicatorPtr communicator ) :
-
-    Distribution( globalSize, communicator )
-
-{
-    int size = mCommunicator->getSize();
-    int rank = mCommunicator->getRank();
-    setOffsets( rank, size, localSize );
-}
-
-/* ---------------------------------------------------------------------- */
-
-GenBlockDistribution::GenBlockDistribution(
-    const IndexType globalSize,
-    const float weight,
-    const CommunicatorPtr communicator ) :
-
-    Distribution( globalSize, communicator )
-
-{
-    PartitionId size = mCommunicator->getSize();
-    PartitionId rank = mCommunicator->getRank();
-    SCAI_LOG_DEBUG( logger, "GenBlockDistribution of " << getGlobalSize() << " elements" << ", my weight = " << weight )
-    std::vector<float> allWeights( size );
-    communicator->allgather( &allWeights[0], 1, &weight );
-    float totalWeight = 0;
-
-    for ( PartitionId p = 0; p < size; p++ )
+    for ( PartitionId p = 0; p < size; ++p )
     {
-        if ( allWeights[p] < /*=*/0 )
-        {
-            COMMON_THROWEXCEPTION( "Weight of partition " << p << " = " << allWeights[p] << " illegal, must be positive" );
-        }
-
-        totalWeight += allWeights[p];
+        allLocalSizes[p] = localSizes[p];
     }
 
-    SCAI_LOG_INFO( logger,
-                   "GenBlockDistribution of " << getGlobalSize() << " elements" << ", total weight = " << totalWeight )
+    // sizes to offsets, e.g.  0  5  3  4  1  ->  0  5  8  12 13
 
-    mOffsets.reset( new IndexType[size + 1] );
-    float sumWeight = 0.0f;
-
-    mOffsets[0] = 0;
-
-    for ( PartitionId p = 0; p < size; p++ )
+    for ( PartitionId p = 0; p < size; ++p )
     {
-        sumWeight += allWeights[p];
-        mOffsets[p + 1] = static_cast<IndexType>( sumWeight / totalWeight * globalSize + 0.5 );
+        offsets[ p + 1 ] += offsets[p];
     }
 
-    mLB = mOffsets[rank];
-    mUB = mOffsets[rank + 1];
+    // we make some simple test to verify that all processors have used the same array
 
-    SCAI_LOG_INFO( logger, *this << " constructed by weight factors" )
+    SCAI_ASSERT_EQ_ERROR( comm->max( offsets[size] ), offsets[size], "different global sizes" )
+
+    return std::make_shared<GenBlockDistribution>( std::move( offsets ), comm );
 }
+
+/* ---------------------------------------------------------------------- */
 
 bool GenBlockDistribution::isLocal( const IndexType globalIndex ) const
 {
     return globalIndex >= mLB && globalIndex < mUB;
 }
+
+/* ---------------------------------------------------------------------- */
 
 void GenBlockDistribution::getLocalRange( IndexType& lb, IndexType& ub ) const
 {
@@ -268,14 +220,14 @@ IndexType GenBlockDistribution::getLocalSize() const
 
 /* ---------------------------------------------------------------------- */
 
-IndexType GenBlockDistribution::local2global( const IndexType localIndex ) const
+IndexType GenBlockDistribution::local2Global( const IndexType localIndex ) const
 {
     return mLB + localIndex;
 }
 
 /* ---------------------------------------------------------------------- */
 
-IndexType GenBlockDistribution::global2local( const IndexType globalIndex ) const
+IndexType GenBlockDistribution::global2Local( const IndexType globalIndex ) const
 {
     IndexType localIndex = invalidIndex;   // default value if globalIndex is not local
 
@@ -417,16 +369,55 @@ std::string GenBlockDistribution::createValue()
     return getId();
 }
 
-Distribution* GenBlockDistribution::create( const DistributionArguments arg )
+DistributionPtr GenBlockDistribution::create( const DistributionArguments arg )
 {
     if ( arg.matrix != NULL )
     {
         SCAI_LOG_WARN( logger, "matrix argument ignored to create GEN_BLOCK distribution" )
     }
-
-    return new GenBlockDistribution( arg.globalSize, arg.weight, arg.communicator );
+    
+    return genBlockDistributionByWeight( arg.globalSize, arg.weight, arg.communicator );
 }
 
+/* ---------------------------------------------------------------------- */
+
+std::shared_ptr<GenBlockDistribution> genBlockDistributionByWeight(
+    const IndexType globalSize,
+    const float weight,
+    const CommunicatorPtr comm )
+{
+    PartitionId size = comm->getSize();
+
+    // each processor gets all values of the weights
+
+    std::vector<float> allWeights( size );
+
+    comm->allgather( &allWeights[0], 1, &weight );
+
+    float totalWeight = 0.0f;
+
+    for ( PartitionId p = 0; p < size; p++ )
+    {
+        SCAI_ASSERT_GE_ERROR( allWeights[p], 0.0f, 
+                              "weight of processor " << p << " illegal, must not be negative" );
+
+        totalWeight += allWeights[p];
+    }
+
+    std::unique_ptr<IndexType[]> offsets( new IndexType[size + 1] );
+
+    float sumWeight = 0.0f;
+
+    offsets[0] = 0;
+
+    for ( PartitionId p = 0; p < size; p++ )
+    {
+        sumWeight += allWeights[p];
+        offsets[p + 1] = static_cast<IndexType>( sumWeight / totalWeight * globalSize + 0.5 );
+    }
+
+    return std::make_shared<GenBlockDistribution>( std::move( offsets ), comm );
+}
 
 } /* end namespace dmemo */
 

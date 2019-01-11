@@ -2,29 +2,24 @@
  * @file GridDistribution.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implementation of methods for grid distribution class.
@@ -352,7 +347,7 @@ IndexType GridDistribution::getBlockDistributionSize() const
 
 /* ---------------------------------------------------------------------- */
 
-void GridDistribution::local2global( IndexType globalGridPos[], const IndexType localGridPos[] ) const
+void GridDistribution::local2Global( IndexType globalGridPos[], const IndexType localGridPos[] ) const
 {
     for ( IndexType idim = 0; idim < mGlobalGrid.nDims(); ++idim )
     {
@@ -362,7 +357,7 @@ void GridDistribution::local2global( IndexType globalGridPos[], const IndexType 
 
 /* ---------------------------------------------------------------------- */
 
-IndexType GridDistribution::local2global( const IndexType localIndex ) const
+IndexType GridDistribution::local2Global( const IndexType localIndex ) const
 {
     IndexType localGridPos[SCAI_GRID_MAX_DIMENSION];
 
@@ -370,14 +365,14 @@ IndexType GridDistribution::local2global( const IndexType localIndex ) const
 
     IndexType globalGridPos[SCAI_GRID_MAX_DIMENSION];
 
-    local2global( globalGridPos, localGridPos );
+    local2Global( globalGridPos, localGridPos );
 
     return mGlobalGrid.linearPos( globalGridPos );
 }
 
 /* ---------------------------------------------------------------------- */
 
-bool GridDistribution::global2local( IndexType localGridPos[], const IndexType globalGridPos[] ) const
+bool GridDistribution::global2Local( IndexType localGridPos[], const IndexType globalGridPos[] ) const
 {
     bool isLocal = true;
 
@@ -397,7 +392,7 @@ bool GridDistribution::global2local( IndexType localGridPos[], const IndexType g
 
 /* ---------------------------------------------------------------------- */
 
-IndexType GridDistribution::global2local( const IndexType globalIndex ) const
+IndexType GridDistribution::global2Local( const IndexType globalIndex ) const
 {
     IndexType globalGridPos[SCAI_GRID_MAX_DIMENSION];
 
@@ -405,7 +400,7 @@ IndexType GridDistribution::global2local( const IndexType globalIndex ) const
 
     IndexType localGridPos[SCAI_GRID_MAX_DIMENSION];
 
-    bool isLocal = global2local( localGridPos, globalGridPos );
+    bool isLocal = global2Local( localGridPos, globalGridPos );
 
     if ( !isLocal )
     {
@@ -447,7 +442,7 @@ void GridDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexe
 
     for ( IndexType i = 0; i < nLocal; ++i )
     {
-        wGlobalIndexes[i] = local2global( i );
+        wGlobalIndexes[i] = local2Global( i );
     }
 }
 
@@ -457,6 +452,8 @@ bool GridDistribution::hasAnyAddressing() const
 {
     return true;
 }
+
+/* ---------------------------------------------------------------------- */
 
 void GridDistribution::enableAnyAddressing() const
 {
@@ -578,7 +575,7 @@ std::string GridDistribution::createValue()
     return getId();
 }
 
-Distribution* GridDistribution::create( const DistributionArguments arg )
+DistributionPtr GridDistribution::create( const DistributionArguments arg )
 {
     SCAI_LOG_INFO( logger, "create" )
 
@@ -613,11 +610,11 @@ Distribution* GridDistribution::create( const DistributionArguments arg )
 
     if ( size1 == 1 )
     {
-        return new GridDistribution( Grid1D( globalSize ), arg.communicator );
+        return std::make_shared<GridDistribution>( Grid1D( globalSize ), arg.communicator );
     }
     else
     {
-        return new GridDistribution( Grid2D( size1, size2 ), arg.communicator );
+        return std::make_shared<GridDistribution>( Grid2D( size1, size2 ), arg.communicator );
     }
 }
 

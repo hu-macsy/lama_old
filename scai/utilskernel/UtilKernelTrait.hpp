@@ -2,29 +2,24 @@
  * @file UtilKernelTrait.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Struct with traits for all LAMA utilities on heterogeneous arrays provided as kernels.
@@ -256,7 +251,7 @@ struct UtilKernelTrait
     template<typename TargetValueType, typename SourceValueType>
     struct setSection
     {
-        /** Set out[i + inc_out] _op= in[i + inc_in],  0 <= i < n , op = +, -, *, /, min, max, ... */
+        /** Set out[i * inc_out] _op= in[i * inc_in],  0 <= i < n , op = +, -, *, /, min, max, ... */
 
         typedef void ( *FuncType ) ( TargetValueType out[], const IndexType inc_out,
                                      const SourceValueType in[], const IndexType inc_in,
@@ -264,6 +259,20 @@ struct UtilKernelTrait
         static const char* getId()
         {
             return "Util.setSection";
+        }
+    };
+
+    template<typename ValueType>
+    struct fillSection
+    {
+        /** Set out[i * inc] _op= val,  0 <= i < n , op = +, -, *, /, min, max, ... */
+
+        typedef void ( *FuncType ) ( ValueType out[], const IndexType inc,
+                                     const ValueType val,
+                                     const IndexType n, const common::BinaryOp op );
+        static const char* getId()
+        {
+            return "Util.fillSection";
         }
     };
 

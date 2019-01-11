@@ -2,29 +2,24 @@
  * @file Printable.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Base class to be used for base classes that will output on a stream.
@@ -92,6 +87,47 @@ public:
  */
 
 COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Printable& object );
+
+/**
+ *  @brief Wrapper class to print contents of container
+ *
+ *  \code
+ *     std::vector<int> list( { 0, 1, 2, 3, 5, 7 } );
+ *     std::cout << "Content of list = " << common::Wrapper( list ) << std::endl;
+ *  \endcode
+ */
+template<class Container>
+class Wrapper : public Printable
+{
+
+public:
+
+    Wrapper( const Container& container ) :  mContainer( container ) 
+    {
+    }
+
+    ~Wrapper()
+    {
+    }
+
+    virtual void writeAt( std::ostream& stream ) const
+    {
+        typename Container::const_iterator beg = mContainer.begin();
+
+        stream << "["; 
+
+        while( beg != mContainer.end())
+        {
+            stream << " " << *beg++; 
+        }
+
+        stream  << " ]"; 
+    }
+
+private:
+
+    const Container& mContainer;  // keep a reference
+};
 
 } /* end namespace common */
 

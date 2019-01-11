@@ -2,29 +2,24 @@
  * @file HArrayUtilsTest.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Tests for the class HArrayUtils
@@ -154,7 +149,7 @@ BOOST_AUTO_TEST_CASE( untypedTest )
             auto vArray1 = utilskernel::convertHArray<ValueType>( array2 );
             auto vArray2 = utilskernel::convertHArray<ValueType>( *tmp );
 
-            BOOST_TEST( hostReadAccess( vArray1 ) == hostReadAccess( vArray2 ), per_element() );
+            SCAI_CHECK_EQUAL_ARRAY( vArray1, vArray2 )
         }
     }
 }
@@ -528,6 +523,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseNewTest, ValueType, scai_numeric_te
     {
         BinaryOp op = BinaryOp( i );
 
+        if ( op == BinaryOp::COPY )
+        {
+            continue;   // works differently
+        }
+
         HArray<IndexType> ia1( nnz1, indexes1, ctx );
         HArray<IndexType> ia2( nnz2, indexes2, ctx );
         HArray<IndexType> ia3( ctx );
@@ -667,7 +667,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseSameTest, ValueType, scai_numeric_t
 
         // ia3 must be equal to ia1, ia2
 
-        BOOST_TEST( hostReadAccess( ia3 ) == hostReadAccess( ia1 ), per_element() );
+        SCAI_CHECK_EQUAL_ARRAY( ia3, ia1 )
 
         // array3 must be array1 op array2 for all elements
 
@@ -935,7 +935,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scan1Test, ValueType, array_types )
     ValueType total = HArrayUtils::scan1( array );
     ValueType lastVal = array[n];
     BOOST_CHECK_EQUAL( array.size(), n + 1 );
-    BOOST_TEST( hostReadAccess( array ) == hostReadAccess( correct ), per_element() );
+    SCAI_CHECK_EQUAL_ARRAY( array, correct )
     BOOST_CHECK_EQUAL( total, lastVal );
 }
 
@@ -967,7 +967,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scanTest, ValueType, array_types )
     ValueType total = HArrayUtils::scan( array, first, exclusive, loc );
 
     BOOST_CHECK_EQUAL( array.size(), n );
-    BOOST_TEST( hostReadAccess( array ) == hostReadAccess( correct ), per_element() );
+    SCAI_CHECK_EQUAL_ARRAY( array, correct )
     BOOST_CHECK_EQUAL( total, last );
 }
 
@@ -993,7 +993,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unscanTest, ValueType, array_types )
     ValueType returnVal = HArrayUtils::unscan( array );
 
     BOOST_REQUIRE_EQUAL( array.size(), n - 1 );
-    BOOST_TEST( hostReadAccess( array ) == hostReadAccess( correct ), per_element() );
+    SCAI_CHECK_EQUAL_ARRAY( array, correct )
     BOOST_CHECK_EQUAL( firstVal, returnVal );
 }
 
@@ -1060,7 +1060,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortPermTest, ValueType, array_types )
     HArray<RealValueType> array2;   // = array[perm]
     HArrayUtils::gather( array2, array, perm, BinaryOp::COPY );
 
-    BOOST_TEST( hostReadAccess( array1 ) == hostReadAccess( array2 ), per_element() );
+    SCAI_CHECK_EQUAL_ARRAY( array1, array2 )
 }
 
 /* --------------------------------------------------------------------- */
@@ -1179,7 +1179,7 @@ BOOST_AUTO_TEST_CASE( bucketSortTest )
 
     IndexType numBuckets = 5;
 
-    HArrayUtils::bucketSort( offsets, perm, emptyArray, numBuckets, loc );
+    HArrayUtils::bucketSortOffsets( offsets, perm, emptyArray, numBuckets, loc );
 
     BOOST_CHECK_EQUAL( perm.size(), IndexType( 0 ) );
     BOOST_CHECK_EQUAL( offsets.size(), numBuckets + 1 );
@@ -1189,7 +1189,7 @@ BOOST_AUTO_TEST_CASE( bucketSortTest )
     HArray<IndexType> array( n, vals, loc );
     numBuckets = HArrayUtils::max( array ) + 1;
 
-    HArrayUtils::bucketSort( offsets, perm, array, numBuckets, loc );
+    HArrayUtils::bucketSortOffsets( offsets, perm, array, numBuckets, loc );
 
     BOOST_CHECK_EQUAL( offsets.size(), numBuckets + 1 );
     BOOST_CHECK_EQUAL( perm.size(), n );
@@ -1201,7 +1201,7 @@ BOOST_AUTO_TEST_CASE( bucketSortTest )
     // number of buckets = 1, so only two values array[i] == 0 are taken
 
     numBuckets = 1;
-    HArrayUtils::bucketSort( offsets, perm, array, numBuckets, loc );
+    HArrayUtils::bucketSortOffsets( offsets, perm, array, numBuckets, loc );
     BOOST_CHECK_EQUAL( perm.size(), IndexType( 2 ) );
 }
 
@@ -1221,20 +1221,16 @@ BOOST_AUTO_TEST_CASE( bucketCountTest )
 
     BOOST_CHECK_EQUAL( sizes.size(), numBuckets );
 
-    IndexType vals[] = { 1, 3, 2, 0, 1, 3, 1 , 2, 0, 1 };
-    const IndexType n = sizeof( vals ) / sizeof( IndexType );
-    HArray<IndexType> array( n, vals, loc );
+    HArray<IndexType> array( { 1, 3, 2, 0, 1, 3, 1 , 2, 0, 1 }, loc );
 
     numBuckets = HArrayUtils::max( array ) + 1;
     HArrayUtils::bucketCount( sizes, array, numBuckets, loc );
     BOOST_CHECK_EQUAL( sizes.size(), numBuckets );
-    BOOST_CHECK_EQUAL( HArrayUtils::sum( sizes ), n );
+    BOOST_CHECK_EQUAL( HArrayUtils::sum( sizes ), array.size() );
 
-    BOOST_CHECK_EQUAL( IndexType( 4 ), numBuckets );
-    BOOST_CHECK_EQUAL( IndexType( 2 ), sizes[0] );
-    BOOST_CHECK_EQUAL( IndexType( 4 ), sizes[1] );
-    BOOST_CHECK_EQUAL( IndexType( 2 ), sizes[2] );
-    BOOST_CHECK_EQUAL( IndexType( 2 ), sizes[3] );
+    HArray<IndexType> expSizes( { 2, 4, 2, 2 } );
+
+    BOOST_TEST( hostReadAccess( sizes ) == hostReadAccess( expSizes ), per_element() );
 }
 
 /* --------------------------------------------------------------------- */

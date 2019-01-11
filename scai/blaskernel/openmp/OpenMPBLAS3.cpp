@@ -2,29 +2,24 @@
  * @file OpenMPBLAS3.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Own implementation of BLAS3 kernels for Host using OpenMP parallelization.
@@ -83,22 +78,23 @@ void OpenMPBLAS3::gemm(
     }
 
     SCAI_LOG_INFO( logger,
-                   "gemm<" << TypeTraits<ValueType>::id() << ">: " << "m = " << m << ", n = " << n
-                   << ", k = " << k << ", lda = " << lda << ", ldb = " << ldb << ", ldc = " << ldc
-                   << ", alpha = " << alpha << ", beta = " << beta )
+                    "gemm<" << TypeTraits<ValueType>::id() << ">: "
+                    << " C = " << alpha << " * A * B + " << beta << " * C"
+                    << ", C is " << m << " x " << n << ", ldc = " << ldc 
+                    << ", A is " << m << " x " << k << ", lda = " << lda << ", opA = " << opA
+                    << ", B is " << k << " x " << n << ", ldb = " << ldb << ", opB = " << opB )
 
     if ( opA == MatrixOp::TRANSPOSE )
     {
         if ( opB == MatrixOp::NORMAL )
         {
-            ValueType temp;
-            #pragma omp parallel for collapse(2) private(temp) 
+            #pragma omp parallel for collapse(2)
 
             for ( IndexType h = 0; h < n; h++ )
             {
                 for ( IndexType i = 0; i < m; i++ )
                 {
-                    temp = static_cast<ValueType>( 0.0 );
+                    ValueType temp = 0;
 
                     for ( IndexType j = 0; j < k; j++ )
                     {
@@ -115,14 +111,13 @@ void OpenMPBLAS3::gemm(
         }
         else if ( opB == MatrixOp::TRANSPOSE )
         {
-            ValueType temp;
-            #pragma omp parallel for collapse(2) private(temp) 
+            #pragma omp parallel for collapse(2)
 
             for ( IndexType h = 0; h < n; h++ )
             {
                 for ( IndexType i = 0; i < m; i++ )
                 {
-                    temp = static_cast<ValueType>( 0.0 );
+                    ValueType temp = 0;
 
                     for ( IndexType j = 0; j < k; j++ )
                     {
@@ -145,19 +140,18 @@ void OpenMPBLAS3::gemm(
             // A = 'N'; B = 'N'
             //std::cout << "lda:" << lda << ", ldb:" << ldb << ", ldc:" << ldc << "\n";
             //std::cout << "n:" << n << ", m:" << m << ", k:" << k << "\n";
-            ValueType temp;
-            #pragma omp parallel for collapse(2) private(temp) 
+            #pragma omp parallel for collapse(2) 
 
             for ( IndexType h = 0; h < n; h++ )
             {
                 for ( IndexType i = 0; i < m; i++ )
                 {
-                    temp = static_cast<ValueType>( 0.0 );
+                    ValueType temp = 0;
 
                     for ( IndexType j = 0; j < k; j++ )
                     {
                         temp += A[lda * i + j] * B[ldb * j + h];
-                    }
+                    } 
 
                     C[ldc * i + h] = alpha * temp + beta * C[ldc * i + h];
                 }
@@ -165,14 +159,13 @@ void OpenMPBLAS3::gemm(
         }
         else if ( opB == MatrixOp::TRANSPOSE )
         {
-            ValueType temp;
-            #pragma omp parallel for collapse(2) private(temp) 
+            #pragma omp parallel for collapse(2)
 
             for ( IndexType h = 0; h < n; h++ )
             {
                 for ( IndexType i = 0; i < m; i++ )
                 {
-                    temp = static_cast<ValueType>( 0.0 );
+                    ValueType temp = 0;
 
                     for ( IndexType j = 0; j < k; j++ )
                     {

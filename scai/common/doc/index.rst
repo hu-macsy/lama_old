@@ -145,6 +145,8 @@ Class                   Description
    Complex
    Constants
    BinaryOp
+   UnaryOp
+   CompareOp
 
 Common Classes for CUDA
 -----------------------

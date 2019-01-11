@@ -2,29 +2,24 @@
  * @file MatrixStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of a common base class for all matrix storage formats.
@@ -68,8 +63,8 @@ class SyncToken;
 namespace dmemo
 {
 class Distribution;
-class Halo;
-class Redistributor;
+class HaloExchangePlan;
+class RedistributePlan;
 }
 
 namespace lama
@@ -119,8 +114,6 @@ public:
      * @param[in] numRows      number of rows
      * @param[in] numColumns   number of columns
      * @param[in] values       the dense matrix values in row-major order (C-style)
-     *
-     * Sparse formats will have the diagonal property if numRows == numColums
      */
     template<typename OtherValueType>
     void setRawDenseData(
@@ -147,6 +140,13 @@ public:
      * Each row of the matrix is scaled with the corresponding value.
      */
     virtual void scaleRows( const hmemo::HArray<ValueType>& values ) = 0;
+
+    /**
+     *  @brief Multiply each row with the same array, i.e. scale each column with a separate values.
+     *
+     *  @param[in] values is an array of size getNumColumns()
+     */
+    virtual void scaleColumns( const hmemo::HArray<ValueType>& values ) = 0;
 
     virtual void reduce( 
         hmemo::HArray<ValueType>& array, 
@@ -244,8 +244,7 @@ public:
      *
      * Implementation of this routine must be provided by all derived classes.
      * It might throw an exception if the diagonal property is not given 
-     * (e.g. the sparse pattern has not all entries for the diagonal elements) or
-     * if the matrix storage format does not support this operation at all.
+     * (i.e. the sparse pattern has not all entries for the diagonal elements).
      */
     virtual void setDiagonalV( const hmemo::HArray<ValueType>& diagonal ) = 0;
 
@@ -254,8 +253,7 @@ public:
      *
      * Implementation of this routine must be provided by all derived classes.
      * It might throw an exception if the diagonal property is not given 
-     * (e.g. the sparse pattern has not all entries for the diagonal elements) or
-     * if the matrix storage format does not support this operation at all.
+     * (i.e. the sparse pattern has not all entries for the diagonal elements).
      */
     virtual void setDiagonal( const ValueType value ) = 0;
 
@@ -266,20 +264,16 @@ public:
      * The size of the output array will be min( nRows, nCols ).
      *
      * This pure method must be implemented by all storage classes. 
-     * It might throw an exception if the diagonal property is not given.
-     * ToDo: getDiagonal in any case by filling missing entries with 0
      */
     virtual void getDiagonal( hmemo::HArray<ValueType>& diagonal ) const = 0;
 
     /** Join local and halo storage back into one storage as needed for NoDistribution.
      *  This matrix storage is used as output matrix.
      *
-     *
      * @param[in] localData is matrix storage with local data
      * @param[in] haloData is the matrix storage with halo data
      * @param[in] halo is the communicaton halo, contains also mapping halo to global indexes
      * @param[in] colDist is the distribution that has be used for getting the local data
-     * @param[in] keepDiagonalProperty if true routine attempts to keep diagonal property
      *
      * Attention: localData might be aliased with this matrix storage,
      *            while haloData must not
@@ -287,13 +281,11 @@ public:
      * Derived classes might use a default implementation that is based on joining
      * CSR data with corresponding conversions.
      */
-
     virtual void joinHalo(
-        const _MatrixStorage& localData,
-        const _MatrixStorage& haloData,
-        const dmemo:: Halo& halo,
-        const dmemo::Distribution& colDist,
-        const bool keepDiagonalProperty );
+        const MatrixStorage<ValueType>& localData,
+        const MatrixStorage<ValueType>& haloData,
+        const dmemo::HaloExchangePlan& halo,
+        const dmemo::Distribution& colDist );
 
     /** Splitting of matrix storage for halo
      *
@@ -307,7 +299,7 @@ public:
     virtual void splitHalo(
         MatrixStorage<ValueType>& localData,
         MatrixStorage<ValueType>& haloData,
-        dmemo::Halo& halo,
+        dmemo::HaloExchangePlan& halo,
         const dmemo::Distribution& colDist,
         const dmemo::Distribution* rowDist ) const;
 
@@ -319,7 +311,7 @@ public:
      *  exchange schedule.
      */
 
-    virtual void buildHalo( dmemo::Halo& halo, const dmemo::Distribution& colDist );
+    virtual void buildHalo( dmemo::HaloExchangePlan& halo, const dmemo::Distribution& colDist );
 
     /** This method translates the halo column indexes back to global indexes 
      * 
@@ -328,23 +320,22 @@ public:
      * 
      *  The default implementation uses CSR storage to globalize the indexes.
      */
-    virtual void globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns );
+    virtual void globalizeHaloIndexes( const dmemo::HaloExchangePlan& halo, const IndexType globalNumColumns );
 
     /**
      * @brief This method removes all zero elements of a sparse storage, i.e. only entries whose absolute
      *        value is greater than eps are considered to be non-zero.
      *
      * @param[in] eps  is the threshold when a values is to be considered as zero
-     * @param[in] keepDiagonal if true existing diagonal elements will not be removed
      *
      * The default implementation uses temporary CSR storage to compress it.
      *
      * \code
      *    auto diffStorage = eval<CSRStorage<ValueType>>( storage1 - storage2 );
-     *    diffStorage.compress( 0.0001, false );
+     *    diffStorage.compress( 0.0001 );
      * \endcode
      */
-    virtual void compress( const RealType<ValueType> eps = 0, bool keepDiagonal = false );
+    virtual void compress( const RealType<ValueType> eps = 0 );
 
     /** This method build for this matrix the local part of a global matrix.
      *
@@ -427,30 +418,19 @@ public:
      *
      */
 
-    virtual void redistribute( const _MatrixStorage& other, const dmemo::Redistributor& redistributor );
+    virtual void redistribute( const _MatrixStorage& other, const dmemo::RedistributePlan& redistributor );
 
     /** Special case where other storage is CSR of same type avoids temporary CSR conversion. */
 
-    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::Redistributor& redistributor );
+    virtual void redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::RedistributePlan& redistributor );
 
     /** Build a halo matrix with all rows of required indexes */
 
     virtual void exchangeHalo(
-        const dmemo::Halo& halo,
+        const dmemo::HaloExchangePlan& haloPlan,
         const MatrixStorage<ValueType>& matrix,
         const dmemo::Communicator& comm );
 
-    /** Conversion routine of Compressed Sparse Row data to Compressed Sparse Column.  */
-
-    static void convertCSR2CSC(
-        hmemo::HArray<IndexType>& colIA,
-        hmemo::HArray<IndexType>& colJA,
-        hmemo::HArray<ValueType>& colValues,
-        const IndexType numColumns,
-        const hmemo::HArray<IndexType>& rowIA,
-        const hmemo::HArray<IndexType>& rowJA,
-        const hmemo::HArray<ValueType>& rowValues,
-        const hmemo::ContextPtr loc );
     /**
      *  Method that joins rows of another matrix storage
      *
@@ -495,8 +475,6 @@ public:
         const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
     virtual void readFromFile( const std::string& fileName, const IndexType firstRow = 0, const IndexType nRows = invalidIndex );
-
-    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
 
     /******************************************************************
      *   invert                                                        *
@@ -559,15 +537,25 @@ public:
 
     virtual void matrixTimesScalar( const ValueType alpha, const MatrixStorage<ValueType>& a );
 
-    /** assign alpha * a * b + beta * c */
-
+    /** this = alpha * a * b + beta * c 
+     *
+     *  This class provides a default implementation where it calls the routine for CSR storage
+     *  and converts the result afterwards.
+     */
     virtual void matrixTimesMatrix(
         const ValueType alpha,
         const MatrixStorage<ValueType>& a,
         const MatrixStorage<ValueType>& b,
         const ValueType beta,
         const MatrixStorage<ValueType>& c );
+ 
+    /** Apply binary operation elementwise for matrix storage elements. */
 
+    virtual void binaryOp(
+        const MatrixStorage<ValueType>& a,
+        const common::BinaryOp op,
+        const MatrixStorage<ValueType>& b );
+       
     /** @brief Assign this matrix with alpha * a + beta * b
      *
      *  @param[in] alpha scalar factor for first matrix (storage)
@@ -663,35 +651,13 @@ public:
 
     /** Jacobi iteration step on a halo storage.
      *
-     *  solution -= omega * ( B(halo) * oldSolution) * dinv
-     *
-     *  @param[in,out] localSolution is the solution vector that is updated
-     *  @param[in]     localStorage is needed to get the diagonal
-     *  @param[in]     haloOldSolution is the old solution vector of halo part
-     *  @param[in]     omega is the scaling factor.
-     *
-     *  While local storage must be square and have the diagonal property, this
-     *  matrix storage does not have to be square.
-     */
-
-    virtual void jacobiIterateHalo(
-        hmemo::HArray<ValueType>& localSolution,
-        const MatrixStorage<ValueType>& localStorage,
-        const hmemo::HArray<ValueType>& haloOldSolution,
-        const ValueType omega ) const;
-
-    /** Jacobi iteration step on a halo storage.
-     *
-     *  solution -= omega * ( B(halo) * oldSolution) * dinv
+     *  solution -= omega * ( B(halo) * oldSolution) ./ localDiagonal
      *
      *  @param[in,out] localSolution is the solution vector that is updated
      *  @param[in]     localDiagonal pointer to the diagonal of local storage
      *  @param[in]     haloOldSolution is the old solution vector of halo part
      *  @param[in]     omega is the scaling factor.
-     *
-     *  @since 1.1.0
      */
-
     virtual void jacobiIterateHalo(
         hmemo::HArray<ValueType>& localSolution,
         const hmemo::HArray<ValueType>& localDiagonal,
@@ -748,11 +714,20 @@ protected:
     MatrixStorage& operator=( MatrixStorage<ValueType>&& other ) = delete;
 
     /** Method that provides move semantic for this base class.
-     *
+     
      *  Note: this method only moves member variables of this base class but
      *        not those of the derived classes.
      */
     void moveImpl( MatrixStorage<ValueType>&& other );
+
+    /** Common routine that checks sizes of matrixTimesVector call */
+
+    void gemvCheck(
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const ValueType beta,
+        const hmemo::HArray<ValueType>& y,
+        const common::MatrixOp op ) const;
 
 public:
 

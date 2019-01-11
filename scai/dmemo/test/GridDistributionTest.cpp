@@ -2,29 +2,24 @@
  * @file GridDistributionTest.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Specific tests for the class GridDistribution.
@@ -102,7 +97,7 @@ BOOST_AUTO_TEST_CASE( createTest )
 
     DistributionPtr bdist ( GridDistribution::create( DistributionArguments( comm, globalSize, NULL, 1.0 ) ) );
     BOOST_CHECK_EQUAL( bdist->getGlobalSize(), globalSize );
-    bdist.reset( Distribution::getDistributionPtr( "GRID", comm, globalSize ) );
+    bdist = Distribution::getDistributionPtr( "GRID", comm, globalSize );
     BOOST_CHECK_EQUAL( bdist->getGlobalSize(), globalSize );
 }
 
@@ -274,7 +269,7 @@ BOOST_AUTO_TEST_CASE( blockComputeOwnersTest )
             if ( p == rank )
             {
                 BOOST_CHECK( dist->isLocal( pos ) );
-                BOOST_CHECK_EQUAL( dist->global2local( pos ), i );
+                BOOST_CHECK_EQUAL( dist->global2Local( pos ), i );
             }
             else
             {

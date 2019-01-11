@@ -2,29 +2,24 @@
  * @file ELLStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Definition of a structure for a (non-distributed) ELL sparse matrix.
@@ -265,37 +260,12 @@ public:
     /*  set / get CSR data                                                  */
     /* ==================================================================== */
 
-    /** Implementation of _MatrixStorage::setCSRData for this class.  */
-
     void setCSRData(
         const IndexType numRows,
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::_HArray& values )
-    {
-        mepr::StorageWrapper<ELLStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
-            setCSRDataImpl( this, numRows, numColumns, ia, ja, values, this->getContextPtr() );
-    }
-
-    /**
-     * @brief template (non-virtual) version of setCSRData with explicit other value type.
-     *
-     * @param[in] numRows    number of rows
-     * @param[in] numColumns number of columns
-     * @param[in] ia         row pointer of the input csr sparse matrix
-     * @param[in] ja         column indexes of the input csr sparse matrix
-     * @param[in] values     the data values of the input csr sparse matrix
-     * @param[in] ctx        is the context where filling takes place
-     */
-    template<typename OtherValueType>
-    void setCSRDataImpl(
-        const IndexType numRows,
-        const IndexType numColumns,
-        const hmemo::HArray<IndexType>& ia,
-        const hmemo::HArray<IndexType>& ja,
-        const hmemo::HArray<OtherValueType>& values,
-        const hmemo::ContextPtr ctx );
+        const hmemo::_HArray& values );
 
     /* ==================================================================== */
     /*  build CSR data                                                      */
@@ -303,35 +273,11 @@ public:
 
     /** Implementation for _MatrixStorage::buildCSRSizes */
 
-    void buildCSRSizes( hmemo::HArray<IndexType>& ia ) const
-    {
-        hmemo::HArray<IndexType>* ja = NULL;
-        hmemo::HArray<ValueType>* values = NULL;
-        buildCSR( ia, ja, values, this->getContextPtr() );
-    }
+    void buildCSRSizes( hmemo::HArray<IndexType>& ia ) const;
 
     /** Implementation for _MatrixStorage::buildCSRData */
 
-    void buildCSRData( hmemo::HArray<IndexType>& csrIA, hmemo::HArray<IndexType>& csrJA, hmemo::_HArray& csrValues ) const
-    {
-        mepr::StorageWrapper<ELLStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
-            buildCSRDataImpl( this, csrIA, csrJA, csrValues, getContextPtr() );
-    }
-
-    /** 
-     *  @brief Template (non-virtual) version of building CSR data
-     *
-     *  @param[out] ia is the CSR offset array
-     *  @param[out] ja is the array with the column indexes (optional)
-     *  @param[out] values is the array with the non-zero matrix values (optional)
-     *  @param[in]  loc is the Context where conversion should be done
-     */
-    template<typename OtherValueType>
-    void buildCSR(
-        hmemo::HArray<IndexType>& ia,
-        hmemo::HArray<IndexType>* ja,
-        hmemo::HArray<OtherValueType>* values,
-        const hmemo::ContextPtr loc ) const;
+    void buildCSRData( hmemo::HArray<IndexType>& csrIA, hmemo::HArray<IndexType>& csrJA, hmemo::_HArray& csrValues ) const;
 
     void setELLData(
         const IndexType numRows,
@@ -416,9 +362,13 @@ public:
      *  Scaling of elements in a matrix                                *
      ******************************************************************/
 
-    /** Template version used for virtual routine scale with known value type. */
+    /** Implementation of pure method MatrixStorage<ValueType>::scaleRows */
 
     void scaleRows( const hmemo::HArray<ValueType>& values );
+
+    /** Implementation of pure method MatrixStorage<ValueType>::scaleColumns */
+
+    void scaleColumns( const hmemo::HArray<ValueType>& values );
 
     /** Implementation of pure method.  */
 
@@ -487,17 +437,7 @@ public:
         const hmemo::HArray<ValueType>& rhs,
         const ValueType omega ) const;
 
-    /** Implementation of MatrixStorage::jacobiIterateHalo for ELL */
-
-    virtual void jacobiIterateHalo(
-        hmemo::HArray<ValueType>& localSolution,
-        const MatrixStorage<ValueType>& localStorage,
-        const hmemo::HArray<ValueType>& haloOldSolution,
-        const ValueType omega ) const;
-
-    /** Implementation of MatrixStorage::jacobiIterateHalo for ELL
-     *  @since 1.1.0
-     */
+    /** Implementation of MatrixStorage::jacobiIterateHalo for ELL  */
 
     virtual void jacobiIterateHalo(
         hmemo::HArray<ValueType>& localSolution,
@@ -510,7 +450,7 @@ public:
      *
      *  This solution is more efficient as we need only update of the column data
      */
-    virtual void globalizeHaloIndexes( const dmemo::Halo& halo, const IndexType globalNumColumns );
+    virtual void globalizeHaloIndexes( const dmemo::HaloExchangePlan& haloPlan, const IndexType globalNumColumns );
 
     /** Implementation of MatrixStorage::matrixPlusMatrix for ELL */
 
@@ -544,7 +484,7 @@ public:
     /**
      * @brief Override default method MatrixStorage<ValueType>::compress with a more efficient one.
      */
-    virtual void compress( const RealType<ValueType> eps = 0, bool keepDiagonal = false );
+    virtual void compress( const RealType<ValueType> eps = 0 );
 
     /** Swap this ELL storage data with another ELL storage.
      *
@@ -556,9 +496,9 @@ public:
 
     virtual size_t getMemoryUsageImpl() const;
 
-    using _MatrixStorage::hasDiagonalProperty;
     using _MatrixStorage::getNumRows;
     using _MatrixStorage::getNumColumns;
+    using _MatrixStorage::getDiagonalSize;
     using _MatrixStorage::getValueType;
 
     using MatrixStorage<ValueType>::assign;
@@ -572,7 +512,6 @@ public:
 
 protected:
 
-    using MatrixStorage<ValueType>::mDiagonalProperty;
     using MatrixStorage<ValueType>::mRowIndexes;
     using MatrixStorage<ValueType>::mCompressThreshold;
 
@@ -598,18 +537,12 @@ private:
 
     void fillValues();
 
-    /**
-     * @brief checks storage data if diagonal property is given
-     *
-     */
-    virtual bool checkDiagonalProperty() const;
-
     /** Help routine that computes array with row indexes for non-empty rows.
      *  The array is only built if number of non-zero rows is smaller than
      *  a certain percentage ( mThreshold ).
      */
 
-    void buildRowIndexes( const hmemo::ContextPtr context );
+    void buildRowIndexes();
 
     /** Logger for this class. */
 
@@ -625,32 +558,6 @@ private:
     void matrixTimesMatrixELL( const ValueType alpha,
                                const ELLStorage<ValueType>& a,
                                const ELLStorage<ValueType>& b );
-
-    /** result += alpha (*this) * x, where this storage has sparse rows */
-
-    tasking::SyncToken* sparseGEMV( hmemo::HArray<ValueType>& result,
-                                    const ValueType alpha,
-                                    const hmemo::HArray<ValueType>& x,
-                                    const common::MatrixOp op,
-                                    bool async ) const;
-
-    /** result = alpha * (*this) * x  */
-
-    tasking::SyncToken* normalGEMV( hmemo::HArray<ValueType>& result,
-                                    const ValueType alpha,
-                                    const hmemo::HArray<ValueType>& x,
-                                    const common::MatrixOp op,
-                                    bool async ) const;
-
-    /** result = alpha * (*this) * x + beta * y */
-
-    tasking::SyncToken* normalGEMV( hmemo::HArray<ValueType>& result,
-                                    const ValueType alpha,
-                                    const hmemo::HArray<ValueType>& x,
-                                    const ValueType beta,
-                                    const hmemo::HArray<ValueType>& y,
-                                    const common::MatrixOp op,
-                                    bool async ) const;
 
     /** matrixTimesVector for synchronous and asynchronous execution */
 

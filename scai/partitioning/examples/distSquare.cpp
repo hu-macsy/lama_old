@@ -1,35 +1,30 @@
 /**
- * @file matrix.cpp
+ * @file partitioning/examples/distSquare.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Construction of matrix and vector with move operations
  * @author Thomas Brandes
- * @date 2018-01-02 
+ * @date 02.01.2018
  */
 
 #include <scai/lama.hpp>
@@ -44,6 +39,7 @@
 #include <scai/dmemo/CyclicDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
+#include <scai/dmemo/RedistributePlan.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -111,17 +107,17 @@ int main ( int argc, char* argv[] )
 
     FileIO::write( newLocalOwners, filename );
 
-    // Now build a Redistributor that contains permutation and communicaton pattern
+    // Now build a RedistributePlan that contains permutation and communicaton pattern
 
     double time = common::Walltime::get();
 
-    SCAI_REGION_START( "user.buildRedistributor" )
-    dmemo::Redistributor redist( newLocalOwners, dist );
-    SCAI_REGION_END( "user.buildRedistributor" )
+    SCAI_REGION_START( "user.buildRedistributePlan" )
+    auto plan = dmemo::redistributePlanByNewOwners( newLocalOwners, dist );
+    SCAI_REGION_END( "user.buildRedistributePlan" )
 
     time = common::Walltime::get() - time;
 
-    DistributionPtr newDist = redist.getTargetDistributionPtr();
+    DistributionPtr newDist = plan.getTargetDistributionPtr();
 
 
     std::cout << "new target distribution = " << *newDist << std::endl;
@@ -138,7 +134,7 @@ int main ( int argc, char* argv[] )
 
     time = common::Walltime::get();
 
-    x.redistribute( redist );
+    x.redistribute( plan );
 
     time = common::Walltime::get() - time;
 
@@ -149,7 +145,7 @@ int main ( int argc, char* argv[] )
 
     {
         SCAI_REGION( "user.redistMatrix" )
-        matrix.redistribute( redist, newDist );
+        matrix.redistribute( plan, newDist );
     }
 
     time = common::Walltime::get() - time;

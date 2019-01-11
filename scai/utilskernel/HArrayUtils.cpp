@@ -2,29 +2,24 @@
  * @file HArrayUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2017
+ * Copyright (c) 2009-2018
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
+ * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
  * more details.
  *
- * You should have received a copy of the GNU Affero General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Implemenation of the utility routines for HArrays using corresponding kernel routines.
@@ -124,6 +119,60 @@ void HArrayUtils::assign( HArray<TargetValueType>& target, const HArray<SourceVa
     ReadAccess<SourceValueType> sourceVals( source, loc );
     WriteOnlyAccess<TargetValueType> targetVals( target, loc, n );
     set[loc]( targetVals.get(), sourceVals.get(), n, common::BinaryOp::COPY );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename TargetValueType, typename SourceValueType>
+void HArrayUtils::assignResized( 
+    HArray<TargetValueType>& target, 
+    const IndexType newSize,
+    const HArray<SourceValueType>& source, 
+    const ContextPtr prefLoc )
+{
+    if ( static_cast<const _HArray*>( &target ) == static_cast<const _HArray*>( &source ) )
+    {
+        // target and source are same, so no assign required, but maybe resize and fill up
+
+        IndexType n = source.size();
+
+        target.resize( newSize );
+
+        if ( newSize > n )
+        {
+            // fill up with zero
+
+            fillArraySection( target, n, 1, TargetValueType( 0 ), newSize - n, common::BinaryOp::COPY, prefLoc );
+        }
+
+        return;
+    }
+
+    static LAMAKernel<UtilKernelTrait::set<TargetValueType, SourceValueType> > set;
+    static LAMAKernel<UtilKernelTrait::setVal<TargetValueType>> setVal;
+
+    ContextPtr loc = prefLoc;
+
+    if ( !loc )
+    {
+        // if no context is given we assign where source has a valid copy available
+        loc = source.getValidContext();
+    }
+
+    set.getSupportedContext( loc, setVal );
+
+    const IndexType n = std::min( source.size(), newSize );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<SourceValueType> sourceVals( source, loc );
+    WriteOnlyAccess<TargetValueType> targetVals( target, loc, newSize );
+    set[loc]( targetVals.get(), sourceVals.get(), n, common::BinaryOp::COPY );
+
+    if ( n < newSize )
+    {
+        setVal[loc]( targetVals.get() + n, newSize - n, TargetValueType( 0 ), common::BinaryOp::COPY );
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -273,6 +322,38 @@ void HArrayUtils::setArraySection(
     setSection[loc]( targetVals.get() + targetOffset, targetStride,
                      sourceVals.get() + sourceOffset, sourceStride,
                      n, op );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void HArrayUtils::fillArraySection(
+    HArray<ValueType>& array,
+    const IndexType offset,
+    const IndexType stride,
+    const ValueType val,
+    const IndexType n,
+    const BinaryOp op,
+    const ContextPtr prefLoc )
+{
+    static LAMAKernel<UtilKernelTrait::fillSection<ValueType> > fillSection;
+
+    ContextPtr loc = prefLoc;
+
+    if ( loc == ContextPtr() )
+    {
+        // optional argument has not been set, take default
+
+        loc = array.getValidContext();  // avoids moving of data
+    }
+
+    fillSection.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    WriteAccess<ValueType> wValues( array, loc );
+
+    fillSection[loc]( wValues.get() + offset, stride, val, n, op );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -441,6 +522,23 @@ void HArrayUtils::gather(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+HArray<ValueType> HArrayUtils::gatherF(
+    const HArray<ValueType>& source,
+    const HArray<IndexType>& indexes,
+    const ContextPtr prefLoc )
+{
+    HArray<ValueType> target;
+
+    // gather op can only be copy, otherwise target must have already the right size/capacity.
+
+    gather( target, source, indexes, common::BinaryOp::COPY, prefLoc );
+
+    return target;
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename TargetValueType, typename SourceValueType>
 void HArrayUtils::scatter(
     HArray<TargetValueType>& target,
@@ -475,6 +573,8 @@ void HArrayUtils::scatter(
         SCAI_ASSERT_EQ_ERROR( 0, indexes.size(), "scatter on empty array" )
         return;
     }
+
+    SCAI_ASSERT_EQ_ERROR( indexes.size(), source.size(), "serious mismatch for scatter" )
 
     SCAI_ASSERT_DEBUG( HArrayUtils::validIndexes( indexes, target.size(), prefLoc ),
                        "illegal scatter index, target has size " << target.size() )
@@ -680,13 +780,19 @@ ValueType HArrayUtils::reduce(
     const BinaryOp redOp,
     const ContextPtr prefLoc )
 {
+    ValueType zero = common::zeroBinary<ValueType>( redOp );
+
+    if ( array.size() == 0 )
+    {
+        return zero;    // avoid overhead
+    }
+
     static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
     // preferred location: where valid values of the array are available
     ContextPtr loc = array.getValidContext( prefLoc );
     reduce.getSupportedContext( loc );
     ReadAccess<ValueType> readArray( array, loc );
     SCAI_CONTEXT_ACCESS( loc )
-    ValueType zero = common::zeroBinary<ValueType>( redOp );
     ValueType redVal = reduce[loc]( readArray.get(), readArray.size(), zero, redOp );
     return redVal;
 }
@@ -1628,7 +1734,7 @@ void HArrayUtils::sortSparseEntries(
 /* --------------------------------------------------------------------------- */
 
 template<typename BucketType>
-void HArrayUtils::bucketSort(
+void HArrayUtils::bucketSortOffsets(
     HArray<IndexType>& offsets,
     HArray<IndexType>& perm,
     const HArray<BucketType>& array,
@@ -1673,6 +1779,32 @@ void HArrayUtils::bucketSort(
 
     WriteOnlyAccess<IndexType> wPerm( perm, loc, total );
     sortInBuckets[loc]( wPerm, sizes, nb, bucketMap, n );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename BucketType>
+void HArrayUtils::bucketSortSizes(
+    HArray<IndexType>& sizes,
+    HArray<IndexType>& perm,
+    const HArray<BucketType>& array,
+    const BucketType nb,
+    ContextPtr prefLoc )
+{
+    bucketSortOffsets( sizes, perm, array, nb, prefLoc );
+
+    const IndexType numBuckets = nb;
+
+    SCAI_ASSERT_EQ_ERROR( sizes.size(), numBuckets + 1, "serious mismatch" )
+
+    auto wSizes = hostWriteAccess( sizes );
+
+    for ( IndexType i = 0; i < numBuckets; i++ )
+    {
+        wSizes[i] = wSizes[i + 1] - wSizes[i];
+    }
+
+    wSizes.resize( numBuckets );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2553,6 +2685,11 @@ void HArrayUtils::buildComplex(
             hmemo::HArray<TargetType>&,                                              \
             const hmemo::HArray<SourceType>&,                                        \
             hmemo::ContextPtr );                                                     \
+    template void HArrayUtils::assignResized<TargetType, SourceType>(                \
+            hmemo::HArray<TargetType>&,                                              \
+            const IndexType newSize,                                                 \
+            const hmemo::HArray<SourceType>&,                                        \
+            hmemo::ContextPtr );                                                     \
     template void HArrayUtils::setArray<TargetType, SourceType>(                     \
             hmemo::HArray<TargetType>&,                                              \
             const hmemo::HArray<SourceType>&,                                        \
@@ -2589,6 +2726,10 @@ void HArrayUtils::buildComplex(
             const hmemo::HArray<IndexType>&,                            \
             const BinaryOp,                                             \
             const hmemo::ContextPtr );                                  \
+    template HArray<ValueType> HArrayUtils::gatherF<ValueType>(         \
+            const hmemo::HArray<ValueType>&,                            \
+            const hmemo::HArray<IndexType>&,                            \
+            const hmemo::ContextPtr );                                  \
     template void HArrayUtils::setVal<ValueType>(                       \
             hmemo::HArray<ValueType>&,                                  \
             const IndexType,                                            \
@@ -2619,6 +2760,14 @@ void HArrayUtils::buildComplex(
             const IndexType,                                            \
             const ValueType,                                            \
             hmemo::ContextPtr);                                         \
+    template void HArrayUtils::fillArraySection<ValueType>(             \
+            HArray<ValueType>& array,                                   \
+            const IndexType,                                            \
+            const IndexType,                                            \
+            const ValueType,                                            \
+            const IndexType,                                            \
+            const BinaryOp,                                             \
+            ContextPtr prefLoc );                                       \
     template void HArrayUtils::appendArray<ValueType>(                  \
             hmemo::HArray<ValueType>&,                                  \
             const hmemo::HArray<ValueType>&,                            \
@@ -2851,7 +3000,14 @@ SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )
 
 #undef HARRAYUTILS_SPECIFIER
 
-template void HArrayUtils::bucketSort(
+template void HArrayUtils::bucketSortOffsets(
+    hmemo::HArray<IndexType>& offsets,
+    hmemo::HArray<IndexType>& perm,
+    const hmemo::HArray<IndexType>& array,
+    const IndexType nb,
+    hmemo::ContextPtr prefLoc );
+
+template void HArrayUtils::bucketSortSizes(
     hmemo::HArray<IndexType>& offsets,
     hmemo::HArray<IndexType>& perm,
     const hmemo::HArray<IndexType>& array,
