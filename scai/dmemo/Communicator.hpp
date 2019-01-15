@@ -121,7 +121,8 @@ class COMMON_DLL_IMPORTEXPORT Communicator:
     public  _Communicator,
     public  scai::common::Printable,
     public  scai::common::Factory<_Communicator::CommunicatorKind, CommunicatorPtr>,
-    private scai::common::NonCopyable
+    private scai::common::NonCopyable,
+    public  std::enable_shared_from_this<const Communicator>
 {
 
 public:
@@ -839,6 +840,11 @@ public:
      *       communication it might return a CUDA context if the array has valid data there.
      */
     virtual hmemo::ContextPtr getCommunicationContext( const hmemo::_HArray& array ) const = 0;
+
+    /**
+     *  @brief This routine provides a collective / concurrent file that allows parallel I/O
+     */
+    virtual std::unique_ptr<class CollectiveFile> collectiveFile() const = 0;
 
     /** Read in the environment variable SCAI_NP for user processor array.
      *

@@ -180,8 +180,9 @@ IndexType BlockDistribution::ub() const
 
 /** Inline function for convenience */
 
-inline DistributionPtr blockDistribution( const IndexType globalSize,
-                                          const CommunicatorPtr comm = Communicator::getCommunicatorPtr() )
+inline std::shared_ptr<BlockDistribution> blockDistribution( 
+    const IndexType globalSize,
+    const CommunicatorPtr comm = Communicator::getCommunicatorPtr() )
 {
     return std::make_shared<BlockDistribution>( globalSize, comm );
 }

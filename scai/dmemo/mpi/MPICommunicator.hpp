@@ -95,6 +95,10 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
+    /** Translate SCAI project enum type ScalarType to MPI enum MPI_Datatype */
+
+    inline static MPI_Datatype getMPIType( const common::ScalarType stype );
+
 private:
 
     MPICommunicator( int& argc, char** & argv );
@@ -114,10 +118,6 @@ private:
     /** Implementation of Communicator::scanImpl */
 
     virtual void scanImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const;
-
-    /** Translate SCAI project enum type ScalarType to MPI enum MPI_Datatype */
-
-    inline static MPI_Datatype getMPIType( const common::ScalarType stype );
 
     /** Translate SCAI project enum type ScalarType ( two types ) to MPI enum MPI_Datatype */
 
@@ -248,6 +248,8 @@ protected:
     MPICommunicator( const MPICommunicator& comm, const PartitionId color, const PartitionId key );
 
     virtual hmemo::ContextPtr getCommunicationContext( const hmemo::_HArray& array ) const;
+
+    virtual std::unique_ptr<class CollectiveFile> collectiveFile() const;
 
     MPICommKind mKind;    // kind of communicator needed for destructor
 
