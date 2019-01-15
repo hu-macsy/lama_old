@@ -32,6 +32,7 @@ Here is a list of provided classes of the DMemo library
 Class                       Description
 =========================== ================================================================================
 :ref:`Communicator`         Base class for communication between different partitions
+:ref:`CollectiveFile`       Base class for concurrent I/O of processors
 :ref:`NoCommunicator`       Default Communicator to be used on serial machines
 :ref:`MPICommunicator`      MPI Communicator
 :ref:`Distribution`         Mapping of an index range to a number of partitions
@@ -46,6 +47,7 @@ Class                       Description
    :hidden:
 
    Communicator
+   CollectiveFile
    NoCommunicator
    MPICommunicator
    Distribution
