@@ -1553,7 +1553,7 @@ void DenseVector<ValueType>::assign( const _Vector& other )
 {
     // translate virtual call to specific template call via wrapper
 
-    mepr::VectorWrapper<DenseVector, SCAI_NUMERIC_TYPES_HOST_LIST>::assignImpl( this, other );
+    mepr::VectorWrapper<DenseVector, SCAI_ARRAY_TYPES_HOST_LIST>::assignImpl( this, other );
 }
 
 template<typename ValueType>
