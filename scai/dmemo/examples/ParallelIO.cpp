@@ -80,13 +80,13 @@ int main( int argc, const char* argv[] )
             outFile->writeAll( myData, dist->lb() );
         }
 
+        auto nBytes = outFile->currentPos();
+
         outFile->close();
 
         time = common::Walltime::get() - time;
         
-        double nBytes = N * sizeof( ValueType ) + sizeof( IndexType );
-        nBytes = K * nBytes + 1;
-        double rateGBs = nBytes / ( 1000.0 * 1000.0 * 1000.0 * time );
+        double rateGBs = static_cast<double>( nBytes ) / ( 1000.0 * 1000.0 * 1000.0 * time );
 
         HOST_PRINT( rank, "Have written " << nBytes << " Bytes" )
         HOST_PRINT( rank, "Write took " << time << " seconds, is " << rateGBs << " GB/s" )
@@ -107,7 +107,7 @@ int main( int argc, const char* argv[] )
 
         hmemo::HArray<ValueType> myData;   // reuse allocated data for reading
 
-        double nBytes = 4;
+        size_t nBytes = 0;
 
         for ( IndexType iter = 0; iter < K; ++iter )
         {
@@ -116,12 +116,11 @@ int main( int argc, const char* argv[] )
             auto dist = blockDistribution( N, comm );
             inFile->readAll(  myData, dist->getLocalSize(), dist->lb() );
 
-            nBytes += sizeof( IndexType ) + N * sizeof( ValueType );
-
-            // check for correct values 
+            // check for correct values in last iteration
             
             if ( iter + 1 == K )
             {
+                nBytes = inFile->currentPos();
                 inFile->close();
 
                 time = common::Walltime::get() - time;

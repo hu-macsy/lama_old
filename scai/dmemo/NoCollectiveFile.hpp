@@ -29,8 +29,6 @@
 
 #pragma once
 
-#include <mpi.h>
-
 #include <scai/dmemo/CollectiveFile.hpp>
 
 #include <scai/logging.hpp>

@@ -94,8 +94,13 @@ BOOST_AUTO_TEST_CASE( readWriteTest )
     auto colFile = comm->collectiveFile();
     colFile->open( fileName, "w" );
     colFile->writeSingle( N );
+    BOOST_CHECK_EQUAL( colFile->currentPos(), sizeof( N ) );
     colFile->writeAll( writeData );
     colFile->writeSingle( testData );
+
+    // verify that all processors have the same file position
+    BOOST_CHECK_EQUAL( comm->max( colFile->currentPos() ), colFile->currentPos() );
+
     colFile->close();
 
     hmemo::HArray<ValueType> readDistData;
@@ -115,7 +120,10 @@ BOOST_AUTO_TEST_CASE( readWriteTest )
     BOOST_TEST( hmemo::hostReadAccess( writeData ) == hmemo::hostReadAccess( readDistData ), per_element() );
     BOOST_TEST( hmemo::hostReadAccess( testData ) == hmemo::hostReadAccess( readSingleData ), per_element() );
 
-    // std::remove( fileName );
+    if ( comm->getRank() == 0 )
+    {
+        std::remove( fileName );
+    }
 }
 
 /* --------------------------------------------------------------------- */

@@ -41,7 +41,7 @@ namespace dmemo
 {
 
 /**
- *  Abstract base class for a collective file, i.e. a file where all 
+ *  Abstract base class for a collective RAW file, i.e. a file where all 
  *  processors of a communicator can write concurrently into it
  *  and read from it.
  */
@@ -124,6 +124,15 @@ public:
     template<typename ValueType>
     void readAll( hmemo::HArray<ValueType>& local, const IndexType size, const IndexType offset );
 
+    /**
+     *  @brief Return the current pos in the file, is the number of bytes from beginning of the file.
+     */
+    inline size_t currentPos() const;
+
+    inline const Communicator& getCommunicator() const;
+
+    inline std::shared_ptr<const Communicator> getCommunicatorPtr() const;
+
 protected:
 
     void set( const char* filename, size_t offset );
@@ -138,6 +147,25 @@ protected:
 
     size_t mOffset;    // current file position
 };
+
+/* -------------------------------------------------------------------------- */
+/*   Implementation of inline methods                                         */
+/* -------------------------------------------------------------------------- */
+
+size_t CollectiveFile::currentPos() const
+{
+    return mOffset;
+}
+
+std::shared_ptr<const Communicator> CollectiveFile::getCommunicatorPtr() const
+{
+    return mComm;
+}
+
+const Communicator& CollectiveFile::getCommunicator() const
+{
+    return *mComm;
+}
 
 /* -------------------------------------------------------------------------- */
 /*   Implementation of template methods                                       */
