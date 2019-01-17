@@ -32,6 +32,8 @@
 
 #include <scai/lama/CollectiveIO.hpp>
 #include <scai/lama/DenseVector.hpp>
+#include <scai/lama/matrix/CSRSparseMatrix.hpp>
+#include <scai/lama/matutils/MatrixCreator.hpp>
 
 #include <scai/dmemo/BlockDistribution.hpp>
 
@@ -160,6 +162,59 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DenseVectorConvertTest, ValueType, scai_array_tes
 }
 
 /* --------------------------------------------------------------------- */
+
+// BOOST_AUTO_TEST_CASE_TEMPLATE( CSRSparseMatrixTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE( CSRSparseMatrixTest )
+{
+    using namespace hmemo;
+
+    typedef DefaultReal ValueType;
+
+    auto comm = dmemo::Communicator::getCommunicatorPtr();
+
+    const IndexType numRows = 15;   // # rows for global matrix
+    const IndexType numCols = 10;   // # cols for global matrix
+
+    auto rowDist = dmemo::blockDistribution( numRows );
+    auto colDist = dmemo::noDistribution( numCols );
+
+    const std::string fileName  = "csrMatrix.RAW";
+
+    auto matrix = zero<CSRSparseMatrix<ValueType>>( rowDist, colDist );
+
+    float fillRate = 0.2f;
+    MatrixCreator::fillRandom( matrix, fillRate );
+
+    auto file = comm->collectiveFile();
+
+    file->open( fileName.c_str(), "w" );
+    CollectiveIO::write( *file, matrix );
+    file->close();
+    
+    CSRSparseMatrix<ValueType> readMatrix;
+
+    file->open( fileName.c_str(), "r" );
+    CollectiveIO::read( *file, readMatrix );
+    file->close();
+
+    const auto& expIA = matrix.getLocalStorage().getIA();
+    const auto& csrIA = readMatrix.getLocalStorage().getIA();
+
+    const auto& expJA = matrix.getLocalStorage().getJA();
+    const auto& csrJA = readMatrix.getLocalStorage().getJA();
+
+    const auto& expValues = matrix.getLocalStorage().getValues();
+    const auto& csrValues = readMatrix.getLocalStorage().getValues();
+
+    BOOST_TEST( hostReadAccess( csrIA ) == hostReadAccess( expIA ), per_element() );
+    BOOST_TEST( hostReadAccess( csrJA ) == hostReadAccess( expJA ), per_element() );
+    BOOST_TEST( hostReadAccess( csrValues ) == hostReadAccess( expValues ), per_element() );
+
+    if ( comm->getRank() == 0 )
+    {
+        std::remove( fileName.c_str() );
+    };
+}
 
 BOOST_AUTO_TEST_SUITE_END();
 

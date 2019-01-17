@@ -124,6 +124,9 @@ public:
     template<typename ValueType>
     void readAll( hmemo::HArray<ValueType>& local, const IndexType size, const IndexType offset );
 
+    template<typename ValueType>
+    void readAll( hmemo::HArray<ValueType>& local, const IndexType size );
+
     /**
      *  @brief Return the current pos in the file, is the number of bytes from beginning of the file.
      */
@@ -271,6 +274,15 @@ void CollectiveFile::readAll( hmemo::HArray<ValueType>& local, const IndexType s
     this->readAllImpl( wLocal.get(), size, mOffset + offset * sizeof( ValueType ), stype );
 
     mOffset += mComm->sum( local.size() ) * sizeof( ValueType );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CollectiveFile::readAll( hmemo::HArray<ValueType>& local, const IndexType size )
+{
+    IndexType offset = mComm->scan( size ) - size;
+    readAll( local, size, offset );
 }
 
 /* -------------------------------------------------------------------------- */

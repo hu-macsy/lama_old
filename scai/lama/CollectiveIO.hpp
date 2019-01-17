@@ -30,6 +30,7 @@
 #pragma once
 
 #include <scai/dmemo/CollectiveFile.hpp>
+#include <scai/logging.hpp>
 
 namespace scai
 {
@@ -39,6 +40,12 @@ namespace lama
 
 template<typename ValueType>
 class DenseVector;
+
+template<typename ValueType>
+class SparseMatrix;
+
+template<typename ValueType>
+class CSRSparseMatrix;
 
 /**
  *  Class provides static methods for read and write operations of LAMA data structures 
@@ -60,9 +67,37 @@ public:
     static void read( dmemo::CollectiveFile& file, DenseVector<ValueType>& vector );
 
     /**
+     *  @brief Write a sparse matrix into a collective file.
+     */
+    template<typename ValueType>
+    static void write( dmemo::CollectiveFile& file, const SparseMatrix<ValueType>& matrix );
+
+    template<typename ValueType>
+    static void writeCSRMatrix( dmemo::CollectiveFile& file, const CSRSparseMatrix<ValueType>& matrix );
+
+    /**
+     *  @brief Read a sparse matrix from a collective file.
+     */
+    template<typename ValueType>
+    static void read( dmemo::CollectiveFile& file, SparseMatrix<ValueType>& matrix );
+
+    template<typename ValueType>
+    static void readCSRMatrix( dmemo::CollectiveFile& file, CSRSparseMatrix<ValueType>& matrix );
+
+    /**
      *  @param get the identification for a dense vector in a collective file.
      */
     static int getDenseVectorId();
+
+    /**
+     *  @param get the identification for a sparse matrix (CSR) in a collective file.
+     */
+    static int getSparseMatrixId();
+
+private:
+
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
 };
 
 }  // namespace lama
