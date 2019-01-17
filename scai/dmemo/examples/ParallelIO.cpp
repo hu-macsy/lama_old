@@ -2,7 +2,7 @@
 #include <scai/hmemo.hpp>
 #include <scai/dmemo/Communicator.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
-#include <scai/dmemo/mpi/MPICollectiveFile.hpp>
+#include <scai/dmemo/CollectiveFile.hpp>
 
 #include <scai/common/Walltime.hpp>
 
