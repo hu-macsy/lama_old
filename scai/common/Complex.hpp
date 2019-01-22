@@ -504,6 +504,7 @@ public:
     COMPLEX_OPERATOR_CAST_CUDA( unsigned int, COMPLEX_CAST_REAL( unsigned int ) )
     COMPLEX_OPERATOR_CAST_CUDA( long, COMPLEX_CAST_REAL( long ) )
     COMPLEX_OPERATOR_CAST_CUDA( unsigned long, COMPLEX_CAST_REAL( unsigned long ) )
+    COMPLEX_OPERATOR_CAST_CUDA( char, COMPLEX_CAST_REAL( char ) )
     COMPLEX_OPERATOR_CAST_CUDA( float, COMPLEX_CAST_REAL( float ) )
     COMPLEX_OPERATOR_CAST_CUDA( double, COMPLEX_CAST_REAL( double ) )
     COMPLEX_OPERATOR_CAST_NONCUDA( long double, COMPLEX_CAST_REAL( long double ) )
