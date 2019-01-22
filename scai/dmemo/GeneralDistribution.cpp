@@ -323,10 +323,8 @@ IndexType GeneralDistribution::getBlockDistributionSize() const
 
     auto genBlock = genBlockDistributionBySize( localSize, comm );
 
-    IndexType lb;
-    IndexType ub;
-
-    genBlock->getLocalRange( lb, ub );
+    IndexType lb = genBlock->lb();
+    IndexType ub = genBlock->ub();
 
     isBlocked = true;
 
