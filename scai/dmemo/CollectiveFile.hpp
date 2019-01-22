@@ -67,6 +67,81 @@ public:
      */
     virtual void close() = 0;
 
+    template<typename ValueType>
+    void writeSingle( const ValueType array[], const IndexType n );
+
+    /** 
+     *  @brief One single processor writes an array of values at current file position
+     *
+     *  This method must be called by all processors even if only one single processor writes its values.
+     */
+    template<typename ValueType>
+    void writeSingle( const ValueType array[], const IndexType n, const common::ScalarType fileType );
+
+    /**
+     *  @brief More convenient method for writing a single value only. 
+     */
+    template<typename ValueType>
+    void writeSingle( const ValueType val, const common::ScalarType fileType = common::ScalarType::INTERNAL );
+
+    template<typename ValueType>
+    void writeSingle( const hmemo::HArray<ValueType>& array, const common::ScalarType fileType = common::ScalarType::INTERNAL );
+
+    template<typename ValueType>
+    void writeAll( const ValueType local[], const IndexType n, const IndexType offset );
+
+    template<typename ValueType>
+    void writeAll( const ValueType local[], const IndexType n, const IndexType offset, const common::ScalarType fileType );
+
+    /** 
+     *  @brief Each processor writes an array of values at current file position with an individual offset
+     */
+    template<typename ValueType>
+    void writeAll( const hmemo::HArray<ValueType>& local, const IndexType offset, 
+                   const common::ScalarType fileType = common::ScalarType::INTERNAL );
+
+    /** 
+     *  @brief Each processor writes an array of values at current file position with an individual offset
+     */
+    template<typename ValueType>
+    void writeAll( const hmemo::HArray<ValueType>& local, const common::ScalarType fileType = common::ScalarType::INTERNAL );
+
+    template<typename ValueType>
+    void readSingle( ValueType val[], const IndexType n );
+
+    template<typename ValueType>
+    void readSingle( ValueType val[], const IndexType n, const common::ScalarType fileType );
+
+    template<typename ValueType>
+    void readSingle( ValueType& val, const common::ScalarType filetype = common::ScalarType::INTERNAL );
+
+    template<typename ValueType>
+    void readSingle( hmemo::HArray<ValueType>& val, const IndexType n, const common::ScalarType fileType = common::ScalarType::INTERNAL );
+
+    template<typename ValueType>
+    void readAll( ValueType val[], const IndexType n, const IndexType offset );
+
+    template<typename ValueType>
+    void readAll( ValueType local[], const IndexType size, const IndexType offset, const common::ScalarType fileType );
+
+    template<typename ValueType>
+    void readAll( hmemo::HArray<ValueType>& local, const IndexType size, const IndexType offset, 
+                  const common::ScalarType stype = common::ScalarType::INTERNAL  );
+
+    template<typename ValueType>
+    void readAll( hmemo::HArray<ValueType>& local, const IndexType size, const common::ScalarType stype = common::ScalarType::INTERNAL );
+
+    /**
+     *  @brief Return the current pos in the file, is the number of bytes from beginning of the file.
+     */
+    inline size_t currentPos() const;
+
+    inline const Communicator& getCommunicator() const;
+
+    inline std::shared_ptr<const Communicator> getCommunicatorPtr() const;
+
+protected:
+
     /**
      *  @brief Untyped version of writing data to the collective file by a single processor only
      *
@@ -79,64 +154,9 @@ public:
 
     virtual void writeAllImpl( const size_t offset, const void* val, const size_t n, const common::ScalarType stype ) = 0;
 
-    /** 
-     *  @brief One single processor writes an array of values at current file position
-     *
-     *  This method must be called by all processors even if only one single processor writes its values.
-     */
-    template<typename ValueType>
-    void writeSingle( const ValueType val[], const IndexType n );
-
-    /**
-     *  @brief More convenient method for writing a single value only. 
-     */
-    template<typename ValueType>
-    void writeSingle( const ValueType val );
-
-    template<typename ValueType>
-    void writeSingle( const hmemo::HArray<ValueType>& array );
-
-    /** 
-     *  @brief Each processor writes an array of values at current file position with an individual offset
-     */
-    template<typename ValueType>
-    void writeAll( const hmemo::HArray<ValueType>& local, IndexType offset );
-
-    /** 
-     *  @brief Each processor writes an array of values at current file position with an individual offset
-     */
-    template<typename ValueType>
-    void writeAll( const hmemo::HArray<ValueType>& local );
-
     virtual void readSingleImpl( void* val, const size_t n, const size_t offset, const common::ScalarType stype ) = 0;
 
-    template<typename ValueType>
-    void readSingle( ValueType val[], const IndexType n );
-
-    template<typename ValueType>
-    void readSingle( ValueType& val );
-
-    template<typename ValueType>
-    void readSingle( hmemo::HArray<ValueType>& val, const IndexType n );
-
     virtual void readAllImpl( void* val, const size_t n, const size_t offset, const common::ScalarType stype ) = 0;
-
-    template<typename ValueType>
-    void readAll( hmemo::HArray<ValueType>& local, const IndexType size, const IndexType offset );
-
-    template<typename ValueType>
-    void readAll( hmemo::HArray<ValueType>& local, const IndexType size );
-
-    /**
-     *  @brief Return the current pos in the file, is the number of bytes from beginning of the file.
-     */
-    inline size_t currentPos() const;
-
-    inline const Communicator& getCommunicator() const;
-
-    inline std::shared_ptr<const Communicator> getCommunicatorPtr() const;
-
-protected:
 
     void set( const char* filename, size_t offset );
 
@@ -169,123 +189,6 @@ const Communicator& CollectiveFile::getCommunicator() const
 {
     return *mComm;
 }
-
-/* -------------------------------------------------------------------------- */
-/*   Implementation of template methods                                       */
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void CollectiveFile::writeSingle( const ValueType val[], const IndexType n )
-{
-    if ( mComm->getRank() == 0 )
-    {
-        auto stype = common::TypeTraits<ValueType>::stype;
-        writeSingleImpl( mOffset, val, static_cast<size_t>( n ), stype );
-    }
-
-    mOffset += sizeof( ValueType ) * n;
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void CollectiveFile::writeSingle( const ValueType val )
-{
-    writeSingle( &val, 1 );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void CollectiveFile::writeSingle( const hmemo::HArray<ValueType>& array )
-{
-    auto rLocal = hmemo::hostReadAccess( array );
-    writeSingle( rLocal.get(), rLocal.size() );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void CollectiveFile::writeAll( const hmemo::HArray<ValueType>& local, IndexType offset )
-{
-    auto stype = common::TypeTraits<ValueType>::stype;
-    auto rLocal = hmemo::hostReadAccess( local );
-    this->writeAllImpl( mOffset + offset * sizeof( ValueType ), rLocal.get(), rLocal.size(), stype );
-
-    mOffset += mComm->sum( local.size() ) * sizeof( ValueType );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void CollectiveFile::writeAll( const hmemo::HArray<ValueType>& local )
-{
-    // scan communication needed to get for each processor its offset
-
-    IndexType size = local.size();
-    IndexType offset = mComm->scan( size );   // incluse scan to get offset
-
-    this->writeAll( local, offset - size );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void CollectiveFile::readSingle( ValueType val[], const IndexType n )
-{
-    const PartitionId MASTER = 0;
-
-    if ( mComm->getRank() == MASTER )
-    {
-        auto stype = common::TypeTraits<ValueType>::stype;
-        this->readSingleImpl( val, n, mOffset, stype );
-    }
-
-    mOffset += n * sizeof( ValueType );
-
-    mComm->bcast( val, n, MASTER );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void CollectiveFile::readSingle( ValueType& val )
-{
-    this->readSingle( &val, 1 );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void CollectiveFile::readSingle( hmemo::HArray<ValueType>& array, const IndexType n )
-{
-    auto wArray = hmemo::hostWriteOnlyAccess( array, n );
-    this->readSingle( wArray.get(), n );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void CollectiveFile::readAll( hmemo::HArray<ValueType>& local, const IndexType size, const IndexType offset )
-{
-    auto stype = common::TypeTraits<ValueType>::stype;
-    auto wLocal = hmemo::hostWriteOnlyAccess( local, size );
-
-    this->readAllImpl( wLocal.get(), size, mOffset + offset * sizeof( ValueType ), stype );
-
-    mOffset += mComm->sum( local.size() ) * sizeof( ValueType );
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void CollectiveFile::readAll( hmemo::HArray<ValueType>& local, const IndexType size )
-{
-    IndexType offset = mComm->scan( size ) - size;
-    readAll( local, size, offset );
-}
-
-/* -------------------------------------------------------------------------- */
 
 }
 
