@@ -39,7 +39,19 @@ namespace lama
 {
 
 template<typename ValueType>
+class Vector;
+
+template<typename ValueType>
 class DenseVector;
+
+template<typename ValueType>
+class SparseVector;
+
+template<typename ValueType>
+class Matrix;
+
+template<typename ValueType>
+class DenseMatrix;
 
 template<typename ValueType>
 class SparseMatrix;
@@ -55,34 +67,70 @@ class CollectiveIO
 public:
 
     /**
-     *  @brief Write a dense vector into a collective file.
+     *  @brief Write a vector into a collective file.
+     *  
+     *  @param[in] file is the collecitve file (must have been opened for write)
+     *  @param[in] vector is the vector to be written
+     *  @param[in] fileIndexType specifies the type for writing index type values
+     *  @param[in] fileData specifies the type for writing data entries into the file
+     *  
      */
     template<typename ValueType>
-    static void write( dmemo::CollectiveFile& file, const DenseVector<ValueType>& vector );
+    static void write( 
+        dmemo::CollectiveFile& file, 
+        const Vector<ValueType>& vector,
+        const common::ScalarType fileIndexType,
+        const common::ScalarType fileDataType );
+
+    /**
+     *  @brief Write a vector into a collective file.
+     *  
+     *  @param[in] file is the collecitve file (must have been opened for write)
+     *  @param[in] vector is the vector to be written
+     *  
+     *  This method will write values without any conversion into the file.  
+     */
+    template<typename ValueType>
+    static void write( dmemo::CollectiveFile& file, const Vector<ValueType>& vector );
+
+    /**
+     *  @brief Write a vector into a collective file.
+     *  
+     *  @param[in] file is the collecitve file (must have been opened for write)
+     *  @param[in] vector is the vector to be written
+     *  @param[in] fileIndexType specifies the type for writing index type values
+     *  @param[in] fileData specifies the type for writing data entries into the file
+     *  
+     */
+    template<typename ValueType>
+    static void write(
+        dmemo::CollectiveFile& file,
+        const Matrix<ValueType>& matrix,
+        const common::ScalarType fileIndexType,
+        const common::ScalarType fileDataType );
+
+    /**
+     *  @brief Write a vector into a collective file.
+     *  
+     *  @param[in] file is the collecitve file (must have been opened for write)
+     *  @param[in] vector is the vector to be written
+     *  
+     *  This method will write values without any conversion into the file.  
+     */
+    template<typename ValueType>
+    static void write( dmemo::CollectiveFile& file, const Matrix<ValueType>& matrix );
 
     /**
      *  @brief Read a dense vector from a collective file.
      */
     template<typename ValueType>
-    static void read( dmemo::CollectiveFile& file, DenseVector<ValueType>& vector );
-
-    /**
-     *  @brief Write a sparse matrix into a collective file.
-     */
-    template<typename ValueType>
-    static void write( dmemo::CollectiveFile& file, const SparseMatrix<ValueType>& matrix );
-
-    template<typename ValueType>
-    static void writeCSRMatrix( dmemo::CollectiveFile& file, const CSRSparseMatrix<ValueType>& matrix );
+    static void read( dmemo::CollectiveFile& file, Vector<ValueType>& vector );
 
     /**
      *  @brief Read a sparse matrix from a collective file.
      */
     template<typename ValueType>
-    static void read( dmemo::CollectiveFile& file, SparseMatrix<ValueType>& matrix );
-
-    template<typename ValueType>
-    static void readCSRMatrix( dmemo::CollectiveFile& file, CSRSparseMatrix<ValueType>& matrix );
+    static void read( dmemo::CollectiveFile& file, Matrix<ValueType>& matrix );
 
     /**
      *  @param get the identification for a dense vector in a collective file.
@@ -95,6 +143,74 @@ public:
     static int getSparseMatrixId();
 
 private:
+
+    template<typename ValueType>
+    static void writeDenseMatrix( 
+        dmemo::CollectiveFile& file, 
+        const DenseMatrix<ValueType>& matrix,
+        const common::ScalarType fileIndexType,
+        const common::ScalarType fileValueType );
+
+    template<typename ValueType>
+    static void writeIt( 
+        dmemo::CollectiveFile& file, 
+        const DenseMatrix<ValueType>& matrix,
+        const common::ScalarType fileIndexType,
+        const common::ScalarType fileValueType );
+
+    template<typename ValueType>
+    static void writeDenseVector( 
+        dmemo::CollectiveFile& file, 
+        const DenseVector<ValueType>& matrix,
+        const common::ScalarType fileIndexType,
+        const common::ScalarType fileValueType );
+
+    template<typename ValueType>
+    static void writeIt( 
+        dmemo::CollectiveFile& file, 
+        const DenseVector<ValueType>& matrix,
+        const common::ScalarType fileIndexType,
+        const common::ScalarType fileValueType );
+
+    template<typename ValueType>
+    static void writeSparseMatrix( 
+        dmemo::CollectiveFile& file, 
+        const SparseMatrix<ValueType>& matrix,
+        const common::ScalarType fileIndexType,
+        const common::ScalarType fileValueType );
+
+    template<typename ValueType>
+    static void writeIt( 
+        dmemo::CollectiveFile& file, 
+        const CSRSparseMatrix<ValueType>& matrix,
+        const common::ScalarType fileIndexType,
+        const common::ScalarType fileValueType );
+
+    template<typename ValueType>
+    static void writeSparseVector( 
+        dmemo::CollectiveFile& file, 
+        const SparseVector<ValueType>& matrix,
+        const common::ScalarType fileIndexType,
+        const common::ScalarType fileValueType );
+
+    template<typename ValueType>
+    static void writeIt( 
+        dmemo::CollectiveFile& file, 
+        const SparseVector<ValueType>& matrix,
+        const common::ScalarType fileIndexType,
+        const common::ScalarType fileValueType );
+
+    template<typename ValueType>
+    static void readIt( dmemo::CollectiveFile& file, CSRSparseMatrix<ValueType>& matrix );
+
+    template<typename ValueType>
+    static void readIt( dmemo::CollectiveFile& file, DenseMatrix<ValueType>& matrix );
+
+    template<typename ValueType>
+    static void readIt( dmemo::CollectiveFile& file, SparseVector<ValueType>& matrix );
+
+    template<typename ValueType>
+    static void readIt( dmemo::CollectiveFile& file, DenseVector<ValueType>& matrix );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 

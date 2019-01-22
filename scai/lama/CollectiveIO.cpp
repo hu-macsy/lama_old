@@ -31,11 +31,14 @@
 #include <scai/lama/CollectiveIO.hpp>
 
 #include <scai/lama/DenseVector.hpp>
+#include <scai/lama/SparseVector.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
+#include <scai/lama/matrix/DenseMatrix.hpp>
 
 #include <scai/dmemo/CollectiveFile.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/GenBlockDistribution.hpp>
 
 #include <scai/utilskernel/HArrayUtils.hpp>
 
@@ -58,8 +61,10 @@ using common::ScalarType;
 
 /** Internal id for DenseVector to verify correct file entries */
 
-#define DENSE_VECTOR_CLASSID  1319816
-#define CSR_MATRIX_CLASSID    1319827
+#define DENSE_VECTOR_CLASSID  0x4711E00
+#define SPARSE_VECTOR_CLASSID 0x4711E01
+#define DENSE_MATRIX_CLASSID  0x4711E10
+#define CSR_MATRIX_CLASSID    0x4711E11
 
 
 /* -------------------------------------------------------------------------- */
@@ -74,114 +79,245 @@ int CollectiveIO::getDenseVectorId()
 }
 
 /* --------------------------------------------------------------------------------- */
+/*   write Vector                                                                    */
+/* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CollectiveIO::write( CollectiveFile& file, const DenseVector<ValueType>& vector )
+void CollectiveIO::write( 
+    CollectiveFile& file, 
+    const Vector<ValueType>& vector,
+    const common::ScalarType fileIndexType,
+    const common::ScalarType fileDataType )
 {
-    const int val[] = { DENSE_VECTOR_CLASSID,
-                        static_cast<int>( common::TypeTraits<IndexType>::stype ),
-                        static_cast<int>( common::TypeTraits<ValueType>::stype )
-                      };
+    auto kind = vector.getVectorKind();
 
-    const auto& dist = vector.getDistribution();
-
-    if ( dist.isReplicated() )
+    if ( kind == VectorKind::DENSE )
     {
-        file.writeSingle( val, 3 );
-        file.writeSingle( vector.size() );
-        file.writeSingle( vector.getLocalValues() );
-        return;
+        writeDenseVector( file, static_cast<const DenseVector<ValueType>&>( vector ), fileIndexType, fileDataType );
     }
+    else if ( kind == VectorKind::SPARSE )
+    {
+        writeSparseVector( file, static_cast<const SparseVector<ValueType>&>( vector ), fileIndexType, fileDataType );
+    }
+    else 
+    {
+        COMMON_THROWEXCEPTION( "Unsupported vector kind: " << kind );
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CollectiveIO::write( 
+    CollectiveFile& file, 
+    const Vector<ValueType>& vector )
+{
+    write( file, vector, common::TypeTraits<IndexType>::stype, common::TypeTraits<ValueType>::stype );
+}
+
+/* --------------------------------------------------------------------------------- */
+/*   write Matrix                                                                    */
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CollectiveIO::write( 
+    CollectiveFile& file, 
+    const Matrix<ValueType>& matrix,
+    const common::ScalarType fileIndexType,
+    const common::ScalarType fileDataType )
+{
+    auto kind = matrix.getMatrixKind();
+
+    if ( kind == MatrixKind::DENSE )
+    {
+        writeDenseMatrix( file, static_cast<const DenseMatrix<ValueType>&>( matrix ), fileIndexType, fileDataType );
+    }
+    else if ( kind == MatrixKind::SPARSE )
+    {
+        writeSparseMatrix( file, static_cast<const SparseMatrix<ValueType>&>( matrix ), fileIndexType, fileDataType );
+    }
+    else 
+    {
+        COMMON_THROWEXCEPTION( "Unsupported matrix kind: " << kind );
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CollectiveIO::write( 
+    CollectiveFile& file, 
+    const Matrix<ValueType>& matrix )
+{
+    write( file, matrix, common::TypeTraits<IndexType>::stype, common::TypeTraits<ValueType>::stype );
+}
+
+/* --------------------------------------------------------------------------------- */
+    
+template<typename ValueType>
+void CollectiveIO::writeDenseVector( 
+    CollectiveFile& file, 
+    const DenseVector<ValueType>& vector,
+    const common::ScalarType fileIndexType, 
+    const common::ScalarType fileDataType )
+{
+    const auto& dist = vector.getDistribution();
 
     const auto& fileCommunicator   = file.getCommunicator();
     const auto& vectorCommunicator = dist.getCommunicator();
 
     SCAI_ASSERT_EQ_ERROR( fileCommunicator, vectorCommunicator, "serious communicator mismatch" )
 
-    if ( dist.getBlockDistributionSize() == invalidIndex )
+    if ( dist.getBlockDistributionSize() == invalidIndex || fileCommunicator != vectorCommunicator )
     {
         auto blockDist = dmemo::blockDistribution( vector.size(), file.getCommunicatorPtr() );
         DenseVector<ValueType> tmpVector;
         tmpVector.assignDistribute( vector, blockDist );
-        write( file, tmpVector );
-        return;
+        writeIt( file, tmpVector, fileIndexType, fileDataType );
     }
-
-    file.writeSingle( val, 3 );
-    file.writeSingle( static_cast<IndexType>( vector.size() ) );
-    file.writeAll( vector.getLocalValues() );
+    else
+    {
+        writeIt( file, vector, fileIndexType, fileDataType );
+    }
 }
 
 /* --------------------------------------------------------------------------------- */
 
-template<typename TList>
-struct IODataConverter;
-
-template<>
-struct IODataConverter<common::mepr::NullType>
+template<typename ValueType>
+void CollectiveIO::writeSparseVector(
+    CollectiveFile& file,
+    const SparseVector<ValueType>& vector,
+    const common::ScalarType fileIndexType,
+    const common::ScalarType fileDataType )
 {
-    static void readAll( CollectiveFile&, _HArray&, const ScalarType stype, const IndexType, const IndexType )
-    {
-        COMMON_THROWEXCEPTION( "IODataConverter: " << stype << " unsupported" )
-    }
-};
+    const auto& dist = vector.getDistribution();
 
-template<typename ValueType, typename TailTypes>
-struct IODataConverter<common::mepr::TypeList<ValueType, TailTypes> >
-{
-    static void readAll( CollectiveFile& file, _HArray& array, const ScalarType stype, const IndexType size, const IndexType offset )
+    const auto& fileCommunicator   = file.getCommunicator();
+    const auto& vectorCommunicator = dist.getCommunicator();
+
+    if ( dist.getBlockDistributionSize() == invalidIndex || fileCommunicator != vectorCommunicator )
     {
-        if ( common::TypeTraits<ValueType>::stype == stype )
-        {
-            HArray<ValueType> typedArray;
-            file.readAll( typedArray, size, offset );
-            HArrayUtils::_assign( array, typedArray );
-        }
-        else
-        {
-            IODataConverter<TailTypes>::readAll( file, array, stype, size, offset );
-        }
+        auto blockDist = dmemo::blockDistribution( vector.size(), file.getCommunicatorPtr() );
+
+        SCAI_LOG_WARN( logger, "redistribute sparse vector : " << vector << " for collective IO with new dist " << *blockDist )
+
+        SparseVector<ValueType> tmpVector;
+        tmpVector.assignDistribute( vector, blockDist );
+        writeIt( file, tmpVector, fileIndexType, fileDataType );
     }
-};
+    else
+    {
+        writeIt( file, vector, fileIndexType, fileDataType );
+    }
+}
 
 /* --------------------------------------------------------------------------------- */
-
-template<typename TList>
-struct IOIndexConverter;
-
-template<>
-struct IOIndexConverter<common::mepr::NullType>
-{
-    static void readSingle( CollectiveFile&, IndexType&, const ScalarType stype )
-    {
-        COMMON_THROWEXCEPTION( "IOIndexConverter: " << stype << " unsupported" )
-    }
-};
-
-template<typename ValueType, typename TailTypes>
-struct IOIndexConverter<common::mepr::TypeList<ValueType, TailTypes> >
-{
-    static void readSingle( CollectiveFile& file, IndexType& value, const ScalarType stype )
-    {
-        if ( common::TypeTraits<ValueType>::stype == stype )
-        {
-            ValueType otherValue;
-            file.readSingle( otherValue );
-            value = static_cast<IndexType>( otherValue );
-        }
-        else
-        {
-            IOIndexConverter<TailTypes>::readSingle( file, value, stype );
-        }
-    }
-};
-
-/* --------------------------------------------------------------------------------- */
-
-#define SCAI_INDEX_TYPE_LIST SCAI_TYPELIST( int, unsigned int, long, unsigned long )
 
 template<typename ValueType>
-void CollectiveIO::read( CollectiveFile& file, DenseVector<ValueType>& vector )
+void CollectiveIO::writeDenseMatrix( 
+    CollectiveFile& file, 
+    const DenseMatrix<ValueType>& matrix,
+    const common::ScalarType fileIndexType,
+    const common::ScalarType fileDataType  )
+{
+    // writing into file only possible for block distributed matrices 
+
+    const auto& rowDist = matrix.getRowDistribution();
+    const auto& colDist = matrix.getColDistribution();
+
+    if ( rowDist.getBlockDistributionSize() == invalidIndex || file.getCommunicator() != rowDist.getCommunicator() )
+    {
+        // block distribution onto processor set of file communicator required
+
+        auto blockDist = dmemo::blockDistribution( matrix.getNumRows(), file.getCommunicatorPtr() );
+        auto repDist = dmemo::noDistribution( matrix.getNumColumns() );
+        auto tmpMatrix = distribute<DenseMatrix<ValueType>>( matrix, blockDist, repDist );
+        writeIt( file, tmpMatrix, fileIndexType, fileDataType );
+    } 
+    else if ( !colDist.isReplicated() )
+    {
+        auto blockDist = matrix.getRowDistributionPtr();
+        auto repDist = dmemo::noDistribution( matrix.getNumColumns() );
+        auto tmpMatrix = distribute<DenseMatrix<ValueType>>( matrix, blockDist, repDist );
+        writeIt( file, tmpMatrix, fileIndexType, fileDataType );
+    } 
+    else
+    {
+        writeIt( file, matrix, fileIndexType, fileDataType );
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CollectiveIO::writeSparseMatrix(
+    CollectiveFile& file,
+    const SparseMatrix<ValueType>& matrix,
+    const common::ScalarType fileIndexType,
+    const common::ScalarType fileDataType  )
+{
+    // writing into file only possible for block distributed matrices 
+
+    const auto& rowDist = matrix.getRowDistribution();
+    const auto& colDist = matrix.getColDistribution();
+
+    if ( rowDist.getBlockDistributionSize() == invalidIndex || file.getCommunicator() != rowDist.getCommunicator() )
+    {
+        // block distribution onto processor set of file communicator required
+
+        auto blockDist = dmemo::blockDistribution( matrix.getNumRows(), file.getCommunicatorPtr() );
+        auto repDist = dmemo::noDistribution( matrix.getNumColumns() );
+        auto tmpMatrix = distribute<CSRSparseMatrix<ValueType>>( matrix, blockDist, repDist );
+        writeIt( file, tmpMatrix, fileIndexType, fileDataType );
+    }
+    else if ( !colDist.isReplicated() )
+    {
+        auto blockDist = matrix.getRowDistributionPtr();
+        auto repDist = dmemo::noDistribution( matrix.getNumColumns() );
+        auto tmpMatrix = distribute<CSRSparseMatrix<ValueType>>( matrix, blockDist, repDist );
+        writeIt( file, tmpMatrix, fileIndexType, fileDataType );
+    }
+    else if ( matrix.getFormat() != Format::CSR )
+    {
+        auto tmpMatrix = convert<CSRSparseMatrix<ValueType>>( matrix );
+        writeIt( file, tmpMatrix, fileIndexType, fileDataType );
+    }
+    else 
+    {
+        writeIt( file, static_cast<const CSRSparseMatrix<ValueType>&>( matrix ), fileIndexType, fileDataType );
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+/*   write/read dense vector                                                         */
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CollectiveIO::writeIt( 
+    CollectiveFile& file, 
+    const DenseVector<ValueType>& denseVector,
+    const common::ScalarType fileIndexType, 
+    const common::ScalarType fileDataType )
+{
+    const auto& dist = denseVector.getDistribution();
+
+    SCAI_ASSERT_EQ_ERROR( file.getCommunicator(), dist.getCommunicator(), "serious mismatch" )
+    SCAI_ASSERT_NE_ERROR( dist.getBlockDistributionSize(), invalidIndex, "no block distribution" )
+
+    const int val[] = { DENSE_VECTOR_CLASSID,
+                        static_cast<int>( fileIndexType ),
+                        static_cast<int>( fileDataType )
+                      };
+
+    file.writeSingle( val, 3 );
+    file.writeSingle( denseVector.size(), fileIndexType );
+    file.writeAll( denseVector.getLocalValues(), fileDataType );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CollectiveIO::readIt( CollectiveFile& file, DenseVector<ValueType>& denseVector )
 {
     int val[3];     // array to read the first three entries from the file
 
@@ -194,40 +330,120 @@ void CollectiveIO::read( CollectiveFile& file, DenseVector<ValueType>& vector )
 
     IndexType N;
 
-    if ( fileIndexType == common::TypeTraits<IndexType>::stype )
-    {
-        file.readSingle( N );
-    }
-    else
-    {
-        IOIndexConverter<SCAI_INDEX_TYPE_LIST>::readSingle( file, N, fileIndexType );
-    }
+    file.readSingle( N, fileIndexType );
 
     auto dist = dmemo::blockDistribution( N, file.getCommunicatorPtr() );
 
     hmemo::HArray<ValueType> localValues;
 
-    if ( fileDataType == common::TypeTraits<ValueType>::stype )
-    {
-        file.readAll( localValues, dist->getLocalSize(), dist->lb() );
-    }
-    else
-    {
-        IODataConverter<SCAI_ARRAY_TYPES_HOST_LIST>::readAll( file, localValues, fileDataType, dist->getLocalSize(), dist->lb() );
-    }
+    file.readAll( localValues, dist->getLocalSize(), dist->lb(), fileDataType );
 
-    vector = DenseVector<ValueType>( dist, std::move( localValues ) );
+    denseVector = DenseVector<ValueType>( dist, std::move( localValues ) );
+}
+
+/* --------------------------------------------------------------------------------- */
+/*   write/read sparse vector                                                        */
+/*   <SPARSE_VECTOR_CLASSID><indexType><dataType><N><NNZ><zero>                      */
+/*   <[non-zero-indexes]><[non-zero-values]>                                         */
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CollectiveIO::writeIt(
+    CollectiveFile& file,
+    const SparseVector<ValueType>& sparseVector,
+    const common::ScalarType fileIndexType,
+    const common::ScalarType fileDataType )
+{
+    const auto& dist = sparseVector.getDistribution();
+
+    SCAI_ASSERT_EQ_ERROR( file.getCommunicator(), dist.getCommunicator(), "serious mismatch" )
+    SCAI_ASSERT_NE_ERROR( dist.getBlockDistributionSize(), invalidIndex, "no block distribution" )
+
+    const int val[] = { SPARSE_VECTOR_CLASSID,
+                        static_cast<int>( fileIndexType ),
+                        static_cast<int>( fileDataType )
+                      };
+
+    file.writeSingle( val, 3 );
+
+    HArray<IndexType> nonZeroIndexes;   // global non-zero indexes
+    dist.local2GlobalV( nonZeroIndexes, sparseVector.getNonZeroIndexes() );
+    const HArray<ValueType>& nonZeroValues = sparseVector.getNonZeroValues();
+
+    SCAI_ASSERT_EQ_ERROR( nonZeroIndexes.size(), nonZeroValues.size(), "Inconsistent sparse vector: " << sparseVector );
+
+    const IndexType N   = sparseVector.size();
+    const IndexType NNZ = file.getCommunicator().sum( nonZeroIndexes.size() );
+
+    file.writeSingle( N, fileIndexType );
+    file.writeSingle( NNZ, fileIndexType );
+
+    file.writeSingle( sparseVector.getZero(), fileDataType );
+
+    SCAI_LOG_TRACE( logger, file.getCommunicator() << ": write indexes = " << printIt( nonZeroIndexes )
+                             << ": write values = " << printIt( nonZeroValues ) )
+
+    file.writeAll( nonZeroIndexes, fileIndexType );
+    file.writeAll( nonZeroValues, fileDataType );
 }
 
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CollectiveIO::writeCSRMatrix( dmemo::CollectiveFile& file, const CSRSparseMatrix<ValueType>& csrMatrix )
+void CollectiveIO::readIt( CollectiveFile& file, SparseVector<ValueType>& sparseVector )
 {
-    SCAI_ASSERT_ERROR( csrMatrix.getColDistribution().isReplicated(), "columns must be replicated." )
+    int val[3];     // array to read the first three entries from the file
 
-    SCAI_ASSERT_NE_ERROR( csrMatrix.getRowDistribution().getBlockDistributionSize(), invalidIndex, "no block distributon of rows" )
+    file.readSingle( val, 3 );
 
+    SCAI_ASSERT_EQ_ERROR( val[0], SPARSE_VECTOR_CLASSID, "no sparse vector in file" )
+
+    auto fileIndexType = ScalarType( val[1] );
+    auto fileDataType  = ScalarType( val[2] );
+
+    IndexType N;     // size of the vector
+    IndexType NNZ;   // number of non-zeros in the vector
+    ValueType zero;  // zero value
+
+    file.readSingle( N, fileIndexType );
+    file.readSingle( NNZ, fileIndexType );
+    file.readSingle( zero, fileDataType );
+
+    SCAI_LOG_INFO( logger, file.getCommunicator() << ": read sparse vector: N = " << N << ", NNZ = " << NNZ << ", zero = " << zero )
+
+    // parallel read of the non-zero indexes + values
+
+    auto dist = dmemo::blockDistribution( NNZ, file.getCommunicatorPtr() );
+
+    hmemo::HArray<IndexType> nonZeroIndexes;
+    hmemo::HArray<ValueType> nonZeroValues;
+
+    file.readAll( nonZeroIndexes, dist->getLocalSize(), dist->lb(), fileIndexType );
+    file.readAll( nonZeroValues, dist->getLocalSize(), dist->lb(), fileDataType );
+
+    SCAI_LOG_TRACE( logger, file.getCommunicator() << ": read indexes = " << hmemo::printIt( nonZeroIndexes ) 
+                            << ": read values = " << hmemo::printIt( nonZeroValues ) )
+
+    IndexType offset = nonZeroIndexes.size() > 0 ? nonZeroIndexes[0] : invalidIndex;
+
+    auto newDist = dmemo::genBlockDistributionByOffset( N, offset, file.getCommunicatorPtr() );
+
+    newDist->global2LocalV( nonZeroIndexes, nonZeroIndexes );
+
+    sparseVector = SparseVector<ValueType>( newDist, std::move( nonZeroIndexes ), std::move( nonZeroValues ), zero );
+}
+
+/* --------------------------------------------------------------------------------- */
+/*   write/read CSR sparse matrix                                                    */
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CollectiveIO::writeIt( 
+    dmemo::CollectiveFile& file, 
+    const CSRSparseMatrix<ValueType>& csrMatrix,
+    const common::ScalarType fileIndexType,
+    const common::ScalarType fileDataType )
+{
     const CSRStorage<ValueType>& csrLocal = csrMatrix.getLocalStorage();
 
     HArray<IndexType> csrSizes = csrLocal.getIA();
@@ -235,41 +451,29 @@ void CollectiveIO::writeCSRMatrix( dmemo::CollectiveFile& file, const CSRSparseM
     HArrayUtils::unscan( csrSizes );  // we write sizes into file, not offsets
 
     const int val[] = { CSR_MATRIX_CLASSID,
-                        static_cast<int>( common::TypeTraits<IndexType>::stype ),
-                        static_cast<int>( common::TypeTraits<ValueType>::stype )
+                        static_cast<int>( fileIndexType ),
+                        static_cast<int>( fileDataType )
                       };
 
     file.writeSingle( val, 3 );
-    file.writeSingle( csrMatrix.getNumRows() );
-    file.writeSingle( csrMatrix.getNumColumns() );
+    file.writeSingle( csrMatrix.getNumRows(), fileIndexType );
+    file.writeSingle( csrMatrix.getNumColumns(), fileIndexType );
 
-    file.writeAll( csrSizes );
-    file.writeAll( csrLocal.getJA() );
-    file.writeAll( csrLocal.getValues() );
-}
-    
-template<typename ValueType>
-void CollectiveIO::write( dmemo::CollectiveFile& file, const SparseMatrix<ValueType>& matrix )
-{
-    if ( matrix.getFormat() == Format::CSR )
-    {
-        writeCSRMatrix( file, static_cast<const CSRSparseMatrix<ValueType>&>( matrix ) );
-    }
-    else
-    {
-        auto csrMatrix = convert<CSRSparseMatrix<ValueType>>( matrix );
-        writeCSRMatrix( file, csrMatrix );
-    }
+    file.writeAll( csrSizes, fileIndexType );
+    file.writeAll( csrLocal.getJA(), fileIndexType );
+    file.writeAll( csrLocal.getValues(), fileDataType );
 }
 
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CollectiveIO::readCSRMatrix( dmemo::CollectiveFile& file, CSRSparseMatrix<ValueType>& matrix )
+void CollectiveIO::readIt( dmemo::CollectiveFile& file, CSRSparseMatrix<ValueType>& matrix )
 {
     int val[3];     // array to read the first three entries from the file
 
     file.readSingle( val, 3 );
+
+    SCAI_LOG_INFO( logger, "read header for CSR matrix: " << val[0] << ", " << val[1] << ", " << val[2] )
 
     SCAI_ASSERT_EQ_ERROR( val[0], CSR_MATRIX_CLASSID, "no CSR matrix in file" )
 
@@ -278,52 +482,136 @@ void CollectiveIO::readCSRMatrix( dmemo::CollectiveFile& file, CSRSparseMatrix<V
 
     IndexType N, M;
 
-    SCAI_ASSERT_EQ_ERROR( fileIndexType, common::TypeTraits<IndexType>::stype, "unsupported index type in input file." )
-    SCAI_ASSERT_EQ_ERROR( fileDataType, common::TypeTraits<ValueType>::stype, "wrong value type in input file." )
+    file.readSingle( N, fileIndexType );
+    file.readSingle( M, fileIndexType );
 
-    file.readSingle( N );
-    file.readSingle( M );
-
-    SCAI_LOG_ERROR( logger, file.getCommunicator() << ": read CSR matrix " << N << " x " << M )
+    SCAI_LOG_DEBUG( logger, file.getCommunicator() << ": read CSR matrix " << N << " x " << M )
 
     auto dist = dmemo::blockDistribution( N, file.getCommunicatorPtr() );
     auto localN = dist->getLocalSize();
 
     HArray<IndexType> csrIA( localN + 1 );
 
-    file.readAll( csrIA, localN, dist->lb() );
-
-    SCAI_LOG_ERROR( logger, file.getCommunicator() << ": read CSR IA " << csrIA )
+    file.readAll( csrIA, localN, dist->lb(), fileIndexType );
 
     const IndexType localNNZ = HArrayUtils::scan1( csrIA );
 
     HArray<IndexType> csrJA;
     HArray<ValueType> csrValues;
 
-    file.readAll( csrJA, localNNZ );
-    SCAI_LOG_ERROR( logger, file.getCommunicator() << ": read CSR JA " << csrJA )
-    file.readAll( csrValues, localNNZ );
-    SCAI_LOG_ERROR( logger, file.getCommunicator() << ": read CSR Values " << csrValues )
+    file.readAll( csrJA, localNNZ, fileIndexType );
+    file.readAll( csrValues, localNNZ, fileDataType );
 
     CSRStorage<ValueType> csrLocal( localN, M, std::move( csrIA ), std::move( csrJA ), std::move( csrValues ) );
     matrix = CSRSparseMatrix<ValueType>( dist, std::move( csrLocal ) );
 }
 
+/* --------------------------------------------------------------------------------- */
+/*   write/read dense matrix                                                         */
+/* --------------------------------------------------------------------------------- */
+
 template<typename ValueType>
-void CollectiveIO::read( dmemo::CollectiveFile& file, SparseMatrix<ValueType>& matrix )
+void CollectiveIO::writeIt( 
+    CollectiveFile& file, 
+    const DenseMatrix<ValueType>& matrix,
+    const common::ScalarType fileIndexType,
+    const common::ScalarType fileDataType  )
+{
+    // matrix is block distributed onto the processors of the file communicator
+
+    const int val[] = { DENSE_MATRIX_CLASSID,
+                        static_cast<int>( fileIndexType ),
+                        static_cast<int>( fileDataType )
+                      };
+
+    file.writeSingle( val, 3 );
+   
+    file.writeSingle( matrix.getNumRows(), fileIndexType );
+    file.writeSingle( matrix.getNumColumns(), fileIndexType );
+
+    const HArray<ValueType>& denseData = matrix.getLocalStorage().getValues();
+
+    file.writeAll( denseData, fileDataType );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CollectiveIO::readIt( dmemo::CollectiveFile& file, DenseMatrix<ValueType>& matrix )
+{
+    int val[3];     // array to read the first three entries from the file
+
+    file.readSingle( val, 3 );
+
+    SCAI_ASSERT_EQ_ERROR( val[0], DENSE_MATRIX_CLASSID, "no DENSE matrix in file" )
+
+    auto fileIndexType = ScalarType( val[1] );
+    auto fileDataType  = ScalarType( val[2] );
+
+    IndexType N, M;
+
+    file.readSingle( N, fileIndexType );
+    file.readSingle( M, fileIndexType );
+
+    SCAI_LOG_INFO( logger, file.getCommunicator() << ": read CSR matrix " << N << " x " << M )
+
+    auto dist = dmemo::blockDistribution( N, file.getCommunicatorPtr() );
+    auto localN = dist->getLocalSize();
+
+    HArray<ValueType> denseValues;
+
+    file.readAll( denseValues, localN * M, fileDataType );
+
+    DenseStorage<ValueType> denseLocal( localN, M, std::move( denseValues ) );
+    matrix = DenseMatrix<ValueType>( dist, std::move( denseLocal ) );
+}
+
+/* --------------------------------------------------------------------------------- */
+/*  read  Vector / Matrix                                                            */
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CollectiveIO::read( CollectiveFile& file, Vector<ValueType>& vector )
+{
+    auto kind = vector.getVectorKind();
+
+    if ( kind == VectorKind::SPARSE ) 
+    {
+        readIt( file, static_cast<SparseVector<ValueType>&>( vector ) );
+    }
+    else if ( kind == VectorKind::DENSE ) 
+    {
+        readIt( file, static_cast<DenseVector<ValueType>&>( vector ) );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "unsupported vector kind " << kind << " for collective read" )
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CollectiveIO::read( dmemo::CollectiveFile& file, Matrix<ValueType>& matrix )
 {
     if ( matrix.getFormat() == Format::CSR )
     {
-        readCSRMatrix( file, static_cast<CSRSparseMatrix<ValueType>&>( matrix ) );
+        readIt( file, static_cast<CSRSparseMatrix<ValueType>&>( matrix ) );
+    }
+    else if ( matrix.getFormat() == Format::DENSE )
+    {
+        readIt( file, static_cast<DenseMatrix<ValueType>&>( matrix ) );
     }
     else
     {
         CSRSparseMatrix<ValueType> tmpMatrix;
-        readCSRMatrix( file, static_cast<CSRSparseMatrix<ValueType>&>( tmpMatrix ) );
+        readIt( file, static_cast<CSRSparseMatrix<ValueType>&>( tmpMatrix ) );
         matrix = tmpMatrix;
     }
 }
 
+/* --------------------------------------------------------------------------------- */
+/*  Method instantiations                                                            */
 /* --------------------------------------------------------------------------------- */
 
 #define SCAI_VECTOR_METHOD_INSTANTIATIONS( _type )          \
@@ -331,12 +619,19 @@ void CollectiveIO::read( dmemo::CollectiveFile& file, SparseMatrix<ValueType>& m
     template COMMON_DLL_IMPORTEXPORT                        \
     void CollectiveIO::write(                               \
         CollectiveFile& file,                               \
-        const DenseVector<_type>& vector );                 \
+        const Vector<_type>& vector );                      \
+                                                            \
+    template COMMON_DLL_IMPORTEXPORT                        \
+    void CollectiveIO::write(                               \
+        CollectiveFile& file,                               \
+        const Vector<_type>& vector,                        \
+        const common::ScalarType,                           \
+        const common::ScalarType );                         \
                                                             \
     template COMMON_DLL_IMPORTEXPORT                        \
     void CollectiveIO::read(                                \
         CollectiveFile& file,                               \
-        DenseVector<_type>& vector );                       \
+        Vector<_type>& vector );                            \
                                                             \
 
 SCAI_COMMON_LOOP( SCAI_VECTOR_METHOD_INSTANTIATIONS, SCAI_ARRAY_TYPES_HOST )
@@ -348,12 +643,12 @@ SCAI_COMMON_LOOP( SCAI_VECTOR_METHOD_INSTANTIATIONS, SCAI_ARRAY_TYPES_HOST )
     template COMMON_DLL_IMPORTEXPORT                        \
     void CollectiveIO::write(                               \
         CollectiveFile& file,                               \
-        const SparseMatrix<_type>& vector );                \
+        const Matrix<_type>& vector );                      \
                                                             \
     template COMMON_DLL_IMPORTEXPORT                        \
     void CollectiveIO::read(                                \
         CollectiveFile& file,                               \
-        SparseMatrix<_type>& vector );                      \
+        Matrix<_type>& vector );                            \
 
 SCAI_COMMON_LOOP( SCAI_MATRIX_METHOD_INSTANTIATIONS, SCAI_NUMERIC_TYPES_HOST )
 
