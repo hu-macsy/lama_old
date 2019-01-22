@@ -38,6 +38,9 @@
 #include <fstream>
 #include <memory>
 
+/** 
+ *  common definition for root processor 0
+ */
 #define MASTER 0
 
 namespace scai
@@ -102,6 +105,46 @@ std::shared_ptr<GenBlockDistribution> genBlockDistributionBySize(
 
 /* ---------------------------------------------------------------------- */
 
+std::shared_ptr<GenBlockDistribution> genBlockDistributionByOffset(
+    const IndexType N,
+    const IndexType offset,
+    CommunicatorPtr comm )
+{
+    SCAI_ASSERT_DEBUG( comm, "Null pointer for commmunicator" )
+
+    PartitionId size = comm->getSize();
+
+    std::unique_ptr<IndexType[]> offsets( new IndexType[ size + 1 ] );
+
+    comm->gather( offsets.get(), 1, MASTER, &offset );
+    comm->bcast( offsets.get(), size, MASTER );
+
+    offsets[size] = N;
+
+    IndexType curOffset = N; 
+
+    for ( PartitionId p = size; p-- > 0; )
+    {
+        if ( offsets[p] == invalidIndex )
+        {
+            // correct the offsets for invalidIndex (no elements)
+            offsets[p] = curOffset;
+        }
+        else
+        {
+            // check that offset for p is valid 
+            SCAI_ASSERT_LE_ERROR( offsets[p], curOffset, "invalid offset for processor p = " << p )
+            curOffset = offsets[p];
+        }
+    }
+
+    offsets[0] = 0;  
+
+    return std::make_shared<GenBlockDistribution>( std::move( offsets ), comm );
+}
+
+/* ---------------------------------------------------------------------- */
+
 std::shared_ptr<GenBlockDistribution> genBlockDistributionBySize( 
     const IndexType globalSize,
     const IndexType localSize, 
@@ -154,16 +197,6 @@ std::shared_ptr<GenBlockDistribution> genBlockDistributionBySizes(
 bool GenBlockDistribution::isLocal( const IndexType globalIndex ) const
 {
     return globalIndex >= mLB && globalIndex < mUB;
-}
-
-/* ---------------------------------------------------------------------- */
-
-void GenBlockDistribution::getLocalRange( IndexType& lb, IndexType& ub ) const
-{
-    // keep in mind that lb == ub implies zero range, ub < lb can never happen
-
-    lb = mLB;
-    ub = mUB;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -357,7 +390,9 @@ bool GenBlockDistribution::isEqual( const Distribution& other ) const
 void GenBlockDistribution::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
-    stream << "GenBlockDistribution( gsize = " << mGlobalSize << ", local = " << mLB << ":" << mUB << ")";
+
+    stream << "GenBlockDistribution( comm = " << *mCommunicator
+           << ", size = " << mLB << ":" << mUB << " of " << mGlobalSize << " )";
 }
 
 /* ---------------------------------------------------------------------------------*
