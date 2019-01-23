@@ -29,6 +29,7 @@
 
 #include <scai/dmemo/CollectiveFile.hpp>
 
+#include <scai/tracing.hpp>
 #include <scai/common/macros/loop.hpp>
 
 namespace scai
@@ -181,6 +182,8 @@ struct IOWrapper<ValueType, common::mepr::TypeList<FileType, TailTypes> >
 template<typename ValueType>
 void CollectiveFile::readSingle( ValueType array[], const IndexType n )
 {
+    SCAI_REGION( "ColFile.readSingle" )
+
     const PartitionId MASTER = 0;
 
     if ( mComm->getRank() == MASTER )
@@ -233,6 +236,8 @@ void CollectiveFile::readSingle( hmemo::HArray<ValueType>& array, const IndexTyp
 template<typename ValueType>
 void CollectiveFile::readAll( ValueType local[], const IndexType n, const IndexType offset )
 {
+    SCAI_REGION( "ColFile.readAll" )
+
     // no more type conversion, read local array from local offset
 
     auto arrayType = common::TypeTraits<ValueType>::stype;
@@ -284,6 +289,8 @@ void CollectiveFile::readAll( hmemo::HArray<ValueType>& local, const IndexType s
 template<typename ValueType>
 void CollectiveFile::writeSingle( const ValueType array[], const IndexType n )
 {
+    SCAI_REGION( "ColFile.writeSingle" )
+
     if ( mComm->getRank() == 0 )
     {
         auto stype = common::TypeTraits<ValueType>::stype;
@@ -334,6 +341,8 @@ void CollectiveFile::writeSingle( const hmemo::HArray<ValueType>& array, const c
 template<typename ValueType>
 void CollectiveFile::writeAll( const ValueType local[], const IndexType n, const IndexType offset )
 {
+    SCAI_REGION( "ColFile.writeAll" )
+
     auto arrayType = common::TypeTraits<ValueType>::stype;
 
     writeAllImpl( mOffset + offset * sizeof( ValueType ), local, static_cast<size_t>( n ), arrayType );
