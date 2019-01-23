@@ -89,7 +89,7 @@ public:
      */
     virtual CG<ValueType>* copy();
 
-    using IterativeSolver<ValueType>::IterativeSolverRuntime;
+    using typename IterativeSolver<ValueType>::IterativeSolverRuntime;
 
     struct CGRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
