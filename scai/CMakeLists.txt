@@ -67,8 +67,11 @@ endif ( NOT SCAI_CMAKE_VERBOSE )
 
 ### Setting cmake policies to ignore warnings
 
-# set this policy (from version 3.1.12) 
-# cmake_policy ( SET CMP0074 NEW )
+if ( ${CMAKE_VERSION} VERSION_LESS "3.12" ) 
+else()
+    ## allow <PackageName>_ROOT environment variables
+    cmake_policy ( SET CMP0074 NEW )
+endif()
 
 ### General stuff for all projects
 
