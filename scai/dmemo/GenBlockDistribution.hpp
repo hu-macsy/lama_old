@@ -189,6 +189,10 @@ private:
     IndexType mUB;   //!< local range of full size in global values
 };
 
+/* --------------------------------------------------------------------------------- */
+/*   Implementation of inline methods for GenBlockDistribution                       */
+/* --------------------------------------------------------------------------------- */
+
 const char* GenBlockDistribution::getKind() const
 {
     return getId();
@@ -208,6 +212,10 @@ IndexType GenBlockDistribution::ub() const
 {
     return mUB;
 }
+
+/* --------------------------------------------------------------------------------- */
+/*   free constructor functions                                                      */
+/* --------------------------------------------------------------------------------- */
 
 /** Construct a general block distribution by individual local sizes
  *

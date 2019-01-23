@@ -65,7 +65,10 @@ if    ( NOT SCAI_CMAKE_VERBOSE )
     include ( scai_function/setCMakeQuiet )
 endif ( NOT SCAI_CMAKE_VERBOSE )
 
+### Setting cmake policies to ignore warnings
 
+# set this policy (from version 3.1.12) 
+# cmake_policy ( SET CMP0074 NEW )
 
 ### General stuff for all projects
 
