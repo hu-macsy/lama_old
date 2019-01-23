@@ -4,6 +4,8 @@
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/CollectiveFile.hpp>
 
+#include <scai/tracing.hpp>
+
 #include <scai/common/Walltime.hpp>
 
 using namespace scai;
@@ -43,8 +45,8 @@ int main( int argc, const char* argv[] )
 {
     if ( argc < 2 )
     {
-        std::cout << "Usage: " << argv[0] << " filename              // read the file" << std::endl;
-        std::cout << "Usage: " << argv[0] << " filename  <nentries>  // write the file" << std::endl;
+        std::cout << "Usage: " << argv[0] << " filename                       // read the file" << std::endl;
+        std::cout << "Usage: " << argv[0] << " filename  <nentries> [repeat]  // write the file" << std::endl;
         return -1;
     }
 
@@ -59,6 +61,8 @@ int main( int argc, const char* argv[] )
 
     if ( out )
     { 
+        SCAI_REGION( "main.out" )
+
         const IndexType N = atoi( argv[2] );
         const IndexType K = argc > 3 ? atoi( argv[3] ) : 1;
 
@@ -76,6 +80,7 @@ int main( int argc, const char* argv[] )
  
         for ( IndexType iter = 0; iter < K; iter ++ )
         {
+            SCAI_REGION( "main.write" )
             outFile->writeSingle( N );
             outFile->writeAll( myData, dist->lb() );
         }
@@ -93,6 +98,8 @@ int main( int argc, const char* argv[] )
     }
     else
     {
+        SCAI_REGION( "main.in" )
+
         IndexType K;
         IndexType N;
 
@@ -111,25 +118,32 @@ int main( int argc, const char* argv[] )
 
         for ( IndexType iter = 0; iter < K; ++iter )
         {
+            SCAI_REGION( "main.read" )
+
             inFile->readSingle( N );
-            HOST_PRINT( rank, "Read(all) data set with " << N << " entries." )
+
             auto dist = blockDistribution( N, comm );
             inFile->readAll(  myData, dist->getLocalSize(), dist->lb() );
 
             // check for correct values in last iteration
             
-            if ( iter + 1 == K )
+            if ( iter % 20 == 0 )
             {
-                nBytes = inFile->currentPos();
-                inFile->close();
+                SCAI_REGION( "main.check" )
 
-                time = common::Walltime::get() - time;
                 auto rData = hostReadAccess( myData );
 
                 for ( IndexType i = 0; i < myData.size(); ++i )
                 {
                     SCAI_ASSERT_EQ_ERROR( rData[i], fillArray( dist->local2Global( i  ) ), "illegal result" )
                 }
+            }
+
+            if ( iter + 1 == K )
+            {
+                nBytes = inFile->currentPos();
+                inFile->close();
+                time = common::Walltime::get() - time;
             }
         }
 
