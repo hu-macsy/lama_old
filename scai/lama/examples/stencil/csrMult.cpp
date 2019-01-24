@@ -74,8 +74,8 @@ int main( int argc, const char* argv[] )
 
     auto csrMatrix = read<CSRSparseMatrix<ValueType>>( argv[1] );
 
-    auto x = fill<DenseVector<ValueType>>( csrMatrix.getColDistributionPtr(), 1 );
-    auto y = fill<DenseVector<ValueType>>( csrMatrix.getRowDistributionPtr(), 0 );
+    auto x = fillDenseVector<ValueType>( csrMatrix.getColDistributionPtr(), 1 );
+    auto y = fillDenseVector<ValueType>( csrMatrix.getRowDistributionPtr(), 0 );
 
     for ( IndexType i = 0; i < NITER; ++i )
     {

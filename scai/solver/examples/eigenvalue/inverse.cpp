@@ -75,7 +75,7 @@ int main( int argc, const char* argv[] )
     diag -= theta;
     A.setDiagonal( diag );
 
-    auto x = fill<DenseVector<ValueType>>( A.getRowDistributionPtr(), 1 );
+    auto x = fillDenseVector<ValueType>( A.getRowDistributionPtr(), 1 );
 
     DenseVector<ValueType> q;   // tmp vector, allocated data will be reused in loop
     DenseVector<ValueType> y;   // tmp vector, allocated data will be reused in loop

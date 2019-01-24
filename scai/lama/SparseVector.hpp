@@ -551,6 +551,41 @@ ValueType SparseVector<ValueType>::getZero() const
     return mZeroValue;
 }
 
+/** 
+ *  @brief Function that returns a dense vector of a given size initialized with the same value.
+ * 
+ *  @tparam    ValueType  is the component type of the dense vector
+ *  @param[in] n          specifies the size of the vector                             
+ *  @param[in] value      is the value assigned to all elements of the vector
+ *  @param[in] ctx        Context that is used for the filling and the generated vector
+ *  @returns              a new dense vector with the specified size
+ *
+ *  \code
+ *     const auto v = fillDenseVector<double>( n, 10 );
+ *  \endcode
+ */
+template<typename ValueType>
+SparseVector<ValueType> fillSparseVector(
+    const IndexType n,
+    ValueType value,
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    SparseVector<ValueType> result( ctx );
+    result.setSameValue( n, value );
+    return result;
+}
+
+template<typename ValueType>
+SparseVector<ValueType> fillSparseVector(
+    dmemo::DistributionPtr distribution,
+    ValueType value,
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    SparseVector<ValueType> result( ctx );
+    result.setSameValue( distribution, value );
+    return result;
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

@@ -76,17 +76,19 @@ ValueType radius = 1e18;           // radius of the universe
 
 IndexType iter = 0;               // global iteration count
 
-auto x = fill<DenseVector<ValueType>>( nBodies, 0 );
-auto y = fill<DenseVector<ValueType>>( nBodies, 0 );
+const ValueType ZERO = 0;               // typed 0, used to fill vectors
 
-auto vx = fill<DenseVector<ValueType>>( nBodies, 0 );
-auto vy = fill<DenseVector<ValueType>>( nBodies, 0 );
+auto x = fillDenseVector( nBodies, ZERO );
+auto y = fillDenseVector( nBodies, ZERO );
 
-auto fx = fill<DenseVector<ValueType>>( nBodies, 0 );
-auto fy = fill<DenseVector<ValueType>>( nBodies, 0 );
+auto vx = fillDenseVector( nBodies, ZERO );
+auto vy = fillDenseVector( nBodies, ZERO );
 
-auto mass        = fill<DenseVector<ValueType>>( nBodies, 0 );
-auto inversemass = fill<DenseVector<ValueType>>( nBodies, 0 );
+auto fx = fillDenseVector( nBodies, ZERO );
+auto fy = fillDenseVector( nBodies, ZERO );
+
+auto mass        = fillDenseVector( nBodies, ZERO );
+auto inversemass = fillDenseVector( nBodies, ZERO );
 
 void randomBodies( )
 {

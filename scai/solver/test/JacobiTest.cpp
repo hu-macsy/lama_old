@@ -140,7 +140,7 @@ void testSolveMethod( std::string solverId, ContextPtr context )
     DenseVector<ValueType> rhs( system.rhs );
     rhs.setContextPtr( context );
     rhs.redistribute( coefficients.getRowDistributionPtr() );
-    auto solution = fill<DenseVector<ValueType>>( coefficients.getColDistributionPtr(), ValueType( 2.1 ), context );
+    auto solution = fillDenseVector<ValueType>( coefficients.getColDistributionPtr(), ValueType( 2.1 ), context );
     DenseVector<ValueType> exactSolution( system.solution );
     exactSolution.setContextPtr( context );
     exactSolution.redistribute( coefficients.getColDistributionPtr() );
@@ -161,7 +161,7 @@ void testSolveMethod( std::string solverId, ContextPtr context )
     ValueType omega = 0.5;
 
     auto colDist   = coefficients.getColDistributionPtr();
-    auto solutionA = fill<DenseVector<ValueType>>( colDist, 1.0, context );
+    auto solutionA = fillDenseVector<ValueType>( colDist, 1.0, context );
 
     Jacobi<ValueType> jacobiSolverA( "JacobiTest solver 2" );
     jacobiSolverA.initialize( coefficients );
@@ -169,7 +169,7 @@ void testSolveMethod( std::string solverId, ContextPtr context )
     jacobiSolverA.solve( solutionA, rhs );
     jacobiSolverA.solve( solutionA, rhs ); //twice
 
-    auto solutionB = fill<DenseVector<ValueType>>( colDist, 1.0, context );
+    auto solutionB = fillDenseVector<ValueType>( colDist, 1.0, context );
 
     Jacobi<ValueType> jacobiSolverB( "JacobiTest solver 2" );
     CriterionPtr<ValueType> criterionB( new IterationCount<ValueType>( 2 ) );

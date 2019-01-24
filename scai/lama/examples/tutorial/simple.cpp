@@ -47,7 +47,7 @@ int main()
     //
     IndexType size = 8;
 
-    const auto v = fill<DenseVector<ValueType>>( size, 1.1 );
+    const auto v = fillDenseVector<ValueType>( size, 1.1 );
     //
     // Compute the L1 norm of the vector and print it
     //

@@ -55,9 +55,9 @@ int main( int , char** )
     CSRSparseMatrix<ValueType> matrix;
     MatrixCreator::buildPoisson( matrix, dim, stencil, size, size, size );
     int vectorSize = static_cast<int>( std::pow( size, dim ) );
-    const auto exactSolution = fill<DenseVector<ValueType>>( vectorSize, 1 );
+    const auto exactSolution = fillDenseVector<ValueType>( vectorSize, 1 );
     const auto rhs = eval<DenseVector<ValueType>>( matrix * exactSolution );
-    auto solution = fill<DenseVector<ValueType>>( vectorSize, 0 );
+    auto solution = fillDenseVector<ValueType>( vectorSize, 0 );
     LoggerPtr slogger( new CommonLogger( "MyJacobiLogger:", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly ) );
     MyJacobi<ValueType> jacobiSolver( "MyJacobi", slogger );
     jacobiSolver.initialize( matrix );

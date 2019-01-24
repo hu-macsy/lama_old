@@ -69,21 +69,88 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.DenseVectorTest" )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( fillRepTest, ValueType, scai_numeric_test_types )
 {
     // replicated dense vector
 
-    IndexType n   = 4;
-    ValueType val = 1;
+    const IndexType N   = 12;
+    const ValueType VAL = 2;
    
-    auto v = fill<DenseVector<ValueType>>( n, val );
+    auto denseVector = fillDenseVector<ValueType>( N, VAL );
 
-    BOOST_CHECK_EQUAL( n, v.size() );
+    BOOST_CHECK_EQUAL( N, denseVector.size() );
 
-    for ( IndexType i = 0; i < n; ++i )
+    std::vector<ValueType> expected( N, VAL );
+
+    BOOST_TEST( hmemo::hostReadAccess( denseVector.getLocalValues() ) == expected, per_element() );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( fillDistTest, ValueType, scai_numeric_test_types )
+{
+    // distributed dense vector
+
+    const IndexType N   = 15;
+    const ValueType VAL = 1;
+   
+    auto dist = dmemo::blockDistribution( N );
+    auto denseVector = fillDenseVector<ValueType>( dist, VAL );
+
+    BOOST_CHECK_EQUAL( N, denseVector.size() );
+
+    std::vector<ValueType> expected( dist->getLocalSize(), VAL );
+
+    BOOST_TEST( hmemo::hostReadAccess( denseVector.getLocalValues() ) == expected, per_element() );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( fillRepFnTest, ValueType, scai_numeric_test_types )
+{
+    // fill replicated dense vector with function
+
+    const IndexType N   = 12;
+
+    auto lambda = []( IndexType i ) { return ValueType( i ); };
+
+    auto denseVector = fillDenseVector<ValueType>( N, lambda );
+
+    BOOST_CHECK_EQUAL( N, denseVector.size() );
+
+    std::vector<ValueType> expected;
+
+    for ( IndexType i = 0; i < N; ++i )
     {
-        BOOST_CHECK_EQUAL( v.getValue( i ), val );
+        expected.push_back( ValueType( i ) );
     }
+
+    BOOST_TEST( hmemo::hostReadAccess( denseVector.getLocalValues() ) == expected, per_element() );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( fillDistFnTest, ValueType, scai_numeric_test_types )
+{
+    // distributed dense vector
+
+    const IndexType N   = 15;
+
+    auto lambda = []( IndexType i ) { return ValueType( i ); };
+
+    auto dist = dmemo::blockDistribution( N );
+    auto denseVector = fillDenseVector<ValueType>( dist, lambda );
+
+    BOOST_CHECK_EQUAL( N, denseVector.size() );
+
+    std::vector<ValueType> expected;
+
+    for ( IndexType i = 0; i < dist->getLocalSize(); ++i )
+    {
+        expected.push_back( ValueType( dist->local2Global( i ) ) );
+    }
+
+    BOOST_TEST( hmemo::hostReadAccess( denseVector.getLocalValues() ) == expected, per_element() );
 }
 
 /* --------------------------------------------------------------------- */
@@ -99,7 +166,7 @@ BOOST_AUTO_TEST_CASE( consistencyTest )
 
     // create distributed dense vector
 
-    auto v = fill<DenseVector<ValueType>>( dist, 1 );
+    auto v = fillDenseVector<ValueType>( dist, 1 );
 
     BOOST_CHECK( v.isConsistent() );
 
@@ -382,7 +449,7 @@ BOOST_AUTO_TEST_CASE( matExpConstructorTest )
 
             auto mat = zero<CSRSparseMatrix<DefaultReal>>( rowDist, colDist );
 
-            auto x   = fill<DenseVector<ValueType>>( colDist, 3 );
+            auto x   = fillDenseVector<ValueType>( colDist, 3 );
 
             SCAI_LOG_INFO( logger, "linear algebra expression: alpha * Matrix * Vector" );
 
@@ -407,11 +474,11 @@ BOOST_AUTO_TEST_CASE( scalarExpConstructorTest )
     {
         dmemo::DistributionPtr dist = dists[i];
 
-        auto x = fill<DenseVector<ValueType>>( dist, 3 );
+        auto x = fillDenseVector<ValueType>( dist, 3 );
         SCAI_LOG_INFO( logger, "linear algebra expression: alpha + Vector" );
         auto y = eval<DenseVector<ValueType>>( 2 + x );
         auto z = eval<DenseVector<ValueType>>( x + 2 );
-        auto r = fill<DenseVector<ValueType>>( dist, 5 );
+        auto r = fillDenseVector<ValueType>( dist, 5 );
 
         // prove same distribution, same values of r and y/z
 
@@ -433,8 +500,8 @@ BOOST_AUTO_TEST_CASE( swapTest )
     auto dist1 = std::make_shared<dmemo::BlockDistribution>( n, comm );
     auto dist2 = std::make_shared<dmemo::CyclicDistribution>( n, 1, comm );
 
-    auto x1 = fill<DenseVector<ValueType>>( dist1, 1 );
-    auto x2 = fill<DenseVector<ValueType>>( dist2, 2 );
+    auto x1 = fillDenseVector<ValueType>( dist1, 1 );
+    auto x2 = fillDenseVector<ValueType>( dist2, 2 );
 
     x1.swap( x2 );
 
@@ -896,7 +963,7 @@ BOOST_AUTO_TEST_CASE( scatterTest )
             source.redistribute( indexDist );
             index.redistribute( indexDist );
 
-            auto target = fill<DenseVector<ValueType>>( targetDist, 0 );
+            auto target = fillDenseVector<ValueType>( targetDist, 0 );
 
             if ( targetDist->isReplicated() != indexDist->isReplicated() )
             {
@@ -963,7 +1030,7 @@ BOOST_AUTO_TEST_CASE( scatterByPlanTest )
             source.redistribute( indexDist );
             index.redistribute( indexDist );
 
-            auto target = fill<DenseVector<ValueType>>( targetDist, 0 );
+            auto target = fillDenseVector<ValueType>( targetDist, 0 );
 
             auto plan = target.globalAddressingPlan( index, unique );
             target.scatterByPlan( plan, source, common::BinaryOp::ADD );

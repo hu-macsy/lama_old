@@ -222,7 +222,7 @@ int main( int argc, const char* argv[] )
 
         MatrixCreator::buildPoisson( m, cmdArgs.dimension, cmdArgs.stencilType, cmdArgs.dimX, cmdArgs.dimY, cmdArgs.dimZ );
 
-        auto lhs = fill<DenseVector<ValueType>>( m.getRowDistributionPtr(), 1 );
+        auto lhs = fillDenseVector<ValueType>( m.getRowDistributionPtr(), 1 );
         auto rhs = eval<DenseVector<ValueType>>( m * lhs );
 
         HOST_PRINT( myRank, "Poisson matrix m = " << m )

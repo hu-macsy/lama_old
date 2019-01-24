@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, scai_numeric_test_types )
     {
         ValueType zero = zeroValues[icase];
 
-        auto v = fill<SparseVector<ValueType>>( n, zero );
+        auto v = fillSparseVector<ValueType>( n, zero );
 
         BOOST_CHECK_EQUAL( n, v.size() );
 
@@ -387,8 +387,8 @@ BOOST_AUTO_TEST_CASE( binOpDenseTest )
 
         // use copy constructor to build equivalent dense vectors
 
-        auto result1 = fill<DenseVector<ValueType>>( n, 5 );
-        auto result2 = fill<DenseVector<ValueType>>( n, 5 );
+        auto result1 = fillDenseVector<ValueType>( n, 5 );
+        auto result2 = fillDenseVector<ValueType>( n, 5 );
 
         SCAI_LOG_DEBUG( logger, "Run test case " << icase << " for binop on sparse vectors" )
 
@@ -485,7 +485,7 @@ BOOST_AUTO_TEST_CASE( moveTest )
     BOOST_CHECK_EQUAL( nnz, xS1.getNonZeroIndexes().size() );
     BOOST_CHECK_EQUAL( nnz, xS1.getNonZeroValues().size() );
 
-    auto xS2 = fill<SparseVector<ValueType>>( n, zero );
+    auto xS2 = fillSparseVector<ValueType>( n, zero );
     xS2 = std::move( xS1 );
 
     BOOST_CHECK_EQUAL( nnz, xS2.getNonZeroIndexes().size() );
@@ -522,7 +522,7 @@ BOOST_AUTO_TEST_CASE( compressTest )
 
     // Case 3: conversion from denso to sparse in assignment, should keep zero element
 
-    auto xS2 = fill<SparseVector<ValueType>>( n, 2 );
+    auto xS2 = fillSparseVector<ValueType>( n, 2 );
     xS2 = xD;
 
     BOOST_CHECK_EQUAL( n - 2, xS2.getNonZeroIndexes().size() );

@@ -170,8 +170,8 @@ BOOST_AUTO_TEST_CASE ( isSatisfiedTest )
     lama::CSRSparseMatrix<ValueType> coefficients;
     lama::MatrixCreator::buildPoisson2D( coefficients, 5, N, N );
 
-    auto rhs      = lama::fill<lama::DenseVector<ValueType>>( coefficients.getRowDistributionPtr(), ValueType( 1 ) );
-    auto solution = lama::fill<lama::DenseVector<ValueType>>( coefficients.getColDistributionPtr(), ValueType( 1 ) );
+    auto rhs      = lama::fillDenseVector<ValueType>( coefficients.getRowDistributionPtr(), ValueType( 1 ) );
+    auto solution = lama::fillDenseVector<ValueType>( coefficients.getColDistributionPtr(), ValueType( 1 ) );
 
     CG<ValueType> cgsolver( "CriterionTestSolver" );
     cgsolver.setStoppingCriterion( mIterationCountCriterion2Ptr );

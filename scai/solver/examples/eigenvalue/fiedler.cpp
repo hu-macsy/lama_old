@@ -109,7 +109,7 @@ void makeLaplacian( CSRSparseMatrix<ValueType>& L )
 
     // check that x = (1, 1, ..., 1 ) is eigenvector with eigenvalue 0
 
-    auto x = fill<DenseVector<ValueType>>( L.getColDistributionPtr(), 1 );
+    auto x = fillDenseVector<ValueType>( L.getColDistributionPtr(), 1 );
     auto y = eval<DenseVector<ValueType>>( L * x );
 
     SCAI_ASSERT_LT_ERROR( y.maxNorm(), ValueType( 1e-8 ), "L not Laplacian matrix" )
@@ -157,7 +157,7 @@ int main( int argc, const char* argv[] )
 
     L.redistribute( blockDist, blockDist );
 
-    auto u = fill<DenseVector<ValueType>>( L.getRowDistributionPtr(), 1 ); 
+    auto u = fillDenseVector<ValueType>( L.getRowDistributionPtr(), 1 ); 
 
     ValueType n12 = common::Math::sqrt( ValueType( n  ) );
 
@@ -167,7 +167,7 @@ int main( int argc, const char* argv[] )
 
     HouseholderTransformedMatrix<ValueType> HLH( L, u, alpha );
 
-    auto t = fill<DenseVector<ValueType>>( L.getRowDistributionPtr(), 1.0 );
+    auto t = fillDenseVector<ValueType>( L.getRowDistributionPtr(), 1.0 );
 
     DenseVector<ValueType> y;
     DenseVector<ValueType> diff;

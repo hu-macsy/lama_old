@@ -78,21 +78,21 @@ struct Type_rgb pixels[DIMy* DIMx];
 
 void Julia()
 {
-    auto ind   = fill<DenseVector<ValueType>>( DIMy * DIMx, 0 );
-    auto cReal = fill<DenseVector<ValueType>>( DIMx * DIMy, 0 );
-    auto cImag = fill<DenseVector<ValueType>>( DIMx * DIMy, 0 );
-    auto mag   = fill<DenseVector<ValueType>>( DIMx * DIMy, 0 );
-    auto help  = fill<DenseVector<ValueType>>( DIMx * DIMy, 0 );
-    auto help2 = fill<DenseVector<ValueType>>( DIMx * DIMy, 0 );
+    auto ind   = fillDenseVector<ValueType>( DIMy * DIMx, 0 );
+    auto cReal = fillDenseVector<ValueType>( DIMx * DIMy, 0 );
+    auto cImag = fillDenseVector<ValueType>( DIMx * DIMy, 0 );
+    auto mag   = fillDenseVector<ValueType>( DIMx * DIMy, 0 );
+    auto help  = fillDenseVector<ValueType>( DIMx * DIMy, 0 );
+    auto help2 = fillDenseVector<ValueType>( DIMx * DIMy, 0 );
 
-    auto aReal = fill<DenseVector<ValueType>>( DIMx * DIMy, -0.8 );
-    auto aImag = fill<DenseVector<ValueType>>( DIMx * DIMy, 0.156 );
+    auto aReal = fillDenseVector<ValueType>( DIMx * DIMy, -0.8 );
+    auto aImag = fillDenseVector<ValueType>( DIMx * DIMy, 0.156 );
 
     auto yreal = linearDenseVector<ValueType>( DIMy, 0, 1 );
     auto xreal = linearDenseVector<ValueType>( DIMx, 0, 1 );
 
-    auto eye1 = fill<DenseVector<ValueType>>( DIMx, 1.0 );
-    auto eye2 = fill<DenseVector<ValueType>>( DIMy, 1.0 );
+    auto eye1 = fillDenseVector<ValueType>( DIMx, 1.0 );
+    auto eye2 = fillDenseVector<ValueType>( DIMy, 1.0 );
 
     ValueType w = 0.5 * DIMx;
     ValueType h = 0.5 * DIMy;

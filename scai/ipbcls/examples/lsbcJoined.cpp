@@ -93,7 +93,7 @@ int main( int argc, const char* argv[] )
 
     auto colDist = L.getColDistributionPtr();
 
-    auto Zero = fill<DenseVector<ValueType>>( colDist, 0 );
+    auto Zero = fillDenseVector<ValueType>( colDist, 0 );
 
     MatrixWithT<ValueType> Lopt( L, L );
     MatrixWithT<ValueType> Dopt( D );

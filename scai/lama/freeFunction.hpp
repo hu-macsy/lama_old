@@ -276,9 +276,11 @@ ObjectType read( const std::string& fileName,
  *
  *  This template function can be considered as a syntactical help for code abbreviation.
  *  Please keep in mind the function requires the result type as template argument.
+ *
+ *  Note: DEPRECATED function, please use fillSparseVector or fillDenseVector
  */
 template<typename ObjectType>
-ObjectType fill( const IndexType n, typename ObjectType::ObjectValueType value, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+ObjectType fillDEP( const IndexType n, typename ObjectType::ObjectValueType value, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
 {
     ObjectType obj( ctx );
     obj.setSameValue( n, value );
@@ -304,7 +306,7 @@ ObjectType fill( const IndexType n, typename ObjectType::ObjectValueType value, 
  *  Please keep in mind the function requires the result type as template argument.
  */
 template<typename ObjectType>
-ObjectType fill( const dmemo::DistributionPtr dist, typename ObjectType::ObjectValueType value, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+ObjectType fillDEP( const dmemo::DistributionPtr dist, typename ObjectType::ObjectValueType value, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
 {
     ObjectType obj( ctx );
     obj.setSameValue( dist, value );

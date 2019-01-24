@@ -79,7 +79,7 @@ int main( int, char** )
     b.setRawData( numRows, rawB );
 
     auto b1 = eval<DenseVector<ValueType>>( transpose( m ) * b );
-    auto x0 = fill<DenseVector<ValueType>>( numColumns, 0 );
+    auto x0 = fillDenseVector<ValueType>( numColumns, 0 );
 
     DenseVector<ValueType> bestX;
 

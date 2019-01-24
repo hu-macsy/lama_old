@@ -106,8 +106,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( solveWithoutInitialization, ValueType, scai_numer
     const ValueType solutionInitValue = 1.0;
     auto colDist = coefficients.getColDistributionPtr();
 
-    auto solution      = fill<DenseVector<ValueType>>( colDist, solutionInitValue );
-    auto exactSolution = fill<DenseVector<ValueType>>( colDist, solutionInitValue + 1 );
+    auto solution      = fillDenseVector<ValueType>( colDist, solutionInitValue );
+    auto exactSolution = fillDenseVector<ValueType>( colDist, solutionInitValue + 1 );
     auto rhs           = eval<DenseVector<ValueType>>( coefficients * exactSolution );
 
     // Test for all registered solvers ( with this value type )

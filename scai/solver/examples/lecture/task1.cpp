@@ -77,13 +77,13 @@ int main( int, char*[] )
     vAssembly.push( 0, Tleft );
     vAssembly.push( size - 1, Tright );
 
-    auto rhs = fill<DenseVector<ValueType>>( size , 0 );
+    auto rhs = fillDenseVector<ValueType>( size , 0 );
     rhs.fillFromAssembly( vAssembly );
 
     std::cout << "Vector rhs = " << rhs << std::endl;
     rhs.writeToFile( "rhs.txt" );
 
-    auto solution = fill<DenseVector<ValueType>>( size, 0 );
+    auto solution = fillDenseVector<ValueType>( size, 0 );
 
     auto logger = std::make_shared<CommonLogger>( "<CG>: ", LogLevel::solverInformation, LoggerWriteBehaviour::toConsoleOnly );
     // Create a CG solver

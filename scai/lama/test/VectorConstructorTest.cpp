@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SizeValueConstructorTest, VectorType, VectorTypes
 
     IndexType n = 4;
 
-    auto v = fill<VectorType>( n, 1 );
+    auto v = fillDEP<VectorType>( n, 1 );
 
     BOOST_CHECK_EQUAL( n, v.size() );
     BOOST_CHECK( v.getDistribution().isReplicated() );
@@ -94,12 +94,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SVConstructorTest, VectorType, VectorTypes )
     {
         dmemo::DistributionPtr dist = dists[i];
 
-        auto v1 = fill<VectorType>( dist , 3 );
+        auto v1 = fillDEP<VectorType>( dist , 3 );
         auto v2 = eval<VectorType>( 2 * v1 );
 
         BOOST_CHECK_EQUAL( v2.getDistribution(), v1.getDistribution() );
 
-        auto result = fill<VectorType>( dist , 6 );
+        auto result = fillDEP<VectorType>( dist , 6 );
 
         // prove same distribution, same values of v2 and v3
 
@@ -119,14 +119,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SVSVConstructorTest, VectorType, VectorTypes )
     {
         dmemo::DistributionPtr dist = dists[i];
 
-        auto in1 = fill<VectorType>( dist , 3 );
-        auto in2 = fill<VectorType>( dist , 2 );
+        auto in1 = fillDEP<VectorType>( dist , 3 );
+        auto in2 = fillDEP<VectorType>( dist , 2 );
 
         auto out1 = eval<VectorType>( - ( 3 * in1 + ( -in2 ) * 6 ) );
 
         BOOST_CHECK_EQUAL( out1.getDistribution(), in1.getDistribution() );
 
-        auto result1 = fill<VectorType>( dist , 3 );
+        auto result1 = fillDEP<VectorType>( dist , 3 );
 
         // prove same distribution, same values of v2 and v3
 
@@ -146,8 +146,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SVVConstructorTest, VectorType, VectorTypes )
     {
         dmemo::DistributionPtr dist = dists[i];
 
-        auto in1 = fill<VectorType>( dist , 3 );
-        auto in2 = fill<VectorType>( dist , 2 );
+        auto in1 = fillDEP<VectorType>( dist , 3 );
+        auto in2 = fillDEP<VectorType>( dist , 2 );
 
         auto out1 = eval<VectorType>( in1 * in2 ); 
         auto out2 = eval<VectorType>( 3 * in1 * in2 ); 
@@ -169,15 +169,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SVVConstructorTest, VectorType, VectorTypes )
         BOOST_CHECK_EQUAL( out8.getDistribution(), in1.getDistribution() );
         BOOST_CHECK_EQUAL( out9.getDistribution(), in1.getDistribution() );
 
-        auto result1 = fill<VectorType>( dist , 6 );
-        auto result2 = fill<VectorType>( dist , 18 );
-        auto result3 = fill<VectorType>( dist , 18 );
-        auto result4 = fill<VectorType>( dist , 18 );
-        auto result5 = fill<VectorType>( dist , 2 );
-        auto result6 = fill<VectorType>( dist , 2 );
-        auto result7 = fill<VectorType>( dist , 6 );
-        auto result8 = fill<VectorType>( dist , 4 );
-        auto result9 = fill<VectorType>( dist , -12 );
+        auto result1 = fillDEP<VectorType>( dist , 6 );
+        auto result2 = fillDEP<VectorType>( dist , 18 );
+        auto result3 = fillDEP<VectorType>( dist , 18 );
+        auto result4 = fillDEP<VectorType>( dist , 18 );
+        auto result5 = fillDEP<VectorType>( dist , 2 );
+        auto result6 = fillDEP<VectorType>( dist , 2 );
+        auto result7 = fillDEP<VectorType>( dist , 6 );
+        auto result8 = fillDEP<VectorType>( dist , 4 );
+        auto result9 = fillDEP<VectorType>( dist , -12 );
 
         // prove same distribution, same values of v2 and v3
 
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SV_S_ConstructorTest, VectorType, VectorTypes )
     {
         dmemo::DistributionPtr dist = dists[i];
 
-        auto in = fill<VectorType>( dist , 4 );
+        auto in = fillDEP<VectorType>( dist , 4 );
 
         auto out1 = eval<VectorType>( in + 2 );
         auto out2 = eval<VectorType>( in - 2 );
@@ -229,15 +229,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SV_S_ConstructorTest, VectorType, VectorTypes )
         BOOST_CHECK_EQUAL( out8.getDistribution(), in.getDistribution() );
         BOOST_CHECK_EQUAL( out9.getDistribution(), in.getDistribution() );
 
-        auto result1 = fill<VectorType>( dist , 6 );
-        auto result2 = fill<VectorType>( dist , 2 );
-        auto result3 = fill<VectorType>( dist , 6 );
-        auto result4 = fill<VectorType>( dist , -2 );
-        auto result5 = fill<VectorType>( dist , 11 );
-        auto result6 = fill<VectorType>( dist , 5 );
-        auto result7 = fill<VectorType>( dist , -5 );
-        auto result8 = fill<VectorType>( dist , 1 );
-        auto result9 = fill<VectorType>( dist , 41 );
+        auto result1 = fillDEP<VectorType>( dist , 6 );
+        auto result2 = fillDEP<VectorType>( dist , 2 );
+        auto result3 = fillDEP<VectorType>( dist , 6 );
+        auto result4 = fillDEP<VectorType>( dist , -2 );
+        auto result5 = fillDEP<VectorType>( dist , 11 );
+        auto result6 = fillDEP<VectorType>( dist , 5 );
+        auto result7 = fillDEP<VectorType>( dist , -5 );
+        auto result8 = fillDEP<VectorType>( dist , 1 );
+        auto result9 = fillDEP<VectorType>( dist , 41 );
 
         BOOST_CHECK_EQUAL( result1.maxDiffNorm( out1 ),  0 );
         BOOST_CHECK_EQUAL( result2.maxDiffNorm( out2 ),  0 );
@@ -263,7 +263,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SMV_ConstructorTest, VectorType, VectorTypes )
     {
         dmemo::DistributionPtr dist = dists[i];
 
-        auto in = fill<VectorType>( dist , 4 );
+        auto in = fillDEP<VectorType>( dist , 4 );
 
         auto m = identity<CSRSparseMatrix<ValueType>>( dist );
         m *= 3;
@@ -284,12 +284,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SMV_ConstructorTest, VectorType, VectorTypes )
         BOOST_CHECK_EQUAL( out5.getDistribution(), *dist );
         BOOST_CHECK_EQUAL( out6.getDistribution(), *dist );
 
-        auto result1 = fill<VectorType>( dist , 12 );
-        auto result2 = fill<VectorType>( dist , 24 );
-        auto result3 = fill<VectorType>( dist , 24 );
-        auto result4 = fill<VectorType>( dist , 24 );
-        auto result5 = fill<VectorType>( dist , -12 );
-        auto result6 = fill<VectorType>( dist , -36 );
+        auto result1 = fillDEP<VectorType>( dist , 12 );
+        auto result2 = fillDEP<VectorType>( dist , 24 );
+        auto result3 = fillDEP<VectorType>( dist , 24 );
+        auto result4 = fillDEP<VectorType>( dist , 24 );
+        auto result5 = fillDEP<VectorType>( dist , -12 );
+        auto result6 = fillDEP<VectorType>( dist , -36 );
 
         BOOST_CHECK_EQUAL( result1.maxDiffNorm( out1 ),  0 );
         BOOST_CHECK_EQUAL( result2.maxDiffNorm( out2 ),  0 );
@@ -312,7 +312,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SMV_Transpose_ConstructorTest, VectorType, Vector
     {
         dmemo::DistributionPtr dist = dists[i];
 
-        auto in = fill<VectorType>( dist , 4 );
+        auto in = fillDEP<VectorType>( dist , 4 );
 
         auto m = identity<CSRSparseMatrix<ValueType>>( dist );
         m *= 3;
@@ -333,12 +333,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SMV_Transpose_ConstructorTest, VectorType, Vector
         BOOST_CHECK_EQUAL( out5.getDistribution(), *dist );
         BOOST_CHECK_EQUAL( out6.getDistribution(), *dist );
 
-        auto result1 = fill<VectorType>( dist , 12 );
-        auto result2 = fill<VectorType>( dist , 24 );
-        auto result3 = fill<VectorType>( dist , 24 );
-        auto result4 = fill<VectorType>( dist , 24 );
-        auto result5 = fill<VectorType>( dist , -12 );
-        auto result6 = fill<VectorType>( dist , -36 );
+        auto result1 = fillDEP<VectorType>( dist , 12 );
+        auto result2 = fillDEP<VectorType>( dist , 24 );
+        auto result3 = fillDEP<VectorType>( dist , 24 );
+        auto result4 = fillDEP<VectorType>( dist , 24 );
+        auto result5 = fillDEP<VectorType>( dist , -12 );
+        auto result6 = fillDEP<VectorType>( dist , -36 );
 
         BOOST_CHECK_EQUAL( result1.maxDiffNorm( out1 ),  0 );
         BOOST_CHECK_EQUAL( result2.maxDiffNorm( out2 ),  0 );
@@ -361,8 +361,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SMV_SV_ConstructorTest, VectorType, VectorTypes )
     {
         dmemo::DistributionPtr dist = dists[i];
 
-        auto in1 = fill<VectorType>( dist , 4 );
-        auto in2 = fill<VectorType>( dist , 2 );
+        auto in1 = fillDEP<VectorType>( dist , 4 );
+        auto in2 = fillDEP<VectorType>( dist , 2 );
 
         auto m = identity<CSRSparseMatrix<ValueType>>( dist );
         m *= 3;
@@ -383,12 +383,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SMV_SV_ConstructorTest, VectorType, VectorTypes )
         BOOST_CHECK_EQUAL( out5.getDistribution(), *dist );
         BOOST_CHECK_EQUAL( out6.getDistribution(), *dist );
 
-        auto result1 = fill<VectorType>( dist , 14 );
-        auto result2 = fill<VectorType>( dist , -10 );
-        auto result3 = fill<VectorType>( dist , -14 );
-        auto result4 = fill<VectorType>( dist , 28 );
-        auto result5 = fill<VectorType>( dist , 48 );
-        auto result6 = fill<VectorType>( dist , 8 );
+        auto result1 = fillDEP<VectorType>( dist , 14 );
+        auto result2 = fillDEP<VectorType>( dist , -10 );
+        auto result3 = fillDEP<VectorType>( dist , -14 );
+        auto result4 = fillDEP<VectorType>( dist , 28 );
+        auto result5 = fillDEP<VectorType>( dist , 48 );
+        auto result6 = fillDEP<VectorType>( dist , 8 );
 
         BOOST_CHECK_EQUAL( result1.maxDiffNorm( out1 ),  0 );
         BOOST_CHECK_EQUAL( result2.maxDiffNorm( out2 ),  0 );
@@ -411,8 +411,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SMTV_SV_ConstructorTest, VectorType, VectorTypes 
     {
         dmemo::DistributionPtr dist = dists[i];
 
-        auto in1 = fill<VectorType>( dist , 4 );
-        auto in2 = fill<VectorType>( dist , 2 );
+        auto in1 = fillDEP<VectorType>( dist , 4 );
+        auto in2 = fillDEP<VectorType>( dist , 2 );
 
         auto m = identity<CSRSparseMatrix<ValueType>>( dist );
         m *= 3;
@@ -433,12 +433,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SMTV_SV_ConstructorTest, VectorType, VectorTypes 
         BOOST_CHECK_EQUAL( out5.getDistribution(), *dist );
         BOOST_CHECK_EQUAL( out6.getDistribution(), *dist );
 
-        auto result1 = fill<VectorType>( dist , 14 );
-        auto result2 = fill<VectorType>( dist , -10 );
-        auto result3 = fill<VectorType>( dist , -14 );
-        auto result4 = fill<VectorType>( dist , 28 );
-        auto result5 = fill<VectorType>( dist , 48 );
-        auto result6 = fill<VectorType>( dist , 8 );
+        auto result1 = fillDEP<VectorType>( dist , 14 );
+        auto result2 = fillDEP<VectorType>( dist , -10 );
+        auto result3 = fillDEP<VectorType>( dist , -14 );
+        auto result4 = fillDEP<VectorType>( dist , 28 );
+        auto result5 = fillDEP<VectorType>( dist , 48 );
+        auto result6 = fillDEP<VectorType>( dist , 8 );
 
         BOOST_CHECK_EQUAL( result1.maxDiffNorm( out1 ),  0 );
         BOOST_CHECK_EQUAL( result2.maxDiffNorm( out2 ),  0 );

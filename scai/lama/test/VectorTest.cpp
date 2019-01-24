@@ -398,8 +398,8 @@ BOOST_AUTO_TEST_CASE( BinaryOpTest )
 
     const IndexType N = 3;
 
-    auto v1 = fill<SparseVector<ValueType>>( N, 3 );
-    auto v2 = fill<SparseVector<ValueType>>( N, 5 );
+    auto v1 = fillSparseVector<ValueType>( N, 3 );
+    auto v2 = fillSparseVector<ValueType>( N, 5 );
 
     v1.binaryOp( v1, common::BinaryOp::MULT, v2 );
 
