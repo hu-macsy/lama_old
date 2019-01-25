@@ -561,7 +561,7 @@ ValueType SparseVector<ValueType>::getZero() const
  *  @returns              a new dense vector with the specified size
  *
  *  \code
- *     const auto v = denseVectorFill<double>( n, 10 );
+ *     const auto v = denseVector<double>( n, 10 );
  *  \endcode
  */
 template<typename ValueType>

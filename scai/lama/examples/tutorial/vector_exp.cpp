@@ -49,9 +49,9 @@ int main()
     //
     // Vector expressions
     //
-    auto x = denseVectorFill<ValueType>( N, 1 );
-    auto y = denseVectorFill<ValueType>( N, 2 );
-    auto z = denseVectorFill<ValueType>( N, 3 );
+    auto x = denseVector<ValueType>( N, 1 );
+    auto y = denseVector<ValueType>( N, 2 );
+    auto z = denseVector<ValueType>( N, 3 );
 
     x = 1;
     y = 2;

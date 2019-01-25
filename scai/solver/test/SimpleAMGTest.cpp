@@ -154,8 +154,8 @@ BOOST_AUTO_TEST_CASE ( SolveTest )
         BOOST_CHECK( dynamic_cast<const IterativeSolver<ValueType>*>( &smoother ) );
     }
 
-    auto rhs = denseVectorFill<ValueType>( coefficients.getRowDistributionPtr(), 1 );
-    auto x = denseVectorFill<ValueType>( coefficients.getColDistributionPtr(), 0 );
+    auto rhs = denseVector<ValueType>( coefficients.getRowDistributionPtr(), 1 );
+    auto x = denseVector<ValueType>( coefficients.getColDistributionPtr(), 0 );
 
     simpleAMGSolver.solve( x, rhs );
 

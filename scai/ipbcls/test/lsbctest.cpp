@@ -64,7 +64,7 @@ int main()
 
         std::cout << "Solving problem with dimensions " << m << " x " << n << std::endl;
 
-        auto solution = denseVectorFill( n, ValueType( 0 ) );
+        auto solution = denseVector( n, ValueType( 0 ) );
         ConstrainedLeastSquares<ValueType> solver( problem.A );
         solver.setObjectiveTolerance( objTolerance );
         // solver.setInnerSolverType( InnerSolverType::StandardCG );

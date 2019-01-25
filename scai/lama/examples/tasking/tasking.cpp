@@ -107,7 +107,7 @@ int main( int argc, const char* argv[] )
                        << ", intraProblem = " << *intraProblem << ", interProblem = " << *interProblem << std::endl;
     ValueType sum = 0;
 
-    auto result = denseVectorFill<ValueType>( blockDistribution( 100, intraProblem ), 0 );
+    auto result = denseVector<ValueType>( blockDistribution( 100, intraProblem ), 0 );
 
     // now loop over my assigned problems that is first dimension of distributed grid
 

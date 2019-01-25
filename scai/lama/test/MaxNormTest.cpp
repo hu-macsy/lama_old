@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MaxNormVectorTests, ValueType, scai_numeric_test_
     IndexType n = 4;
     ValueType val = 5.0;
 
-    auto vec = denseVectorFill<ValueType>( n, val );
+    auto vec = denseVector<ValueType>( n, val );
 
     MaxNorm<ValueType> maxnorm;
     ValueType expected = val;

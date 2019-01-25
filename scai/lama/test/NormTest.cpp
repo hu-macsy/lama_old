@@ -86,7 +86,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.NormTest" )
 
 BOOST_AUTO_TEST_CASE( positiveHomogeneityTest )
 {
-    auto x = denseVectorFill<ValueType>( 4, ValueType( 1 ) );
+    auto x = denseVector<ValueType>( 4, ValueType( 1 ) );
 
     ValueType s = 3;
 
@@ -113,8 +113,8 @@ BOOST_AUTO_TEST_CASE( triangleInequalityTest )
     const ValueType valX = 2;    // value of 1st vector x
     const ValueType valY = 2;    // value of 2nd vector y
 
-    auto x = denseVectorFill( N, valX );
-    auto y = denseVectorFill( N, valY );
+    auto x = denseVector( N, valX );
+    auto y = denseVector( N, valY );
     auto z = denseVectorEval( x + y );
 
     Norms<ValueType> allNorms;

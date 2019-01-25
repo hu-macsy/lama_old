@@ -70,7 +70,7 @@ int main ( int argc, char* argv[] )
     std::cout << "Redistributed matrix: " << matrix << std::endl;
 
     // Create solution vector
-    auto solution = denseVectorFill<ValueType>( dist, 1 );
+    auto solution = denseVector<ValueType>( dist, 1 );
     std::cout << "Vector solution : " << solution << std::endl;
 
     // Compute the rhs that fits our solution to be able to calculate the error later
@@ -96,7 +96,7 @@ int main ( int argc, char* argv[] )
     cgSolver.solve ( solution, rhs );
 
     // calculate the error and its L2-Norm
-    auto error = denseVectorFill<ValueType>( dist, 1 );
+    auto error = denseVector<ValueType>( dist, 1 );
     error = error - solution;
     std::cout << "L2-Norm of error is " << l2Norm( error ) << std::endl;
 

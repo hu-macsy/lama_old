@@ -85,14 +85,14 @@ void Julia()
     auto help  = denseVectorZero<ValueType>( DIMx * DIMy );
     auto help2 = denseVectorZero<ValueType>( DIMx * DIMy );
 
-    auto aReal = denseVectorFill<ValueType>( DIMx * DIMy, -0.8 );
-    auto aImag = denseVectorFill<ValueType>( DIMx * DIMy, 0.156 );
+    auto aReal = denseVector<ValueType>( DIMx * DIMy, -0.8 );
+    auto aImag = denseVector<ValueType>( DIMx * DIMy, 0.156 );
 
     auto yreal = denseVectorLinear<ValueType>( DIMy, 0, 1 );
     auto xreal = denseVectorLinear<ValueType>( DIMx, 0, 1 );
 
-    auto eye1 = denseVectorFill( DIMx, ValueType( 1 ) );
-    auto eye2 = denseVectorFill( DIMy, ValueType( 1 ) );
+    auto eye1 = denseVector( DIMx, ValueType( 1 ) );
+    auto eye2 = denseVector( DIMy, ValueType( 1 ) );
 
     ValueType w = 0.5 * DIMx;
     ValueType h = 0.5 * DIMy;

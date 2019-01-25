@@ -277,14 +277,14 @@ void sourceFunction( lama::DenseVector<ValueType>& source, IndexType FC, IndexTy
 
     // this is for tau[i] = pi * FC * ( source[i] - 1.5/FC );
 
-    auto help = lama::denseVectorFill<ValueType>( source.size(), 1.5 / FC );
+    auto help = lama::denseVector<ValueType>( source.size(), 1.5 / FC );
     auto tau  = lama::denseVectorEval( source - help );
 
     tau *= M_PI * FC;
 
     // this is for source[i] = AMP * ( 1.0 - 2.0 * tau[i] * tau[i] * exp( -tau[i] * tau[i] ) );
 
-    auto one = lama::denseVectorFill<ValueType>( source.size(), 1 );
+    auto one = lama::denseVector<ValueType>( source.size(), 1 );
     help = tau * tau;
     tau = -help;
     tau = exp( tau );
@@ -408,17 +408,17 @@ int main( int /*argc*/, char** /*argv[]*/ )
 
     // components of particle velocity
 
-    auto vX = lama::denseVectorFill<ValueType>( dist, 0.0, ctx );
-    auto vY = lama::denseVectorFill<ValueType>( dist, 0.0, ctx );
-    auto vZ = lama::denseVectorFill<ValueType>( dist, 0.0, ctx );
+    auto vX = lama::denseVector<ValueType>( dist, 0.0, ctx );
+    auto vY = lama::denseVector<ValueType>( dist, 0.0, ctx );
+    auto vZ = lama::denseVector<ValueType>( dist, 0.0, ctx );
 
     // pressure
 
-    auto p = lama::denseVectorFill<ValueType>( dist, 0.0, ctx );
+    auto p = lama::denseVector<ValueType>( dist, 0.0, ctx );
 
     // seismogram data: to store at each time step
 
-    auto seismogram = lama::denseVectorFill<ValueType>( config.getNT(), 0.0, host );
+    auto seismogram = lama::denseVector<ValueType>( config.getNT(), 0.0, host );
 
     // TODO: load colormap for snapshots ???
 

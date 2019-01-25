@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( combinedTest, ValueType, scai_numeric_test_types 
     BOOST_CHECK_EQUAL( aTaImplicit.getColDistribution(), aTaExplicit.getColDistribution() );
     BOOST_CHECK_EQUAL( aTaImplicit.getRowDistribution(), aTaExplicit.getRowDistribution() );
 
-    auto x = denseVectorFill<ValueType>( a.getColDistributionPtr(), 0 );
+    auto x = denseVector<ValueType>( a.getColDistributionPtr(), 0 );
     x.fillRandom( 5 );
 
     auto y1 = denseVectorEval( aTaExplicit * x );

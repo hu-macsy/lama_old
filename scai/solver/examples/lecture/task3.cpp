@@ -63,7 +63,7 @@ int main ( int argc, char* argv[] )
 
     IndexType size = matrix.getNumRows ( );
     // Create solution vector
-    auto solution =  denseVectorFill<ValueType>( size, 1 );
+    auto solution =  denseVector<ValueType>( size, 1 );
     std::cout << "Vector solution : " << solution << std::endl;
     // Compute the rhs that fits our solution to be able to calculate the error later
     auto rhs = denseVectorEval( matrix * solution );
@@ -86,7 +86,7 @@ int main ( int argc, char* argv[] )
     cgSolver.solve ( solution, rhs );
 
     // calculate the error and its L2-Norm
-    auto error = denseVectorFill<ValueType>( size, 1 );
+    auto error = denseVector<ValueType>( size, 1 );
     error = error - solution;
     std::cout << "L2-Norm of error is " << l2Norm ( error ) << std::endl;
 

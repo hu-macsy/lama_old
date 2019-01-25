@@ -74,7 +74,7 @@ ConstrainedLeastSquaresProblem<Scalar> generateConstrainedLeastSquaresProblem(sc
 {
     using namespace scai::lama;
 
-    const auto zeroVector = denseVectorFill( cols, Scalar( 0 ) );
+    const auto zeroVector = denseVector( cols, Scalar( 0 ) );
     
     ConstrainedLeastSquaresProblem<Scalar> p;
     
@@ -104,8 +104,8 @@ ConstrainedLeastSquaresProblem<Scalar> generateConstrainedLeastSquaresProblem(sc
     // while mu is the multiplier for the upper bound
 
     Scalar zero = 0;
-    p.lambda = denseVectorFill<Scalar>( cols, 0 );
-    p.mu = denseVectorFill<Scalar>( cols, 0 );
+    p.lambda = denseVector( cols, zero );
+    p.mu = denseVector( cols, zero );
     
     // We build the matrix locally, so we permit ourselves to work with global indices directly
     for (scai::IndexType i = 0; i < cols; ++i)

@@ -387,8 +387,8 @@ BOOST_AUTO_TEST_CASE( binOpDenseTest )
 
         // use copy constructor to build equivalent dense vectors
 
-        auto result1 = denseVectorFill<ValueType>( n, 5 );
-        auto result2 = denseVectorFill<ValueType>( n, 5 );
+        auto result1 = denseVector<ValueType>( n, 5 );
+        auto result2 = denseVector<ValueType>( n, 5 );
 
         SCAI_LOG_DEBUG( logger, "Run test case " << icase << " for binop on sparse vectors" )
 

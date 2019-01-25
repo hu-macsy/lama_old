@@ -1,5 +1,5 @@
 /**
- * @file simple.cpp
+ * @file example.cpp
  *
  * @license
  * Copyright (c) 2009-2018
@@ -22,40 +22,33 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief simple.cpp
+ * @brief Example program used for LAMA module in Users Guide.
  * @author The LAMA development team
- * @date 17.05.2013
+ * @date 17.05.2014
  */
 
 #include <scai/lama.hpp>
-
-#include <scai/lama/DenseVector.hpp>
-
-#include <iostream>
-#include <cstdlib>
+#include <scai/dmemo/BlockDistribution.hpp>
 
 using namespace scai;
 using namespace lama;
 
-/** Take default real type for this example. */
 typedef DefaultReal ValueType;
 
 int main()
 {
-    //
-    // Create a DenseVector of size 8 with value 1.1 in each position
-    //
-    const IndexType size = 8;
+   auto csrMatrix = read<CSRSparseMatrix<ValueType>>( "gr_30_30.mtx" );
 
-    const DenseVector<ValueType> v( size, 1.1 );
-    //
-    // Compute the L1 norm of the vector and print it
-    //
-    auto norm = v.l1Norm();
-    std::cout << "L1 norm of v = " << norm << std::endl;
-    //
-    //  That's it.
-    //
-    std::cout << "!!!! TUTORIAL COMPLETED SUCCESSFULLY !!!!" << std::endl;
-    return EXIT_SUCCESS;
+   SCAI_ASSERT_EQ_ERROR( csrMatrix.getNumRows(), csrMatrix.getNumColumns(), "input matrix not square" )
+
+   const IndexType size = csrMatrix.getNumRows();
+
+   auto dist = dmemo::blockDistribution( size );
+
+   csrMatrix.redistribute( dist, dist );
+
+   auto vector = denseVector<ValueType>( dist, 1 );
+   auto result = denseVectorEval( csrMatrix * vector );
+
+   result.writeToFile( "result.mtx" );
 }

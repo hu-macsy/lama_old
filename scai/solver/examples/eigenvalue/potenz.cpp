@@ -66,7 +66,7 @@ int main( int argc, const char* argv[] )
     std::string filename = argv[1];
 
     auto A = read<CSRSparseMatrix<ValueType>>( filename );
-    auto r = denseVectorFill<ValueType>( A.getRowDistributionPtr(), 1 );
+    auto r = denseVector<ValueType>( A.getRowDistributionPtr(), 1 );
 
     auto y = DenseVector<ValueType>();
 

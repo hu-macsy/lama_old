@@ -1,5 +1,5 @@
 
-IMAGES = matrix_distribution_row matrix_distribution_col
+IMAGES = matrix_distribution_row matrix_distribution_col sparse_vector
 
 IMAGES_SVG = $(IMAGES:=.svg)
 

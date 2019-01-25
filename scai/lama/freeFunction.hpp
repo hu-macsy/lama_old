@@ -277,7 +277,7 @@ ObjectType read( const std::string& fileName,
  *  This template function can be considered as a syntactical help for code abbreviation.
  *  Please keep in mind the function requires the result type as template argument.
  *
- *  Note: DEPRECATED function, please use sparseVectorFill or denseVectorFill
+ *  Note: DEPRECATED function, please use sparseVectorFill or denseVector
  */
 template<typename ObjectType>
 ObjectType fill( const IndexType n, typename ObjectType::ObjectValueType value, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )

@@ -189,7 +189,7 @@ void testIsSatisfied( ResidualCheck checkMode )
     const CSRSparseMatrix<ValueType> coefficients( system.coefficients );
     const DenseVector<ValueType> rhs( system.rhs );
 
-    auto solution = denseVectorFill<ValueType>( n, 0 );
+    auto solution = denseVector<ValueType>( n, 0 );
 
     auto l2Norm = std::make_shared<L2Norm<ValueType>>();
 

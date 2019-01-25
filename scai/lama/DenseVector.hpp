@@ -730,11 +730,11 @@ DenseVector<ValueType> denseVectorLinear(
  *  @returns              a new dense vector with the specified size
  *
  *  \code
- *     const auto v = denseVectorFill<double>( n, 10 );
+ *     const auto v = denseVector<double>( n, 10 );
  *  \endcode
  */
 template<typename ValueType>
-DenseVector<ValueType> denseVectorFill(
+DenseVector<ValueType> denseVector(
     const IndexType n,
     const ValueType value,
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
@@ -745,7 +745,7 @@ DenseVector<ValueType> denseVectorFill(
 }
 
 template<typename ValueType>
-DenseVector<ValueType> denseVectorFill(
+DenseVector<ValueType> denseVector(
     dmemo::DistributionPtr distribution, 
     const ValueType value,
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
@@ -796,7 +796,7 @@ DenseVector<ValueType> denseVectorUndefined(
 }
 
 template<typename ValueType>
-DenseVector<ValueType> denseVectorFill(
+DenseVector<ValueType> denseVector(
     dmemo::DistributionPtr distribution, 
     ValueType ( *fillFunction ) ( IndexType ),
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
@@ -809,7 +809,7 @@ DenseVector<ValueType> denseVectorFill(
 }
 
 template<typename ValueType>
-DenseVector<ValueType> denseVectorFill(
+DenseVector<ValueType> denseVector(
     const IndexType n,
     ValueType ( *fillFunction ) ( IndexType ),
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )

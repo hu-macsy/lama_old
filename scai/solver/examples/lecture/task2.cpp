@@ -65,7 +65,7 @@ int main( int argc, char* argv[] )
     IndexType size = matrix.getNumRows();
     auto rhs = denseVectorLinear<ValueType>( size, 1, 1 );
     std::cout << "Vector rhs : " << rhs << std::endl;
-    auto solution = denseVectorFill<ValueType>( size, 0 );
+    auto solution = denseVector<ValueType>( size, 0 );
 
     auto r = denseVectorEval( rhs - matrix * solution );
     DenseVector<ValueType> d( r );

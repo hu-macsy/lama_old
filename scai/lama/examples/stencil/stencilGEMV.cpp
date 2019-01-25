@@ -102,10 +102,10 @@ void bench( const common::Grid& grid, const common::Stencil<ValueType>& stencil 
 
     std::cout << "csrStencilMatrix " << csrMatrix << std::endl;
 
-    auto x = denseVectorFill<ValueType>( stencilMatrix.getColDistributionPtr(), 1 );
+    auto x = denseVector<ValueType>( stencilMatrix.getColDistributionPtr(), 1 );
 
-    auto y1 = denseVectorFill<ValueType>( stencilMatrix.getRowDistributionPtr(), 0 );
-    auto y2 = denseVectorFill<ValueType>( csrMatrix.getRowDistributionPtr(), 0 );
+    auto y1 = denseVector<ValueType>( stencilMatrix.getRowDistributionPtr(), 0 );
+    auto y2 = denseVector<ValueType>( csrMatrix.getRowDistributionPtr(), 0 );
 
     double timeStencil;
     double timeCSR;

@@ -140,8 +140,8 @@ BOOST_AUTO_TEST_CASE( DefaultCriterionTest )
 
     BOOST_REQUIRE_EQUAL( matrix.getRowDistribution(), matrix.getColDistribution() );
 
-    auto rhs = denseVectorFill<ValueType>( matrix.getColDistributionPtr(), 1, matrix.getContextPtr() );
-    auto solution = denseVectorFill<ValueType>( matrix.getRowDistributionPtr(), 0, matrix.getContextPtr() );
+    auto rhs = denseVector<ValueType>( matrix.getColDistributionPtr(), 1, matrix.getContextPtr() );
+    auto solution = denseVector<ValueType>( matrix.getRowDistributionPtr(), 0, matrix.getContextPtr() );
 
     solution.setContextPtr( matrix.getContextPtr() );
 
@@ -172,7 +172,7 @@ BOOST_AUTO_TEST_CASE( IterationCountStoppingCriterionTest )
 
     const ValueType solutionInitValue = 1.0;
 
-    auto solution      = denseVectorFill( matrix.getColDistributionPtr(), solutionInitValue, matrix.getContextPtr() );
+    auto solution      = denseVector( matrix.getColDistributionPtr(), solutionInitValue, matrix.getContextPtr() );
     auto exactSolution = denseVectorEval( solution + 1 );
     auto rhs           = denseVectorEval( matrix * exactSolution );
 
@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE( ConservativeTest )
 
     ValueType solutionValue = 1;
 
-    auto exactSolution = denseVectorFill<ValueType>( matrix.getColDistributionPtr(), solutionValue, matrix.getContextPtr() );
+    auto exactSolution = denseVector<ValueType>( matrix.getColDistributionPtr(), solutionValue, matrix.getContextPtr() );
     auto solution      = DenseVector<ValueType>( exactSolution );
     auto rhs           = denseVectorEval( matrix * exactSolution );
 
@@ -261,8 +261,8 @@ BOOST_AUTO_TEST_CASE( SolveTest )
     const ValueType solutionInitValue = 1;
 
     auto colDist       = matrix.getColDistributionPtr();
-    auto solution      = denseVectorFill( colDist, solutionInitValue, matrix.getContextPtr() );
-    auto exactSolution = denseVectorFill<ValueType>( colDist, solutionInitValue + 1, matrix.getContextPtr() );
+    auto solution      = denseVector( colDist, solutionInitValue, matrix.getContextPtr() );
+    auto exactSolution = denseVector<ValueType>( colDist, solutionInitValue + 1, matrix.getContextPtr() );
     auto rhs           = denseVectorEval( matrix * exactSolution );
 
     IndexType maxExpectedIterations = 3000;
