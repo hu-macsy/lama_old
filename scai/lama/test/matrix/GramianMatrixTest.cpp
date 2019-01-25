@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_typ
 
             // matrix - matrix mutliplication not well supported for distributed matrices
 
-            auto aTaExplicit = evalDEP<CSRSparseMatrix<ValueType>>( aT * a );
+            auto aTaExplicit = eval<CSRSparseMatrix<ValueType>>( aT * a );
 
             BOOST_CHECK( aTaExplicit.checkSymmetry() );
 
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( combinedTest, ValueType, scai_numeric_test_types 
     CSRSparseMatrix<ValueType> a( CSRStorage<ValueType>( numRows, numCols, ia, ja, values ) );
     CSRSparseMatrix<ValueType> aT;
     aT.assignTranspose( a );
-    auto aTaExplicit = evalDEP<CSRSparseMatrix<ValueType>>( aT * a );
+    auto aTaExplicit = eval<CSRSparseMatrix<ValueType>>( aT * a );
     
     MatrixWithT<ValueType> optA( a );
     GramianMatrix<ValueType> aTaImplicit( optA );

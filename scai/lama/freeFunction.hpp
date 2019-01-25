@@ -56,7 +56,7 @@ namespace lama
  *  Please keep in mind that the function requires the result type as template argument.
  */
 template<typename ObjectType, typename expression>
-ObjectType evalDEP( expression exp, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+ObjectType eval( expression exp, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
 {
     ObjectType obj( ctx );
     obj = exp;
@@ -79,7 +79,7 @@ ObjectType evalDEP( expression exp, hmemo::ContextPtr ctx = hmemo::Context::getC
  *  Please keep in mind the function requires the result type as template argument.
  */
 template<typename ObjectType>
-ObjectType zeroDEP( const IndexType size, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+ObjectType zero( const IndexType size, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
 {
     static_assert(std::is_base_of<_Vector, ObjectType>::value, "zero<ObjectType>( n [,ctx] ): ObjectType is not a vector class");
     ObjectType obj( ctx );
@@ -89,7 +89,7 @@ ObjectType zeroDEP( const IndexType size, hmemo::ContextPtr ctx = hmemo::Context
 }
 
 template<typename ObjectType>
-ObjectType zeroDEP( dmemo::DistributionPtr dist, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+ObjectType zero( dmemo::DistributionPtr dist, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
 {
     // ObjectType must be a vector class
     static_assert(std::is_base_of<_Vector, ObjectType>::value, "zero<ObjectType>( dist [,ctx] ): ObjectType is not a vector class");
@@ -280,7 +280,7 @@ ObjectType read( const std::string& fileName,
  *  Note: DEPRECATED function, please use sparseVectorFill or denseVectorFill
  */
 template<typename ObjectType>
-ObjectType fillDEP( const IndexType n, typename ObjectType::ObjectValueType value, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+ObjectType fill( const IndexType n, typename ObjectType::ObjectValueType value, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
 {
     ObjectType obj( ctx );
     obj.setSameValue( n, value );
@@ -306,7 +306,7 @@ ObjectType fillDEP( const IndexType n, typename ObjectType::ObjectValueType valu
  *  Please keep in mind the function requires the result type as template argument.
  */
 template<typename ObjectType>
-ObjectType fillDEP( const dmemo::DistributionPtr dist, typename ObjectType::ObjectValueType value, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+ObjectType fill( const dmemo::DistributionPtr dist, typename ObjectType::ObjectValueType value, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
 {
     ObjectType obj( ctx );
     obj.setSameValue( dist, value );

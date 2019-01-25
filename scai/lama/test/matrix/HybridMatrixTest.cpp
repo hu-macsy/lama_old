@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
 
             // build: csr1 + csr2, hybrid1 : explcitly, hybrid2 implicitly
 
-            auto hybrid1 = evalDEP<CSRSparseMatrix<ValueType>>( input1 + input2 );
+            auto hybrid1 = eval<CSRSparseMatrix<ValueType>>( input1 + input2 );
             hybrid1.redistribute( rowDist, colDist );
 
             HybridMatrix<ValueType> hybrid2( csr1, csr2 );
