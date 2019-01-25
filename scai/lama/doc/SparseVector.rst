@@ -31,7 +31,7 @@ Like for the dense vectors, the context argument of a vector decides where opera
 is optional, by default the context is the currently actual context (as specified by the environment
 variable ``SCAI_CONTEXT``).
 
-.. figure:: _images/matrix_distribution_row.svg
+.. figure:: _images/sparse_vector.*
     :width: 600px
     :align: center
   
