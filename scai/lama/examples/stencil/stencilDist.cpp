@@ -113,8 +113,8 @@ int main( int argc, const char* argv[] )
 
     // replicated and distributed matrix-vector multiplication
 
-    const auto repY  = eval<DenseVector<ValueType>>( repStencilMatrix * repX );
-    const auto distY = eval<DenseVector<ValueType>>( distStencilMatrix * distX );
+    const auto repY  = denseVectorEval( repStencilMatrix * repX );
+    const auto distY = denseVectorEval( distStencilMatrix * distX );
 
     std::cout << "max diff Y = " << repY.maxDiffNorm( distY ) << std::endl;
 }

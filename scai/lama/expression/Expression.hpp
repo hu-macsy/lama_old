@@ -59,6 +59,7 @@ template<typename T1, typename T2, common::BinaryOp type>
 class Expression
 {
 public:
+
     typedef T1 Arg1Type;
     typedef T2 Arg2Type;
     typedef Expression ExpressionType;
@@ -153,10 +154,10 @@ using Expression_VV = Expression<Vector<ValueType>, Vector<ValueType>, common::B
 template<typename ValueType>
 using Expression_SVV = Expression<intern::Scalar, Expression<Vector<ValueType>, Vector<ValueType>, common::BinaryOp::MULT>, common::BinaryOp::MULT>;
 
-/** Symbolic expression 'Scalar * Vector + Scalar' */
+/** Symbolic expression 'Scalar + Scalar * Vector' */
 
 template<typename ValueType>
-using Expression_SV_S = Expression<Expression_SV<ValueType>, intern::Scalar, common::BinaryOp::ADD>;
+using Expression_S_SV = Expression<intern::Scalar, Expression_SV<ValueType>, common::BinaryOp::ADD>;
 
 /** Symbolic expression 'Scalar * Vector + Scalar * Vector' */
 

@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( IsSatisfiedTest, ValueType, scai_numeric_test_typ
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get8x8SystemA<ValueType>();
     const CSRSparseMatrix<ValueType> coefficients( system.coefficients );
     const DenseVector<ValueType> rhs( system.rhs );
-    auto solution = fillDenseVector<ValueType>( 8, 0 );
+    auto solution = denseVectorFill<ValueType>( 8, 0 );
     Jacobi<ValueType> solver( "StagnationTest solver" );
     NormPtr<ValueType> maxNorm( new MaxNorm<ValueType>() );
     CriterionPtr<ValueType> criterion( new ResidualStagnation<ValueType>( maxNorm, 2, ValueType( 1.1 ) ) );

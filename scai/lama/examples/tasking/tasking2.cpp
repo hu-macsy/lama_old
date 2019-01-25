@@ -125,7 +125,7 @@ int main( int argc, const char* argv[] )
 
         // Note: each problem has a different data set
 
-        auto v = linearDenseVector<double>( distProblem, double(i), double(i) / ( NV1 * NV2 ) );
+        auto v = denseVectorLinear<double>( distProblem, double(i), double(i) / ( NV1 * NV2 ) );
         sum += v.sum();  
     }
  

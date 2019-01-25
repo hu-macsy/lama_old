@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixAddTest, MatrixType, SparseMatrixTypes )
 
     // parallel matrix add on row/col distributed matrix
 
-    auto matrix  = eval<MatrixType>( alpha * matrix1 + beta * matrix2 );
+    auto matrix  = evalDEP<MatrixType>( alpha * matrix1 + beta * matrix2 );
 
     RealType<ValueType> maxDiff = matrix.maxDiffNorm( expMatrix );
     BOOST_CHECK( maxDiff < 0.0001 );

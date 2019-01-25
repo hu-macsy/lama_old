@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fillRepTest, ValueType, scai_numeric_test_types )
     const IndexType N   = 12;
     const ValueType VAL = 2;
    
-    auto denseVector = fillDenseVector<ValueType>( N, VAL );
+    auto denseVector = denseVectorFill<ValueType>( N, VAL );
 
     BOOST_CHECK_EQUAL( N, denseVector.size() );
 
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fillDistTest, ValueType, scai_numeric_test_types 
     const ValueType VAL = 1;
    
     auto dist = dmemo::blockDistribution( N );
-    auto denseVector = fillDenseVector<ValueType>( dist, VAL );
+    auto denseVector = denseVectorFill<ValueType>( dist, VAL );
 
     BOOST_CHECK_EQUAL( N, denseVector.size() );
 
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fillRepFnTest, ValueType, scai_numeric_test_types
 
     auto lambda = []( IndexType i ) { return ValueType( i ); };
 
-    auto denseVector = fillDenseVector<ValueType>( N, lambda );
+    auto denseVector = denseVectorFill<ValueType>( N, lambda );
 
     BOOST_CHECK_EQUAL( N, denseVector.size() );
 
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fillDistFnTest, ValueType, scai_numeric_test_type
     auto lambda = []( IndexType i ) { return ValueType( i ); };
 
     auto dist = dmemo::blockDistribution( N );
-    auto denseVector = fillDenseVector<ValueType>( dist, lambda );
+    auto denseVector = denseVectorFill<ValueType>( dist, lambda );
 
     BOOST_CHECK_EQUAL( N, denseVector.size() );
 
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE( consistencyTest )
 
     // create distributed dense vector
 
-    auto v = fillDenseVector<ValueType>( dist, 1 );
+    auto v = denseVectorFill<ValueType>( dist, 1 );
 
     BOOST_CHECK( v.isConsistent() );
 
@@ -293,7 +293,7 @@ BOOST_AUTO_TEST_CASE( RangeTest )
 
     IndexType n = 16;
 
-    DenseVector<ValueType> repV = linearDenseVector<ValueType>( n, 0, 1, ctx );  // just a sequence: 0, 1, ...
+    DenseVector<ValueType> repV = denseVectorLinear<ValueType>( n, 0, 1, ctx );  // just a sequence: 0, 1, ...
 
     BOOST_CHECK_EQUAL( n, repV.getLocalValues().size() );
 
@@ -314,7 +314,7 @@ BOOST_AUTO_TEST_CASE( RangeTest )
 
         // distV1 = [ 0, ..., n-1] distributed, must be same
 
-        DenseVector<ValueType> distV1 = linearDenseVector<ValueType>( dist, 0, 1, ctx );
+        DenseVector<ValueType> distV1 = denseVectorLinear<ValueType>( dist, 0, 1, ctx );
 
         BOOST_TEST( hostReadAccess( distV1.getLocalValues() ) == hostReadAccess( distV.getLocalValues() ), per_element() );
     }
@@ -338,7 +338,7 @@ BOOST_AUTO_TEST_CASE( ScanTest )
     {
         dmemo::DistributionPtr dist = dists[i];
 
-        DenseVector<ValueType> distV = linearDenseVector<ValueType>( dist, 1, 1, ctx );
+        DenseVector<ValueType> distV = denseVectorLinear<ValueType>( dist, 1, 1, ctx );
 
         try
         {
@@ -449,11 +449,11 @@ BOOST_AUTO_TEST_CASE( matExpConstructorTest )
 
             auto mat = zero<CSRSparseMatrix<DefaultReal>>( rowDist, colDist );
 
-            auto x   = fillDenseVector<ValueType>( colDist, 3 );
+            auto x   = denseVectorFill<ValueType>( colDist, 3 );
 
             SCAI_LOG_INFO( logger, "linear algebra expression: alpha * Matrix * Vector" );
 
-            auto y = eval<DenseVector<ValueType>>( 2 * mat * x );
+            auto y = denseVectorEval( 2 * mat * x );
 
             BOOST_CHECK_EQUAL( y.getDistribution(), *rowDist );
         }
@@ -470,15 +470,19 @@ BOOST_AUTO_TEST_CASE( scalarExpConstructorTest )
 
     dmemo::TestDistributions dists( n );
 
+    const ValueType v1 = 3;
+    const ValueType v2 = 2;
+    const ValueType v3 = v1 + v2;
+
     for ( size_t i = 0; i < dists.size(); ++i )
     {
         dmemo::DistributionPtr dist = dists[i];
 
-        auto x = fillDenseVector<ValueType>( dist, 3 );
+        auto x = denseVectorFill<ValueType>( dist, v1 );
         SCAI_LOG_INFO( logger, "linear algebra expression: alpha + Vector" );
-        auto y = eval<DenseVector<ValueType>>( 2 + x );
-        auto z = eval<DenseVector<ValueType>>( x + 2 );
-        auto r = fillDenseVector<ValueType>( dist, 5 );
+        auto y = denseVectorEval( v2 + x );
+        auto z = denseVectorEval( x + v2 );
+        auto r = denseVectorFill<ValueType>( dist, v3 );
 
         // prove same distribution, same values of r and y/z
 
@@ -500,8 +504,8 @@ BOOST_AUTO_TEST_CASE( swapTest )
     auto dist1 = std::make_shared<dmemo::BlockDistribution>( n, comm );
     auto dist2 = std::make_shared<dmemo::CyclicDistribution>( n, 1, comm );
 
-    auto x1 = fillDenseVector<ValueType>( dist1, 1 );
-    auto x2 = fillDenseVector<ValueType>( dist2, 2 );
+    auto x1 = denseVectorFill<ValueType>( dist1, 1 );
+    auto x2 = denseVectorFill<ValueType>( dist2, 2 );
 
     x1.swap( x2 );
 
@@ -556,7 +560,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_numeric_tes
     x.setRandom( A.getColDistributionPtr(), 1 );
     y.setRandom( A.getRowDistributionPtr(), 1 );
 
-    auto res = eval<DenseVector<ValueType>>( 2 * A * x - y );
+    auto res = denseVectorEval( 2 * A * x - y );
 
     // Now we do the same with all other matrices and all kind of distributions
 
@@ -586,7 +590,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_numeric_tes
 
                 SCAI_LOG_DEBUG( logger, "matrixTimesVector with this matrix: " << A1 )
 
-                auto res1 = eval<DenseVector<ValueType>>( 2 * A1 * x1 - y1 );
+                auto res1 = denseVectorEval( 2 * A1 * x1 - y1 );
 
                 // redistribute res1 with same dist as res for comparison
 
@@ -631,7 +635,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
     x.setRandom( A.getRowDistributionPtr(), bound );
     y.setRandom( A.getColDistributionPtr(), bound );
 
-    auto res = eval<DenseVector<ValueType>>( transpose( A ) * 2 * x - y );
+    auto res = denseVectorEval( transpose( A ) * 2 * x - y );
 
     // Now we do the same with all distributed matrices/vectors and all kind of distributions
 
@@ -673,7 +677,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
 
                 SCAI_LOG_INFO( logger, "vectorTimesMatrix[" << i << "," << j << "," << k << "] with this matrix: " << A1 << ", y1 = " << y1 )
 
-                auto res1 =  eval<DenseVector<ValueType>>( 2 * transpose( A1 ) * x1 - y1 );
+                auto res1 =  denseVectorEval( 2 * transpose( A1 ) * x1 - y1 );
 
                 SCAI_LOG_INFO( logger, "res1 = 2 * transpose( A1 ) * x1 - y1: " << res1 )
 
@@ -716,8 +720,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( VectorMatrixMultTransposeTest, ValueType, scai_nu
     DenseMatrix<ValueType> At;
     At.assignTranspose( A );   // builds explicitly transposed matrix
 
-    auto res1 = eval<DenseVector<ValueType>>( 2 * transpose( A ) * x - y );
-    auto res2 = eval<DenseVector<ValueType>>( 2 * At * x - y );
+    auto res1 = denseVectorEval( 2 * transpose( A ) * x - y );
+    auto res2 = denseVectorEval( 2 * At * x - y );
 
     const HArray<ValueType>& v1 = res1.getLocalValues();
     const HArray<ValueType>& v2 = res2.getLocalValues();
@@ -750,7 +754,7 @@ BOOST_AUTO_TEST_CASE ( VectorPlusScalarExpressionTest )
     DenseVector<ValueType> res1;
     res1 = alpha * x + beta;
     // test constructor with expression
-    auto res2 = eval<DenseVector<ValueType>>( alpha * x + beta );
+    auto res2 = denseVectorEval( alpha * x + beta );
     // test alias
     x = alpha * x + beta;
 
@@ -963,7 +967,7 @@ BOOST_AUTO_TEST_CASE( scatterTest )
             source.redistribute( indexDist );
             index.redistribute( indexDist );
 
-            auto target = fillDenseVector<ValueType>( targetDist, 0 );
+            auto target = denseVectorFill<ValueType>( targetDist, 0 );
 
             if ( targetDist->isReplicated() != indexDist->isReplicated() )
             {
@@ -1030,7 +1034,7 @@ BOOST_AUTO_TEST_CASE( scatterByPlanTest )
             source.redistribute( indexDist );
             index.redistribute( indexDist );
 
-            auto target = fillDenseVector<ValueType>( targetDist, 0 );
+            auto target = denseVectorFill<ValueType>( targetDist, 0 );
 
             auto plan = target.globalAddressingPlan( index, unique );
             target.scatterByPlan( plan, source, common::BinaryOp::ADD );

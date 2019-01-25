@@ -78,17 +78,17 @@ IndexType iter = 0;               // global iteration count
 
 const ValueType ZERO = 0;               // typed 0, used to fill vectors
 
-auto x = fillDenseVector( nBodies, ZERO );
-auto y = fillDenseVector( nBodies, ZERO );
+auto x = denseVectorFill( nBodies, ZERO );
+auto y = denseVectorFill( nBodies, ZERO );
 
-auto vx = fillDenseVector( nBodies, ZERO );
-auto vy = fillDenseVector( nBodies, ZERO );
+auto vx = denseVectorFill( nBodies, ZERO );
+auto vy = denseVectorFill( nBodies, ZERO );
 
-auto fx = fillDenseVector( nBodies, ZERO );
-auto fy = fillDenseVector( nBodies, ZERO );
+auto fx = denseVectorFill( nBodies, ZERO );
+auto fy = denseVectorFill( nBodies, ZERO );
 
-auto mass        = fillDenseVector( nBodies, ZERO );
-auto inversemass = fillDenseVector( nBodies, ZERO );
+auto mass        = denseVectorFill( nBodies, ZERO );
+auto inversemass = denseVectorFill( nBodies, ZERO );
 
 void randomBodies( )
 {

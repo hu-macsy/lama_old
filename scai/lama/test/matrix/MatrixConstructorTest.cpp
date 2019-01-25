@@ -484,7 +484,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeConstructorTest, MatrixType, MatrixTypes
 
             SCAI_LOG_DEBUG( logger, "transposeConstructorTest " << irow << " x " << icol << " with matrix1 = " << matrix1 )
 
-            auto matrix2 = eval<MatrixType>( transpose( matrix1 ) );
+            auto matrix2 = evalDEP<MatrixType>( transpose( matrix1 ) );
 
             const StorageType& localStorage1 = matrix1.getLocalStorage();
             const StorageType& localStorage2 = matrix2.getLocalStorage();
@@ -591,8 +591,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expConstructorTest, MatrixType, MatrixTypes )
 
         ValueType mult = 2;
 
-        auto matrix2 = eval<MatrixType>( mult * matrix1 );
-        auto matrix3 = eval<MatrixType>( matrix2 - matrix1 );
+        auto matrix2 = evalDEP<MatrixType>( mult * matrix1 );
+        auto matrix3 = evalDEP<MatrixType>( matrix2 - matrix1 );
 
         // Note: matrix3 = 2 * matrix1 - matrix1 = matrix1, so matrix1 and matrix3 must be equal
 
@@ -647,7 +647,7 @@ BOOST_AUTO_TEST_CASE( ExpMMConstructorTest )
 
         SCAI_LOG_INFO( logger, "build new matrix from " << matrix1 << " * " << unity )
 
-        auto matrix2 = eval<MatrixType>( matrix1 * unity );
+        auto matrix2 = evalDEP<MatrixType>( matrix1 * unity );
 
         const StorageType& localStorage1 = matrix1.getLocalStorage();
         const StorageType& localStorage2 = matrix2.getLocalStorage();

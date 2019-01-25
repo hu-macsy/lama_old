@@ -287,7 +287,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_numeric_test_types )
 
     MatrixCreator::fillRandom( input, 0.5f );
 
-    auto scaleY = linearDenseVector<ValueType>( M, 1, 1 );
+    auto scaleY = denseVectorLinear<ValueType>( M, 1, 1 );
 
     CSRSparseMatrix<ValueType> output( input );
     output.scaleRows( scaleY );
@@ -352,7 +352,7 @@ BOOST_AUTO_TEST_CASE( scaleColumnsTest )
 
     MatrixCreator::fillRandom( input, 0.5f );
 
-    auto scaleY = linearDenseVector<ValueType>( N, 1, 1 );
+    auto scaleY = denseVectorLinear<ValueType>( N, 1, 1 );
 
     CSRSparseMatrix<ValueType> output( input );
     output.scaleColumns( scaleY );

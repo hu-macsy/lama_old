@@ -212,7 +212,7 @@ int main( int argc, const char* argv[] )
         return 1;
     }
 
-    auto residual = eval<DenseVector<ValueType>>( A * x - b );
+    auto residual = denseVectorEval( A * x - b );
 
     std::cout << "res norm = " << residual.l2Norm() << std::endl;
 

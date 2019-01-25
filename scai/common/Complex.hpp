@@ -343,6 +343,7 @@ template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT Complex
 {
 public:
+
     CUDA_CALLABLE_MEMBER
     explicit Complex();
 

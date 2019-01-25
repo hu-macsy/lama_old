@@ -294,7 +294,7 @@ int main( int argc, const char* argv[] )
             {
                 // build default rhs as rhs = A * x with x = 1
 
-                auto x = fillDenseVector<ValueType>( inMatrix.getColDistributionPtr(), ValueType( 1 ) );
+                auto x = denseVectorFill<ValueType>( inMatrix.getColDistributionPtr(), ValueType( 1 ) );
 
                 rhs = inMatrix * x;
 

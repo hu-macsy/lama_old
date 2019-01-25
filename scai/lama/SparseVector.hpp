@@ -561,29 +561,25 @@ ValueType SparseVector<ValueType>::getZero() const
  *  @returns              a new dense vector with the specified size
  *
  *  \code
- *     const auto v = fillDenseVector<double>( n, 10 );
+ *     const auto v = denseVectorFill<double>( n, 10 );
  *  \endcode
  */
 template<typename ValueType>
-SparseVector<ValueType> fillSparseVector(
+SparseVector<ValueType> sparseVector(
     const IndexType n,
-    ValueType value,
+    ValueType zero = 0, 
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
 {
-    SparseVector<ValueType> result( ctx );
-    result.setSameValue( n, value );
-    return result;
+    return SparseVector<ValueType>( n, zero, ctx );
 }
 
 template<typename ValueType>
-SparseVector<ValueType> fillSparseVector(
+SparseVector<ValueType> sparseVector(
     dmemo::DistributionPtr distribution,
-    ValueType value,
+    ValueType zero = 0,
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
 {
-    SparseVector<ValueType> result( ctx );
-    result.setSameValue( distribution, value );
-    return result;
+    return SparseVector<ValueType>( distribution, zero, ctx );
 }
 
 } /* end namespace lama */

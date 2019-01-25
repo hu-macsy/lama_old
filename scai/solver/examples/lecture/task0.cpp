@@ -60,10 +60,10 @@ int main ( int argc, char* argv[] )
 
     IndexType size = matrix.getNumRows ( );
     // Create solution vector
-    auto solution = fillDenseVector<ValueType>( size, 1 );
+    auto solution = denseVectorFill<ValueType>( size, 1 );
     std::cout << "Vector solution : " << solution << std::endl;
     // Compute the rhs that fits our solution to be able to calculate the error later
-    auto rhs = eval<DenseVector<ValueType>>( matrix * solution );
+    auto rhs = denseVectorEval( matrix * solution );
     std::cout << "Vector rhs : " << rhs << std::endl;
     // Forget the solution, i.e. reset solution to zero so that there is something to solve
     solution = ValueType( 0 );
@@ -82,7 +82,7 @@ int main ( int argc, char* argv[] )
     cgSolver.solve ( solution, rhs );
 
     // calculate the error and its L2-Norm
-    auto error = fillDenseVector<ValueType>( size, 1 );
+    auto error = denseVectorFill<ValueType>( size, 1 );
     error = error - solution;
     std::cout << "L2-Norm of error is " << l2Norm ( error ) << std::endl;
 

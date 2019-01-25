@@ -297,7 +297,7 @@ public:
 
     /** this = alpha * x + beta */
 
-    Vector<ValueType>& operator=( const Expression_SV_S<ValueType>& );
+    Vector<ValueType>& operator=( const Expression_S_SV<ValueType>& );
 
     /** this = x * y */
 

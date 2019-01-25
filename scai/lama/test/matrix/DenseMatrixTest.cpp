@@ -198,7 +198,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, scai_numeric_test_types )
 
     auto e1 = identity<DenseMatrix<ValueType>>( n );
     
-    auto e2 = eval<DenseMatrix<ValueType>>( matrix * invMatrix );
+    auto e2 = evalDEP<DenseMatrix<ValueType>>( matrix * invMatrix );
 
     BOOST_CHECK( e1.maxDiffNorm( e2 ) < 1e-3 );
 }

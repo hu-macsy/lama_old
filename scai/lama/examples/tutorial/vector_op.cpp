@@ -47,8 +47,8 @@ void methods2()
 
     const IndexType n = 10;
 
-    auto x = fillDenseVector<ValueType>( n, 1, ctx );
-    auto y = fillDenseVector<ValueType>( n, 2, ctx );
+    auto x = denseVectorFill<ValueType>( n, 1, ctx );
+    auto y = denseVectorFill<ValueType>( n, 2, ctx );
 
     x[0] = 0.5;
     y[1] = x[0] * 1.0 - 0.5 * y[0];
@@ -112,8 +112,8 @@ int main()
 {
     IndexType n = 10;
 
-    auto xD = fillDenseVector<ValueType>( n, 1 );
-    auto xS = fillSparseVector<ValueType>( n, 1 );
+    auto xD = denseVectorFill<ValueType>( n, 1 );
+    auto xS = sparseVector<ValueType>( n, 1 );
 
     std::cout << "DenseVector = " << xS << std::endl;
 

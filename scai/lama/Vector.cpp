@@ -132,12 +132,12 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SV_SV<ValueTyp
 }
 
 template<typename ValueType>
-Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SV_S<ValueType>& expression )
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression_S_SV<ValueType>& expression )
 {
-    const Expression_SV<ValueType>& exp = expression.getArg1();
+    const Expression_SV<ValueType>& exp = expression.getArg2();
     const intern::Scalar& alpha = exp.getArg1();
     const Vector<ValueType>& x = exp.getArg2();
-    const intern::Scalar& beta = expression.getArg2();
+    const intern::Scalar& beta = expression.getArg1();
 
     vectorPlusScalar( alpha.getValue<ValueType>(), x, beta.getValue<ValueType>() );
 

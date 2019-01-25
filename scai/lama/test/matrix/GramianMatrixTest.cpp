@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_typ
 
             // matrix - matrix mutliplication not well supported for distributed matrices
 
-            auto aTaExplicit = eval<CSRSparseMatrix<ValueType>>( aT * a );
+            auto aTaExplicit = evalDEP<CSRSparseMatrix<ValueType>>( aT * a );
 
             BOOST_CHECK( aTaExplicit.checkSymmetry() );
 
@@ -103,11 +103,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_typ
             BOOST_CHECK_EQUAL( aTaImplicit.getColDistribution(), aTaExplicit.getColDistribution() );
             BOOST_CHECK_EQUAL( aTaImplicit.getRowDistribution(), aTaExplicit.getRowDistribution() );
 
+            auto x = denseVectorLinear<ValueType>( a.getColDistributionPtr(), 1.0, 0.00001 );
 
-            auto x = linearDenseVector<ValueType>( a.getColDistributionPtr(), 1.0, 0.00001 );
-
-            auto y1 = eval<DenseVector<ValueType>>( aTaExplicit * x );
-            auto y2 = eval<DenseVector<ValueType>>( aTaImplicit * x );
+            auto y1 = denseVectorEval( aTaExplicit * x );
+            auto y2 = denseVectorEval( aTaImplicit * x );
 
             RealType<ValueType> eps = 0.0001;
 
@@ -137,7 +136,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( combinedTest, ValueType, scai_numeric_test_types 
     CSRSparseMatrix<ValueType> a( CSRStorage<ValueType>( numRows, numCols, ia, ja, values ) );
     CSRSparseMatrix<ValueType> aT;
     aT.assignTranspose( a );
-    auto aTaExplicit = eval<CSRSparseMatrix<ValueType>>( aT * a );
+    auto aTaExplicit = evalDEP<CSRSparseMatrix<ValueType>>( aT * a );
     
     MatrixWithT<ValueType> optA( a );
     GramianMatrix<ValueType> aTaImplicit( optA );
@@ -145,11 +144,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( combinedTest, ValueType, scai_numeric_test_types 
     BOOST_CHECK_EQUAL( aTaImplicit.getColDistribution(), aTaExplicit.getColDistribution() );
     BOOST_CHECK_EQUAL( aTaImplicit.getRowDistribution(), aTaExplicit.getRowDistribution() );
 
-    auto x = fillDenseVector<ValueType>( a.getColDistributionPtr(), 0 );
+    auto x = denseVectorFill<ValueType>( a.getColDistributionPtr(), 0 );
     x.fillRandom( 5 );
 
-    auto y1 = eval<DenseVector<ValueType>>( aTaExplicit * x );
-    auto y2 = eval<DenseVector<ValueType>>( aTaImplicit * x );
+    auto y1 = denseVectorEval( aTaExplicit * x );
+    auto y2 = denseVectorEval( aTaImplicit * x );
 
     RealType<ValueType> eps = 0.0001;
 

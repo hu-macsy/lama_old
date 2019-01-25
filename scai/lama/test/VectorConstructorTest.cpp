@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SVConstructorTest, VectorType, VectorTypes )
         dmemo::DistributionPtr dist = dists[i];
 
         auto v1 = fillDEP<VectorType>( dist , 3 );
-        auto v2 = eval<VectorType>( 2 * v1 );
+        auto v2 = evalDEP<VectorType>( 2 * v1 );
 
         BOOST_CHECK_EQUAL( v2.getDistribution(), v1.getDistribution() );
 
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SVSVConstructorTest, VectorType, VectorTypes )
         auto in1 = fillDEP<VectorType>( dist , 3 );
         auto in2 = fillDEP<VectorType>( dist , 2 );
 
-        auto out1 = eval<VectorType>( - ( 3 * in1 + ( -in2 ) * 6 ) );
+        auto out1 = evalDEP<VectorType>( - ( 3 * in1 + ( -in2 ) * 6 ) );
 
         BOOST_CHECK_EQUAL( out1.getDistribution(), in1.getDistribution() );
 
@@ -149,15 +149,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SVVConstructorTest, VectorType, VectorTypes )
         auto in1 = fillDEP<VectorType>( dist , 3 );
         auto in2 = fillDEP<VectorType>( dist , 2 );
 
-        auto out1 = eval<VectorType>( in1 * in2 ); 
-        auto out2 = eval<VectorType>( 3 * in1 * in2 ); 
-        auto out3 = eval<VectorType>( in1 * 3 * in2 ); 
-        auto out4 = eval<VectorType>( in1 * in2 * 3 ); 
-        auto out5 = eval<VectorType>( in1 / 3 * in2 ); 
-        auto out6 = eval<VectorType>( in1 * in2 / 3 ); 
-        auto out7 = eval<VectorType>( ( -in1 ) * ( -in2 ) );
-        auto out8 = eval<VectorType>( 2 * in1 * in2 / 3 ); 
-        auto out9 = eval<VectorType>( 2 * ( -in1 ) * ( -in2 ) / ( -1 ) ); 
+        auto out1 = evalDEP<VectorType>( in1 * in2 ); 
+        auto out2 = evalDEP<VectorType>( 3 * in1 * in2 ); 
+        auto out3 = evalDEP<VectorType>( in1 * 3 * in2 ); 
+        auto out4 = evalDEP<VectorType>( in1 * in2 * 3 ); 
+        auto out5 = evalDEP<VectorType>( in1 / 3 * in2 ); 
+        auto out6 = evalDEP<VectorType>( in1 * in2 / 3 ); 
+        auto out7 = evalDEP<VectorType>( ( -in1 ) * ( -in2 ) );
+        auto out8 = evalDEP<VectorType>( 2 * in1 * in2 / 3 ); 
+        auto out9 = evalDEP<VectorType>( 2 * ( -in1 ) * ( -in2 ) / ( -1 ) ); 
 
         BOOST_CHECK_EQUAL( out1.getDistribution(), in1.getDistribution() );
         BOOST_CHECK_EQUAL( out2.getDistribution(), in1.getDistribution() );
@@ -207,15 +207,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SV_S_ConstructorTest, VectorType, VectorTypes )
 
         auto in = fillDEP<VectorType>( dist , 4 );
 
-        auto out1 = eval<VectorType>( in + 2 );
-        auto out2 = eval<VectorType>( in - 2 );
-        auto out3 = eval<VectorType>( 2 + in );
-        auto out4 = eval<VectorType>( 2 - in );
-        auto out5 = eval<VectorType>( 2 * in + 3); 
-        auto out6 = eval<VectorType>( in * 2 - 3 );
-        auto out7 = eval<VectorType>( - ( 3 + in / 2 ) );
-        auto out8 = eval<VectorType>( 3  - in / 2 );
-        auto out9 = eval<VectorType>( 3 * ( 2 * in + 4 ) + 5 );
+        auto out1 = evalDEP<VectorType>( in + 2 );
+        auto out2 = evalDEP<VectorType>( in - 2 );
+        auto out3 = evalDEP<VectorType>( 2 + in );
+        auto out4 = evalDEP<VectorType>( 2 - in );
+        auto out5 = evalDEP<VectorType>( 2 * in + 3); 
+        auto out6 = evalDEP<VectorType>( in * 2 - 3 );
+        auto out7 = evalDEP<VectorType>( - ( 3 + in / 2 ) );
+        auto out8 = evalDEP<VectorType>( 3  - in / 2 );
+        auto out9 = evalDEP<VectorType>( 3 * ( 2 * in + 4 ) + 5 );
 
         // prove same distribution
 
@@ -268,12 +268,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SMV_ConstructorTest, VectorType, VectorTypes )
         auto m = identity<CSRSparseMatrix<ValueType>>( dist );
         m *= 3;
 
-        auto out1 = eval<VectorType>( m * in );
-        auto out2 = eval<VectorType>( m * in * 2 );
-        auto out3 = eval<VectorType>( m * 2 * in );
-        auto out4 = eval<VectorType>( 2 * m * in );
-        auto out5 = eval<VectorType>( - ( m * in ) );
-        auto out6 = eval<VectorType>( - ( 3 * m * in ) );
+        auto out1 = evalDEP<VectorType>( m * in );
+        auto out2 = evalDEP<VectorType>( m * in * 2 );
+        auto out3 = evalDEP<VectorType>( m * 2 * in );
+        auto out4 = evalDEP<VectorType>( 2 * m * in );
+        auto out5 = evalDEP<VectorType>( - ( m * in ) );
+        auto out6 = evalDEP<VectorType>( - ( 3 * m * in ) );
 
         // prove same distribution
 
@@ -317,12 +317,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SMV_Transpose_ConstructorTest, VectorType, Vector
         auto m = identity<CSRSparseMatrix<ValueType>>( dist );
         m *= 3;
 
-        auto out1 = eval<VectorType>( transpose( m ) * in );
-        auto out2 = eval<VectorType>( transpose( m ) * in * 2 );
-        auto out3 = eval<VectorType>( transpose( m ) * 2 * in );
-        auto out4 = eval<VectorType>( 2 * transpose( m ) * in );
-        auto out5 = eval<VectorType>( - ( transpose( m ) * in ) );
-        auto out6 = eval<VectorType>( - ( 3 * transpose( m ) * in ) );
+        auto out1 = evalDEP<VectorType>( transpose( m ) * in );
+        auto out2 = evalDEP<VectorType>( transpose( m ) * in * 2 );
+        auto out3 = evalDEP<VectorType>( transpose( m ) * 2 * in );
+        auto out4 = evalDEP<VectorType>( 2 * transpose( m ) * in );
+        auto out5 = evalDEP<VectorType>( - ( transpose( m ) * in ) );
+        auto out6 = evalDEP<VectorType>( - ( 3 * transpose( m ) * in ) );
 
         // prove same distribution
 
@@ -367,12 +367,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SMV_SV_ConstructorTest, VectorType, VectorTypes )
         auto m = identity<CSRSparseMatrix<ValueType>>( dist );
         m *= 3;
 
-        auto out1 = eval<VectorType>( m * in1 + in2 );
-        auto out2 = eval<VectorType>( in2 - m * in1 );
-        auto out3 = eval<VectorType>( ( -m ) * in1 - in2 );
-        auto out4 = eval<VectorType>( 2 * ( m * in1 + in2 )  );
-        auto out5 = eval<VectorType>( ( m * in1 + 2 * in2 ) * 3 );
-        auto out6 = eval<VectorType>( ( 2 * in2  + m * in1 ) / 2 );
+        auto out1 = evalDEP<VectorType>( m * in1 + in2 );
+        auto out2 = evalDEP<VectorType>( in2 - m * in1 );
+        auto out3 = evalDEP<VectorType>( ( -m ) * in1 - in2 );
+        auto out4 = evalDEP<VectorType>( 2 * ( m * in1 + in2 )  );
+        auto out5 = evalDEP<VectorType>( ( m * in1 + 2 * in2 ) * 3 );
+        auto out6 = evalDEP<VectorType>( ( 2 * in2  + m * in1 ) / 2 );
 
         // prove same distribution
 
@@ -417,12 +417,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SMTV_SV_ConstructorTest, VectorType, VectorTypes 
         auto m = identity<CSRSparseMatrix<ValueType>>( dist );
         m *= 3;
 
-        auto out1 = eval<VectorType>( transpose( m ) * in1 + in2 );
-        auto out2 = eval<VectorType>( in2 - transpose( m) * in1 );
-        auto out3 = eval<VectorType>( ( - transpose( m ) ) * in1 - in2 );
-        auto out4 = eval<VectorType>( 2 * ( transpose( m ) * in1 + in2 )  );
-        auto out5 = eval<VectorType>( ( transpose( m ) * in1 + 2 * in2 ) * 3 );
-        auto out6 = eval<VectorType>( ( 2 * in2  + transpose( m ) * in1 ) / 2 );
+        auto out1 = evalDEP<VectorType>( transpose( m ) * in1 + in2 );
+        auto out2 = evalDEP<VectorType>( in2 - transpose( m) * in1 );
+        auto out3 = evalDEP<VectorType>( ( - transpose( m ) ) * in1 - in2 );
+        auto out4 = evalDEP<VectorType>( 2 * ( transpose( m ) * in1 + in2 )  );
+        auto out5 = evalDEP<VectorType>( ( transpose( m ) * in1 + 2 * in2 ) * 3 );
+        auto out6 = evalDEP<VectorType>( ( 2 * in2  + transpose( m ) * in1 ) / 2 );
 
         // prove same distribution
 

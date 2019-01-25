@@ -107,7 +107,7 @@ int main( int argc, const char* argv[] )
                        << ", intraProblem = " << *intraProblem << ", interProblem = " << *interProblem << std::endl;
     ValueType sum = 0;
 
-    auto result = fillDenseVector<ValueType>( blockDistribution( 100, intraProblem ), 0 );
+    auto result = denseVectorFill<ValueType>( blockDistribution( 100, intraProblem ), 0 );
 
     // now loop over my assigned problems that is first dimension of distributed grid
 
@@ -118,7 +118,7 @@ int main( int argc, const char* argv[] )
         SCAI_DMEMO_TASK( intraProblem )
 
         auto dist = blockDistribution( NV );  // uses now default communicator intraProblem
-        auto v = linearDenseVector<ValueType>( dist, ValueType(i), ValueType(1) / NV );
+        auto v = denseVectorLinear<ValueType>( dist, ValueType(i), ValueType(1) / NV );
         std::ostringstream out;
         out << "out_" << i << "_.mtx";
         v.writeToFile( out.str() );

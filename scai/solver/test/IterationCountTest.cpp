@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( testIsSatisfied, ValueType, scai_numeric_test_typ
     const CSRSparseMatrix<ValueType> coefficients( system.coefficients );
     const DenseVector<ValueType> rhs( system.rhs );
 
-    auto solution = fillDenseVector<ValueType>( 3, 1.0 );
+    auto solution = denseVectorFill<ValueType>( 3, 1.0 );
 
     CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( maxIterations ) );
     jacobi.initialize( coefficients );

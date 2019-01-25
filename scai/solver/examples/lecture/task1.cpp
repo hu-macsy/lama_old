@@ -77,13 +77,13 @@ int main( int, char*[] )
     vAssembly.push( 0, Tleft );
     vAssembly.push( size - 1, Tright );
 
-    auto rhs = fillDenseVector<ValueType>( size , 0 );
+    auto rhs = denseVectorFill<ValueType>( size , 0 );
     rhs.fillFromAssembly( vAssembly );
 
     std::cout << "Vector rhs = " << rhs << std::endl;
     rhs.writeToFile( "rhs.txt" );
 
-    auto solution = fillDenseVector<ValueType>( size, 0 );
+    auto solution = denseVectorFill<ValueType>( size, 0 );
 
     auto logger = std::make_shared<CommonLogger>( "<CG>: ", LogLevel::solverInformation, LoggerWriteBehaviour::toConsoleOnly );
     // Create a CG solver
@@ -99,7 +99,7 @@ int main( int, char*[] )
     // Solve, i.e. find solution for given rhs
     cgSolver.solve ( solution, rhs );
 
-    auto residual = eval<DenseVector<ValueType>>( rhs - matrix * solution );
+    auto residual = denseVectorEval( rhs - matrix * solution );
 
     std::cout << "Resiudual = " << l2Norm( residual ) << std::endl;
 

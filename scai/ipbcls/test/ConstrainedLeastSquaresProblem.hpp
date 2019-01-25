@@ -74,7 +74,7 @@ ConstrainedLeastSquaresProblem<Scalar> generateConstrainedLeastSquaresProblem(sc
 {
     using namespace scai::lama;
 
-    const auto zeroVector = fill<DenseVector<Scalar>>(cols, 0 );
+    const auto zeroVector = denseVectorFill( cols, Scalar( 0 ) );
     
     ConstrainedLeastSquaresProblem<Scalar> p;
     
@@ -98,14 +98,14 @@ ConstrainedLeastSquaresProblem<Scalar> generateConstrainedLeastSquaresProblem(sc
     p.u += eps;
     
     // Gradient of the unconstrained problem
-    const auto g = eval<DenseVector<Scalar>>( 2 * transpose( p.A) * r );
+    const auto g = denseVectorEval( 2 * transpose( p.A) * r );
     
     // Lagrange multipliers for the bound constraints. Lambda is the multiplier for the lower bound,
     // while mu is the multiplier for the upper bound
 
     Scalar zero = 0;
-    p.lambda = fill<DenseVector<Scalar>>( cols, 0 );
-    p.mu = fill<DenseVector<Scalar>>(cols, 0 );
+    p.lambda = denseVectorFill<Scalar>( cols, 0 );
+    p.mu = denseVectorFill<Scalar>( cols, 0 );
     
     // We build the matrix locally, so we permit ourselves to work with global indices directly
     for (scai::IndexType i = 0; i < cols; ++i)
@@ -136,8 +136,8 @@ ConstrainedLeastSquaresProblem<Scalar> generateConstrainedLeastSquaresProblem(sc
     using scai::common::CompareOp;
 
     // Assert KKT conditions
-    const auto rel_lower_bound = eval<DenseVector<Scalar>>( p.x - p.l );
-    const auto rel_upper_bound = eval<DenseVector<Scalar>>( p.u - p.x );
+    const auto rel_lower_bound = denseVectorEval( p.x - p.l );
+    const auto rel_upper_bound = denseVectorEval( p.u - p.x );
 
     DenseVector<Scalar> lagrangian_gradient ( g );
     lagrangian_gradient -= p.lambda;
@@ -152,16 +152,16 @@ ConstrainedLeastSquaresProblem<Scalar> generateConstrainedLeastSquaresProblem(sc
     
     // Due to the lack of an equality operator for vectors, we must once again use both LE and GE
 
-    SCAI_ASSERT_ERROR( eval<DenseVector<Scalar>>(p.lambda * rel_lower_bound).all( CompareOp::LE, zeroVector ), 
+    SCAI_ASSERT_ERROR( denseVectorEval(p.lambda * rel_lower_bound).all( CompareOp::LE, zeroVector ), 
                        "Complementarity for lambda does not hold");
 
-    SCAI_ASSERT_ERROR( eval<DenseVector<Scalar>>(p.lambda * rel_lower_bound).all( CompareOp::GE, zeroVector ),
+    SCAI_ASSERT_ERROR( denseVectorEval(p.lambda * rel_lower_bound).all( CompareOp::GE, zeroVector ),
                        "Complementarity for lambda does not hold");
 
-    SCAI_ASSERT_ERROR( eval<DenseVector<Scalar>>( p.mu * rel_upper_bound ).all( CompareOp::LE, zeroVector), 
+    SCAI_ASSERT_ERROR( denseVectorEval( p.mu * rel_upper_bound ).all( CompareOp::LE, zeroVector), 
                        "Complementarity for mu does not hold.");
 
-    SCAI_ASSERT_ERROR( eval<DenseVector<Scalar>>( p.mu * rel_upper_bound ).all( CompareOp::GE, zeroVector), 
+    SCAI_ASSERT_ERROR( denseVectorEval( p.mu * rel_upper_bound ).all( CompareOp::GE, zeroVector), 
                        "Complementarity for mu does not hold.");
 
     return p;

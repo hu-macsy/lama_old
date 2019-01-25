@@ -148,7 +148,7 @@ int main( int argc, const char* argv[] )
     T.redistribute( rayDist );
     Zero.redistribute( gridDist );
 
-    auto x = fillDenseVector<ValueType>( gridDist, 0 );
+    auto x = denseVectorFill<ValueType>( gridDist, 0 );
 
     MatrixWithT<ValueType> Dopt( D );
 

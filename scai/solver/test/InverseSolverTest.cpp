@@ -89,8 +89,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest2, ValueType, scai_numeric_test_types 
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get4x4SystemA<ValueType>();
     const IndexType n = 4;
 
-    auto solution  = fillDenseVector<ValueType>( n, 1 );
-    auto solution2 = fillDenseVector<ValueType>( n, 1 );
+    auto solution  = denseVectorFill<ValueType>( n, 1 );
+    auto solution2 = denseVectorFill<ValueType>( n, 1 );
 
     std::string s = "DataType";
 
@@ -152,16 +152,16 @@ BOOST_AUTO_TEST_CASE( SolveTest )
 
     const ValueType solutionInitValue = 1.0;
 
-    auto solution      = fillDenseVector<ValueType>( colDist, solutionInitValue, context );
-    auto exactSolution = fillDenseVector<ValueType>( colDist, solutionInitValue + 1.0, context );
-    auto rhs           = eval<DenseVector<ValueType>>( coefficients * exactSolution, context );
+    auto solution      = denseVectorFill<ValueType>( colDist, solutionInitValue, context );
+    auto exactSolution = denseVectorFill<ValueType>( colDist, solutionInitValue + 1.0, context );
+    auto rhs           = denseVectorEval( coefficients * exactSolution, context );
 
     IndexType maxExpectedIterations = 3000;
     CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( maxExpectedIterations ) );
     SolverPtr<ValueType> solver ( Solver<ValueType>::getSolver( "InverseSolver" ) );
     solver->initialize( coefficients );
     solver->solve( solution, rhs );
-    auto diff = eval<DenseVector<ValueType>>( solution - exactSolution );
+    auto diff = denseVectorEval( solution - exactSolution );
 
     auto realMaxNorm = maxNorm( diff );                // norm returns RealType<ValueType>
     decltype( realMaxNorm) expectedMaxNorm = 1E-4;
