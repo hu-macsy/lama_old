@@ -144,7 +144,7 @@ void SparseVector<ValueType>::assign( const _Vector& other )
 {
     // translate virtual call to specific template call via wrapper
 
-    mepr::VectorWrapper<SparseVector, SCAI_NUMERIC_TYPES_HOST_LIST>::assignImpl( this, other );
+    mepr::VectorWrapper<SparseVector, SCAI_ARRAY_TYPES_HOST_LIST>::assignImpl( this, other );
 }
 
 template<typename ValueType>
@@ -467,7 +467,7 @@ void SparseVector<ValueType>::gatherLocalValues(
 template<typename ValueType>
 void SparseVector<ValueType>::setDenseValues( const _HArray& localValues )
 {
-    mepr::VectorWrapper<SparseVector, SCAI_NUMERIC_TYPES_HOST_LIST>::setDenseValuesImpl( this, localValues );
+    mepr::VectorWrapper<SparseVector, SCAI_ARRAY_TYPES_HOST_LIST>::setDenseValuesImpl( this, localValues );
 }
 
 /* ------------------------------------------------------------------------- */

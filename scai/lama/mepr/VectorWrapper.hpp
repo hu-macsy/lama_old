@@ -63,14 +63,14 @@ struct VectorWrapper<Derived, common::mepr::NullType>
         Derived* obj,
         const _Vector& otherVector )
     {
-        COMMON_THROWEXCEPTION( "assign to " << obj << ": unsupported type = " << otherVector.getValueType() );
+        COMMON_THROWEXCEPTION( "assign to " << *obj << ": unsupported type = " << otherVector.getValueType() );
     }
 
     static void setDenseValuesImpl(
         Derived* obj,
         const hmemo::_HArray& values )
     {
-        COMMON_THROWEXCEPTION( "setDenseValues " << obj << ": unsupported type = " << values.getValueType() );
+        COMMON_THROWEXCEPTION( "setDenseValues " << *obj << ": unsupported type = " << values.getValueType() );
     }
 };
 

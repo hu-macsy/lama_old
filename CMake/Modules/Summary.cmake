@@ -35,6 +35,8 @@ message ( STATUS "==============================" )
 message ( STATUS "Summary of SCAI Configuration:" )
 message ( STATUS "==============================" )
 emptyline()
+indent_message ( "1" "CMAKE Version : ${CMAKE_VERSION}" )
+emptyline()
 
 heading ( "External Software/Packages:" )
 
