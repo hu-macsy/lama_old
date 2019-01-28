@@ -821,6 +821,17 @@ DenseVector<ValueType> denseVector(
     return denseVector;
 }
 
+template<typename ValueType>
+DenseVector<ValueType> denseVectorRead(
+    const char* fileName
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    SCAI_ASSERT_ERROR( fillFunction, "NULL function for filling" )
+    DenseVector<ValueType> denseVector( ctx );
+    denseVector.readFromFile( fileName );
+    return denseVector;
+}
+
 /**
  * @brief Free function to create a new dense vector as result of a vector expression.
  *
