@@ -141,15 +141,9 @@ public:
 
     static std::string createValue();
 
-    virtual const char* getKind() const
-    {
-        return getId();
-    }
+    virtual const char* getKind() const;
 
-    static const char* getId()
-    {
-        return "SINGLE";
-    }
+    static const char* getId();
 
 protected:
 
@@ -161,6 +155,18 @@ private:
 
     PartitionId mOwner;   //!< Partition id for the owner process.
 };
+
+/* ------------------------------------------------------------------------- */
+/*  Free constructor functions                                               */
+/* ------------------------------------------------------------------------- */
+
+inline std::shared_ptr<SingleDistribution> singleDistribution(
+    const IndexType globalSize,
+    const CommunicatorPtr comm = Communicator::getCommunicatorPtr(),
+    const PartitionId root = 0 )
+{
+    return std::make_shared<SingleDistribution>( globalSize, comm, root );
+}
 
 } /* end namespace dmemo */
 
