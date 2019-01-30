@@ -89,12 +89,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadGeneralDenseTest, ValueType, scai_numeric_tes
         }
     }
 
+    SCAI_LOG_INFO( logger, "written dense storage to file " << fileName << ", now read it" );
+
     DenseStorage<ValueType> denseStorage;
 
     MatrixMarketIO reader;
     FileIO& freader = reader;
 
-    freader.readStorage( denseStorage, fileName );
+    freader.open( fileName.c_str(), "r" );
+    freader.readStorage( denseStorage );
+    freader.close();
 
     BOOST_CHECK_EQUAL( m, denseStorage.getNumRows() );
     BOOST_CHECK_EQUAL( n, denseStorage.getNumColumns() );
@@ -157,7 +161,9 @@ BOOST_AUTO_TEST_CASE( ReadErrorTest )
         BOOST_CHECK_THROW(
         {
             IndexType N = 0;
-            reader.readArrayInfo( N, fileName );
+            reader.open( fileName.c_str(), "r" );
+            reader.getArrayInfo( N );
+            reader.close();
         }, common::IOException );
 
         int rc = FileIO::removeFile( fileName );
@@ -207,9 +213,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadSymmetricDenseTest, ValueType, scai_numeric_t
     DenseStorage<ValueType> denseStorage;
 
     MatrixMarketIO reader;
-    FileIO& freader = reader;
 
-    freader.readStorage( denseStorage, fileName );
+    reader.open( fileName.c_str(), "r" );
+    reader.readStorage( denseStorage );
+    reader.close();
 
     BOOST_CHECK_EQUAL( n, denseStorage.getNumRows() );
     BOOST_CHECK_EQUAL( n, denseStorage.getNumColumns() );
@@ -265,8 +272,12 @@ BOOST_AUTO_TEST_CASE( RectangularTest )
     MatrixMarketIO io;
     FileIO& fio = io;
 
-    fio.writeStorage( denseOut, fileName );
-    fio.readStorage( denseIn, fileName );
+    fio.open( fileName.c_str(), "w" );
+    fio.writeStorage( denseOut );
+    fio.close();
+    fio.open( fileName.c_str(), "r" );
+    fio.readStorage( denseIn );
+    fio.close();
 
     BOOST_CHECK_EQUAL( denseOut.getNumColumns(), denseIn.getNumColumns() );
     BOOST_CHECK_EQUAL( denseIn.getNumRows(), denseIn.getNumRows() );

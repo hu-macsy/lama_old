@@ -49,49 +49,51 @@ class COMMON_DLL_IMPORTEXPORT BitmapIO :
 
 public:
 
-    /** Implementation of pure method FileIO::readStorageInfo */
+    /** Implementation of pure virtual method FileIO::open */
 
-    virtual void readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& fileName );
+    virtual void open( const char* fileName, const char* fileMode );
 
-    /** Implementation of pure methdod FileIO::readArrayInfo */
+    /** Implementation of pure virtual method FileIO::close */
 
-    virtual void readArrayInfo( IndexType& size, const std::string& fileName );
+    virtual void close();
+
+    /** Implementation of pure method FileIO::getStorageInfo */
+
+    virtual void getStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues );
+
+    /** Implementation of pure methdod FileIO::getArrayInfo */
+
+    virtual void getArrayInfo( IndexType& size );
 
     /** Implementation of pure virtual method FileIO::writeStorage for all derived classes */
 
-    virtual void writeStorage( const _MatrixStorage& storage, const std::string& fileName );
+    virtual void writeStorage( const _MatrixStorage& storage );
 
     /** Implementation of pure virtual method FileIO::readStorage  */
 
-    virtual void readStorage( _MatrixStorage& storage, const std::string& fileName, const IndexType offsetRow, const IndexType nRows );
+    virtual void readStorage( _MatrixStorage& storage );
 
     /** Implementation of pure virtual method FileIO::writeArray  */
 
-    virtual void writeArray( const hmemo::_HArray& array, const std::string& fileName );
+    virtual void writeArray( const hmemo::_HArray& array );
 
     /** Implementation of pure virtual method FileIO::writeSparse  */
 
     virtual void writeSparse(
         const IndexType size,
         const hmemo::HArray<IndexType>& indexes,
-        const hmemo::_HArray& array,
-        const std::string& fileName );
+        const hmemo::_HArray& array );
 
     /** Implementation of pure virtual method FileIO::readArray using same defaults */
 
-    virtual void readArray(
-        hmemo::_HArray& array,
-        const std::string& fileName,
-        const IndexType offset = 0,
-        const IndexType n = invalidIndex );
+    virtual void readArray( hmemo::_HArray& array );
 
     /** Implementation of pure virtual method FileIO::readSparse */
 
     virtual void readSparse(
         IndexType& size,
         hmemo::HArray<IndexType>& indexes,
-        hmemo::_HArray& values,
-        const std::string& fileName );
+        hmemo::_HArray& values );
 
     /** Default implementation for query matrix file suffix, is createValue of derived class */
 
@@ -105,19 +107,19 @@ public:
 
     virtual bool isSupportedMode( const FileMode mode ) const;
 
-    void readGridArray( hmemo::_HArray& data, common::Grid& grid, const std::string& outputFileName );
+    void readGridArray( hmemo::_HArray& data, common::Grid& grid );
 
-    void writeGridArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName );
+    void writeGridArray( const hmemo::_HArray& data, const common::Grid& grid );
 
     /** Typed version of BitmapIO::read */
 
     template<typename ValueType>
-    void readGridImpl( hmemo::HArray<ValueType>& data, common::Grid& grid, const std::string& outputFileName );
+    void readGridImpl( hmemo::HArray<ValueType>& data, common::Grid& grid );
 
     /** Typed version of BitmapIO::write */
 
     template<typename ValueType>
-    void writeGridImpl( const hmemo::HArray<ValueType>& data, const common::Grid& grid, const std::string& outputFileName );
+    void writeGridImpl( const hmemo::HArray<ValueType>& data, const common::Grid& grid );
 
     /** Implementation for Printable.:writeAt */
 
@@ -134,6 +136,8 @@ public:
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
+    FILE* mFile;
 
 };
 

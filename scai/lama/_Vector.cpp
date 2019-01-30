@@ -141,9 +141,7 @@ void _Vector::readFromSingleFile( const std::string& fileName, CommunicatorPtr c
         clearValues();
     }
 
-    DistributionPtr distribution( new SingleDistribution( globalSize, comm, MASTER ) );
-
-    setDistributionPtr( distribution );
+    setDistributionPtr( singleDistribution( globalSize, comm, MASTER ) );
 
     SCAI_LOG_INFO( logger, "readFromSingleFile, vector = " << *this )
 }
@@ -154,56 +152,15 @@ void _Vector::readFromSingleFile( const std::string& fileName, CommunicatorPtr c
 
 void _Vector::readFromSingleFile( const std::string& fileName, const DistributionPtr distribution )
 {
-    if ( distribution.get() == NULL )
-    {
-        SCAI_LOG_INFO( logger, "readFromSingleFile( " << fileName << ", master only" )
-        readFromSingleFile( fileName );
-        return;
-    }
 
-    const IndexType n = distribution->getBlockDistributionSize();
+    SCAI_LOG_INFO( logger, "readFromSingleFile( " << fileName << ", master only" )
 
-    if ( n == invalidIndex )
+    readFromSingleFile( fileName );
+
+    if ( distribution.get() )
     {
-        SCAI_LOG_INFO( logger, "readFromSingleFile( " << fileName << " ), master only + redistribute" )
-        readFromSingleFile( fileName );
         redistribute( distribution );
-        return;
     }
-
-    // we have a block distribution, so every processor reads its own part
-
-    IndexType first = 0;
-
-    if ( n > 0 )
-    {
-        first = distribution->local2Global( 0 );   // first global index
-    }
-
-    bool error = false;
-
-    SCAI_LOG_INFO( logger, "readFromSingleFile( " << fileName << " ), block dist = " << *distribution 
-                           << ", read my block, first = " << first << ", n = " << n )
-
-    try
-    {
-        IndexType localSize = readLocalFromFile( fileName, first, n );
-        error = localSize != distribution->getLocalSize();
-    }
-    catch ( Exception& ex )
-    {
-        SCAI_LOG_ERROR( logger, ex.what() )
-        error = true;
-    }
-
-    error = distribution->getCommunicator().any( error );
-
-    if ( error )
-    {
-        COMMON_THROWEXCEPTION( "readFromSingleFile " << fileName << " failed, dist = " << *distribution )
-    }
-
-    setDistributionPtr( distribution );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -399,7 +356,7 @@ void _Vector::writeToSingleFile(
     const std::string& fileName,
     const std::string& fileType,
     const common::ScalarType dataType,
-    const FileIO::FileMode fileMode
+    const FileMode fileMode
 ) const
 {
     SCAI_LOG_INFO( logger, "write vector to single file: " << fileName << ", " << *this )
@@ -448,7 +405,7 @@ void _Vector::writeToPartitionedFile(
     const std::string& fileName,
     const std::string& fileType,
     const common::ScalarType dataType,
-    const FileIO::FileMode fileMode ) const
+    const FileMode fileMode ) const
 {
     bool errorFlag = false;
 
@@ -477,7 +434,7 @@ void _Vector::writeToFile(
     const std::string& fileName,
     const std::string& fileType,               /* = "", take IO type by suffix   */
     const common::ScalarType dataType, /* = UNKNOWN, take defaults of IO type */
-    const FileIO::FileMode fileMode            /* = DEFAULT_MODE */
+    const FileMode fileMode            /* = DEFAULT_MODE */
 ) const
 {
     SCAI_LOG_INFO( logger,

@@ -179,6 +179,10 @@ MATIOStream::MATClass MATIOStream::scalarType2Class( common::ScalarType stype )
 
 /* --------------------------------------------------------------------------------- */
 
+MATIOStream::MATIOStream()
+{
+}
+
 MATIOStream::MATIOStream( const std::string& filename, ios_base::openmode mode ) : IOStream( filename, mode )
 {
 }

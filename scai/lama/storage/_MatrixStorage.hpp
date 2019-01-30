@@ -429,15 +429,8 @@ public:
      * @brief read the matrix storage from an input file
      *
      * @param[in] fileName is the name of the input file (suffix must be added according to the file type)
-     * @param[in] firstRow is the first row to read
-     * @param[in] nRows    specifies the number of rows to read, defaults to number of rows of full storage - firstRow
-     *
-     * Note: default argument for nRows is invalidIndex as the number of rows in full storage might not be known
      */
-    virtual void readFromFile(
-        const std::string& fileName,
-        const IndexType firstRow = 0,
-        const IndexType nRows = invalidIndex ) = 0;
+    virtual void readFromFile( const std::string& fileName ) = 0;
 
     /**
      * @brief write the matrix storage to an output file
@@ -458,7 +451,7 @@ public:
         const std::string& type = "",
         const common::ScalarType dataType = common::ScalarType::UNKNOWN,
         const common::ScalarType indexType = common::ScalarType::UNKNOWN,
-        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const = 0;
+        const FileMode fileMode = FileMode::DEFAULT  ) const = 0;
 
     virtual bool checkSymmetry() const = 0;
 

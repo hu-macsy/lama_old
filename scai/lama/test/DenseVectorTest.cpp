@@ -76,13 +76,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fillRepTest, ValueType, scai_numeric_test_types )
     const IndexType N   = 12;
     const ValueType VAL = 2;
    
-    auto denseVector = denseVector<ValueType>( N, VAL );
+    auto dV = denseVector<ValueType>( N, VAL );
 
-    BOOST_CHECK_EQUAL( N, denseVector.size() );
+    BOOST_CHECK_EQUAL( N, dV.size() );
 
     std::vector<ValueType> expected( N, VAL );
 
-    BOOST_TEST( hmemo::hostReadAccess( denseVector.getLocalValues() ) == expected, per_element() );
+    BOOST_TEST( hmemo::hostReadAccess( dV.getLocalValues() ) == expected, per_element() );
 }
 
 /* --------------------------------------------------------------------- */
@@ -95,13 +95,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fillDistTest, ValueType, scai_numeric_test_types 
     const ValueType VAL = 1;
    
     auto dist = dmemo::blockDistribution( N );
-    auto denseVector = denseVector<ValueType>( dist, VAL );
+    auto dV = denseVector<ValueType>( dist, VAL );
 
-    BOOST_CHECK_EQUAL( N, denseVector.size() );
+    BOOST_CHECK_EQUAL( N, dV.size() );
 
     std::vector<ValueType> expected( dist->getLocalSize(), VAL );
 
-    BOOST_TEST( hmemo::hostReadAccess( denseVector.getLocalValues() ) == expected, per_element() );
+    BOOST_TEST( hmemo::hostReadAccess( dV.getLocalValues() ) == expected, per_element() );
 }
 
 /* --------------------------------------------------------------------- */
@@ -114,9 +114,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fillRepFnTest, ValueType, scai_numeric_test_types
 
     auto lambda = []( IndexType i ) { return ValueType( i ); };
 
-    auto denseVector = denseVector<ValueType>( N, lambda );
+    auto dV = denseVectorFill<ValueType>( N, lambda );
 
-    BOOST_CHECK_EQUAL( N, denseVector.size() );
+    BOOST_CHECK_EQUAL( N, dV.size() );
 
     std::vector<ValueType> expected;
 
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fillRepFnTest, ValueType, scai_numeric_test_types
         expected.push_back( ValueType( i ) );
     }
 
-    BOOST_TEST( hmemo::hostReadAccess( denseVector.getLocalValues() ) == expected, per_element() );
+    BOOST_TEST( hmemo::hostReadAccess( dV.getLocalValues() ) == expected, per_element() );
 }
 
 /* --------------------------------------------------------------------- */
@@ -139,9 +139,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fillDistFnTest, ValueType, scai_numeric_test_type
     auto lambda = []( IndexType i ) { return ValueType( i ); };
 
     auto dist = dmemo::blockDistribution( N );
-    auto denseVector = denseVector<ValueType>( dist, lambda );
+    auto dV = denseVectorFill<ValueType>( dist, lambda );
 
-    BOOST_CHECK_EQUAL( N, denseVector.size() );
+    BOOST_CHECK_EQUAL( N, dV.size() );
 
     std::vector<ValueType> expected;
 
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fillDistFnTest, ValueType, scai_numeric_test_type
         expected.push_back( ValueType( dist->local2Global( i ) ) );
     }
 
-    BOOST_TEST( hmemo::hostReadAccess( denseVector.getLocalValues() ) == expected, per_element() );
+    BOOST_TEST( hmemo::hostReadAccess( dV.getLocalValues() ) == expected, per_element() );
 }
 
 /* --------------------------------------------------------------------- */

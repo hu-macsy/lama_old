@@ -53,6 +53,10 @@ class COMMON_DLL_IMPORTEXPORT MATIOStream : public IOStream
 {
 public:
 
+    /** Default constructor */
+
+    MATIOStream();
+
     /** Constructor of a new stream for any mode and opens it */
 
     MATIOStream( const std::string& filename, std::ios_base::openmode mode );

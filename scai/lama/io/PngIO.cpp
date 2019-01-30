@@ -68,7 +68,7 @@ bool PngIO::isSupportedMode( const FileMode mode ) const
 {
     // binary is not supported
 
-    if ( mode == BINARY )
+    if ( mode == FileMode::BINARY )
     {
         return false;
     }
@@ -84,22 +84,51 @@ PngIO::PngIO()
 }
 
 /* ------------------------------------------------------------------------------------ */
+
+void PngIO::open( const char* fileName, const char* fileMode )
+{
+    mFileName = fileName;
+
+    if ( strcmp( fileMode, "w" ) == 0 )
+    {
+        mFile = fopen( fileName, "wb" );
+        SCAI_ASSERT_ERROR( mFile, "File " << fileName << " could not be opened for writing" )
+    }
+    else if ( strcmp( fileMode, "r" ) == 0 )
+    {
+        mFile = fopen( fileName, "rb" );
+        SCAI_ASSERT_ERROR( mFile, "File " << fileName << " could not be opened for reading" )
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "Unsupported file mode for PNG file: " << fileMode )
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void PngIO::close()
+{
+    fclose( mFile );
+    mFileName = "";
+}
+
+/* ------------------------------------------------------------------------------------ */
 /*   Read PNG File                                                                   */
 /* ------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void PngIO::readGridImpl( HArray<ValueType>& imageData, common::Grid& imageSize, const std::string& inputFileName )
+void PngIO::readGridImpl( HArray<ValueType>& imageData, common::Grid& imageSize )
 {
     char header[8];    // 8 is the maximum size that can be checked
     /* open file and test for it being a png */
-    FILE* fp = fopen( inputFileName.c_str(), "rb" );
-    SCAI_ASSERT_ERROR( fp, inputFileName << " could not be opened for reading " )
-    size_t readBytes = fread( header, 1, 8, fp );
+
+    size_t readBytes = fread( header, 1, 8, mFile );
     SCAI_ASSERT_EQ_ERROR( 8, readBytes, "Could not read header" )
 
     if ( png_sig_cmp( reinterpret_cast<png_byte*>( header ), 0, 8 ) )
     {
-        COMMON_THROWEXCEPTION( inputFileName << " is not recognized as a PNG file" )
+        COMMON_THROWEXCEPTION( mFileName << " is not recognized as a PNG file" )
     }
 
     /* read basic infomation */
@@ -116,10 +145,10 @@ void PngIO::readGridImpl( HArray<ValueType>& imageData, common::Grid& imageSize,
     if ( setjmp( png_jmpbuf( png_ptr ) ) )
     {
         png_destroy_read_struct( &png_ptr, &info_ptr, NULL );
-        COMMON_THROWEXCEPTION( "Serious error during reading png file " << inputFileName )
+        COMMON_THROWEXCEPTION( "Serious error during reading png file " << mFileName )
     }
 
-    png_init_io( png_ptr, fp );
+    png_init_io( png_ptr, mFile );
     png_set_sig_bytes( png_ptr, 8 );
     png_read_info( png_ptr, info_ptr );
     IndexType width = png_get_image_width( png_ptr, info_ptr );
@@ -140,7 +169,7 @@ void PngIO::readGridImpl( HArray<ValueType>& imageData, common::Grid& imageSize,
 
     if ( number_of_passes != 1 )
     {
-        SCAI_LOG_WARN( logger, "Reading " << inputFileName << ": multiple passes not supported"
+        SCAI_LOG_WARN( logger, "Reading " << mFileName << ": multiple passes not supported"
                                << ", #passes = " << number_of_passes )
     }
 
@@ -156,8 +185,6 @@ void PngIO::readGridImpl( HArray<ValueType>& imageData, common::Grid& imageSize,
     }
 
     png_read_image( png_ptr, row_pointers );
-
-    fclose( fp );
 
     IndexType valsPerPixel;
 
@@ -194,7 +221,7 @@ void PngIO::readGridImpl( HArray<ValueType>& imageData, common::Grid& imageSize,
 /* ------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void PngIO::writeGridImpl( const HArray<ValueType>& data, const common::Grid& grid, const std::string& outputFileName )
+void PngIO::writeGridImpl( const HArray<ValueType>& data, const common::Grid& grid )
 {
     SCAI_LOG_INFO( logger, "write image, shape = " << grid )
     const IndexType height = grid.size( 0 );
@@ -221,8 +248,6 @@ void PngIO::writeGridImpl( const HArray<ValueType>& data, const common::Grid& gr
         }
     }
     png_structp png_ptr;
-    FILE* fp = fopen( outputFileName.c_str(), "wb" );
-    SCAI_ASSERT_ERROR( fp, "File " << outputFileName << " could not be opened for writing" )
     /* initialize stuff */
     png_ptr = png_create_write_struct( PNG_LIBPNG_VER_STRING, NULL, NULL, NULL );
     SCAI_ASSERT_ERROR( png_ptr, "png_create_write_struct failed" );
@@ -234,11 +259,11 @@ void PngIO::writeGridImpl( const HArray<ValueType>& data, const common::Grid& gr
 
     if ( setjmp( png_jmpbuf( png_ptr ) ) )
     {
-        COMMON_THROWEXCEPTION( "Serious error during writing png file " << outputFileName )
+        COMMON_THROWEXCEPTION( "Serious error during writing png file " << mFileName )
     }
 
 
-    png_init_io( png_ptr, fp );
+    png_init_io( png_ptr, mFile );
 
     /* write header */
     png_byte bit_depth = 8;
@@ -251,48 +276,39 @@ void PngIO::writeGridImpl( const HArray<ValueType>& data, const common::Grid& gr
     png_write_image( png_ptr, row_pointers );
 
     png_write_end( png_ptr, NULL );
-
-    fclose( fp );
 }
 
 /* ------------------------------------------------------------------------------------ */
 /* ------------------------------------------------------------------------------------ */
 
-void PngIO::readGridArray( _HArray& data, common::Grid& grid, const std::string& inputFileName )
+void PngIO::readGridArray( _HArray& data, common::Grid& grid )
 {
-    IOWrapper<PngIO, SCAI_TYPELIST( float, double )>::readGridImpl( ( PngIO& ) *this, data, grid, inputFileName );
+    IOWrapper<PngIO, SCAI_TYPELIST( float, double )>::readGridImpl( *this, data, grid );
 }
 
-void PngIO::writeGridArray( const _HArray& data, const common::Grid& grid, const std::string& outputFileName )
+void PngIO::writeGridArray( const _HArray& data, const common::Grid& grid )
 {
-    IOWrapper<PngIO, SCAI_TYPELIST( float, double )>::writeGridImpl( ( PngIO& ) *this, data, grid, outputFileName );
+    IOWrapper<PngIO, SCAI_TYPELIST( float, double )>::writeGridImpl( *this, data, grid );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void PngIO::writeStorage( const _MatrixStorage& storage, const std::string& outputFileName )
+void PngIO::writeStorage( const _MatrixStorage& storage )
 {
     // todo: write dense storage as bitmap, maybe greyscale 
 
     SCAI_THROWEXCEPTION( common::UnsupportedException, 
-                         "write storage " << storage << " to " << outputFileName )
+                         "write storage " << storage << " to " << mFileName )
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void PngIO::readStorage(
-    _MatrixStorage& storage,
-    const std::string& inputFileName,
-    const IndexType offsetRow,
-    const IndexType nRows )
+void PngIO::readStorage( _MatrixStorage& storage )
 {
     storage.clear();
 
-    SCAI_ASSERT_EQ_ERROR( 0, offsetRow, "No chunk read for bitmap file" )
-    SCAI_ASSERT_EQ_ERROR( invalidIndex, nRows, "No chunk read for bitmap file" )
-
     SCAI_THROWEXCEPTION( common::UnsupportedException, 
-                         "Unsupported for bitmap file: read storage from " << inputFileName )
+                         "Unsupported for bitmap file: read storage from " << mFileName )
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -311,10 +327,10 @@ std::string PngIO::getVectorFileSuffix() const
 
 /* --------------------------------------------------------------------------------- */
 
-void PngIO::writeArray( const hmemo::_HArray& array, const std::string& outputFileName )
+void PngIO::writeArray( const hmemo::_HArray& array )
 {
     SCAI_THROWEXCEPTION( common::UnsupportedException, 
-                         "Unsupported for bitmap file: write array " << array << " to " << outputFileName )
+                         "Unsupported for bitmap file: write array " << array << " to " << mFileName )
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -322,56 +338,54 @@ void PngIO::writeArray( const hmemo::_HArray& array, const std::string& outputFi
 void PngIO::writeSparse( 
     const IndexType n, 
     const hmemo::HArray<IndexType>& indexes, 
-    const hmemo::_HArray& values, 
-    const std::string& outputFileName )
+    const hmemo::_HArray& values )
 {
     SCAI_THROWEXCEPTION( common::UnsupportedException, 
                          "Unsupported for bitmap file: write spare array ( n = " << n 
-                         << ", indexes = " << indexes << ", values = " << values << " ) to " << outputFileName )
+                         << ", indexes = " << indexes << ", values = " << values << " )" )
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void PngIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& inputFileName )
+void PngIO::getStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues )
 {
     numRows    = 0;
     numColumns = 0;
     numValues  = 0;
 
-    COMMON_THROWEXCEPTION( "Unsupported for bitmap file: read storage info from file " << inputFileName )
+    COMMON_THROWEXCEPTION( "Unsupported for bitmap file: read storage info from file " )
 }
 
-void PngIO::readArrayInfo( IndexType& size, const std::string& inputFileName )
+/* --------------------------------------------------------------------------------- */
+
+void PngIO::getArrayInfo( IndexType& size )
 {
     size = 0;
 
     SCAI_THROWEXCEPTION( common::UnsupportedException, 
-                         "Unsupported for bitmap file: read array info from file " << inputFileName )
+                         "Unsupported for bitmap file: read array info from file " )
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void PngIO::readArray( hmemo::_HArray& array, const std::string& inputFileName, const IndexType offset, const IndexType n )
+void PngIO::readArray( hmemo::_HArray& array )
 {
     array.clear();
 
-    SCAI_ASSERT_EQ_ERROR( 0, offset, "chunk read not supported" )
-    SCAI_ASSERT_EQ_ERROR( n, invalidIndex, "chunk read not supported" )
-
     SCAI_THROWEXCEPTION( common::UnsupportedException, 
-                         "Unsupported for bitmap file: read array ( offset = " << offset << ", n = " << " ) from file " << inputFileName )
+                         "Unsupported for bitmap file: read array from file " << mFileName )
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void PngIO::readSparse( IndexType& size, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values, const std::string& inputFileName )
+void PngIO::readSparse( IndexType& size, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values )
 {
     size = 0;
     indexes.clear();
     values.clear();
 
     SCAI_THROWEXCEPTION( common::UnsupportedException, 
-                         "Unsupported for bitmap file: read sparse array from " << inputFileName )
+                         "Unsupported for bitmap file: read sparse array from " << mFileName )
 }
 
 /* --------------------------------------------------------------------------------- */

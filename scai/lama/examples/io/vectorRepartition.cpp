@@ -108,7 +108,7 @@ void directPartitioning( const string& inFileName, const string& outFileName, co
 
     IndexType size;    // total size of the array
 
-    inputIO->readArrayInfo( size, inFileName );
+    inputIO->getArrayInfo( size, inFileName );
 
     for ( PartitionId ip = 0; ip < np_out; ++ip )
     {

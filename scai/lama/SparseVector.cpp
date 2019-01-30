@@ -576,7 +576,7 @@ void SparseVector<ValueType>::fillSparseData( const HArray<IndexType>& nonZeroIn
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-IndexType SparseVector<ValueType>::readLocalFromFile( const std::string& fileName, const IndexType first, const IndexType n )
+IndexType SparseVector<ValueType>::readLocalFromFile( const std::string& fileName )
 {
     SCAI_REGION( "Vector.sparse.readLocal" )
 
@@ -587,11 +587,6 @@ IndexType SparseVector<ValueType>::readLocalFromFile( const std::string& fileNam
     FileIO::read( localN, mNonZeroIndexes, mNonZeroValues, fileName );
 
     HArrayUtils::sortSparseEntries( mNonZeroIndexes, mNonZeroValues, true, getContextPtr() );
-
-    // ToDo: read block from sparse array
-
-    SCAI_ASSERT_EQ_ERROR( 0, first, "block read not supported for sparse data" )
-    SCAI_ASSERT_EQ_ERROR( invalidIndex, n, "block read not supported for sparse data" )
 
     return localN;
 }
@@ -1682,7 +1677,7 @@ void SparseVector<ValueType>::writeLocalToFile(
     const std::string& fileName,
     const std::string& fileType,
     const common::ScalarType dataType,
-    const FileIO::FileMode fileMode
+    const FileMode fileMode
 ) const
 {
     std::string suffix = fileType;
@@ -1705,7 +1700,7 @@ void SparseVector<ValueType>::writeLocalToFile(
             fileIO->setDataType( dataType );
         }
 
-        if ( fileMode != FileIO::DEFAULT_MODE )
+        if ( fileMode != FileMode::DEFAULT )
         {
             // overwrite the default settings
 
@@ -1714,11 +1709,13 @@ void SparseVector<ValueType>::writeLocalToFile(
 
         // write the sparse data
 
+        fileIO->open( fileName.c_str(), "w" );
+
         const IndexType size = getDistribution().getLocalSize();
 
         if ( mZeroValue == common::Constants::ZERO )
         {
-            fileIO->writeSparse( size, mNonZeroIndexes, mNonZeroValues, fileName );
+            fileIO->writeSparse( size, mNonZeroIndexes, mNonZeroValues );
         }
         else
         {
@@ -1727,8 +1724,10 @@ void SparseVector<ValueType>::writeLocalToFile(
             hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
             auto denseArray = utilskernel::fillHArray<ValueType>( size, mZeroValue, ctx );
             HArrayUtils::scatter( denseArray, mNonZeroIndexes, true, mNonZeroValues, common::BinaryOp::COPY, ctx );
-            fileIO->writeArray( denseArray, fileName );
+            fileIO->writeArray( denseArray );
         }
+
+        fileIO->close();
     }
     else
     {

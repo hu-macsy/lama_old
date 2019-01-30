@@ -231,7 +231,7 @@ public:
         const std::string& fileName,
         const std::string& fileType,
         const common::ScalarType dataType,
-        const FileIO::FileMode fileMode ) const;
+        const FileMode fileMode ) const;
 
     /** Override of _Vector::readLocalFromFile 
      *

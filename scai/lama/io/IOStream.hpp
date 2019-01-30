@@ -79,6 +79,10 @@ public:
         MACHINE_ENDIAN   //!< use the same endian as provided on this machie
     } Endian;
 
+    /** Default constrcutor */
+
+    IOStream();
+
     /** Constructor of a new stream for any mode and opens it */
 
     IOStream( const std::string& filename, std::ios_base::openmode mode, Endian usedEndian = MACHINE_ENDIAN );

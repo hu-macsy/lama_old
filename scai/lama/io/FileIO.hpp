@@ -51,6 +51,30 @@ namespace lama
 
 class _MatrixStorage;
 
+/**
+ *  @brief Enumeration class for different file modes
+ */
+enum class FileMode
+{
+    BINARY,             //!< binary
+    FORMATTED,          //!< formatted text
+    DEFAULT             //!< keep it as it is set by default
+};
+
+/**
+ *  Enum type for entities that might be stored in a file.
+ */
+enum class IOItem
+{
+    DENSE_DATA,         //!< dense vector
+    GRID_DATA,          //!< grid vector
+    SPARSE_DATA,        //!< sparse vector
+    CSR_MATRIX,         //!< sparse matrix in CSR format
+    COO_MATRIX,         //!< sparse matrix in COO format
+    DENSE_MATRIX,       //!< sparse matrix in dense format
+    UNKNOWN             //!< unknown entry, i.e. any other stuff
+};
+
 /** This abstract base class specifies the methods that have to be
  *  implemented for read/write of matrix storage and vector arrays.
  *
@@ -64,7 +88,6 @@ class _MatrixStorage;
  *        The struct IOWrapper is a helper struct that provides this
  *        funtionality.
  */
-
 class COMMON_DLL_IMPORTEXPORT FileIO :
 
     public common::Factory<std::string, FileIO*>,
@@ -74,18 +97,28 @@ class COMMON_DLL_IMPORTEXPORT FileIO :
 
 public:
 
-    typedef enum
-    {
-        BINARY,             //!< forces the use of binary write
-        FORMATTED,          //!< forces the use of formatted write
-        DEFAULT_MODE        //!< keep it as it is set by default
-    } FileMode;
-
     /** Constructor sets default values for mode */
 
     FileIO();
 
     virtual ~FileIO();
+
+    /**
+     *  @brief Pure method to open a file.
+     *
+     *  @param[in] fileName specifies the name of the file
+     *  @param[in] fileMode is either "r" for reading a file, "w" for writing into it, or "a" for append to it
+     *
+     *  This method might throw an IOException if the file could not be opened or if a mode is not supported.
+     */
+    virtual void open( const char* fileName, const char* fileMode ) = 0;
+
+    /**
+     *  @brief Pure method to close the currently open file.
+     *
+     *  This method might throw an IOEception if no file is open at all.
+     */
+    virtual void close() = 0;
 
     /** Query if a certain file mode is supported
      *
@@ -109,7 +142,7 @@ public:
      *  - mScalarTypeData  representation type used for data within file
      */
 
-    virtual void writeStorage( const _MatrixStorage& storage, const std::string& fileName ) = 0;
+    virtual void writeStorage( const _MatrixStorage& storage ) = 0;
 
     /** Write 'dense' array of arbitrary type into a file.
      *
@@ -119,7 +152,7 @@ public:
      *  - mBinary if true data is written binary
      *  - mDataType output format used for non-zero values
      */
-    virtual void writeArray( const hmemo::_HArray& array, const std::string& fileName ) = 0;
+    virtual void writeArray( const hmemo::_HArray& array ) = 0;
 
     /** Write multi-dimensional array of arbitrary type into a file with the shape
      *
@@ -130,7 +163,7 @@ public:
      *  - mBinary if true data is written binary
      *  - mDataType output format used for non-zero values
      */
-    virtual void writeGridArray( const hmemo::_HArray& array, const common::Grid& grid, const std::string& fileName ) = 0;
+    virtual void writeGridArray( const hmemo::_HArray& array, const common::Grid& grid ) = 0;
 
     /** Write 'sparse' array of arbitrary type into a file.
      *
@@ -144,104 +177,52 @@ public:
     virtual void writeSparse( 
         const IndexType size, 
         const hmemo::HArray<IndexType>& indexes, 
-        const hmemo::_HArray& values, 
-        const std::string& fileName ) = 0;
+        const hmemo::_HArray& values ) = 0;
 
     /** Get info about the storage stored in a file.
      *
      *  @param[out] numRows    number of rows for the storage in the file
      *  @param[out] numColumns number of columns for the storage in the file
      *  @param[out] numValues  number of non-zero values for the storage in the file
-     *  @param[in]  fileName   number of non-zero values for the storage in the file
-     */
-    virtual void readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& fileName ) = 0;
-
-    /** Read (local) matrix storage from a file
      *
-     *   - implicit conversion by reading from formatted file
-     *   - for binary files the type must match the type of storage
      */
+    virtual void getStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues ) = 0;
 
-    /** Read in a matrix from a file but only a contiguous section of rows.
+    /** Read in a matrix storage from the opened file
      *
      *  @param[out] storage  is the submatrix from the full matrix stored in the file
-     *  @param[in]  fileName is the name of the input file containing the matrix.
-     *  @param[in]  offsetRow index of first row to read
-     *  @param[in]  nRows    number of rows to read
-     *
-     *  This routine can be used to read in one matrix from a single file with multiple processors
-     *  where each processor reads in its local part.
-     *
-     *  This routine can also be used by a single processor that reads in the corresponding blocks and
-     *  writes them to separate files.
-     *
-     *  The default implementation of the base class reads in the full storage and extracts the local
-     *  part of it. Derived classes should implement solutions where it is not necessary to allocate memory
-     *  for the full matrix but only for the corresponding block. In case of binary data, direct file access
-     *  might be exploited to extract the needed data from the input file.
      */
-    virtual void readStorage(
-        _MatrixStorage& storage,
-        const std::string& fileName,
-        const IndexType offsetRow = 0,
-        const IndexType nRows = invalidIndex ) = 0;
+    virtual void readStorage( _MatrixStorage& storage ) = 0;
 
     /** Read in the size of an array saved in a file
      *
      *  @param[out] size     number of entries for the array saved in the file
-     *  @param[in]  fileName C++ string containing the name of the file where the array is saved
      *  @throws common::Exception if file cannot be opened or if it does not contain an array
      */
-    virtual void readArrayInfo( IndexType& size, const std::string& fileName ) = 0;
-
-    /** Read in an array from a file in the corresponding format.
-     *
-     *  @param[out] array    container that will keep the array saved in file fileName
-     *  @param[in]  fileName C++ string containing the name of the file where the array is saved
-     *  @throws common::Exception if file cannot be opened or if it does not contain an array
-     *
-     *  If the value type of the array does not match the data stored in the file, an implicit
-     *  type conversion is done.
-     *
-     *  If the file contains binary data, it is assumed that its type is the same as the value
-     *  type of the array argument unless the environment variable ``SCAI_IO_TYPE`` has been set.
-     */
+    virtual void getArrayInfo( IndexType& size ) = 0;
 
     /** Read in a 'dense' array block from a file in the corresponding format.
      *
      *  @param[out] array    will contain the corresponding array values
-     *  @param[in]  fileName name of the input file with array data
-     *  @param[in]  offset   first entry to read
-     *  @param[in]  n        number of entries to read, invalidIndex stands for all remaining entries
-     *
-     *  This method has exactly the same behavior as readArray but with the difference that only
-     *  a part of the array is read.
      */
-    virtual void readArray(
-        hmemo::_HArray& array,
-        const std::string& fileName,
-        const IndexType offset = 0,
-        const IndexType n = invalidIndex ) = 0;
+    virtual void readArray( hmemo::_HArray& array ) = 0;
 
     virtual void readGridArray(
         hmemo::_HArray& array,
-        common::Grid& grid,
-        const std::string& fileName ) = 0;
+        common::Grid& grid ) = 0;
 
     /** Read in a 'sparse' array from a file in the corresponding format.
      *
      *  @param[out] size is the size of the array
      *  @param[out] indexes are the positions with non-zero values
      *  @param[out] values are the values at the corresponding positions.
-     *  @param[in]  fileName of the input file with array data.
      *
      *  This method must be implemented by each derived class. 
      */
     virtual void readSparse( 
         IndexType& size,
         hmemo::HArray<IndexType>& indexes,
-        hmemo::_HArray& values,
-        const std::string& fileName ) = 0;
+        hmemo::_HArray& values ) = 0;
 
     /** File suffix can be used to decide about choice of FileIO class */
 
@@ -321,27 +302,21 @@ public:
         const std::string& fileName,
         const common::ScalarType dataType = common::ScalarType::INTERNAL );
 
-    /** Static method to read an array or a contiguous section of an array from a file.
+    /** Static method to read an array from a file
      *
      *  @param[out] array will contain the array data
      *  @param[in]  fileName is the name of the input file where the array is saved
      *  @param[in]  dataType specifies the type that has been used for the values in the input file
-     *  @param[in]  first index of the first element to read, defaults to 0
-     *  @param[in]  n     number of elements, default is invalidIndex that stands for up to the end
      *
      *  \code
      *      HArray<double> data;
      *      FileIO::read( data, "myData.txt" )           // reads the full array
-     *      FileIO::read( data, "myData.txt", 50 )       // reads array but skips first 50 entries
-     *      FileIO::read( data, "myData.txt", 50, 10 )   // reads for pos 50 next 10 elements
      *  \endcode
      */
     static void read(
         hmemo::_HArray& array,
         const std::string& fileName,
-        const common::ScalarType dataType = common::ScalarType::INTERNAL,
-        const IndexType first = 0,
-        const IndexType n = invalidIndex );
+        const common::ScalarType dataType = common::ScalarType::INTERNAL );
 
     static void read(
         IndexType& size,
@@ -350,7 +325,7 @@ public:
         const std::string& fileName,
         const common::ScalarType dataType = common::ScalarType::INTERNAL );
 
-    /** Stati method to read a multi-dimensional array from a file. */
+    /** Static method to read a multi-dimensional array from a file. */
 
     static void read(
         hmemo::_HArray& array,

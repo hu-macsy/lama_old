@@ -624,11 +624,11 @@ private:
         const std::string& fileName,
         const std::string& fileType,
         const common::ScalarType dataType,
-        const FileIO::FileMode fileMode ) const;
+        const FileMode fileMode ) const;
 
     /** Implementation of _Vector::readLocalFromFile */
 
-    virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = invalidIndex );
+    virtual IndexType readLocalFromFile( const std::string& fileName );
 
     /** Implementation of _Vector::clearValues */
 
@@ -795,8 +795,21 @@ DenseVector<ValueType> denseVectorUndefined(
     return denseVector;
 }
 
+/**
+ * @brief create a distributed vector and fill it by a function 
+ *
+ * @param[in] distribution determines global/local size of the vector
+ * @param[in] fillFunction is a function that returns for a 'global' index the value
+ * @param[in] ctx context where the vector is allocated
+ *
+ * \code
+ *     auto dist = dmemo::blockDistribution( n );
+ *     auto lambda = []( IndexType i ) { return sin( 2.0 * pi * double( i ) / double( n ) ); }
+ *     auto v = denseVectorFill<double>( dist, lambda );
+ * \endcode
+ */
 template<typename ValueType>
-DenseVector<ValueType> denseVector(
+DenseVector<ValueType> denseVectorFill(
     dmemo::DistributionPtr distribution, 
     ValueType ( *fillFunction ) ( IndexType ),
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
@@ -809,7 +822,7 @@ DenseVector<ValueType> denseVector(
 }
 
 template<typename ValueType>
-DenseVector<ValueType> denseVector(
+DenseVector<ValueType> denseVectorFill(
     const IndexType n,
     ValueType ( *fillFunction ) ( IndexType ),
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
@@ -823,10 +836,9 @@ DenseVector<ValueType> denseVector(
 
 template<typename ValueType>
 DenseVector<ValueType> denseVectorRead(
-    const char* fileName
+    const char* fileName,
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
 {
-    SCAI_ASSERT_ERROR( fillFunction, "NULL function for filling" )
     DenseVector<ValueType> denseVector( ctx );
     denseVector.readFromFile( fileName );
     return denseVector;

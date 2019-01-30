@@ -59,7 +59,7 @@ int main()
     auto fillSource = []( IndexType k ) { return ValueType( k ) / ValueType( N ); };
 
     auto indexes = denseVectorLinear<IndexType>( targetDist, 2, 1 );
-    auto source  = denseVector<ValueType>( sourceDist, fillSource );
+    auto source  = denseVectorFill<ValueType>( sourceDist, fillSource );
     
     DenseVector<ValueType> target( targetDist, ValueType( 0 ) );
     source.gatherFrom( target, indexes, common::BinaryOp::COPY );

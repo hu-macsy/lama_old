@@ -48,7 +48,7 @@ namespace lama
 
 FileIO::FileIO() :
 
-    mFileMode( DEFAULT_MODE ),                       // no forace of anything
+    mFileMode( FileMode::DEFAULT ),                       // no forace of anything
     mAppendMode( false ),                            // default is to write each output file new
     mScalarTypeIndex( common::ScalarType::INDEX_TYPE ),  // default is as used in LAMA
     mScalarTypeData( common::ScalarType::INTERNAL )      // default is same type as used in output data structure
@@ -59,11 +59,11 @@ FileIO::FileIO() :
     {
         if ( binary )
         {
-            mFileMode = BINARY;
+            mFileMode = FileMode::BINARY;
         }
         else
         {
-            mFileMode = FORMATTED;
+            mFileMode = FileMode::FORMATTED;
         }
 
         SCAI_LOG_INFO( logger, "File mode set by SCAI_IO_BINARY = " << binary )
@@ -121,11 +121,11 @@ void FileIO::writeMode( std::ostream& stream ) const
 {
     stream << "FileMode = ";
 
-    if ( mFileMode == BINARY )
+    if ( mFileMode == FileMode::BINARY )
     {
         stream << "binary";
     }
-    else if ( mFileMode == FORMATTED )
+    else if ( mFileMode == FileMode::FORMATTED )
     {
         stream << "formatted";
     }
@@ -283,7 +283,9 @@ void FileIO::write(
     std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
-    fileIO->writeArray( array, outFileName );
+    fileIO->open( outFileName.c_str(), "w" );
+    fileIO->writeArray( array );
+    fileIO->close();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -307,7 +309,9 @@ void FileIO::write(
     std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
-    fileIO->writeSparse( size, indexes, values, outFileName );
+    fileIO->open( outFileName.c_str(), "w" );
+    fileIO->writeSparse( size, indexes, values );
+    fileIO->close();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -315,9 +319,7 @@ void FileIO::write(
 void FileIO::read(
     hmemo::_HArray& array,
     const std::string& inFileName,
-    const common::ScalarType dataType,
-    const IndexType first,
-    const IndexType n )
+    const common::ScalarType dataType )
 {
     std::string suffix = getSuffix( inFileName );
 
@@ -330,7 +332,9 @@ void FileIO::read(
     std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
-    fileIO->readArray( array, inFileName, first, n );
+    fileIO->open( inFileName.c_str(), "r" );
+    fileIO->readArray( array );
+    fileIO->close();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -352,7 +356,9 @@ void FileIO::read(
     std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
-    fileIO->readGridArray( array, grid, inFileName );
+    fileIO->open( inFileName.c_str(), "r" );
+    fileIO->readGridArray( array, grid );
+    fileIO->close();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -375,7 +381,9 @@ void FileIO::read(
     std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
-    fileIO->readSparse( size, indexes, values, inFileName );
+    fileIO->open( inFileName.c_str(), "r" );
+    fileIO->readSparse( size, indexes, values );
+    fileIO->close();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -394,7 +402,9 @@ IndexType FileIO::getArraySize( const std::string& inFileName )
 
     IndexType size = invalidIndex;
 
-    fileIO->readArrayInfo( size, inFileName );
+    fileIO->open( inFileName.c_str(), "r" );
+    fileIO->getArrayInfo( size );
+    fileIO->close();
 
     return size;
 }
@@ -417,7 +427,9 @@ IndexType FileIO::getStorageSize( const std::string& fileName )
     IndexType numColumns = 0;   // dummy
     IndexType numValues = 0;    // dummy
 
-    fileIO->readStorageInfo( size, numColumns, numValues, fileName );
+    fileIO->open( fileName.c_str(), "r" );
+    fileIO->getStorageInfo( size, numColumns, numValues );
+    fileIO->close();
 
     return size;
 }

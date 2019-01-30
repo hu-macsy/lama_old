@@ -30,13 +30,19 @@
 #pragma once
 
 #include <scai/lama/io/FileIO.hpp>
-#include <scai/lama/storage/DenseStorage.hpp>
+#include <scai/lama/io/IOStream.hpp>
 
 namespace scai
 {
 
 namespace lama
 {
+
+template<typename ValueType>
+class DenseStorage;
+
+template<typename ValueType>
+class MatrixStorage;
 
 class MatrixMarketIO :
 
@@ -46,45 +52,43 @@ class MatrixMarketIO :
 
 public:
 
+    /** Implementation of pure virtual method FileIO::open */
+
+    virtual void open( const char* fileName, const char* fileMode );
+
+    /** Implementation of pure virtual method FileIO::close */
+
+    virtual void close();
+
     /** Implementation of pure virtual method FileIO::writeStorage */
 
-    void writeStorage( const _MatrixStorage& storage, const std::string& fileName );
+    void writeStorage( const _MatrixStorage& storage );
 
     /** Implementation of pure virtual method FileIO::readStorage  */
 
-    void readStorage(
-        _MatrixStorage& storage,
-        const std::string& fileName,
-        const IndexType offsetRow,
-        const IndexType nRows );
+    void readStorage( _MatrixStorage& storage );
 
     /** Implementation of FileIO::writeArray */
 
-    void writeArray( const hmemo::_HArray& array, const std::string& fileName );
+    void writeArray( const hmemo::_HArray& array );
 
     /** Implementation of pure virtual method FileIO::writeSparse  */
 
     virtual void writeSparse(
         const IndexType size,
         const hmemo::HArray<IndexType>& indexes,
-        const hmemo::_HArray& array,
-        const std::string& fileName );
+        const hmemo::_HArray& array );
 
     /** Implementation of pure virtual method FileIO::readArray using same defaults */
 
-    virtual void readArray(
-        hmemo::_HArray& array,
-        const std::string& fileName,
-        const IndexType offset = 0,
-        const IndexType n = invalidIndex );
+    virtual void readArray( hmemo::_HArray& array );
 
     /** Implementation of pure virtual method FileIO::readSparse */
 
     virtual void readSparse(
         IndexType& size,
         hmemo::HArray<IndexType>& indexes,
-        hmemo::_HArray& values,
-        const std::string& fileName );
+        hmemo::_HArray& values );
 
     /** Implementation of FileIO::getMatrixFileSuffix */
 
@@ -110,19 +114,19 @@ public:
 
     static std::string createValue();
 
-    /** Implementation of pure methdod FileIO::readStorageInfo */
+    /** Implementation of pure methdod FileIO::getStorageInfo */
 
-    virtual void readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& fileName );
+    virtual void getStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues );
 
-    /** Implementation of pure methdod FileIO::readArrayInfo */
+    /** Implementation of pure methdod FileIO::getArrayInfo */
 
-    virtual void readArrayInfo( IndexType& size, const std::string& fileName );
+    virtual void getArrayInfo( IndexType& size );
 
     /** Implementation of writing array with grid information */
 
-    void writeGridArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName );
+    void writeGridArray( const hmemo::_HArray& data, const common::Grid& grid );
 
-    void readGridArray( hmemo::_HArray& data, common::Grid& grid, const std::string& outputFileName );
+    void readGridArray( hmemo::_HArray& data, common::Grid& grid );
 
 public:
 
@@ -132,17 +136,17 @@ public:
      */
 
     template<typename ValueType>
-    void writeStorageImpl( const MatrixStorage<ValueType>& storage, const std::string& fileName );
+    void writeStorageImpl( const MatrixStorage<ValueType>& storage );
 
     /** Typed version of readStorage */
 
     template<typename ValueType>
-    void readStorageImpl( MatrixStorage<ValueType>& storage, const std::string& fileName, const IndexType firstRow, const IndexType nRows );
+    void readStorageImpl( MatrixStorage<ValueType>& storage );
 
     /** Typed version of the writeArray */
 
     template<typename ValueType>
-    void writeArrayImpl( const hmemo::HArray<ValueType>& array, const std::string& fileName );
+    void writeArrayImpl( const hmemo::HArray<ValueType>& array );
 
     /** Typed version of the writeSparse */
 
@@ -150,13 +154,12 @@ public:
     void writeSparseImpl(
         const IndexType size,
         const hmemo::HArray<IndexType>& indexes,
-        const hmemo::HArray<ValueType>& values,
-        const std::string& fileName );
+        const hmemo::HArray<ValueType>& values );
 
     /** Typed version of readArray */
 
     template<typename ValueType>
-    void readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& fileName, const IndexType first, const IndexType n );
+    void readArrayImpl( hmemo::HArray<ValueType>& array );
 
     /** Typed version of readSparse */
 
@@ -164,12 +167,13 @@ public:
     void readSparseImpl(
         IndexType& size,
         hmemo::HArray<IndexType>& indexes,
-        hmemo::HArray<ValueType>& values,
-        const std::string& fileName );
+        hmemo::HArray<ValueType>& values );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for IO class
 
 private:
+
+    class IOStream mFile;    // used file
 
     /** Enumeration type for the different symmetry flags in the _Matrix Market file */
 
@@ -195,7 +199,6 @@ private:
         const common::ScalarType dataType );
 
     void readMMHeader(
-        class IOStream& inFile,
         IndexType& numRows,
         IndexType& numColumns,
         IndexType& numValues,
@@ -221,7 +224,6 @@ private:
 
     template<typename ValueType>
     void readMMArray(
-        class IOStream& inFile,
         hmemo::HArray<ValueType>& data,
         const IndexType numRows,
         const IndexType numColumns,
@@ -231,15 +233,12 @@ private:
     void readVectorCoordinates(
         hmemo::HArray<IndexType>& indexes,
         hmemo::HArray<ValueType>& values,
-        class IOStream& inFile,
         const IndexType numValues,
         const bool isVector,
         common::ScalarType mmType );
 
     template<typename ValueType>
-    void writeDenseMatrix(
-        const DenseStorage<ValueType>& storage,
-        const std::string& fileName );
+    void writeDenseMatrix( const DenseStorage<ValueType>& storage );
 
 };
 

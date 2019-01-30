@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DenseVectorTest, ValueType, scai_array_test_types
 
     ValueType inc = ValueType( 1 ) / ValueType( N );
 
-    auto v1 = linearDenseVector<ValueType>( dist, 0, inc );
+    auto v1 = denseVectorLinear<ValueType>( dist, 0, inc );
 
     const char fileName[] = "DenseVectorTest.data";
 
@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DenseVectorConvertTest, ValueType, scai_array_tes
     CollectiveIO::read( *file, v3 );
     file->close();
 
-    auto expV = linearDenseVector<ValueType>( dist, 0, 1 );
+    auto expV = denseVectorLinear<ValueType>( dist, 0, 1 );
 
     BOOST_TEST( hostReadAccess( expV.getLocalValues() ) == hostReadAccess( v1.getLocalValues() ), per_element() );
     BOOST_TEST( hostReadAccess( expV.getLocalValues() ) == hostReadAccess( v2.getLocalValues() ), per_element() );

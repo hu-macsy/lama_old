@@ -462,11 +462,11 @@ private:
         const std::string& fileName,
         const std::string& fileType,
         const common::ScalarType dataType,
-        const FileIO::FileMode fileMode ) const;
+        const FileMode fileMode ) const;
 
     /** Implementation of _Vector::readLocalFromFile */
 
-    virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = invalidIndex );
+    virtual IndexType readLocalFromFile( const std::string& fileName );
 
     /** Implementation of _Vector::clearValues */
 

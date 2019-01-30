@@ -114,7 +114,7 @@ public:
         const std::string& fileType = "",
         const common::ScalarType dataType = common::ScalarType::UNKNOWN,
         const common::ScalarType indexType = common::ScalarType::UNKNOWN,
-        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
+        const FileMode fileMode = FileMode::DEFAULT  ) const;
 
     /**
      * @brief Checks for a given matrix whether the content of its data is sound.
@@ -760,14 +760,14 @@ private:
         const std::string& fileType,
         const common::ScalarType dataType,
         const common::ScalarType indexType,
-        const FileIO::FileMode fileMode ) const;
+        const FileMode fileMode ) const;
 
     void writeToPartitionedFile(
         const std::string& fileName,
         const std::string& fileType,
         const common::ScalarType dataType,
         const common::ScalarType indexType,
-        const FileIO::FileMode fileMode ) const;
+        const FileMode fileMode ) const;
 };
 
 /* ======================================================================== */

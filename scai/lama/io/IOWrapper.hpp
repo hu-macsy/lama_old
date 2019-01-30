@@ -44,53 +44,57 @@ namespace lama
 /*  Metaprogramming for different Value Types                                        */
 /* --------------------------------------------------------------------------------- */
 
-/** Metaprogramming structure to call a routine for each type in a typelist */
-
-template<class Derived, typename TList>
+/** Metaprogramming structure to call a routine for each type in a typelist 
+ *
+ *  \code
+ *      IOWrapper<MatrixMarketIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArrayImpl( *this, array );
+ *  \endcode
+ */
+template<class IOClass, typename TList>
 struct IOWrapper;
 
 /*
  * Termination
  */
-template<class Derived>
-struct IOWrapper<Derived, common::mepr::NullType>
+template<class IOClass>
+struct IOWrapper<IOClass, common::mepr::NullType>
 {
-    static void writeStorageImpl( Derived&, const _MatrixStorage& storage, const std::string& )
+    static void writeStorageImpl( IOClass&, const _MatrixStorage& storage )
     {
         COMMON_THROWEXCEPTION( "writeStorage " << storage << " unsupported, unknown type." )
     }
 
-    static void readStorageImpl( Derived&, _MatrixStorage& storage, const std::string&, const IndexType, const IndexType )
+    static void readStorageImpl( IOClass&, _MatrixStorage& storage )
     {
         COMMON_THROWEXCEPTION( "readStorage " << storage << " unsupported, unknown type." )
     }
 
-    static void writeArrayImpl( Derived&, const hmemo::_HArray& array, const std::string& )
+    static void writeArrayImpl( IOClass&, const hmemo::_HArray& array )
     {
         COMMON_THROWEXCEPTION( "writeArray " << array << " unsupported, unknown type." )
     }
 
-    static void writeSparseImpl( Derived&, const IndexType, const hmemo::HArray<IndexType>&, const hmemo::_HArray& array, const std::string& )
+    static void writeSparseImpl( IOClass&, const IndexType, const hmemo::HArray<IndexType>&, const hmemo::_HArray& array )
     {
         COMMON_THROWEXCEPTION( "writeArray " << array << " unsupported, unknown type." )
     }
 
-    static void readArrayImpl( Derived&, hmemo::_HArray& array, const std::string&, const IndexType, const IndexType )
+    static void readArrayImpl( IOClass&, hmemo::_HArray& array )
     {
         COMMON_THROWEXCEPTION( "readArray " << array << " unsupported, unknown type." )
     }
 
-    static void readSparseImpl( Derived&, IndexType&, hmemo::HArray<IndexType>&, hmemo::_HArray& array, const std::string& )
+    static void readSparseImpl( IOClass&, IndexType&, hmemo::HArray<IndexType>&, hmemo::_HArray& array )
     {
         COMMON_THROWEXCEPTION( "readSparse unsupported, " << array.getValueType() << " not in SCAI_ARRAY_TYPES"  )
     }
 
-    static void writeGridImpl( Derived&, const hmemo::_HArray& data, const common::Grid&, const std::string& )
+    static void writeGridImpl( IOClass&, const hmemo::_HArray& data, const common::Grid& )
     {
         COMMON_THROWEXCEPTION( "write " << data << " unsupported, unknown type." )
     }
 
-    static void readGridImpl( Derived&, hmemo::_HArray& data, common::Grid&, const std::string& )
+    static void readGridImpl( IOClass&, hmemo::_HArray& data, common::Grid& )
     {
         COMMON_THROWEXCEPTION( "read " << data << " unsupported, unknown type." )
     }
@@ -99,122 +103,110 @@ struct IOWrapper<Derived, common::mepr::NullType>
 /*
  * Step n
  */
-template<class Derived, typename ValueType, typename TailTypes>
-struct IOWrapper<Derived, common::mepr::TypeList<ValueType, TailTypes> >
+template<class IOClass, typename ValueType, typename TailTypes>
+struct IOWrapper<IOClass, common::mepr::TypeList<ValueType, TailTypes> >
 {
-    static void writeStorageImpl( Derived& io, const _MatrixStorage& storage, const std::string& fileName )
+    static void writeStorageImpl( IOClass& io, const _MatrixStorage& storage )
     {
         if ( storage.getValueType() == common::getScalarType<ValueType>() )
         {
-            io.writeStorageImpl( reinterpret_cast<const MatrixStorage<ValueType>& >( storage ), fileName );
+            io.writeStorageImpl( static_cast<const MatrixStorage<ValueType>& >( storage ) );
         }
         else
         {
-            IOWrapper<Derived, TailTypes>::writeStorageImpl( io, storage, fileName );
+            IOWrapper<IOClass, TailTypes>::writeStorageImpl( io, storage );
         }
     }
 
-    static void readStorageImpl(
-        Derived& io,
-        _MatrixStorage& storage,
-        const std::string& fileName,
-        const IndexType offsetRow,
-        const IndexType nRows )
+    static void readStorageImpl( IOClass& io, _MatrixStorage& storage )
     {
         if ( storage.getValueType() == common::getScalarType<ValueType>() )
         {
-            io.readStorageImpl( reinterpret_cast< MatrixStorage<ValueType>& >( storage ), fileName, offsetRow, nRows );
+            io.readStorageImpl( static_cast< MatrixStorage<ValueType>& >( storage ) );
         }
         else
         {
-            IOWrapper<Derived, TailTypes>::readStorageImpl( io, storage, fileName, offsetRow, nRows );
+            IOWrapper<IOClass, TailTypes>::readStorageImpl( io, storage );
         }
     }
 
-    static void writeArrayImpl( Derived& io, const hmemo::_HArray& array, const std::string& fileName )
+    static void writeArrayImpl( IOClass& io, const hmemo::_HArray& array )
     {
         if ( array.getValueType() == common::getScalarType<ValueType>() )
         {
-            io.writeArrayImpl( reinterpret_cast<const hmemo::HArray<ValueType>& >( array ), fileName );
+            io.writeArrayImpl( static_cast<const hmemo::HArray<ValueType>& >( array ) );
         }
         else
         {
-            IOWrapper<Derived, TailTypes>::writeArrayImpl( io, array, fileName );
+            IOWrapper<IOClass, TailTypes>::writeArrayImpl( io, array );
         }
     }
 
     static void writeSparseImpl( 
-        Derived& io, 
+        IOClass& io, 
         const IndexType size, 
         const hmemo::HArray<IndexType>& indexes, 
-        const hmemo::_HArray& values, 
-        const std::string& fileName )
+        const hmemo::_HArray& values )
     {
         if ( values.getValueType() == common::getScalarType<ValueType>() )
         {
-            io.writeSparseImpl( size, indexes, reinterpret_cast<const hmemo::HArray<ValueType>& >( values ), fileName );
+            io.writeSparseImpl( size, indexes, static_cast<const hmemo::HArray<ValueType>& >( values ) );
         }
         else
         {
-            IOWrapper<Derived, TailTypes>::writeSparseImpl( io, size, indexes, values, fileName );
+            IOWrapper<IOClass, TailTypes>::writeSparseImpl( io, size, indexes, values );
         }
     }
 
-    static void readArrayImpl(
-        Derived& io,
-        hmemo::_HArray& array,
-        const std::string& fileName,
-        const IndexType offset,
-        const IndexType n )
+    static void readArrayImpl( IOClass& io, hmemo::_HArray& array )
     {
         if ( array.getValueType() == common::getScalarType<ValueType>() )
         {
-            io.readArrayImpl( reinterpret_cast< hmemo::HArray<ValueType>& >( array ), fileName, offset, n );
+            io.readArrayImpl( static_cast< hmemo::HArray<ValueType>& >( array ) );
         }
         else
         {
-            IOWrapper<Derived, TailTypes>::readArrayImpl( io, array, fileName, offset, n );
+            IOWrapper<IOClass, TailTypes>::readArrayImpl( io, array );
         }
     }
 
     static void readSparseImpl(
-        Derived& io,
+        IOClass& io,
         IndexType& size, 
         hmemo::HArray<IndexType>& indexes, 
-        hmemo::_HArray& values, 
-        const std::string& fileName )
+        hmemo::_HArray& values )
     {
         if ( values.getValueType() == common::getScalarType<ValueType>() )
         {
-            io.readSparseImpl( size, indexes, reinterpret_cast< hmemo::HArray<ValueType>& >( values ), fileName );
+            io.readSparseImpl( size, indexes, static_cast< hmemo::HArray<ValueType>& >( values ) );
         }
         else
         {
-            IOWrapper<Derived, TailTypes>::readSparseImpl( io, size, indexes, values, fileName );
+            IOWrapper<IOClass, TailTypes>::readSparseImpl( io, size, indexes, values );
         }
     }
 
-    static void writeGridImpl( Derived& io, const hmemo::_HArray& data, const common::Grid& grid, const std::string& fileName )
+    static void writeGridImpl( IOClass& io, const hmemo::_HArray& data, const common::Grid& grid )
     {
         if ( data.getValueType() == common::getScalarType<ValueType>() )
         {
-            io.writeGridImpl( reinterpret_cast<const hmemo::HArray<ValueType>& >( data ), grid, fileName );
+            io.writeGridImpl( static_cast<const hmemo::HArray<ValueType>& >( data ), grid );
         }
         else
         {
-            IOWrapper<Derived, TailTypes>::writeGridImpl( io, data, grid, fileName );
+            IOWrapper<IOClass, TailTypes>::writeGridImpl( io, data, grid );
         }
     }
 
-    static void readGridImpl( Derived& io, hmemo::_HArray& data, common::Grid& grid, const std::string& fileName )
+    static void readGridImpl( IOClass& io, hmemo::_HArray& data, common::Grid& grid )
     {
         if ( data.getValueType() == common::getScalarType<ValueType>() )
         {
-            io.readGridImpl( reinterpret_cast<hmemo::HArray<ValueType>& >( data ), grid, fileName );
+            io.readGridImpl( static_cast<hmemo::HArray<ValueType>& >( data ), grid );
         }
         else
         {
-            IOWrapper<Derived, TailTypes>::readGridImpl( io, data, grid, fileName );
+            IOWrapper<IOClass, TailTypes>::readGridImpl( io, data, grid );
         }
     }
 };

@@ -265,9 +265,9 @@ double _Matrix::getSparsityRate() const
 void _Matrix::writeToSingleFile(
     const std::string& fileName,
     const std::string& fileType,
-    const common::ScalarType dataType /* = UNKNOWN for DEFAULT */,
+    const common::ScalarType dataType  /* = UNKNOWN for DEFAULT */,
     const common::ScalarType indexType /* = UNKNOWN for DEFAULT */,
-    const FileIO::FileMode fileMode /* = DEFAULT_MODE */ ) const
+    const FileMode fileMode            /* = FileMode::DEFAULT   */ ) const
 {
     SCAI_LOG_INFO( logger,
                    *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
@@ -300,9 +300,9 @@ void _Matrix::writeToSingleFile(
 void _Matrix::writeToPartitionedFile(
     const std::string& fileName,
     const std::string& fileType,
-    const common::ScalarType dataType /* = UNKNOWN for DEFAULT */,
+    const common::ScalarType dataType  /* = UNKNOWN for DEFAULT */,
     const common::ScalarType indexType /* = UNKNOWN for DEFAULT */,
-    const FileIO::FileMode fileMode /* = DEFAULT_MODE */ ) const
+    const FileMode fileMode            /* = DEFAULT_MODE */ ) const
 {
     SCAI_LOG_INFO( logger,
                    *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
@@ -328,7 +328,7 @@ void _Matrix::writeToFile(
     const std::string& fileType,
     const common::ScalarType dataType,
     const common::ScalarType indexType,
-    const FileIO::FileMode fileMode ) const
+    const FileMode fileMode ) const
 {
     SCAI_LOG_INFO( logger,
                    *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
@@ -407,20 +407,13 @@ void _Matrix::readFromSingleFile( const std::string& fileName, const Distributio
         return;
     }
 
-    IndexType first = 0;
-
-    if ( n > 0 )
-    {
-        first = distribution->local2Global( 0 );   // first global index
-    }
-
     _MatrixStorage& localMatrix = const_cast<_MatrixStorage&>( getLocalStorage() );
 
     bool error = false;
 
     try
     {
-        localMatrix.readFromFile( fileName, first, n );
+        localMatrix.readFromFile( fileName );
     }
     catch ( Exception& ex )
     {

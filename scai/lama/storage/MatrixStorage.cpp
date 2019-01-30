@@ -1023,7 +1023,7 @@ void MatrixStorage<ValueType>::writeToFile(
     const std::string& fileType,
     const common::ScalarType valuesType,
     const common::ScalarType indexType,
-    const FileIO::FileMode mode ) const
+    const FileMode mode ) const
 {
     writeToFile( 1, 0, fileName, fileType, valuesType, indexType, mode );
 }
@@ -1036,7 +1036,7 @@ void MatrixStorage<ValueType>::writeToFile(
     const std::string& fileType,
     const common::ScalarType dataType,
     const common::ScalarType indexType,
-    const FileIO::FileMode mode ) const
+    const FileMode mode ) const
 {
     std::string suffix = fileType;
 
@@ -1061,7 +1061,7 @@ void MatrixStorage<ValueType>::writeToFile(
             fileIO->setIndexType( indexType );
         }
 
-        if ( mode != FileIO::DEFAULT_MODE )
+        if ( mode != FileMode::DEFAULT )
         {
             fileIO->setMode( mode );
         }
@@ -1070,7 +1070,9 @@ void MatrixStorage<ValueType>::writeToFile(
 
         // Note. SCAI_IO_TYPE_DATA allows that data is converted
 
-        fileIO->writeStorage( *this, fileName );
+        fileIO->open( fileName.c_str(), "w" );
+        fileIO->writeStorage( *this );
+        fileIO->close();
     }
     else
     {
@@ -1081,7 +1083,7 @@ void MatrixStorage<ValueType>::writeToFile(
 /*****************************************************************************/
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::readFromFile( const std::string& fileName, const IndexType firstRow, IndexType nRows )
+void MatrixStorage<ValueType>::readFromFile( const std::string& fileName )
 {
     SCAI_LOG_INFO( logger, "MatrixStorage<" << getValueType() << ">::readFromFile( " << fileName << ")" )
     SCAI_REGION( "Storage.readFromFile" )
@@ -1101,7 +1103,9 @@ void MatrixStorage<ValueType>::readFromFile( const std::string& fileName, const 
 
         SCAI_LOG_INFO( logger, "Got from factory: " << *fileIO )
 
-        fileIO->readStorage( *this, fileName, firstRow, nRows );
+        fileIO->open( fileName.c_str(), "r" );
+        fileIO->readStorage( *this );
+        fileIO->close();
     }
     else
     {

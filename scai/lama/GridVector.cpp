@@ -195,7 +195,7 @@ void GridVector<ValueType>::writeLocalToFile(
     const std::string& fileName,
     const std::string& fileType,
     const common::ScalarType dataType,
-    const FileIO::FileMode fileMode
+    const FileMode fileMode
 ) const
 {
     std::string suffix = fileType;
@@ -218,14 +218,16 @@ void GridVector<ValueType>::writeLocalToFile(
             fileIO->setDataType( dataType );
         }
 
-        if ( fileMode != FileIO::DEFAULT_MODE )
+        if ( fileMode != FileMode::DEFAULT )
         {
             // overwrite the default settings
 
             fileIO->setMode( fileMode );
         }
 
-        fileIO->writeGridArray( this->getLocalValues(), this->localGrid(), fileName );
+        fileIO->open( fileName.c_str(), "w" );
+        fileIO->writeGridArray( this->getLocalValues(), this->localGrid() );
+        fileIO->close();
     }
     else
     {

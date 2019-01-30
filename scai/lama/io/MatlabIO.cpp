@@ -87,7 +87,7 @@ bool MatlabIO::isSupportedMode( const FileMode mode ) const
 {
     // only binary is supported
 
-    if ( mode == FORMATTED )
+    if ( mode == FileMode::FORMATTED )
     {
         return false;
     }
@@ -102,6 +102,37 @@ void MatlabIO::writeAt( ostream& stream ) const
     stream << "MatlabIO ( suffix = " << MAT_SUFFIX << ", ";
     writeMode( stream );
     stream << ", only formatted )";
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatlabIO::open( const char* fileName, const char* fileMode )
+{
+    if ( strcmp( fileMode, "w" ) == 0 )
+    {
+        SCAI_ASSERT( mFileMode != FileMode::FORMATTED, "Formatted output not supported for " << *this )
+
+        mFile.open( fileName, std::ios::out | std::ios::trunc );
+        mFile.writeMATFileHeader();
+    }
+    else if ( strcmp( fileMode, "r" ) == 0 )
+    {
+        mFile.open( fileName, std::ios::in );
+        int version = 0;
+        IOStream::Endian endian = IOStream::MACHINE_ENDIAN;
+        mFile.readMATFileHeader( version, endian );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "Unsupported file mode for Matlab file: " << fileMode )
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatlabIO::close()
+{
+    mFile.close();
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -193,18 +224,16 @@ void MatlabIO::readMATArray( hmemo::HArray<ValueType>& array, const char* data, 
 
 /* --------------------------------------------------------------------------------- */
 
-void MatlabIO::readArrayInfo( IndexType& n, const string& arrayFileName )
+void MatlabIO::getArrayInfo( IndexType& n )
 {
-    MATIOStream inFile( arrayFileName, ios::in );
-
-    int version = 0;
-    IOStream::Endian endian = IOStream::MACHINE_ENDIAN;
-
-    inFile.readMATFileHeader( version, endian );
-
     std::unique_ptr<char[]> dataElement;
 
-    inFile.readDataElement( dataElement );
+    std::streampos pos = mFile.tellg();
+
+    mFile.readDataElement( dataElement );
+
+    mFile.clear();       // important to reset flags
+    mFile.seekg( pos );
 
     IndexType nDims;
     IndexType dims[2];
@@ -219,17 +248,17 @@ void MatlabIO::readArrayInfo( IndexType& n, const string& arrayFileName )
 
     if ( matClass == MATIOStream::MAT_SPARSE_CLASS )
     {
-        COMMON_THROWEXCEPTION( "File " << arrayFileName << " contains sparse matrix, but not array" )
+        COMMON_THROWEXCEPTION( "File " << mFile.getFileName() << " contains sparse matrix, but not array" )
     }
 
     if ( MATIOStream::class2ScalarType( matClass ) == common::ScalarType::UNKNOWN )
     {
-        COMMON_THROWEXCEPTION( "File " << arrayFileName << " contains unsupported matrix class = " << matClass )
+        COMMON_THROWEXCEPTION( "File " << mFile.getFileName() << " contains unsupported matrix class = " << matClass )
     }
 
     if ( dims[1] != 1 || dims[0] != 1 )
     {
-        SCAI_LOG_WARN( logger, "File " << arrayFileName << ": matrix " << dims[0] << " x " << dims[1] << " considered as array of size " << n )
+        SCAI_LOG_WARN( logger, "File " << mFile.getFileName() << ": matrix " << dims[0] << " x " << dims[1] << " considered as array of size " << n )
     }
 }
 
@@ -311,22 +340,11 @@ static void changeMajor( hmemo::HArray<ValueType>& out, const hmemo::HArray<Valu
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatlabIO::readArrayImpl(
-    hmemo::HArray<ValueType>& array,
-    const string& arrayFileName,
-    const IndexType ,
-    const IndexType )
+void MatlabIO::readArrayImpl( hmemo::HArray<ValueType>& array )
 {
-    MATIOStream inFile( arrayFileName, ios::in );
-
-    int version = 0;
-    IOStream::Endian endian = IOStream::MACHINE_ENDIAN;
-
-    inFile.readMATFileHeader( version, endian );
-
     std::unique_ptr<char[]> dataElement;
 
-    uint32_t nBytes = inFile.readDataElement( dataElement );
+    uint32_t nBytes = mFile.readDataElement( dataElement );
 
     SCAI_LOG_INFO( logger, "Read full data element from input file, #bytes = " << nBytes )
 
@@ -365,14 +383,13 @@ template<typename ValueType>
 void MatlabIO::readSparseImpl(
     IndexType& size,
     HArray<IndexType>& indexes,
-    HArray<ValueType>& values,
-    const std::string& fileName )
+    HArray<ValueType>& values )
 {
     // sparse array not supported for this file format, uses a temporary dense array of same type
 
     HArray<ValueType> denseArray;
 
-    readArray( denseArray, fileName, 0, invalidIndex );
+    readArray( denseArray );
     size = denseArray.size();
     ValueType zeroValue = 0;
     utilskernel::HArrayUtils::buildSparseArray( values, indexes, denseArray, zeroValue );
@@ -381,7 +398,7 @@ void MatlabIO::readSparseImpl(
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-uint32_t MatlabIO::writeArrayData( MATIOStream& outFile, const HArray<ValueType>& array, bool dryRun )
+uint32_t MatlabIO::writeArrayData( const HArray<ValueType>& array, bool dryRun )
 {
     uint32_t wBytes = 0;
 
@@ -393,7 +410,7 @@ uint32_t MatlabIO::writeArrayData( MATIOStream& outFile, const HArray<ValueType>
 
         utilskernel::HArrayUtils::setArray( real, array );
 
-        wBytes += writeArrayData( outFile, real, dryRun );
+        wBytes += writeArrayData( real, dryRun );
 
         HArray<ValueType> tmp;
 #ifdef SCAI_COMPLEX_SUPPORTED
@@ -404,7 +421,7 @@ uint32_t MatlabIO::writeArrayData( MATIOStream& outFile, const HArray<ValueType>
         utilskernel::HArrayUtils::compute( tmp, array, common::BinaryOp::MULT, minusi );
         utilskernel::HArrayUtils::setArray( real, tmp );
 
-        wBytes += writeArrayData( outFile, real, dryRun );
+        wBytes += writeArrayData( real, dryRun );
     }
     else
     {
@@ -414,7 +431,7 @@ uint32_t MatlabIO::writeArrayData( MATIOStream& outFile, const HArray<ValueType>
 
         {
             ReadAccess<ValueType> rArray( array );
-            wBytes = outFile.writeData( rArray.get(), arraySize, dryRun );
+            wBytes = mFile.writeData( rArray.get(), arraySize, dryRun );
         }
     }
 
@@ -424,7 +441,7 @@ uint32_t MatlabIO::writeArrayData( MATIOStream& outFile, const HArray<ValueType>
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatlabIO::writeDenseGrid( MATIOStream& outFile, const hmemo::HArray<ValueType>& array, const common::Grid& grid )
+void MatlabIO::writeDenseGrid( const hmemo::HArray<ValueType>& array, const common::Grid& grid )
 {
     SCAI_ASSERT_EQ_ERROR( array.size(), grid.size(), "array size / dims mismatch" )
 
@@ -447,9 +464,9 @@ void MatlabIO::writeDenseGrid( MATIOStream& outFile, const hmemo::HArray<ValueTy
 
     bool dryRun = true;   // make a dryRun at first to determine the size of written bytes
 
-    uint32_t wBytes = outFile.writeShapeHeader( grid.sizes(), grid.nDims(), nBytes, stype, dryRun );
+    uint32_t wBytes = mFile.writeShapeHeader( grid.sizes(), grid.nDims(), nBytes, stype, dryRun );
 
-    wBytes += writeArrayData( outFile, array, dryRun );
+    wBytes += writeArrayData( array, dryRun );
 
     nBytes = wBytes - 8;  // subtract for the first header
 
@@ -457,8 +474,8 @@ void MatlabIO::writeDenseGrid( MATIOStream& outFile, const hmemo::HArray<ValueTy
 
     dryRun = false;  // now write it with the correct value of nBytes
 
-    wBytes  = outFile.writeShapeHeader( grid.sizes(), grid.nDims(), nBytes, stype, dryRun );
-    wBytes += writeArrayData( outFile, array, dryRun );
+    wBytes  = mFile.writeShapeHeader( grid.sizes(), grid.nDims(), nBytes, stype, dryRun );
+    wBytes += writeArrayData( array, dryRun );
 
     SCAI_LOG_INFO( logger, "written shaped array " << array << " with shape " << grid
                    << ", wBytes = " << wBytes )
@@ -467,28 +484,20 @@ void MatlabIO::writeDenseGrid( MATIOStream& outFile, const hmemo::HArray<ValueTy
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatlabIO::writeArrayImpl(
-    const hmemo::HArray<ValueType>& array,
-    const string& fileName )
+void MatlabIO::writeArrayImpl( const hmemo::HArray<ValueType>& array )
 {
-    SCAI_ASSERT( mFileMode != FORMATTED, "Formatted output not supported for " << *this )
-
-    MATIOStream outFile( fileName, ios::out );
-
-    outFile.writeMATFileHeader();
-
     // Matlab expects even for a vector a two-dimensional grid.
 
     const common::Grid2D grid( array.size(), 1 );
 
-    writeDenseGrid( outFile, array, grid );
+    writeDenseGrid( array, grid );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void MatlabIO::writeGridArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName )
+void MatlabIO::writeGridArray( const hmemo::_HArray& data, const common::Grid& grid )
 {
-    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeGridImpl( ( MatlabIO& ) *this, data, grid, outputFileName );
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeGridImpl( *this, data, grid );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -496,17 +505,10 @@ void MatlabIO::writeGridArray( const hmemo::_HArray& data, const common::Grid& g
 template<typename ValueType>
 void MatlabIO::writeGridImpl(
     const hmemo::HArray<ValueType>& data,
-    const common::Grid& grid,
-    const string& outputFileName )
+    const common::Grid& grid )
 {
-    SCAI_ASSERT( mFileMode != FORMATTED, "Formatted output not supported for " << *this )
-
     SCAI_LOG_INFO( logger, "writeGridImpl<" << common::TypeTraits<ValueType>::id() 
                             << ">, shape = " << grid << ", data = " << data )
-
-    MATIOStream outFile( outputFileName, ios::out );
-
-    outFile.writeMATFileHeader();
 
     HArray<ValueType> tmpData( grid.size() );
  
@@ -514,7 +516,7 @@ void MatlabIO::writeGridImpl(
 
     changeMajor( tmpData, data, grid, isRow2Col );
 
-    writeDenseGrid( outFile, tmpData, grid );
+    writeDenseGrid( tmpData, grid );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -523,37 +525,28 @@ template<typename ValueType>
 void MatlabIO::writeSparseImpl(
     const IndexType size,
     const HArray<IndexType>& indexes,
-    const HArray<ValueType>& values,
-    const std::string& fileName )
+    const HArray<ValueType>& values )
 {
     // sparse unsupported for this file format, write it dense
 
     HArray<ValueType> denseArray;
     ValueType zero = 0;
     utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes, zero );
-    writeArrayImpl( denseArray, fileName );
+    writeArrayImpl( denseArray );
 }
 
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatlabIO::writeStorageImpl(
-    const MatrixStorage<ValueType>& storage,
-    const string& fileName )
+void MatlabIO::writeStorageImpl( const MatrixStorage<ValueType>& storage )
 {
-    SCAI_ASSERT( mFileMode != FORMATTED, "Formatted output not supported for " << *this )
-
     IndexType numRows = storage.getNumRows();
     IndexType numCols = storage.getNumColumns();
     IndexType numValues = storage.getNumValues();
 
-    MATIOStream outFile( fileName, ios::out );
-
-    outFile.writeMATFileHeader();
-
     if ( numValues * 2 >= numRows* numCols && mScalarTypeData != common::ScalarType::PATTERN )
     {
-        SCAI_LOG_INFO( logger, "Write storage as dense matrix to file " << fileName << ": " << storage )
+        SCAI_LOG_INFO( logger, "Write storage as dense matrix to file " << mFile.getFileName() << ": " << storage )
 
         DenseStorage<ValueType> denseStorage;
 
@@ -563,11 +556,11 @@ void MatlabIO::writeStorageImpl(
 
         common::Grid2D grid( numRows, numCols );
 
-        writeDenseGrid( outFile, array, grid );
+        writeDenseGrid( array, grid );
     }
     else
     {
-        SCAI_LOG_INFO( logger, "Write storage as sparse matrix to file " << fileName << ": " << storage )
+        SCAI_LOG_INFO( logger, "Write storage as sparse matrix to file " << mFile.getFileName() << ": " << storage )
 
         HArray<IndexType> ia;
         HArray<IndexType> ja;
@@ -585,13 +578,13 @@ void MatlabIO::writeStorageImpl(
         {
             bool dryRun = ( i == 0 );      // first run dry, second run okay
 
-            wBytes  = outFile.writeSparseHeader( numRows, numCols, numValues, wBytes, isComplex, dryRun );
-            wBytes += writeArrayData( outFile, ia, dryRun );
-            wBytes += writeArrayData( outFile, ja, dryRun );
+            wBytes  = mFile.writeSparseHeader( numRows, numCols, numValues, wBytes, isComplex, dryRun );
+            wBytes += writeArrayData( ia, dryRun );
+            wBytes += writeArrayData( ja, dryRun );
 
             if ( mScalarTypeData != common::ScalarType::PATTERN )
             {
-                wBytes += writeArrayData( outFile, values, dryRun );
+                wBytes += writeArrayData( values, dryRun );
             }
 
             wBytes -= 8;  // subtract for the first header
@@ -603,18 +596,16 @@ void MatlabIO::writeStorageImpl(
 
 /* --------------------------------------------------------------------------------- */
 
-void MatlabIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const string& fileName )
+void MatlabIO::getStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues )
 {
-    MATIOStream inFile( fileName, ios::in );
-
-    int version = 0;
-    IOStream::Endian endian = IOStream::MACHINE_ENDIAN;
-
-    inFile.readMATFileHeader( version, endian );
-
     std::unique_ptr<char[]> dataElement;
 
-    inFile.readDataElement( dataElement );
+    std::streampos pos = mFile.tellg();
+
+    mFile.readDataElement( dataElement );
+
+    mFile.clear();       // important to reset flags
+    mFile.seekg( pos );
 
     IndexType dims[2];
     IndexType nDims;
@@ -631,7 +622,7 @@ void MatlabIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, Index
     {
         if ( MATIOStream::class2ScalarType( matClass ) == common::ScalarType::UNKNOWN )
         {
-            COMMON_THROWEXCEPTION( "File " << fileName << " contains unsupported matrix class = " << matClass )
+            COMMON_THROWEXCEPTION( "File " << mFile.getFileName() << " contains unsupported matrix class = " << matClass )
         }
 
         numValues  = dims[0] * dims[1];
@@ -848,64 +839,35 @@ void MatlabIO::getStorage( MatrixStorage<ValueType>& storage, const char* dataEl
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatlabIO::readStorageImpl(
-    MatrixStorage<ValueType>& storage,
-    const string& matrixFileName,
-    const IndexType firstRow,
-    const IndexType nRows )
+void MatlabIO::readStorageImpl( MatrixStorage<ValueType>& storage )
 {
-    MATIOStream inFile( matrixFileName, ios::in );
-
-    int version = 0;
-    IOStream::Endian endian = IOStream::MACHINE_ENDIAN;
-
-    inFile.readMATFileHeader( version, endian );
-
     std::unique_ptr<char[]> dataElement;
 
-    uint32_t nBytes = inFile.readDataElement( dataElement );
+    uint32_t nBytes = mFile.readDataElement( dataElement );
 
-    if ( firstRow == 0 && nRows == invalidIndex )
-    {
-        getStorage( storage, dataElement.get(), nBytes );
-        SCAI_LOG_INFO( logger, "readStorage: " << storage )
-    }
-    else
-    {
-        COOStorage<ValueType> tmpStorage;
-        getStorage( tmpStorage, dataElement.get(), nBytes );
-        SCAI_LOG_INFO( logger, "readStorage: " << tmpStorage )
-        tmpStorage.copyBlockTo( storage, firstRow, nRows );
-        SCAI_LOG_INFO( logger, "extracted: first = " << firstRow << ", #rows = " << nRows << ": " << storage )
-    }
+    getStorage( storage, dataElement.get(), nBytes );
+    SCAI_LOG_INFO( logger, "readStorage: " << storage )
 }
 
 /* ------------------------------------------------------------------------------------ */
 /*   Read grid vector data from file                                              */
 /* ------------------------------------------------------------------------------------ */
 
-void MatlabIO::readGridArray( _HArray& data, common::Grid& grid, const std::string& inputFileName )
+void MatlabIO::readGridArray( _HArray& data, common::Grid& grid )
 {
     // use the IO wrapper to call a typed version of readGrid
 
-    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::readGridImpl( ( MatlabIO& ) *this, data, grid, inputFileName );
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::readGridImpl( *this, data, grid );
 }
 
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatlabIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid, const std::string& gridFileName )
+void MatlabIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid )
 {
-    MATIOStream inFile( gridFileName, ios::in );
-
-    int version = 0;
-    IOStream::Endian endian = IOStream::MACHINE_ENDIAN;
-
-    inFile.readMATFileHeader( version, endian );
-
     std::unique_ptr<char[]> dataElement;
 
-    uint32_t nBytes = inFile.readDataElement( dataElement );
+    uint32_t nBytes = mFile.readDataElement( dataElement );
 
     const char* elementPtr = dataElement.get();
 
@@ -920,12 +882,12 @@ void MatlabIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid, const 
 
     if ( matClass == MATIOStream::MAT_SPARSE_CLASS )
     {
-        COMMON_THROWEXCEPTION( "File " << gridFileName << " contains sparse matrix, but not grid array" )
+        COMMON_THROWEXCEPTION( "File " << mFile.getFileName() << " contains sparse matrix, but not grid array" )
     }
 
     if ( MATIOStream::class2ScalarType( matClass ) == common::ScalarType::UNKNOWN )
     {
-        COMMON_THROWEXCEPTION( "File " << gridFileName << " contains unsupported matrix class = " << matClass )
+        COMMON_THROWEXCEPTION( "File " << mFile.getFileName() << " contains unsupported matrix class = " << matClass )
     }
 
     grid = common::Grid( nDims, dims );
@@ -954,58 +916,54 @@ void MatlabIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid, const 
 
 /* --------------------------------------------------------------------------------- */
 
-void MatlabIO::writeStorage( const _MatrixStorage& storage, const std::string& fileName )
+void MatlabIO::writeStorage( const _MatrixStorage& storage )
 {
-    IOWrapper<MatlabIO, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorageImpl( ( MatlabIO& ) *this, storage, fileName );
+    IOWrapper<MatlabIO, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorageImpl( *this, storage );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void MatlabIO::readStorage(
-    _MatrixStorage& storage,
-    const std::string& fileName,
-    const IndexType offsetRow,
-    const IndexType nRows )
+void MatlabIO::readStorage( _MatrixStorage& storage )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<MatlabIO, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorageImpl( ( MatlabIO& ) *this, storage, fileName, offsetRow, nRows );
+    IOWrapper<MatlabIO, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorageImpl( *this, storage );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void MatlabIO::writeArray( const hmemo::_HArray& array, const std::string& fileName )
+void MatlabIO::writeArray( const hmemo::_HArray& array )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArrayImpl( ( MatlabIO& ) *this, array, fileName );
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArrayImpl( *this, array );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void MatlabIO::writeSparse( const IndexType n, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values, const std::string& fileName )
+void MatlabIO::writeSparse( const IndexType n, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparseImpl( ( MatlabIO& ) *this, n, indexes, values, fileName );
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparseImpl( *this, n, indexes, values );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void MatlabIO::readArray( hmemo::_HArray& array, const std::string& fileName, const IndexType offset, const IndexType n )
+void MatlabIO::readArray( hmemo::_HArray& array )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( ( MatlabIO& ) *this, array, fileName, offset, n );
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( *this, array );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void MatlabIO::readSparse( IndexType& size, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values, const std::string& fileName )
+void MatlabIO::readSparse( IndexType& size, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparseImpl( ( MatlabIO& ) *this, size, indexes, values, fileName );
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparseImpl( *this, size, indexes, values );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -1028,29 +986,23 @@ std::string MatlabIO::getVectorFileSuffix() const
                                                              \
     template COMMON_DLL_IMPORTEXPORT                         \
     void MatlabIO::writeArrayImpl(                           \
-        const hmemo::HArray<_type>& array,                   \
-        const string& fileName );                            \
+        const hmemo::HArray<_type>& array );                 \
                                                              \
     template COMMON_DLL_IMPORTEXPORT                         \
     void MatlabIO::readArrayImpl(                            \
-        hmemo::HArray<_type>& array,                         \
-        const string& arrayFileName,                         \
-        const IndexType ,                                    \
-        const IndexType );                                   \
+        hmemo::HArray<_type>& array );                       \
                                                              \
     template COMMON_DLL_IMPORTEXPORT                         \
     void MatlabIO::writeSparseImpl(                          \
         const IndexType size,                                \
         const HArray<IndexType>& index,                      \
-        const HArray<_type>& values,                         \
-        const std::string& fileName );                       \
+        const HArray<_type>& values );                       \
                                                              \
     template COMMON_DLL_IMPORTEXPORT                         \
     void MatlabIO::readSparseImpl(                           \
         IndexType& size,                                     \
         HArray<IndexType>& indexes,                          \
-        HArray<_type>& values,                               \
-        const std::string& fileName );         
+        HArray<_type>& values );                             \
 
 SCAI_COMMON_LOOP( SCAI_MATLAB_METHOD_INSTANTIATIONS, SCAI_ARRAY_TYPES_HOST )
 
@@ -1060,15 +1012,11 @@ SCAI_COMMON_LOOP( SCAI_MATLAB_METHOD_INSTANTIATIONS, SCAI_ARRAY_TYPES_HOST )
                                                         \
     template COMMON_DLL_IMPORTEXPORT                    \
     void MatlabIO::writeStorageImpl(                    \
-        const MatrixStorage<_type>& storage,            \
-        const string& fileName );                       \
+        const MatrixStorage<_type>& storage );          \
                                                         \
     template COMMON_DLL_IMPORTEXPORT                    \
     void MatlabIO::readStorageImpl(                     \
-        MatrixStorage<_type>& storage,                  \
-        const string& matrixFileName,                   \
-        const IndexType firstRow,                       \
-        const IndexType nRows );                     
+        MatrixStorage<_type>& storage );                \
 
 SCAI_COMMON_LOOP( SCAI_MATLAB_METHOD_INSTANTIATIONS, SCAI_NUMERIC_TYPES_HOST )
 

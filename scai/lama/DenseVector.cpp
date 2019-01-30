@@ -1878,7 +1878,7 @@ void DenseVector<ValueType>::writeLocalToFile(
     const std::string& fileName,
     const std::string& fileType,
     const common::ScalarType dataType,
-    const FileIO::FileMode fileMode
+    const FileMode fileMode
 ) const
 {
     std::string suffix = fileType;
@@ -1901,14 +1901,16 @@ void DenseVector<ValueType>::writeLocalToFile(
             fileIO->setDataType( dataType );
         }
 
-        if ( fileMode != FileIO::DEFAULT_MODE )
+        if ( fileMode != FileMode::DEFAULT )
         {
             // overwrite the default settings
 
             fileIO->setMode( fileMode );
         }
 
-        fileIO->writeArray( mLocalValues, fileName );
+        fileIO->open( fileName.c_str(), "w" );
+        fileIO->writeArray( mLocalValues );
+        fileIO->close();
     }
     else
     {
@@ -1919,11 +1921,11 @@ void DenseVector<ValueType>::writeLocalToFile(
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-IndexType DenseVector<ValueType>::readLocalFromFile( const std::string& fileName, const IndexType first, const IndexType n )
+IndexType DenseVector<ValueType>::readLocalFromFile( const std::string& fileName )
 {
     SCAI_LOG_INFO( logger, "read local array from file " << fileName )
 
-    FileIO::read( mLocalValues, fileName, common::ScalarType::INTERNAL, first, n );
+    FileIO::read( mLocalValues, fileName, common::ScalarType::INTERNAL );
 
     return mLocalValues.size();
 }

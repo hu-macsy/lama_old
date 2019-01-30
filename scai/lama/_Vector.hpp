@@ -343,7 +343,7 @@ public:
         const std::string& fileName,
         const std::string& fileType = "",
         const common::ScalarType dataType = common::ScalarType::UNKNOWN,
-        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
+        const FileMode fileMode = FileMode::DEFAULT  ) const;
 
     /**
      * @brief Queries the value type of the vector elements, e.g. DOUBLE or FLOAT.
@@ -626,7 +626,7 @@ private:
         const std::string& fileName,
         const std::string& fileType,
         const common::ScalarType dataType,
-        const FileIO::FileMode fileMode ) const = 0;
+        const FileMode fileMode ) const = 0;
 
     /** write the whole vector into a single file, can imply redistribution */
 
@@ -634,7 +634,7 @@ private:
         const std::string& fileName,
         const std::string& fileType,
         const common::ScalarType dataType,
-        const FileIO::FileMode fileMode ) const;
+        const FileMode fileMode ) const;
 
     /** same as writeLocalToFile but also communication for error handling */
 
@@ -642,7 +642,7 @@ private:
         const std::string& fileName,
         const std::string& fileType,
         const common::ScalarType dataType,
-        const FileIO::FileMode fileMode ) const;
+        const FileMode fileMode ) const;
 
     /** Read a vector from a single file, only first processor reads it. The distribution of the
      *  vector is a SingleDistribution.
@@ -665,7 +665,7 @@ private:
      *  This routine is private as it allows a temporary inconsistency between the size of 
      *  the local vector data and the distribution.
      */
-    virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = invalidIndex ) = 0;
+    virtual IndexType readLocalFromFile( const std::string& fileName ) = 0;
 
     /** Read a vector with a certain distribution from a single file.
      *

@@ -463,7 +463,7 @@ public:
         const std::string& fileType = "",
         const common::ScalarType dataType = common::ScalarType::UNKNOWN,
         const common::ScalarType indexType = common::ScalarType::UNKNOWN,
-        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
+        const FileMode fileMode = FileMode::DEFAULT  ) const;
 
     virtual void writeToFile(
         const PartitionId size,
@@ -472,9 +472,9 @@ public:
         const std::string& fileType,
         const common::ScalarType dataType = common::ScalarType::UNKNOWN,
         const common::ScalarType indexType = common::ScalarType::UNKNOWN,
-        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
+        const FileMode fileMode = FileMode::DEFAULT ) const;
 
-    virtual void readFromFile( const std::string& fileName, const IndexType firstRow = 0, const IndexType nRows = invalidIndex );
+    virtual void readFromFile( const std::string& fileName );
 
     /******************************************************************
      *   invert                                                        *
