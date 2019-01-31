@@ -164,13 +164,13 @@ void PETScIO::writeArrayImpl( const hmemo::HArray<ValueType>& array )
 template<typename ValueType>
 void PETScIO::writeSparseImpl(
     const IndexType size,
+    const ValueType& zero,
     const HArray<IndexType>& indexes,
     const HArray<ValueType>& values )
 {
     // sparse unsupported for this file format, write it dense
 
     HArray<ValueType> denseArray;
-    ValueType zero = 0;
     utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes, zero );
     writeArrayImpl( denseArray );
 }
@@ -238,6 +238,7 @@ void PETScIO::readArrayImpl( hmemo::HArray<ValueType>& array )
 template<typename ValueType>
 void PETScIO::readSparseImpl(
     IndexType& size,
+    ValueType& zero,
     HArray<IndexType>& indexes,
     HArray<ValueType>& values )
 {
@@ -249,7 +250,7 @@ void PETScIO::readSparseImpl(
 
     readArray( denseArray );
     size = denseArray.size();
-    ValueType zero = 0;
+    zero = 0;
     utilskernel::HArrayUtils::buildSparseArray( values, indexes, denseArray, zero );
 }
 
@@ -403,7 +404,7 @@ void PETScIO::readGridArray( hmemo::_HArray& data, common::Grid& grid )
 
 void PETScIO::writeStorage( const _MatrixStorage& storage )
 {
-    IOWrapper<PETScIO, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorageImpl( *this, storage );
+    IOWrapper<PETScIO, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorage( *this, storage );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -412,7 +413,7 @@ void PETScIO::readStorage( _MatrixStorage& storage )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<PETScIO, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorageImpl( *this, storage );
+    IOWrapper<PETScIO, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorage( *this, storage );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -421,16 +422,16 @@ void PETScIO::writeArray( const hmemo::_HArray& array )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<PETScIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArrayImpl( *this, array );
+    IOWrapper<PETScIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArray( *this, array );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void PETScIO::writeSparse( const IndexType n, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values )
+void PETScIO::writeSparse( const IndexType n, const void* zero, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<PETScIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparseImpl( *this, n, indexes, values );
+    IOWrapper<PETScIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparse( *this, n, zero, indexes, values );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -439,16 +440,16 @@ void PETScIO::readArray( hmemo::_HArray& array )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<PETScIO, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( *this, array );
+    IOWrapper<PETScIO, SCAI_ARRAY_TYPES_HOST_LIST>::readArray( *this, array );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void PETScIO::readSparse( IndexType& size, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values )
+void PETScIO::readSparse( IndexType& size, void* zero, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<PETScIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparseImpl( *this, size, indexes, values );
+    IOWrapper<PETScIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparse( *this, size, zero, indexes, values );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -479,12 +480,14 @@ std::string PETScIO::getVectorFileSuffix() const
     template COMMON_DLL_IMPORTEXPORT                        \
     void PETScIO::writeSparseImpl(                          \
         const IndexType size,                               \
+        const _type& zero,                                  \
         const HArray<IndexType>& index,                     \
         const HArray<_type>& values );                      \
                                                             \
     template COMMON_DLL_IMPORTEXPORT                        \
     void PETScIO::readSparseImpl(                           \
         IndexType& size,                                    \
+        _type& zero,                                        \
         HArray<IndexType>& indexes,                         \
         HArray<_type>& values );
 

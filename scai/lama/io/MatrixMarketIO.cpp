@@ -509,10 +509,13 @@ void MatrixMarketIO::writeArrayImpl( const hmemo::HArray<ValueType>& array )
 template<typename ValueType>
 void MatrixMarketIO::writeSparseImpl(
     const IndexType size,
+    const ValueType& zero,
     const HArray<IndexType>& indexes,
     const HArray<ValueType>& values )
 {
     SCAI_ASSERT_EQ_ERROR( indexes.size(), values.size(), "size mismatch for indexes/values in sparse array" )
+
+    SCAI_ASSERT_EQ_ERROR( zero, ValueType( 0 ), "zero != 0 not supported here" )
 
     IndexType numValues  = indexes.size();
 
@@ -671,6 +674,7 @@ void MatrixMarketIO::readArrayImpl( hmemo::HArray<ValueType>& array )
 template<typename ValueType>
 void MatrixMarketIO::readSparseImpl(
     IndexType& size,
+    ValueType& zero,
     HArray<IndexType>& indexes,
     HArray<ValueType>& values )
 {
@@ -700,6 +704,7 @@ void MatrixMarketIO::readSparseImpl(
         // so we have coordinate format
 
         readVectorCoordinates( indexes, values, numValues, isVector, mmType );
+        zero = 0;
     }
     else
     {
@@ -707,7 +712,7 @@ void MatrixMarketIO::readSparseImpl(
 
         HArray<ValueType> denseArray;
         mFile.readFormatted( denseArray, size );
-        ValueType zero = 0;
+        zero = 0;
         HArrayUtils::buildSparseArray( values, indexes, denseArray, zero );
     }
 
@@ -1265,7 +1270,7 @@ void MatrixMarketIO::readGridArray( hmemo::_HArray& data, common::Grid& grid )
 
 void MatrixMarketIO::writeStorage( const _MatrixStorage& storage )
 {
-    IOWrapper<MatrixMarketIO, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorageImpl( *this, storage );
+    IOWrapper<MatrixMarketIO, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorage( *this, storage );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -1274,7 +1279,7 @@ void MatrixMarketIO::readStorage( _MatrixStorage& storage )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<MatrixMarketIO, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorageImpl( *this, storage );
+    IOWrapper<MatrixMarketIO, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorage( *this, storage );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -1283,16 +1288,16 @@ void MatrixMarketIO::writeArray( const hmemo::_HArray& array )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<MatrixMarketIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArrayImpl( *this, array );
+    IOWrapper<MatrixMarketIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArray( *this, array );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void MatrixMarketIO::writeSparse( const IndexType n, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values )
+void MatrixMarketIO::writeSparse( const IndexType n, const void* zero, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<MatrixMarketIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparseImpl( *this, n, indexes, values );
+    IOWrapper<MatrixMarketIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparse( *this, n, zero, indexes, values );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -1301,16 +1306,16 @@ void MatrixMarketIO::readArray( hmemo::_HArray& array )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<MatrixMarketIO, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( *this, array );
+    IOWrapper<MatrixMarketIO, SCAI_ARRAY_TYPES_HOST_LIST>::readArray( *this, array );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void MatrixMarketIO::readSparse( IndexType& size, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values )
+void MatrixMarketIO::readSparse( IndexType& size, void* zero, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<MatrixMarketIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparseImpl( *this, size, indexes, values );
+    IOWrapper<MatrixMarketIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparse( *this, size, zero, indexes, values );
 }
 
 /* --------------------------------------------------------------------------------- */

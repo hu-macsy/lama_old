@@ -47,7 +47,7 @@ namespace lama
 /** Metaprogramming structure to call a routine for each type in a typelist 
  *
  *  \code
- *      IOWrapper<MatrixMarketIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArrayImpl( *this, array );
+ *      IOWrapper<MatrixMarketIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArray( *this, array );
  *  \endcode
  */
 template<class IOClass, typename TList>
@@ -59,42 +59,42 @@ struct IOWrapper;
 template<class IOClass>
 struct IOWrapper<IOClass, common::mepr::NullType>
 {
-    static void writeStorageImpl( IOClass&, const _MatrixStorage& storage )
+    static void writeStorage( IOClass&, const _MatrixStorage& storage )
     {
         COMMON_THROWEXCEPTION( "writeStorage " << storage << " unsupported, unknown type." )
     }
 
-    static void readStorageImpl( IOClass&, _MatrixStorage& storage )
+    static void readStorage( IOClass&, _MatrixStorage& storage )
     {
         COMMON_THROWEXCEPTION( "readStorage " << storage << " unsupported, unknown type." )
     }
 
-    static void writeArrayImpl( IOClass&, const hmemo::_HArray& array )
+    static void writeArray( IOClass&, const hmemo::_HArray& array )
     {
         COMMON_THROWEXCEPTION( "writeArray " << array << " unsupported, unknown type." )
     }
 
-    static void writeSparseImpl( IOClass&, const IndexType, const hmemo::HArray<IndexType>&, const hmemo::_HArray& array )
+    static void writeSparse( IOClass&, const IndexType, const void*, const hmemo::HArray<IndexType>&, const hmemo::_HArray& array )
     {
         COMMON_THROWEXCEPTION( "writeArray " << array << " unsupported, unknown type." )
     }
 
-    static void readArrayImpl( IOClass&, hmemo::_HArray& array )
+    static void readArray( IOClass&, hmemo::_HArray& array )
     {
         COMMON_THROWEXCEPTION( "readArray " << array << " unsupported, unknown type." )
     }
 
-    static void readSparseImpl( IOClass&, IndexType&, hmemo::HArray<IndexType>&, hmemo::_HArray& array )
+    static void readSparse( IOClass&, IndexType&, void*, hmemo::HArray<IndexType>&, hmemo::_HArray& array )
     {
         COMMON_THROWEXCEPTION( "readSparse unsupported, " << array.getValueType() << " not in SCAI_ARRAY_TYPES"  )
     }
 
-    static void writeGridImpl( IOClass&, const hmemo::_HArray& data, const common::Grid& )
+    static void writeGrid( IOClass&, const hmemo::_HArray& data, const common::Grid& )
     {
         COMMON_THROWEXCEPTION( "write " << data << " unsupported, unknown type." )
     }
 
-    static void readGridImpl( IOClass&, hmemo::_HArray& data, common::Grid& )
+    static void readGrid( IOClass&, hmemo::_HArray& data, common::Grid& )
     {
         COMMON_THROWEXCEPTION( "read " << data << " unsupported, unknown type." )
     }
@@ -106,7 +106,7 @@ struct IOWrapper<IOClass, common::mepr::NullType>
 template<class IOClass, typename ValueType, typename TailTypes>
 struct IOWrapper<IOClass, common::mepr::TypeList<ValueType, TailTypes> >
 {
-    static void writeStorageImpl( IOClass& io, const _MatrixStorage& storage )
+    static void writeStorage( IOClass& io, const _MatrixStorage& storage )
     {
         if ( storage.getValueType() == common::getScalarType<ValueType>() )
         {
@@ -114,11 +114,11 @@ struct IOWrapper<IOClass, common::mepr::TypeList<ValueType, TailTypes> >
         }
         else
         {
-            IOWrapper<IOClass, TailTypes>::writeStorageImpl( io, storage );
+            IOWrapper<IOClass, TailTypes>::writeStorage( io, storage );
         }
     }
 
-    static void readStorageImpl( IOClass& io, _MatrixStorage& storage )
+    static void readStorage( IOClass& io, _MatrixStorage& storage )
     {
         if ( storage.getValueType() == common::getScalarType<ValueType>() )
         {
@@ -126,11 +126,11 @@ struct IOWrapper<IOClass, common::mepr::TypeList<ValueType, TailTypes> >
         }
         else
         {
-            IOWrapper<IOClass, TailTypes>::readStorageImpl( io, storage );
+            IOWrapper<IOClass, TailTypes>::readStorage( io, storage );
         }
     }
 
-    static void writeArrayImpl( IOClass& io, const hmemo::_HArray& array )
+    static void writeArray( IOClass& io, const hmemo::_HArray& array )
     {
         if ( array.getValueType() == common::getScalarType<ValueType>() )
         {
@@ -138,27 +138,30 @@ struct IOWrapper<IOClass, common::mepr::TypeList<ValueType, TailTypes> >
         }
         else
         {
-            IOWrapper<IOClass, TailTypes>::writeArrayImpl( io, array );
+            IOWrapper<IOClass, TailTypes>::writeArray( io, array );
         }
     }
 
-    static void writeSparseImpl( 
+    static void writeSparse( 
         IOClass& io, 
         const IndexType size, 
+        const void* zero,
         const hmemo::HArray<IndexType>& indexes, 
         const hmemo::_HArray& values )
     {
         if ( values.getValueType() == common::getScalarType<ValueType>() )
         {
-            io.writeSparseImpl( size, indexes, static_cast<const hmemo::HArray<ValueType>& >( values ) );
+            const ValueType* typedZero = static_cast<const ValueType*>( zero );
+            const auto& typedValues = static_cast<const hmemo::HArray<ValueType>& >( values );
+            io.writeSparseImpl( size, *typedZero, indexes, typedValues );
         }
         else
         {
-            IOWrapper<IOClass, TailTypes>::writeSparseImpl( io, size, indexes, values );
+            IOWrapper<IOClass, TailTypes>::writeSparse( io, size, zero, indexes, values );
         }
     }
 
-    static void readArrayImpl( IOClass& io, hmemo::_HArray& array )
+    static void readArray( IOClass& io, hmemo::_HArray& array )
     {
         if ( array.getValueType() == common::getScalarType<ValueType>() )
         {
@@ -166,27 +169,30 @@ struct IOWrapper<IOClass, common::mepr::TypeList<ValueType, TailTypes> >
         }
         else
         {
-            IOWrapper<IOClass, TailTypes>::readArrayImpl( io, array );
+            IOWrapper<IOClass, TailTypes>::readArray( io, array );
         }
     }
 
-    static void readSparseImpl(
+    static void readSparse(
         IOClass& io,
         IndexType& size, 
+        void* zero,
         hmemo::HArray<IndexType>& indexes, 
         hmemo::_HArray& values )
     {
         if ( values.getValueType() == common::getScalarType<ValueType>() )
         {
-            io.readSparseImpl( size, indexes, static_cast< hmemo::HArray<ValueType>& >( values ) );
+            ValueType* typedZero = static_cast<ValueType*>( zero );
+            auto& typedValues = static_cast<hmemo::HArray<ValueType>& >( values );
+            io.readSparseImpl( size, *typedZero, indexes, typedValues );
         }
         else
         {
-            IOWrapper<IOClass, TailTypes>::readSparseImpl( io, size, indexes, values );
+            IOWrapper<IOClass, TailTypes>::readSparse( io, size, zero, indexes, values );
         }
     }
 
-    static void writeGridImpl( IOClass& io, const hmemo::_HArray& data, const common::Grid& grid )
+    static void writeGrid( IOClass& io, const hmemo::_HArray& data, const common::Grid& grid )
     {
         if ( data.getValueType() == common::getScalarType<ValueType>() )
         {
@@ -194,11 +200,11 @@ struct IOWrapper<IOClass, common::mepr::TypeList<ValueType, TailTypes> >
         }
         else
         {
-            IOWrapper<IOClass, TailTypes>::writeGridImpl( io, data, grid );
+            IOWrapper<IOClass, TailTypes>::writeGrid( io, data, grid );
         }
     }
 
-    static void readGridImpl( IOClass& io, hmemo::_HArray& data, common::Grid& grid )
+    static void readGrid( IOClass& io, hmemo::_HArray& data, common::Grid& grid )
     {
         if ( data.getValueType() == common::getScalarType<ValueType>() )
         {
@@ -206,7 +212,7 @@ struct IOWrapper<IOClass, common::mepr::TypeList<ValueType, TailTypes> >
         }
         else
         {
-            IOWrapper<IOClass, TailTypes>::readGridImpl( io, data, grid );
+            IOWrapper<IOClass, TailTypes>::readGrid( io, data, grid );
         }
     }
 };

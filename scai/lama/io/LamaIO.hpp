@@ -1,5 +1,5 @@
 /**
- * @file MatrixMarketIO.hpp
+ * @file LamaIO.hpp
  *
  * @license
  * Copyright (c) 2009-2018
@@ -22,7 +22,7 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief Structure that contains IO routines for PETSC
+ * @brief Proprietray binary LAMA IO format
  * @author Thomas Brandes
  * @date 10.06.2016
  */
@@ -32,25 +32,46 @@
 #include <scai/lama/io/FileIO.hpp>
 #include <scai/lama/io/IOStream.hpp>
 
+#include <scai/dmemo/CollectiveFile.hpp>
+
 namespace scai
 {
 
 namespace lama
 {
 
-template<typename ValueType>
-class DenseStorage;
+// forward declarations
 
-template<typename ValueType>
-class MatrixStorage;
+class _MatrixStorage;
+template<typename ValueType> class MatrixStorage;
+template<typename ValueType> class CSRStorage;
 
-class MatrixMarketIO :
+/** 
+ *  Collective/Parallel I/O format used by LAMA
+ *
+ *   - supports collective mode, i.e. parallel read/write at different offsets
+ *   - supports dense vector  
+ *   - supports sparse vector
+ *   - supports dense matrix
+ *   - supports csr matrix
+ *   - supports coo matrix
+ *
+ *  Note: coo/sparse format allows to write vector/matrices that are not 
+ *        block distributed (global coordinates)
+ *        dense vector/matrix and csr must be block distributed
+ */
+class LamaIO :
 
-    public FileIO,
-    public FileIO::Register<MatrixMarketIO>    // register at factory
+    public FileIO, 
+    public FileIO::Register<LamaIO>    // register at factory
+
 {
 
 public:
+
+    /** Constructor might reset default values */
+
+    LamaIO();
 
     /** Implementation of pure virtual method FileIO::open */
 
@@ -72,7 +93,7 @@ public:
 
     void writeArray( const hmemo::_HArray& array );
 
-    /** Implementation of pure virtual method FileIO::writeSparse  */
+    /** Override virtual method FileIO::writeSparse as it is supported */
 
     virtual void writeSparse(
         const IndexType size,
@@ -84,7 +105,7 @@ public:
 
     virtual void readArray( hmemo::_HArray& array );
 
-    /** Implementation of pure virtual method FileIO::readSparse */
+    /** Override virtual method FileIO::readSparse as it is supported */
 
     virtual void readSparse(
         IndexType& size,
@@ -130,20 +151,21 @@ public:
 
     void readGridArray( hmemo::_HArray& data, common::Grid& grid );
 
-public:
-
-    /** Typed version of writeStorage
-     *
-     *  This method must be available for implementation of
-     */
+    /** Typed version of writeStorage called via IOWrapper */
 
     template<typename ValueType>
     void writeStorageImpl( const MatrixStorage<ValueType>& storage );
+
+    template<typename ValueType>
+    void writeCSR( const CSRStorage<ValueType>& storage );
 
     /** Typed version of readStorage */
 
     template<typename ValueType>
     void readStorageImpl( MatrixStorage<ValueType>& storage );
+
+    template<typename ValueType>
+    void readCSR( CSRStorage<ValueType>& storage );
 
     /** Typed version of the writeArray */
 
@@ -173,77 +195,15 @@ public:
         hmemo::HArray<IndexType>& indexes,
         hmemo::HArray<ValueType>& values );
 
-    SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for IO class
+    void writeHeader( const int classId );
 
 private:
 
-    class IOStream mFile;    // used file
+    std::unique_ptr<class dmemo::CollectiveFile> mFile;    // used file
 
-    /** Enumeration type for the different symmetry flags in the _Matrix Market file */
+    std::string mFileName;
 
-    typedef enum
-    {
-        GENERAL,
-        SYMMETRIC,
-        HERMITIAN,
-        SKEW_SYMMETRIC
-    } Symmetry;
-
-    /** Conversion of enum value to string */
-
-    const char* symmetry2str( const Symmetry symmetry );
-
-    void writeMMHeader(
-        class IOStream& outFile,
-        const bool vector,
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType numValues,
-        const Symmetry symmetry,
-        const common::ScalarType dataType );
-
-    void readMMHeader(
-        IndexType& numRows,
-        IndexType& numColumns,
-        IndexType& numValues,
-        common::ScalarType& dataType,
-        bool& isVector,
-        Symmetry& symmetry );
-
-    /** Extend COO data by adding all symmetric data */
-
-    template<typename ValueType>
-    void addSymmetricEntries(
-        hmemo::HArray<IndexType>& ia,
-        hmemo::HArray<IndexType>& ja,
-        hmemo::HArray<ValueType>& vals,
-        bool conjFlag );
-
-    /** Check for symmetry */
-    template<typename ValueType>
-    Symmetry checkSymmetry(
-        const hmemo::HArray<IndexType>& cooIA,
-        const hmemo::HArray<IndexType>& cooJA,
-        const hmemo::HArray<ValueType>& cooValues );
-
-    template<typename ValueType>
-    void readMMArray(
-        hmemo::HArray<ValueType>& data,
-        const IndexType numRows,
-        const IndexType numColumns,
-        const Symmetry symmetry );
-
-    template<typename ValueType>
-    void readVectorCoordinates(
-        hmemo::HArray<IndexType>& indexes,
-        hmemo::HArray<ValueType>& values,
-        const IndexType numValues,
-        const bool isVector,
-        common::ScalarType mmType );
-
-    template<typename ValueType>
-    void writeDenseMatrix( const DenseStorage<ValueType>& storage );
-
+    SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for IO class
 };
 
 }

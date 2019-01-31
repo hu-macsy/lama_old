@@ -340,12 +340,12 @@ public:
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-    virtual void writeLocalToFile( const std::string&, const std::string&, scai::common::ScalarType, FileIO::FileMode ) const
+    virtual void writeLocalToFile( const std::string&, const std::string&, scai::common::ScalarType, FileMode ) const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-    virtual IndexType readLocalFromFile( const std::string&, IndexType, IndexType )
+    virtual IndexType readLocalFromFile( const std::string& )
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }

@@ -382,6 +382,7 @@ void MatlabIO::readArrayImpl( hmemo::HArray<ValueType>& array )
 template<typename ValueType>
 void MatlabIO::readSparseImpl(
     IndexType& size,
+    ValueType& zero,
     HArray<IndexType>& indexes,
     HArray<ValueType>& values )
 {
@@ -391,8 +392,8 @@ void MatlabIO::readSparseImpl(
 
     readArray( denseArray );
     size = denseArray.size();
-    ValueType zeroValue = 0;
-    utilskernel::HArrayUtils::buildSparseArray( values, indexes, denseArray, zeroValue );
+    zero = 0;
+    utilskernel::HArrayUtils::buildSparseArray( values, indexes, denseArray, zero );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -497,7 +498,7 @@ void MatlabIO::writeArrayImpl( const hmemo::HArray<ValueType>& array )
 
 void MatlabIO::writeGridArray( const hmemo::_HArray& data, const common::Grid& grid )
 {
-    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeGridImpl( *this, data, grid );
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeGrid( *this, data, grid );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -524,13 +525,13 @@ void MatlabIO::writeGridImpl(
 template<typename ValueType>
 void MatlabIO::writeSparseImpl(
     const IndexType size,
+    const ValueType& zero,
     const HArray<IndexType>& indexes,
     const HArray<ValueType>& values )
 {
     // sparse unsupported for this file format, write it dense
 
     HArray<ValueType> denseArray;
-    ValueType zero = 0;
     utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes, zero );
     writeArrayImpl( denseArray );
 }
@@ -857,7 +858,7 @@ void MatlabIO::readGridArray( _HArray& data, common::Grid& grid )
 {
     // use the IO wrapper to call a typed version of readGrid
 
-    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::readGridImpl( *this, data, grid );
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::readGrid( *this, data, grid );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -918,7 +919,7 @@ void MatlabIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid )
 
 void MatlabIO::writeStorage( const _MatrixStorage& storage )
 {
-    IOWrapper<MatlabIO, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorageImpl( *this, storage );
+    IOWrapper<MatlabIO, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorage( *this, storage );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -927,7 +928,7 @@ void MatlabIO::readStorage( _MatrixStorage& storage )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<MatlabIO, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorageImpl( *this, storage );
+    IOWrapper<MatlabIO, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorage( *this, storage );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -936,16 +937,16 @@ void MatlabIO::writeArray( const hmemo::_HArray& array )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArrayImpl( *this, array );
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArray( *this, array );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void MatlabIO::writeSparse( const IndexType n, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values )
+void MatlabIO::writeSparse( const IndexType n, const void* zero, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparseImpl( *this, n, indexes, values );
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparse( *this, n, zero, indexes, values );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -954,16 +955,16 @@ void MatlabIO::readArray( hmemo::_HArray& array )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( *this, array );
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::readArray( *this, array );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void MatlabIO::readSparse( IndexType& size, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values )
+void MatlabIO::readSparse( IndexType& size, void* zero, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparseImpl( *this, size, indexes, values );
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparse( *this, size, zero, indexes, values );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -995,12 +996,14 @@ std::string MatlabIO::getVectorFileSuffix() const
     template COMMON_DLL_IMPORTEXPORT                         \
     void MatlabIO::writeSparseImpl(                          \
         const IndexType size,                                \
+        const _type& zero,                                   \
         const HArray<IndexType>& index,                      \
         const HArray<_type>& values );                       \
                                                              \
     template COMMON_DLL_IMPORTEXPORT                         \
     void MatlabIO::readSparseImpl(                           \
         IndexType& size,                                     \
+        _type& zero,                                         \
         HArray<IndexType>& indexes,                          \
         HArray<_type>& values );                             \
 

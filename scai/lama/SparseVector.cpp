@@ -584,7 +584,7 @@ IndexType SparseVector<ValueType>::readLocalFromFile( const std::string& fileNam
 
     IndexType localN;   // for local size of the array data
 
-    FileIO::read( localN, mNonZeroIndexes, mNonZeroValues, fileName );
+    FileIO::read( localN, &mZeroValue, mNonZeroIndexes, mNonZeroValues, fileName );
 
     HArrayUtils::sortSparseEntries( mNonZeroIndexes, mNonZeroValues, true, getContextPtr() );
 
@@ -1713,19 +1713,7 @@ void SparseVector<ValueType>::writeLocalToFile(
 
         const IndexType size = getDistribution().getLocalSize();
 
-        if ( mZeroValue == common::Constants::ZERO )
-        {
-            fileIO->writeSparse( size, mNonZeroIndexes, mNonZeroValues );
-        }
-        else
-        {
-            // build a dense array on the host where it is used for the output
-
-            hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
-            auto denseArray = utilskernel::fillHArray<ValueType>( size, mZeroValue, ctx );
-            HArrayUtils::scatter( denseArray, mNonZeroIndexes, true, mNonZeroValues, common::BinaryOp::COPY, ctx );
-            fileIO->writeArray( denseArray );
-        }
+        fileIO->writeSparse( size, &mZeroValue, mNonZeroIndexes, mNonZeroValues );
 
         fileIO->close();
     }

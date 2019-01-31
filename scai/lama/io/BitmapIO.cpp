@@ -347,12 +347,12 @@ void BitmapIO::writeGridImpl( const HArray<ValueType>& data, const common::Grid&
 
 void BitmapIO::readGridArray( _HArray& data, common::Grid& grid )
 {
-    IOWrapper<BitmapIO, SCAI_TYPELIST( float, double )>::readGridImpl( *this, data, grid );
+    IOWrapper<BitmapIO, SCAI_TYPELIST( float, double )>::readGrid( *this, data, grid );
 }
 
 void BitmapIO::writeGridArray( const _HArray& data, const common::Grid& grid )
 {
-    IOWrapper<BitmapIO, SCAI_TYPELIST( float, double )>::writeGridImpl( *this, data, grid );
+    IOWrapper<BitmapIO, SCAI_TYPELIST( float, double )>::writeGrid( *this, data, grid );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -399,6 +399,7 @@ void BitmapIO::writeArray( const hmemo::_HArray& array )
 
 void BitmapIO::writeSparse( 
     const IndexType n, 
+    const void*,
     const hmemo::HArray<IndexType>& indexes, 
     const hmemo::_HArray& values )
 {
@@ -436,7 +437,11 @@ void BitmapIO::readArray( hmemo::_HArray& array )
 
 /* --------------------------------------------------------------------------------- */
 
-void BitmapIO::readSparse( IndexType& size, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values )
+void BitmapIO::readSparse( 
+    IndexType& size, 
+    void*,
+    hmemo::HArray<IndexType>& indexes, 
+    hmemo::_HArray& values )
 {
     size = 0;
     indexes.clear();

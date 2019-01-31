@@ -134,7 +134,18 @@ public:
     /**
      *  @brief Return the current pos in the file, is the number of bytes from beginning of the file.
      */
-    inline size_t currentPos() const;
+    inline size_t getOffset() const;
+
+    /**
+     *  @brief Set the actual position in a file.
+     *
+     *  \code
+     *      size_t offset = mFile.getOffset();
+     *      ...  // read some data
+     *      mFile.setOffset();
+     *  \endcode
+     */
+    void setOffset( const size_t offset );
 
     inline const Communicator& getCommunicator() const;
 
@@ -175,7 +186,7 @@ protected:
 /*   Implementation of inline methods                                         */
 /* -------------------------------------------------------------------------- */
 
-size_t CollectiveFile::currentPos() const
+size_t CollectiveFile::getOffset() const
 {
     return mOffset;
 }

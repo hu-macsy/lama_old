@@ -658,8 +658,6 @@ private:
      *  This routine is implemented individually by sparse and dense vectors.
      *
      *  @param[in] fileName is the name of the input file containing the local vector data
-     *  @param[in] first is index of first element to read
-     *  @param[in] size number of elements to read, if invalidIndex read up to maximal size
      *  @return    the size of the local vector read in
      *
      *  This routine is private as it allows a temporary inconsistency between the size of 

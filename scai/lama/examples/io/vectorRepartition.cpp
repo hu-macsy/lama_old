@@ -93,45 +93,6 @@ void printHelp( const char* cmd )
     cout << endl;
 }
 
-/** The following method is a special case where the input file contains the full vector and
- *  where the vector should be saved into multiple partions
- *
- *  Important: this algorithm does not require memory for the full array
- */
-void directPartitioning( const string& inFileName, const string& outFileName, const PartitionId np_out )
-{
-    common::ScalarType type = getType();
-
-    std::unique_ptr<FileIO>  inputIO ( FileIO::create( FileIO::getSuffix( inFileName ) ) );
-
-    std::unique_ptr<_HArray> array( _HArray::create( type ) );
-
-    IndexType size;    // total size of the array
-
-    inputIO->getArrayInfo( size, inFileName );
-
-    for ( PartitionId ip = 0; ip < np_out; ++ip )
-    {
-        string outFileNameBlock = outFileName;
-
-        bool isPartitioned;
-
-        PartitionIO::getPartitionFileName( outFileNameBlock, isPartitioned, ip, np_out );
-
-        IndexType lb;   // lower bound for range on a given partition
-        IndexType ub;   // upper bound of range for a given partition
-
-        dmemo::BlockDistribution::getLocalRange( lb, ub, size, ip, np_out );
-
-        cout << "Vector block " << ip << " has range " << lb << " - " << ub
-             << ", write to file " << outFileNameBlock << endl;
-
-        inputIO->readArray( *array, inFileName, lb, ub - lb );
-
-        FileIO::write( *array, outFileNameBlock );
-    }
-}
-
 /** Read in the vector in core form the input file that can be partitioned */
 
 void readArrayBlocked( _HArray& array, const string& inFileName, const IndexType np_in )
@@ -273,22 +234,6 @@ int main( int argc, const char* argv[] )
     input2 >> np_out;
 
     SCAI_ASSERT( !input2.fail(), "illegal: np_out=" << argv[4] << " in argument list" )
-
-    if ( np_in < 1 && np_out > 1 )
-    {
-        cout << "Partitioning is done block-wise from input file " << inFileName << endl;
-
-        try
-        {
-            directPartitioning( inFileName, outFileName, np_out );
-            return 0;
-        }
-        catch ( common::Exception& ex )
-        {
-            cout << "Direct partitioning failed, error: " << ex.what() << endl;
-            return -1;
-        }
-    }
 
     std::unique_ptr<_HArray> fullVector( _HArray::create( type ) );
 

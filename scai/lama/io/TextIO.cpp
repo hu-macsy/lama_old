@@ -178,13 +178,13 @@ void TextIO::writeArrayImpl( const hmemo::HArray<ValueType>& array )
 template<typename ValueType>
 void TextIO::writeSparseImpl(
     const IndexType size,
+    const ValueType& zero,
     const hmemo::HArray<IndexType>& indexes,
     const hmemo::HArray<ValueType>& values )
 {
     // Note: size is ignored for TextIO of sparse vector
 
     HArray<ValueType> denseArray;
-    ValueType zero = 0;
     HArrayUtils::buildDenseArray( denseArray, size, values, indexes, zero );
     writeArrayImpl( denseArray );
 
@@ -242,6 +242,7 @@ void TextIO::readGridArray( hmemo::_HArray& data, common::Grid& grid )
 template<typename ValueType>
 void TextIO::readSparseImpl(
     IndexType& size,
+    ValueType& zero, 
     HArray<IndexType>& indexes,
     HArray<ValueType>& values )
 {
@@ -251,8 +252,8 @@ void TextIO::readSparseImpl(
 
     readArray( denseArray );
     size = denseArray.size();
-    ValueType zeroValue = 0;
-    HArrayUtils::buildSparseArray( values, indexes, denseArray, zeroValue );
+    zero = 0;
+    HArrayUtils::buildSparseArray( values, indexes, denseArray, zero );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -415,7 +416,7 @@ void TextIO::readStorageImpl( MatrixStorage<ValueType>& storage )
 
 void TextIO::writeStorage( const _MatrixStorage& storage )
 {
-    IOWrapper<TextIO, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorageImpl( *this, storage );
+    IOWrapper<TextIO, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorage( *this, storage );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -424,7 +425,7 @@ void TextIO::readStorage( _MatrixStorage& storage )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<TextIO, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorageImpl( *this, storage );
+    IOWrapper<TextIO, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorage( *this, storage );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -433,16 +434,16 @@ void TextIO::writeArray( const hmemo::_HArray& array )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<TextIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArrayImpl( *this, array );
+    IOWrapper<TextIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArray( *this, array );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void TextIO::writeSparse( const IndexType n, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values )
+void TextIO::writeSparse( const IndexType n, const void* zero, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<TextIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparseImpl( *this, n, indexes, values );
+    IOWrapper<TextIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparse( *this, n, zero, indexes, values );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -451,16 +452,16 @@ void TextIO::readArray( hmemo::_HArray& array )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<TextIO, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( *this, array );
+    IOWrapper<TextIO, SCAI_ARRAY_TYPES_HOST_LIST>::readArray( *this, array );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void TextIO::readSparse( IndexType& size, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values )
+void TextIO::readSparse( IndexType& size, void* zero, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<TextIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparseImpl( *this, size, indexes, values );
+    IOWrapper<TextIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparse( *this, size, zero, indexes, values );
 }
 
 /* --------------------------------------------------------------------------------- */

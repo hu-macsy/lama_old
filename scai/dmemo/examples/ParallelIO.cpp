@@ -85,7 +85,7 @@ int main( int argc, const char* argv[] )
             outFile->writeAll( myData, dist->lb() );
         }
 
-        auto nBytes = outFile->currentPos();
+        auto nBytes = outFile->getOffset();
 
         outFile->close();
 
@@ -141,7 +141,7 @@ int main( int argc, const char* argv[] )
 
             if ( iter + 1 == K )
             {
-                nBytes = inFile->currentPos();
+                nBytes = inFile->getOffset();
                 inFile->close();
                 time = common::Walltime::get() - time;
             }

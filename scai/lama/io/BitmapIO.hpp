@@ -81,6 +81,7 @@ public:
 
     virtual void writeSparse(
         const IndexType size,
+        const void* zero,
         const hmemo::HArray<IndexType>& indexes,
         const hmemo::_HArray& array );
 
@@ -92,6 +93,7 @@ public:
 
     virtual void readSparse(
         IndexType& size,
+        void* zero,
         hmemo::HArray<IndexType>& indexes,
         hmemo::_HArray& values );
 

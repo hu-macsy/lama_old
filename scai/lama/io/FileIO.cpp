@@ -29,6 +29,8 @@
 
 #include <scai/lama/io/FileIO.hpp>
 
+#include <scai/lama/io/IOWrapper.hpp>
+
 #include <scai/common/Settings.hpp>
 #include <scai/common/exception/IOException.hpp>
 
@@ -292,6 +294,7 @@ void FileIO::write(
 
 void FileIO::write(
     const IndexType size,
+    const void* zero,
     const hmemo::HArray<IndexType>& indexes,
     const hmemo::_HArray& values,
     const std::string& outFileName,
@@ -310,7 +313,7 @@ void FileIO::write(
 
     fileIO->setDataType( dataType );
     fileIO->open( outFileName.c_str(), "w" );
-    fileIO->writeSparse( size, indexes, values );
+    fileIO->writeSparse( size, zero, indexes, values );
     fileIO->close();
 }
 
@@ -365,6 +368,7 @@ void FileIO::read(
 
 void FileIO::read(
     IndexType& size,
+    void* zero,
     hmemo::HArray<IndexType>& indexes,
     hmemo::_HArray& values,
     const std::string& inFileName,
@@ -382,7 +386,7 @@ void FileIO::read(
 
     fileIO->setDataType( dataType );
     fileIO->open( inFileName.c_str(), "r" );
-    fileIO->readSparse( size, indexes, values );
+    fileIO->readSparse( size, zero, indexes, values );
     fileIO->close();
 }
 
@@ -435,6 +439,58 @@ IndexType FileIO::getStorageSize( const std::string& fileName )
 }
 
 /* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void FileIO::writeSparseImpl(
+    const IndexType size,
+    const ValueType& zero,
+    const hmemo::HArray<IndexType>& indexes,
+    const hmemo::HArray<ValueType>& values )
+{
+    // sparse unsupported for this file format, write it dense
+
+    hmemo::HArray<ValueType> denseArray;
+    utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes, zero );
+    writeArray( denseArray );
+}
+
+void FileIO::writeSparse( const IndexType n, const void* zero, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<FileIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparse( *this, n, zero, indexes, values );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void FileIO::readSparseImpl(
+    IndexType& size,
+    ValueType& zero,
+    hmemo::HArray<IndexType>& indexes,
+    hmemo::HArray<ValueType>& values )
+{
+    // sparse array not supported for this file format, read a dense array
+
+    SCAI_LOG_WARN( logger, "read sparse array not supported for " << *this << ", reads dense array." )
+
+    hmemo::HArray<ValueType> denseArray;
+
+    readArray( denseArray );
+    size = denseArray.size();
+    zero = 0;
+    utilskernel::HArrayUtils::buildSparseArray( values, indexes, denseArray, zero );
+}
+
+void FileIO::readSparse( IndexType& size, void* zero, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<FileIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparse( *this, size, zero, indexes, values );
+}
+
+/* --------------------------------------------------------------------------------- */
+
 
 }  // namespace lama
 

@@ -102,6 +102,7 @@ public:
 
     virtual void writeSparse(
         const IndexType size,
+        const void* zero,
         const hmemo::HArray<IndexType>& indexes,
         const hmemo::_HArray& array );
 
@@ -113,6 +114,7 @@ public:
 
     virtual void readSparse(
         IndexType& size,
+        void* zero,
         hmemo::HArray<IndexType>& indexes,
         hmemo::_HArray& values );
 
@@ -170,6 +172,7 @@ public:
     template<typename ValueType>
     void writeSparseImpl(
         const IndexType size,
+        const ValueType& zero,
         const hmemo::HArray<IndexType>& indexes,
         const hmemo::HArray<ValueType>& values );
 
@@ -183,6 +186,7 @@ public:
     template<typename ValueType>
     void readSparseImpl(
         IndexType& size,
+        ValueType& zero,
         hmemo::HArray<IndexType>& indexes,
         hmemo::HArray<ValueType>& values );
 

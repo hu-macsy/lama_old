@@ -50,11 +50,12 @@ or you might use the size argument directly instead of a distribution argument.
     SparseVector<ValueType> vector2( n, nonZeroIndexes, nonZeroValues, zeroVal[, ctx] );
 
 Free Functions with SparseVector Result
---------------------------------------
+---------------------------------------
 
 .. code-block:: c++
 
-    const auto vector4 = sparseVectorRead( "matrix.frm" )
+    const auto vector1 = sparseVectorRead( dist, zero );
+    const auto vector4 = sparseVectorRead( "vector.lam" )
 
 .. code-block:: c++
 

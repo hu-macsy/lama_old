@@ -35,6 +35,7 @@ set ( IO_CLASSES
 
         FileIO
         SAMGIO
+        LamaIO
         MatrixMarketIO
         PETScIO
         TextIO

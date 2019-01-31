@@ -64,6 +64,13 @@ void CollectiveFile::set( const char* filename, size_t offset )
 }
 
 /* -------------------------------------------------------------------------- */
+
+void CollectiveFile::setOffset( const size_t offset )
+{
+    mOffset = offset;
+}
+
+/* -------------------------------------------------------------------------- */
 /*  I/O conversion wrapper class                                              */
 /* -------------------------------------------------------------------------- */
 
@@ -206,6 +213,10 @@ void CollectiveFile::readSingle( ValueType array[], const IndexType n, const com
     {
         readSingle( array, n );
     }
+    else if ( fileType == common::ScalarType::INDEX_TYPE )
+    {
+        readSingle( array, n, common::TypeTraits<IndexType>::stype );
+    }
     else
     {
         IOWrapper<ValueType, SCAI_ALL_TYPES_LIST>::readSingle( *this, array, n, fileType );
@@ -257,6 +268,10 @@ void CollectiveFile::readAll( ValueType array[], const IndexType n, const IndexT
     if ( fileType == common::ScalarType::INTERNAL || fileType == arrayType )
     {
         readAll( array, n, offset );
+    }
+    else if ( fileType == common::ScalarType::INDEX_TYPE )
+    {
+        readAll( array, n, offset, common::TypeTraits<IndexType>::stype );
     }
     else
     {
@@ -311,6 +326,10 @@ void CollectiveFile::writeSingle( const ValueType array[], const IndexType n, co
     {
         writeSingle( array, n );
     }
+    else if ( fileType == common::ScalarType::INDEX_TYPE )
+    {
+        writeSingle( array, n, common::TypeTraits<IndexType>::stype );
+    }
     else
     {
         IOWrapper<ValueType, SCAI_ALL_TYPES_LIST>::writeSingle( *this, array, n, fileType );
@@ -360,6 +379,10 @@ void CollectiveFile::writeAll( const ValueType array[], const IndexType n, const
     if ( fileType == common::ScalarType::INTERNAL || fileType == arrayType )
     {
         writeAll( array, n, offset );
+    }
+    else if ( fileType == common::ScalarType::INDEX_TYPE )
+    {
+        writeAll( array, n, offset, common::TypeTraits<IndexType>::stype );
     }
     else
     {

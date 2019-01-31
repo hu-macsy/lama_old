@@ -168,16 +168,26 @@ public:
     /** Write 'sparse' array of arbitrary type into a file.
      *
      *  @param[in] size is the full size of the array
+     *  @param[in] zeroVal pointer to zero Value of sparse array
      *  @param[in] indexes are the positions of the array with non-zero values
      *  @param[in] values are the values for the positions specified by indexes
-     *  @param[in] fileName is the name of the output file
      *
-     *  Note: the ZERO element of a sparse vector cannot be written into a file.
+     *  Here we provide a default implementation that uses a dense array.
      */
     virtual void writeSparse( 
         const IndexType size, 
+        const void* zeroVal,
         const hmemo::HArray<IndexType>& indexes, 
-        const hmemo::_HArray& values ) = 0;
+        const hmemo::_HArray& values );
+
+    /** Typed version of the writeSparse */
+
+    template<typename ValueType>
+    void writeSparseImpl(
+        const IndexType size,
+        const ValueType& zero,
+        const hmemo::HArray<IndexType>& indexes,
+        const hmemo::HArray<ValueType>& values );
 
     /** Get info about the storage stored in a file.
      *
@@ -211,6 +221,15 @@ public:
         hmemo::_HArray& array,
         common::Grid& grid ) = 0;
 
+    /** Typed version of readSparse */
+
+    template<typename ValueType>
+    void readSparseImpl(
+        IndexType& size,
+        ValueType& zero,
+        hmemo::HArray<IndexType>& indexes,
+        hmemo::HArray<ValueType>& values );
+
     /** Read in a 'sparse' array from a file in the corresponding format.
      *
      *  @param[out] size is the size of the array
@@ -221,8 +240,9 @@ public:
      */
     virtual void readSparse( 
         IndexType& size,
+        void* zeroVal,
         hmemo::HArray<IndexType>& indexes,
-        hmemo::_HArray& values ) = 0;
+        hmemo::_HArray& values );
 
     /** File suffix can be used to decide about choice of FileIO class */
 
@@ -297,6 +317,7 @@ public:
      */
     static void write(
         const IndexType size,
+        const void* zero,
         const hmemo::HArray<IndexType>& indexes,
         const hmemo::_HArray& values,
         const std::string& fileName,
@@ -320,6 +341,7 @@ public:
 
     static void read(
         IndexType& size,
+        void* zero,
         hmemo::HArray<IndexType>& indexes,
         hmemo::_HArray& array,
         const std::string& fileName,

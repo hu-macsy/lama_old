@@ -955,7 +955,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeSparseTest, ValueType, scai_numeric_test_typ
         try
         {
             fileIO->open( fileName.c_str(), "w" );
-            fileIO->writeSparse( N, sparseIndexes, sparseArray );
+            fileIO->writeSparse( N, &zero, sparseIndexes, sparseArray );
             fileIO->close();
         }
         catch( common::UnsupportedException& )
@@ -986,9 +986,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeSparseTest, ValueType, scai_numeric_test_typ
             IndexType         inN;
             HArray<ValueType> inValues;
             HArray<IndexType> inPos;
+            ValueType         zero;
 
             fileIO->open( fileName.c_str(), "r" );
-            fileIO->readSparse( inN, inPos, inValues );
+            fileIO->readSparse( inN, &zero, inPos, inValues );
             fileIO->close();
 
             SCAI_LOG_DEBUG( logger, "readSparse( " << fileName << " ): N = " << inN 

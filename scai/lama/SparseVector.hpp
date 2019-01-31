@@ -552,16 +552,16 @@ ValueType SparseVector<ValueType>::getZero() const
 }
 
 /** 
- *  @brief Function that returns a dense vector of a given size initialized with the same value.
+ *  @brief Free function that returns a sparse vector of a given size initialized with zero value.
  * 
- *  @tparam    ValueType  is the component type of the dense vector
+ *  @tparam    ValueType  is the component type of the vector
  *  @param[in] n          specifies the size of the vector                             
- *  @param[in] value      is the value assigned to all elements of the vector
+ *  @param[in] zero       is the zero element of the sparse vector
  *  @param[in] ctx        Context that is used for the filling and the generated vector
- *  @returns              a new dense vector with the specified size
+ *  @returns              a new sparse vector with the specified size
  *
  *  \code
- *     const auto v = denseVector<double>( n, 10 );
+ *     const auto v = sparseVector<double>( n, 1.0 );
  *  \endcode
  */
 template<typename ValueType>
@@ -573,6 +573,19 @@ SparseVector<ValueType> sparseVector(
     return SparseVector<ValueType>( n, zero, ctx );
 }
 
+/** 
+ *  @brief Free function that returns a sparse vector with a given distributon initialized with zero value.
+ * 
+ *  @tparam    ValueType    is the component type of the vector
+ *  @param[in] distribution specifies size and mapping of the vector
+ *  @param[in] zero         is the zero element of the sparse vector
+ *  @param[in] ctx          Context that is used for the filling and the generated vector
+ *  @returns                a new sparse vector with the specified distributiondistribution.
+ *
+ *  \code
+ *     const auto v = sparseVector<double>( blockDistribution( n ), 1.0 );
+ *  \endcode
+ */
 template<typename ValueType>
 SparseVector<ValueType> sparseVector(
     dmemo::DistributionPtr distribution,

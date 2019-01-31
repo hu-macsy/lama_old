@@ -81,26 +81,9 @@ public:
 
     virtual void writeArray( const hmemo::_HArray& array );
 
-    /** Implementation of pure virtual method FileIO::writeSparse  */
-
-    virtual void writeSparse(
-        const IndexType size,
-        const hmemo::HArray<IndexType>& indexes,
-        const hmemo::_HArray& array );
-
     /** Implementation of pure virtual method FileIO::readArray using same defaults */
 
     virtual void readArray( hmemo::_HArray& array );
-
-    /** Implementation of pure virtual method FileIO::readSparse 
-     *
-     *  This CRTP class calls Derived::readSparseImpl with a typed value array.
-     */
-
-    virtual void readSparse(
-        IndexType& size,
-        hmemo::HArray<IndexType>& indexes,
-        hmemo::_HArray& values );
 
     /** Default implementation for query matrix file suffix, is createValue of derived class */
 

@@ -110,7 +110,7 @@ public:
         const common::ScalarType fileDataType );
 
     /**
-     *  @brief Write a vector into a collective file.
+     *  @brief Write a matrix into a collective file.
      *  
      *  @param[in] file is the collecitve file (must have been opened for write)
      *  @param[in] vector is the vector to be written
@@ -133,12 +133,12 @@ public:
     static void read( dmemo::CollectiveFile& file, Matrix<ValueType>& matrix );
 
     /**
-     *  @param get the identification for a dense vector in a collective file.
+     *  @brief Get the identification for a dense vector in a collective file.
      */
     static int getDenseVectorId();
 
     /**
-     *  @param get the identification for a sparse matrix (CSR) in a collective file.
+     *  @brief Get the identification for a sparse matrix (CSR) in a collective file.
      */
     static int getSparseMatrixId();
 

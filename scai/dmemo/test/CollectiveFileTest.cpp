@@ -96,12 +96,12 @@ BOOST_AUTO_TEST_CASE( readWriteTest )
     auto colFile = comm->collectiveFile();
     colFile->open( fileName, "w" );
     colFile->writeSingle( N );
-    BOOST_CHECK_EQUAL( colFile->currentPos(), sizeof( N ) );
+    BOOST_CHECK_EQUAL( colFile->getOffset(), sizeof( N ) );
     colFile->writeAll( writeData );
     colFile->writeSingle( testData, fileIndexType );
 
     // verify that all processors have the same file position
-    BOOST_CHECK_EQUAL( comm->max( colFile->currentPos() ), colFile->currentPos() );
+    BOOST_CHECK_EQUAL( comm->max( colFile->getOffset() ), colFile->getOffset() );
 
     colFile->close();
 

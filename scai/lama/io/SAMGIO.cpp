@@ -276,6 +276,7 @@ void SAMGIO::writeArrayImpl( const HArray<ValueType>& array )
 template<typename ValueType>
 void SAMGIO::writeSparseImpl(
     const IndexType size,
+    const ValueType& zero,
     const HArray<IndexType>& indexes,
     const HArray<ValueType>& values )
 {
@@ -285,7 +286,6 @@ void SAMGIO::writeSparseImpl(
                             << " to " << mHeaderFile.getFileName() );
 
     HArray<ValueType> denseArray;
-    ValueType zero = 0;
     utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes, zero );
 
     writeArrayImpl( denseArray );
@@ -332,7 +332,7 @@ void SAMGIO::readArray( hmemo::_HArray& array )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<SAMGIO, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( *this, array );
+    IOWrapper<SAMGIO, SCAI_ARRAY_TYPES_HOST_LIST>::readArray( *this, array );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -377,6 +377,7 @@ void SAMGIO::readArrayImpl( HArray<ValueType>& array )
 template<typename ValueType>
 void SAMGIO::readSparseImpl(
     IndexType& size,
+    ValueType& zero,
     HArray<IndexType>& indexes,
     HArray<ValueType>& values )
 {
@@ -386,7 +387,7 @@ void SAMGIO::readSparseImpl(
 
     readArray( denseArray );
     size = denseArray.size();
-    ValueType zero = 0;
+    zero = 0;
     utilskernel::HArrayUtils::buildSparseArray( values, indexes, denseArray, zero );
 }
 
@@ -683,7 +684,7 @@ int SAMGIO::deleteFile( const std::string& fileName )
 
 void SAMGIO::writeStorage( const _MatrixStorage& storage )
 {
-    IOWrapper<SAMGIO, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorageImpl( *this, storage );
+    IOWrapper<SAMGIO, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorage( *this, storage );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -692,7 +693,7 @@ void SAMGIO::readStorage( _MatrixStorage& storage )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<SAMGIO, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorageImpl( *this, storage );
+    IOWrapper<SAMGIO, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorage( *this, storage );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -701,25 +702,25 @@ void SAMGIO::writeArray( const hmemo::_HArray& array )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<SAMGIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArrayImpl( *this, array );
+    IOWrapper<SAMGIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArray( *this, array );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void SAMGIO::writeSparse( const IndexType n, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values )
+void SAMGIO::writeSparse( const IndexType n, const void* zero, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<SAMGIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparseImpl( *this, n, indexes, values );
+    IOWrapper<SAMGIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparse( *this, n, zero, indexes, values );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void SAMGIO::readSparse( IndexType& size, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values )
+void SAMGIO::readSparse( IndexType& size, void* zero, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<SAMGIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparseImpl( *this, size, indexes, values );
+    IOWrapper<SAMGIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparse( *this, size, zero, indexes, values );
 }
 
 /* --------------------------------------------------------------------------------- */

@@ -283,12 +283,12 @@ void PngIO::writeGridImpl( const HArray<ValueType>& data, const common::Grid& gr
 
 void PngIO::readGridArray( _HArray& data, common::Grid& grid )
 {
-    IOWrapper<PngIO, SCAI_TYPELIST( float, double )>::readGridImpl( *this, data, grid );
+    IOWrapper<PngIO, SCAI_TYPELIST( float, double )>::readGrid( *this, data, grid );
 }
 
 void PngIO::writeGridArray( const _HArray& data, const common::Grid& grid )
 {
-    IOWrapper<PngIO, SCAI_TYPELIST( float, double )>::writeGridImpl( *this, data, grid );
+    IOWrapper<PngIO, SCAI_TYPELIST( float, double )>::writeGrid( *this, data, grid );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -335,18 +335,6 @@ void PngIO::writeArray( const hmemo::_HArray& array )
 
 /* --------------------------------------------------------------------------------- */
 
-void PngIO::writeSparse( 
-    const IndexType n, 
-    const hmemo::HArray<IndexType>& indexes, 
-    const hmemo::_HArray& values )
-{
-    SCAI_THROWEXCEPTION( common::UnsupportedException, 
-                         "Unsupported for bitmap file: write spare array ( n = " << n 
-                         << ", indexes = " << indexes << ", values = " << values << " )" )
-}
-
-/* --------------------------------------------------------------------------------- */
-
 void PngIO::getStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues )
 {
     numRows    = 0;
@@ -374,18 +362,6 @@ void PngIO::readArray( hmemo::_HArray& array )
 
     SCAI_THROWEXCEPTION( common::UnsupportedException, 
                          "Unsupported for bitmap file: read array from file " << mFileName )
-}
-
-/* --------------------------------------------------------------------------------- */
-
-void PngIO::readSparse( IndexType& size, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values )
-{
-    size = 0;
-    indexes.clear();
-    values.clear();
-
-    SCAI_THROWEXCEPTION( common::UnsupportedException, 
-                         "Unsupported for bitmap file: read sparse array from " << mFileName )
 }
 
 /* --------------------------------------------------------------------------------- */
