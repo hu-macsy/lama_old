@@ -101,7 +101,7 @@ communication as the assembled data must be communicated to their owners. Theref
 to due the assembling as locally as possible, i.e. elements should be inserted preferably by their owners.
 
 Sparse Vector Methods
---------------------
+---------------------
 
 SparseVector is a derived class from the generic class ``Vector``, so all methods and 
 operations provided by this class are also available for the ``SparseVector`` class.

@@ -9,7 +9,7 @@ All file formats allow to store at least a dense vector or a sparse matrix
 the single or independend mode for distributed data.
 
 .. list-table:: Supported File Formats
-   :widths: 10 10 10 10 10 10 
+   :widths: 10 10 10 10 10 10 10
    :header-rows: 1
 
    * - Name

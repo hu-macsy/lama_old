@@ -69,7 +69,7 @@ public:
      *  @param[in] stencil contains the stencil positions and values (nPoints)
      *  @param[out] gridInfo contains gridSizes (nDims), gridDistances(nDims), gridBorders(2*nDims), gridStencilWidth(2*nDims)
      *  @param[out] stencilInfo contains stencilPositions (nDims*nPoints), stencilOffsets(nPoints)
-     *  @param(out] stencilValues contains stencil values[nPoints]
+     *  @param[out] stencilValues contains stencil values[nPoints]
      *
      *  The heterogeneous arrays are required to call stencil kernels on arbitrary devices and to avoid recomputation of
      *  data that is reused, e.g. for multiple matrix-vector multiplications.

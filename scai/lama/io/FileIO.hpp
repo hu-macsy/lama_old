@@ -228,13 +228,17 @@ public:
         hmemo::HArray<IndexType>& indexes,
         hmemo::HArray<ValueType>& values );
 
-    /** Read in a 'sparse' array from a file in the corresponding format.
+    /** 
+     *  @brief Read in a 'sparse' array from a file using its file format.
      *
      *  @param[out] size is the size of the array
+     *  @param[out] zero pointer to variable that will be set with the zero value.
      *  @param[out] indexes are the positions with non-zero values
      *  @param[out] values are the values at the corresponding positions.
      *
-     *  This method must be implemented by each derived class. 
+     *  There is a default implementation that reads a dense array from the file and
+     *  translates it into a sparse array. It takes the value 0 as zero element.
+     *  Derived classes should override this method for more efficient implementations.
      */
     virtual void readSparse( 
         IndexType& size,
@@ -246,6 +250,8 @@ public:
 
     virtual std::string getMatrixFileSuffix() const = 0;
 
+    /** File suffix can be used to decide about choice of FileIO class */
+
     virtual std::string getVectorFileSuffix() const = 0;
 
     /** Help routine to delete file and maybe joint files
@@ -255,7 +261,22 @@ public:
      */
     virtual int deleteFile( const std::string& fileName );
 
-    /** Setter for representation type used for indexes in file. */
+    /** 
+     *  @brief Setter for representation type used for indexes in file. 
+     *
+     *  This method can be used to force that values of IndexType are converted
+     *  into another type. The following example shows how to force that 4-byte
+     *  IndexType values are written as 8-byte long values.
+     *
+     *  \code
+     *      DerivedIO file( ... );
+     *      file.setIndexType( common::TypeTraits<long>::stype );
+     *      HArray<IndexType> indexes = ....;
+     *      file.writeArray( indexes );
+     *  \endcode
+     *
+     *  By default, the value is `common::TypeTraits<IndexType>::stype`.
+     */
 
     void setIndexType( common::ScalarType type );
 

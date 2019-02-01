@@ -113,7 +113,7 @@ public:
      *  @brief Write a matrix into a collective file.
      *  
      *  @param[in] file is the collecitve file (must have been opened for write)
-     *  @param[in] vector is the vector to be written
+     *  @param[in] matrix is the matrix to be written
      *  
      *  This method will write values without any conversion into the file.  
      */

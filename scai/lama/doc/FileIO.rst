@@ -1,4 +1,4 @@
-.. _file_IO:
+.. _lama_IO:
 
 FileIO Class Hierarchy
 ----------------------

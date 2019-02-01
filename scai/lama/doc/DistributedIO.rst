@@ -35,7 +35,7 @@ Disadvantages:
 Independent I/O
 ---------------
 
-.. figure:: _images/indepedent_io.*
+.. figure:: _images/independent_io.*
     :width: 600px
     :align: center
   
