@@ -1,6 +1,127 @@
-:orphan:
+.. _distributed_IO:
 
-.. _partition_IO:
+Distributed I/O Support in LAMA
+===============================
+
+In contrary to a serial program where all data of vectors and/or matrices reside  
+in the local memory of one processor, the I/O of distributed data involves some
+kind of management to deal with it.
+
+Single I/O
+----------
+
+In the single I/O mode, only the first or master processor is responsible for
+reading data from and writing data into the file. Therefore data will be
+redistributed corresponding to the ``SingleDistribution`` where the 
+first processor owns all data.
+
+.. figure:: _images/single_io.*
+    :width: 600px
+    :align: center
+  
+    Single I/O of Distributed Data.
+
+Advantages:
+
+ * This mode supports all I/O formats that are supported in serial programs.
+ * All data is available in a single file.
+
+Disadvantages:
+
+ * Data must be redistributed (involves communication)
+ * First processor has to allocate memory for all data
+ * Poor performance.
+
+Independent I/O
+---------------
+
+.. figure:: _images/indepedent_io.*
+    :width: 600px
+    :align: center
+  
+    Independent I/O of Distributed Data.
+
+Advantages:
+
+ * This mode supports all I/O formats that are supported in serial programs.
+ * Full parallel performance
+ * Might use local discs (e.g. fast SSD) of the nodes
+
+Disadvantages:
+
+ * Lots of files to manage
+ * Number of processors must match the number of files (reading).
+ * Might involve redistribution if data is not block-distributed
+
+When a read or write operation is applied to a *distributed* vector or matrix, it
+is just as if the local part is read or written. But as the distribution itself is
+not written into the file, the vector or matrix must be block distributed.
+This implies a redistribution of the data before a write operation. The read data
+will have a general block distribution where the local size corresponds to the
+size of the data in the local files.
+
+Note: when writing data with coordinates (vector in sparse format) or COO storage
+data, the local files still keep the local coordinates. It might be possible to use
+global coordinates and to avoid the redistribution before the write operation.
+
+Collective I/O
+---------------
+
+In the collective mode, all processors read from the same 
+file or write into it. The module ``dmemo`` provides the ``CollectiveFile`` 
+class that can be used to read/write distributed data structures
+like vectors and matrices.
+ 
+.. figure:: _images/collective_io.*
+    :width: 600px
+    :align: center
+  
+    Collective I/O of Distributed Data.
+
+Advantages:
+
+ * All data resides in one file.
+ * Number of processors for read can be different from number of processors for write.
+ * Parallel file systems allow efficient implementation of read/write operations
+   for collective files.
+
+Disadvantages:
+
+ * Only possible for file formats where processors can read/write from individual offsets.
+ * Might involve redistribution if data is not block-distributed
+
+Explain: what happens if data is not block distributed.
+
+Explain: what happens with unsorted COO data. So we assume always sorted COO data.
+
+Selection of Distributed I/O-Mode
+---------------------------------
+
+.. code-block:: c++
+
+    #include <scai/lama/io/LamaIO.hpp>
+
+    using namespace scai;
+
+    LamaIO file;
+
+    file.open( "data.lfm", "r", DistributedIOMode::SERIAL );
+    if ( comm->getRank() == 0)
+    {
+        file.read( localArray );
+    }
+    else
+    {
+        localArray.clear();
+    }
+    DenseVector<double> v( localArray, 
+    CSRSparseMatrix<double> m = read<CSRSparseMatrix<double>>( file );
+    file.close();
+
+    file.open( "vector.lfm", "w", DistributedIOMode::COLLECTIVE );
+    v.writeToFile( file );
+    m.writeToFile( file );
+    file.close();
 
 Partitioned I/O
 ================

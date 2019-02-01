@@ -40,8 +40,9 @@ More informations about the mathematical notation can be found :doc:`here <Expre
    Vector
    Matrix
    Expressions
+   DistributedIO
    FileIO
-   PartitionIO
+   FileFormat
 
 Usage
 -----
@@ -56,7 +57,8 @@ How to                    Description
 :doc:`SetContext`         How to set a ``Context``
 :doc:`SetDistribution`    How to set a ``Distribution`` with a ``Communicator``
 :doc:`FileIO`             Read and write of local vector/matrix data
-:doc:`PartitionIO`        Read and write of distributed vector/matrix data
+:doc:`DistributedIO`      Read and write of distributed vector/matrix data
+:doc:`FileFormat`         Supported file formats.
 ======================    ==========================================
 
 .. toctree::

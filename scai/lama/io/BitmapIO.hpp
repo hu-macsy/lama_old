@@ -109,7 +109,11 @@ public:
 
     virtual bool isSupportedMode( const FileMode mode ) const;
 
+    /** Override methdod FileIO::readGridArray */
+
     void readGridArray( hmemo::_HArray& data, common::Grid& grid );
+
+    /** Override methdod FileIO::writeGridArray */
 
     void writeGridArray( const hmemo::_HArray& data, const common::Grid& grid );
 

@@ -131,7 +131,6 @@ public:
     /** Write matrix storage into a file.
      *
      *  @param[in] storage is the (local) matrix data that is written
-     *  @param[in] fileName is the name of the output file
      *
      *  By default all data is written in exactly the same format as it
      *  is used in the storage. So for a storage with double values 8 bytes
@@ -144,10 +143,10 @@ public:
 
     virtual void writeStorage( const _MatrixStorage& storage ) = 0;
 
-    /** Write 'dense' array of arbitrary type into a file.
+    /** 
+     *  @brief Write 'dense' array of arbitrary type into the current file.
      *
      *  @param[in] array is the (local) array data that is written
-     *  @param[in] fileName is the name of the output file
      *
      *  - mBinary if true data is written binary
      *  - mDataType output format used for non-zero values
@@ -158,7 +157,6 @@ public:
      *
      *  @param[in] array is the (local) array data that is written
      *  @param[in] grid is the shape of the array
-     *  @param[in] fileName is the name of the output file
      *
      *  - mBinary if true data is written binary
      *  - mDataType output format used for non-zero values
@@ -309,7 +307,7 @@ public:
 
     /** Static method to write a sparse array into a file.
      *
-     *  @param[in] size, values, indexes represent the sparse array
+     *  @param[in] size, zero, indexes, values represent the sparse array
      *  @param[in] fileName  is the name of output file, suffix decides about Handler
      *  @param[in] dataType  specifies the type to be used for representation in output file
      *

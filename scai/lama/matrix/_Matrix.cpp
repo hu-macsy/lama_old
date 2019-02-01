@@ -394,43 +394,15 @@ void _Matrix::readFromSingleFile( const std::string& fileName, CommunicatorPtr c
 
 void _Matrix::readFromSingleFile( const std::string& fileName, const DistributionPtr distribution )
 {
+    SCAI_LOG_DEBUG( logger, distribution->getCommunicator() << ": read matrix from file " << fileName
+                            << " with final dist = " << *distribution )
+
     SCAI_ASSERT_ERROR( distribution.get(), "NULL pointer for distribution" )
 
-    // dist must be block distributed, not checked again here
+    // block-wise read no more supported 
 
-    const IndexType n = distribution->getBlockDistributionSize();
-
-    if ( n == invalidIndex )
-    {
-        readFromSingleFile( fileName );
-        redistribute( distribution, getColDistributionPtr() );
-        return;
-    }
-
-    _MatrixStorage& localMatrix = const_cast<_MatrixStorage&>( getLocalStorage() );
-
-    bool error = false;
-
-    try
-    {
-        localMatrix.readFromFile( fileName );
-    }
-    catch ( Exception& ex )
-    {
-        SCAI_LOG_ERROR( logger, ex.what() )
-        error = true;
-    }
-
-    error = distribution->getCommunicator().any( error );
-
-    if ( error )
-    {
-        COMMON_THROWEXCEPTION( "readFromSingleFile failed." )
-    }
-
-    // ToDo: what happens if num columns is not same
-
-    assignLocal( localMatrix, distribution );
+    readFromSingleFile( fileName );
+    redistribute( distribution, getColDistributionPtr() );
 }
 
 /* ---------------------------------------------------------------------------------*/

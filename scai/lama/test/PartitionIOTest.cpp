@@ -235,7 +235,7 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
         DistributionPtr dist = testDists[i];
         CommunicatorPtr comm = dist->getCommunicatorPtr();
 
-        SCAI_LOG_ERROR( logger, "Test case " << i << " of " << testDists.size() << ": VectorSingleIO with dist = " << *dist )
+        SCAI_LOG_DEBUG( logger, "Test case " << i << " of " << testDists.size() << ": VectorSingleIO with dist = " << *dist )
 
         DenseVector<ValueType> vector;
 
@@ -252,7 +252,7 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
 
         readVector.readFromFile( vectorFileName, distFileName );
 
-        SCAI_LOG_ERROR( logger, "Read vector from file " << vectorFileName << ", dist = " << distFileName 
+        SCAI_LOG_DEBUG( logger, "Read vector from file " << vectorFileName << ", dist = " << distFileName 
                                 << ", read vector = " << readVector );
 
         // The local parts of the two vectors must be exactly the same
@@ -457,7 +457,11 @@ BOOST_AUTO_TEST_CASE( _MatrixSingleIO )
 
         MatrixCreator::fillRandom( matrix, fillRate );
 
+        SCAI_LOG_DEBUG( logger, comm << ": write to file " << matrixFileName << " this matrix: " << matrix )
+
         matrix.writeToFile( matrixFileName, "", common::ScalarType::INTERNAL, common::ScalarType::INTERNAL, FileMode::BINARY );
+
+        SCAI_LOG_DEBUG( logger, comm << ": write to file " << distFileName << " this distribution: " << matrix )
 
         PartitionIO::write( *rowDist, distFileName );
 
@@ -466,6 +470,9 @@ BOOST_AUTO_TEST_CASE( _MatrixSingleIO )
         // read matrix and reconstruct its old distribution
 
         readMatrix.readFromFile( matrixFileName, distFileName );
+
+        SCAI_LOG_DEBUG( logger, comm << ": read this matrix ( " << matrixFileName << ", dist " << distFileName 
+                                << " ) : " << readMatrix )
 
         // The local parts of the two matrices must be exactly the same
 
