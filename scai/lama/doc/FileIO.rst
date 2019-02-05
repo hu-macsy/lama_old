@@ -1,36 +1,80 @@
 .. _lama_IO:
 
-FileIO Class Hierarchy
-----------------------
+FileIO
+======
 
 FileIO is an abstract class, all other IO classes derive from it.
 
+FileIO Class Hierarchy
+----------------------
+
+.. figure:: _images/single_io.*
+    :width: 600px
+    :align: center
+  
+    Single I/O of Distributed Data.
+
+Each derived class must implement at least these pure (serial) methods:
+
+ * open and close of a file
+ * write an array (dense vector) into the file
+ * read an array (dense vector) from the file
+ * write a coordinate (sparse) matrix into the file
+ * read a coordinate (sparse) matrix into the file
+
 .. code-block:: c++
 
-   DerivedFileIO file;
-   file.open( <fileName>, <fileMode> [, <distributedMode> )
-   file.writeArray( array );
-   file.writeStorage( storage );
-   file.close();
+    #include <scai/lama/io/MatrixMarketIO.hpp
+
+    using namespace scai;
+
+    hmemo::HArray<double> values = ...
+    CSRStorage<double> csr = ...
+    
+    MatrixMarketIO file;
+
+    // output of values, csr             // input of values, csr
+
+    file.open( "vector.mtx", "w" );      file.open( "vector.mtx", "r" );
+    file.writeArray( values );           file.readArray( values );
+    file.close();                        file.close();
+    file.open( "matrix.mtx", "w" );      file.open( "matrix.mtx", "r" );
+    file.writeStorage( csr );            file.readStorage( csr );
+    file.close();                        file.close();
+
+The above code is exactly the same for all other supported file types.
 
 FileIO Factory
 --------------
 
-Reading and writing of (heterogeneous) arrays is supported by simple read and write routines.
+As seen before, most I/O operations can be written in such a way that they
+are independent of the underlying code. 
 
 .. code-block:: c++
 
-    #include <scai/lama/io/FileIO.hpp>
+    FileIO& file;
 
-    using namespace scai;
+All I/O classes can register themselves into the FileIO-Factory. This allows to 
+create dynamically a certain FileIO object of the corresponding derived class.
 
-    hmemo::HArray<ValueType> array;
-    lama::FileIO::read( array, fileName )
+.. code-block:: c++
+
+    suffix = FileIO::getSuffix( fileName );
+    std::unique_ptr<FileIO> file( FileIO::create( suffix );
+    file->open( .. );
     ...
-    lama::FileIO::write( array, fileName )
 
-Exceptions are thrown if files cannot be read or written. The file type is chosen by the 
-suffix of the filename (e.g. ".frv", ".psc", ".txt", "mtx" ).
+Distributed I/O Mode
+====================
+
+By default, a file is opened in the single mode. 
+
+.. code-block:: c++
+
+    if ( file->getDistributedIOMode() == DistributedIOMode::SINGLE )
+    { 
+        ...
+    }
 
 Type Conversions
 ----------------
