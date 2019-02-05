@@ -81,12 +81,6 @@ GeneralDistribution::GeneralDistribution(
 
     SCAI_ASSERT_DEBUG( HArrayUtils::validIndexes( myIndexes, globalSize ), "myIndexes contains illegal values" )
 
-    // Note: the constructor is completely local, but make some consistency check now
-
-    IndexType nLocal = mLocal2Global.size();
-
-    SCAI_ASSERT_EQ_ERROR( mGlobalSize, comm->sum( nLocal ), "illegal general distribution" )
-
     // sort the array ascending, should be very fast if already sorted
 
     HArrayUtils::sort( NULL, &mLocal2Global, mLocal2Global, true );
@@ -95,6 +89,9 @@ GeneralDistribution::GeneralDistribution(
 
     if ( checkFlag )
     {
+        SCAI_ASSERT_EQ_ERROR( mGlobalSize, comm->sum( mLocal2Global.size() ), 
+                              "illegal general distribution, total number of owned indexes not global size" )
+
         // this method also verifies that each global index appears only once
 
         enableBlockDistributedOwners();
