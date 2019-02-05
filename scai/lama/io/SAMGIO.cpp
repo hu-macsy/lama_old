@@ -154,7 +154,7 @@ SAMGIO::SAMGIO()
 
 /* --------------------------------------------------------------------------------- */
 
-void SAMGIO::open( const char* fileName, const char* fileMode )
+void SAMGIO::openIt( const std::string& fileName, const char* fileMode )
 {
     std::ios::openmode flags;
 
@@ -190,7 +190,7 @@ void SAMGIO::open( const char* fileName, const char* fileMode )
 
     std::string dataFileName = getDataFileName( fileName );
 
-    mDataFile.open( dataFileName.c_str(), flags );
+    mDataFile.open( dataFileName, flags );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -220,7 +220,7 @@ void SAMGIO::readFileMode()
 
 /* --------------------------------------------------------------------------------- */
 
-void SAMGIO::close()
+void SAMGIO::closeIt()
 {
     mHeaderFile.close();
     mDataFile.close();

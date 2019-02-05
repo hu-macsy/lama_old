@@ -106,7 +106,7 @@ void MatlabIO::writeAt( ostream& stream ) const
 
 /* --------------------------------------------------------------------------------- */
 
-void MatlabIO::open( const char* fileName, const char* fileMode )
+void MatlabIO::openIt( const std::string& fileName, const char* fileMode )
 {
     if ( strcmp( fileMode, "w" ) == 0 )
     {
@@ -130,7 +130,7 @@ void MatlabIO::open( const char* fileName, const char* fileMode )
 
 /* --------------------------------------------------------------------------------- */
 
-void MatlabIO::close()
+void MatlabIO::closeIt()
 {
     mFile.close();
 }

@@ -32,6 +32,37 @@ Disadvantages:
  * First processor has to allocate memory for all data
  * Poor performance.
 
+.. code-block:: c++
+
+    FileIO& file = ...;
+
+    auto comm = dmemo::Communicator::getCommunicatorPtr();
+    const PartitionId MASTER = 0;
+
+    DenseVector<double> vector;
+
+    // read vector from file in SINGLE mode
+    {
+        HArray<double> localData;
+        if ( comm->getRank() == MASTER )
+        {
+            file.read( localData );
+            N = localData.size();
+        }
+        comm->bcast( N, MASTER );
+        vector = DenseVector<double>( singleDistribution( N, comm ), localData );
+        vector.redistribute( blockDistribution( N, comm ) ); 
+    }
+    ....
+    // write vector 
+    {
+        vector.redistribute( singleDistribution (N, comm ) );
+        if ( comm->getRank() == MASTER )
+        {
+            comm->write( vector.getLocalData() );
+        }
+    }
+
 Independent I/O
 ---------------
 
@@ -64,6 +95,30 @@ Note: when writing data with coordinates (vector in sparse format) or COO storag
 data, the local files still keep the local coordinates. It might be possible to use
 global coordinates and to avoid the redistribution before the write operation.
 
+.. code-block:: c++
+
+    FileIO& file;
+
+    auto comm = dmemo::Communicator::getCommunicatorPtr();
+
+    DenseVector<double> vector;
+
+    // read vector from file in INDEPENDENT mode
+    {
+        HArray<double> localData;
+        file.read( localData );
+        vector = DenseVector<double>( genBlockDistribution( localData.size(), comm ), localData );
+    }
+    ....
+    // write vector into file in INDEPENDENT MODE
+    {
+        if ( !vector.getDistribution().isBlockDistributed() )
+        {
+            vector.redistribute( blockDistribution( vector.size(), comm ) );
+        }
+        file.write( vector.getLocalData() );
+    }
+
 Collective I/O
 ---------------
 
@@ -90,12 +145,16 @@ Disadvantages:
  * Only possible for file formats where processors can read/write from individual offsets.
  * Might involve redistribution if data is not block-distributed
 
-Explain: what happens if data is not block distributed.
-
-Explain: what happens with unsorted COO data. So we assume always sorted COO data.
+The code for collective I/O looks exactly the same as for the independent IO mode.
 
 Selection of Distributed I/O-Mode
 ---------------------------------
+
+For most FileIO classes, the SINGLE mode is the default mode. If the class supports
+the COLLECTIVE mode, this becomes the default mode.
+The INDENDENT mode is chosen if the pattern "%r" appears in the file name with the
+open method. This placeholder pattern will be replaced with the corresponding rank and size value
+of the communcator.
 
 .. code-block:: c++
 
@@ -105,74 +164,71 @@ Selection of Distributed I/O-Mode
 
     LamaIO file;
 
-    file.open( "data.lfm", "r", DistributedIOMode::SERIAL );
-    if ( comm->getRank() == 0)
-    {
-        file.read( localArray );
-    }
-    else
-    {
-        localArray.clear();
-    }
-    DenseVector<double> v( localArray, 
-    CSRSparseMatrix<double> m = read<CSRSparseMatrix<double>>( file );
+    file.open( "data.lfm", "r" );    // collective mode
+    ...
     file.close();
 
-    file.open( "vector.lfm", "w", DistributedIOMode::COLLECTIVE );
-    v.writeToFile( file );
-    m.writeToFile( file );
+    file.open( "data%r.lfm", "r" );   // independent mode
+    ...
     file.close();
 
-Partitioned I/O
-================
+    file.setDistributedIOMode( DistributedIOMode::SINGLE );
+    file.open( "data.lfm", "r" );     // single mode
+    ...
+    file.close();
 
-The FileIO classes are used to read and write local data, i.e. heterogeneous arrays and matrix storages.
-The Partioned I/O supports read and write of distributed data, i.e. vectors, matrices, and also distributions.
+When writing distributed data into a file, information about the distribution itself is lost. 
+For a single file this does not really matter as the data can be redistributed arbirtrarily after reading
+it. When the data is written into multiple files, the information about the mapping is lost, i.e. it is no more known
+how the local data maps into the global space.
 
-Two modes are supported for distributed data structures:
+Read/Write of Distributed Data
+-------------------------------
 
-- Single File Mode: all data is written into one single file and read from it. In this mode the data
-  is communicated to the master process that takes care of the file access.
-
-- Multiple File Mode: in this mode each processor writes its local data into a separate file.
-
-The single file mode is the default mode for the read and write method of distributed data.
-The multiple file mode is chosen if the pattern "%r" appears in the file name. This pattern 
-will be replaced with the corresponding rank and size values of the communcator.
+All distributed data structures of LAMA (e.g. Vector or Matrix) provide a method
+``readFromFile`` and a method ``writeToFile``. Its only argument is the reference
+to an opened file. 
 
 .. code-block:: c++
 
-    Vector& v = ...                            Vector& v = ...
-    Matrix& m = ...                            Matrix& m = ...
+    FileIO& file = 
+    file.open(  ... );
+    
+    Vector<double>& v = ...;
+    Matrix<double>& m = ...;
+
+    v.readFromFile( file );
+    m.readFromFile( file );
     ...
-    v.writeToFile( "vector.mtx" )              v.readFromFile( "vector.mtx" )
-    m.writeToFile( "matrix.mtx" )              m.readFromFile( "matrix.mtx" )
-    ...
-    v.writeToFile( "vector%r.mtx" )            v.readFromFile( "vector%r.mtx" )
-    m.writeToFile( "matrix%r.mtx" )            m.readFromFile( "matrix%r.mtx" )
+    v.writeToFile( file );
+    m.writeToFile( file );
 
-The single file mode has the big disadvantage that all data is written and read by a single processor
-and therefore memory is allocated for the full matrix by this master process. This might cause serious problems if 
-matrices become too large. 
+Important: each I/O routine of a Vecotor or a Matrix must be called by all processors
+of the current communicator.
 
-The multiple file mode causes less memory overhead and might be much faster especially on hardware
-that supports parallel I/O. Currently it has the disadvantage that the number of processors for reading
-distributed data must be exactly the same as the number of processors that have written the data.
+Instead of a file, it is also possible to pass a filename. By the suffix,
+a corresponding file object is created by the FileIO factory.
 
-When writing distributed data into a single or multiple file, information about the distribution itself
-is lost. For a single file this does not really matter as the data can be redistributed arbirtrarily after reading
-it. When the data is written into multiple files, the information about the mapping is lost, i.e. it is no more known
-how the submatrix of one file fits into the whole matrix. Only for block or general block distributions the original
-mapping from local to global indexes can be determined. Otherwise, the mapping itself must also be written into
-a file or, as it is a distributed data structure, into multiple files.
+.. code-block:: c++
 
-Single File IO
---------------
+    v.readFromFile( "filename.<suffix>" );
 
-Idea: all data is gathered on the master process and written to a single file.
-When reading a matrix or vector from a single file, the master process reads it.
+    std::unique_ptr<FileIO> file( FileIO::get( "<suffix" ) );
+    file->open( "filename.<suffix>", "r" );
+    v.readFromFile( *file );
+    file->close();
 
-There are some pitfalls.
+.. code-block:: c++
+
+    // v.writeToFile( "filename.<suffix>" );
+
+    FileIO& file = FileIO::get( "<suffix" );
+    file.open( "filename.<suffix>", "w" );
+    v.writeToFile( file );
+    file.close();
+
+Read/Write of Replicated Data
+-----------------------------
 
 * Writing a replicated vector or matrix: it must be called by all processors even if only one
   processor writes it. It contains an implicit synchronization that avoids that the same file
@@ -185,31 +241,17 @@ There are some pitfalls.
     v.writeToFile( "vector.mtx" )          // implicit synchronization 
     v.readFromFile( "vector.mtx" )
 
-General rule: each I/O routine of a Vecotor or a Matrix must be called by all processors
-of the current communicator.
-
-Reading a vector or matrix from a single file comes up with a distribution where only
-the master process has the data.
-
-.. code-block:: c++
-
-   CylcicDistribution dist( globalSize, globalSize, comm );    // first processor owns all elements
 
 I/O of Distributions
 --------------------
-
-If a vector or a matrix is stored in a single or multiple files, the information about the mapping is lost 
-if the distribution is not a (general) block distribution.
-
-Therefore the mapping itself can be written to a single or mutliple files. 
 
 A single file contains for each entry the owner.
 
 .. code-block:: c++
 
-   PartitionIO::write( distribution, "owners.mtx" )
+   HArray<IndexType> myLocalIndexes = dist->ownedIndexes();
+   DenseVector<IndexType> distVector( genBlockDistribution( dist->getLocalSize() ), dist->ownedIndexes() );
 
-   CommunicatorPtr comm = Communcator::CommuncatorPtr();    // current MPI comm
    DistributionPtr dist( PartitionIO::readDistribution( "owners.mtx", comm )
 
 .. code-block:: c++
@@ -231,68 +273,6 @@ A multiple file contains for each processor the owned global indexes.
 
    CommunicatorPtr comm = Communcator::CommuncatorPtr();    // current MPI comm
    DistributionPtr dist( PartitionIO::readDistribution( "owners%r.mtx", comm )
-
-Partitioned I/O of Vectors
---------------------------
-
-In contrary to a single array, the vector data might be distributed among the different processors.
-
-.. code-block:: c++
-
-    Vector& v = ...
-    v.readFromFile( fileName )
-    ....
-    v.writeToFile( ... )
-
-When writing a distributed vector to a single file, data is gathered on the master process that writes the complete
-data into the file. 
-
-When reading a vector from a single file, data is only read by the master process. The distribution set for the
-vector specifies exactly this mapping. Nevertheless, the data might be redistributed later within the application as
-required.
-
-A vector can be written to and read from mutliple file, one for each processor. This is exactly the case when
-the fileName contains the substring "%r" that is replaced with "<rank>.<size>" of the communicator.
-
-.. code-block:: c++
-
-    Vector& v = ...
-    ....
-    v.writeToFile( "data_%r.mtx" )
-
-.. code-block:: c++
-
-    mpirun -np 2 <appl>  -> write files data_0.2.mtx and data_1.2.mtx
-    mpirun -np 3 <appl>  -> write files data_0.3.mtx, data_1.3.mtx and data_2.3.mtx
-
-But be careful. If the distribution of the vector is not a block distribution, the mapping information
-is lost. When reading the vector from multiple files, the distribution of the vector will be set
-implicitly to a corresponding general block distribution.
-
-I/O of Matrices
----------------
-
-Writing and reading a matrix to a single file is done in the same way as for a vector.
-
-.. code-block:: c++
-
-    m.writeToFile( "matrix.mtx" )  -> all data is gathered on the master process and written
-    m.readFromFile( "matrix.mtx" )  -> all data is on the master process
-
-    m.writeToFile( "matrix_%r.mtx" ) -> each processor reads a local part of the matrix
-    m.readFromFile( "matrix_%r.mtx" ) -> each processor reads a local part of the matrix
-
-Reading a matrix 
-
-.. code-block:: c++
-
-    DistributionPtr dist = ...
-    m.readFromFile( "matrix_%r.mtx", dist )
-
-.. code-block:: c++
-
-    m.readFromFile( "matrix_%r.mtx", "owners.mtx" )
-    m.readFromFile( "matrix_%r.mtx", "myIndexes%r.mtx" )
 
 I/O Methods for Vector and Matrix classes
 -----------------------------------------

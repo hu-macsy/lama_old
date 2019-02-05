@@ -109,7 +109,7 @@ PETScIO::PETScIO()
 
 /* --------------------------------------------------------------------------------- */
 
-void PETScIO::open( const char* fileName, const char* fileMode )
+void PETScIO::openIt( const std::string& fileName, const char* fileMode )
 {
     SCAI_ASSERT( mFileMode != FileMode::FORMATTED, "Formatted output not available for PETScIO" )
 
@@ -137,7 +137,7 @@ void PETScIO::open( const char* fileName, const char* fileMode )
 
 /* --------------------------------------------------------------------------------- */
 
-void PETScIO::close()
+void PETScIO::closeIt()
 {
     mFile.close();
 }

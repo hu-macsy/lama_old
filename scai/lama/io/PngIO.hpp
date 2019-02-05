@@ -53,14 +53,6 @@ public:
 
     PngIO();
 
-    /** Implementation of pure virtual method FileIO::open */
-
-    virtual void open( const char* fileName, const char* fileMode );
-
-    /** Implementation of pure virtual method FileIO::close */
-
-    virtual void close();
-
     /** Implementation of pure methdod FileIO::getStorageInfo */
 
     virtual void getStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues );
@@ -126,6 +118,14 @@ public:
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
+    /** Implementation of pure virtual method FileIO::open */
+
+    virtual void openIt( const std::string& fileName, const char* fileMode );
+
+    /** Implementation of pure virtual method FileIO::close */
+
+    virtual void closeIt();
 
 private:
 

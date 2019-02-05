@@ -50,8 +50,9 @@ namespace lama
 
 FileIO::FileIO() :
 
-    mFileMode( FileMode::DEFAULT ),                       // no forace of anything
-    mAppendMode( false ),                            // default is to write each output file new
+    mFileMode( FileMode::DEFAULT ),                      // no force of anything
+    mDistMode( DistributedIOMode::DEFAULT ),             // no force of anything
+    mAppendMode( false ),                                // default is to write each output file new
     mScalarTypeIndex( common::ScalarType::INDEX_TYPE ),  // default is as used in LAMA
     mScalarTypeData( common::ScalarType::INTERNAL )      // default is same type as used in output data structure
 {
@@ -110,6 +111,70 @@ SCAI_LOG_DEF_LOGGER( FileIO::logger, "FileIO" )
 
 /* --------------------------------------------------------------------------------- */
 
+bool FileIO::hasCollectiveIO() const
+{
+    // collective I/O is not supported by default
+
+    return false;
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void FileIO::open( const char* fileName, const char* fileMode )
+{
+    if ( strstr( fileName, "%r" ) != NULL )
+    {
+        mDistMode = DistributedIOMode::INDEPENDENT;
+
+        std::string independentFileName = fileName;
+
+        size_t pos = independentFileName.find( "%r" );
+
+        std::ostringstream rankStr;
+     
+        auto comm = dmemo::Communicator::getCommunicatorPtr();
+
+        PartitionId size = comm->getSize();
+        PartitionId rank = comm->getRank();
+
+        if ( size > 1 )
+        {
+            rankStr << rank << "." << size;
+        }
+
+        independentFileName.replace( pos, 2, rankStr.str() );
+
+        openIt( independentFileName.c_str(), fileMode );
+    }
+    else
+    {
+        if ( mDistMode == DistributedIOMode::DEFAULT )
+        {
+            if ( hasCollectiveIO() )
+            {
+                mDistMode = DistributedIOMode::COLLECTIVE;
+            }
+            else
+            {
+                mDistMode = DistributedIOMode::SINGLE;
+            }
+        }
+
+        openIt( fileName, fileMode );
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void FileIO::close()
+{
+    mDistMode = DistributedIOMode::DEFAULT;
+
+    closeIt();
+}
+
+/* --------------------------------------------------------------------------------- */
+
 void FileIO::writeAt( std::ostream& stream ) const
 {
     stream << "FileIO( ";
@@ -130,6 +195,25 @@ void FileIO::writeMode( std::ostream& stream ) const
     else if ( mFileMode == FileMode::FORMATTED )
     {
         stream << "formatted";
+    }
+    else
+    {
+        stream << "DEFAULT";
+    }
+
+    stream << ", DistributedIOMode = ";
+
+    if ( mDistMode == DistributedIOMode::SINGLE )
+    {
+        stream << "SINGLE";
+    }
+    else if ( mDistMode == DistributedIOMode::INDEPENDENT )
+    {
+        stream << "INDEPENDENT";
+    }
+    else if ( mDistMode == DistributedIOMode::COLLECTIVE )
+    {
+        stream << "COLLECTIVE";
     }
     else
     {
@@ -487,6 +571,22 @@ void FileIO::readSparse( IndexType& size, void* zero, hmemo::HArray<IndexType>& 
     // use IOWrapper to called the typed version of this routine
 
     IOWrapper<FileIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparse( *this, size, zero, indexes, values );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+DistributedIOMode FileIO::getDistributedIOMode() const
+{
+    // mDistMode == DEFAULT indicates that no file is open at all
+
+    return mDistMode;
+}
+
+/* --------------------------------------------------------------------------------- */
+
+dmemo::CommunicatorPtr FileIO::getCommunicatorPtr() const
+{   
+    return dmemo::Communicator::getCommunicatorPtr();
 }
 
 /* --------------------------------------------------------------------------------- */

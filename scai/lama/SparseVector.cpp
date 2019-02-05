@@ -47,6 +47,7 @@
 
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/dmemo/SingleDistribution.hpp>
 #include <scai/dmemo/RedistributePlan.hpp>
 #include <scai/hmemo/ContextAccess.hpp>
 
@@ -573,22 +574,59 @@ void SparseVector<ValueType>::fillSparseData( const HArray<IndexType>& nonZeroIn
     }
 }
 
-/* ------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-IndexType SparseVector<ValueType>::readLocalFromFile( const std::string& fileName )
+void SparseVector<ValueType>::readFromFile( FileIO& file )
 {
-    SCAI_REGION( "Vector.sparse.readLocal" )
+    auto comm = file.getCommunicatorPtr();
 
-    SCAI_LOG_INFO( logger, "read local array from file " << fileName )
+    if ( file.getDistributedIOMode() == DistributedIOMode::SINGLE )
+    {
+        const PartitionId MASTER = 0;
+        const PartitionId myRank = comm->getRank();
 
-    IndexType localN;   // for local size of the array data
+        IndexType globalSize;
 
-    FileIO::read( localN, &mZeroValue, mNonZeroIndexes, mNonZeroValues, fileName );
+        if ( myRank == MASTER )
+        {
+            SCAI_LOG_INFO( logger, *comm << ": read sing sparse array from file " )
+            file.readSparse( globalSize, &mZeroValue, mNonZeroIndexes, mNonZeroValues );
+        }
+        else
+        {
+            mNonZeroIndexes.clear();     
+            mNonZeroValues.clear();     
+        }
+
+        comm->bcast( &mZeroValue, 1, MASTER );
+        comm->bcast( &globalSize, 1, MASTER );
+
+        setDistributionPtr( singleDistribution( globalSize, comm, MASTER ) );
+    }
+    else
+    {
+        // INDEPENDENT or COLLECTIVE 
+
+        IndexType localSize;
+
+        file.readSparse( localSize, &mZeroValue, mNonZeroIndexes, mNonZeroValues );
+        setDistributionPtr( genBlockDistributionBySize( localSize, comm ) );
+    }
 
     HArrayUtils::sortSparseEntries( mNonZeroIndexes, mNonZeroValues, true, getContextPtr() );
+}
 
-    return localN;
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void SparseVector<ValueType>::writeLocalToFile( FileIO& file ) const
+{
+    // in contrary to writeToFile( file ) here data is already redistributed correctly
+
+    const IndexType localSize = getDistribution().getLocalSize();
+
+    file.writeSparse( localSize, &mZeroValue, mNonZeroIndexes, mNonZeroValues );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -1668,59 +1706,6 @@ void SparseVector<ValueType>::resize( DistributionPtr distribution )
     allocate( distribution );
 
     this->fillFromAssembly( assembly );
-}
-
-/* -- IO ------------------------------------------------------------------- */
-
-template<typename ValueType>
-void SparseVector<ValueType>::writeLocalToFile(
-    const std::string& fileName,
-    const std::string& fileType,
-    const common::ScalarType dataType,
-    const FileMode fileMode
-) const
-{
-    std::string suffix = fileType;
-
-    if ( suffix == "" )
-    {
-        suffix = FileIO::getSuffix( fileName );
-    }
-
-    if ( FileIO::canCreate( suffix ) )
-    {
-        // okay, we can use FileIO class from factory
-
-        std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
-
-        if ( dataType != common::ScalarType::UNKNOWN )
-        {
-            // overwrite the default settings
-
-            fileIO->setDataType( dataType );
-        }
-
-        if ( fileMode != FileMode::DEFAULT )
-        {
-            // overwrite the default settings
-
-            fileIO->setMode( fileMode );
-        }
-
-        // write the sparse data
-
-        fileIO->open( fileName.c_str(), "w" );
-
-        const IndexType size = getDistribution().getLocalSize();
-
-        fileIO->writeSparse( size, &mZeroValue, mNonZeroIndexes, mNonZeroValues );
-
-        fileIO->close();
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "File : " << fileName << ", unknown suffix" )
-    }
 }
 
 /* ========================================================================= */

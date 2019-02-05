@@ -139,7 +139,7 @@ SCAI_LOG_DEF_LOGGER( TextIO::logger, "FileIO.TextIO" )
 
 /* --------------------------------------------------------------------------------- */
 
-void TextIO::open( const char* fileName, const char* fileMode )
+void TextIO::openIt( const std::string& fileName, const char* fileMode )
 {
     if ( strcmp( fileMode, "w" ) == 0 )
     {
@@ -158,7 +158,7 @@ void TextIO::open( const char* fileName, const char* fileMode )
 
 /* --------------------------------------------------------------------------------- */
 
-void TextIO::close()
+void TextIO::closeIt()
 {
     mFile.close();
 }

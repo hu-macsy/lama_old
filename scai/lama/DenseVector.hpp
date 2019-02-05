@@ -620,15 +620,11 @@ private:
 
     /** Implementation of _Vector::writeLocalToFile */
 
-    virtual void writeLocalToFile(
-        const std::string& fileName,
-        const std::string& fileType,
-        const common::ScalarType dataType,
-        const FileMode fileMode ) const;
+    virtual void writeLocalToFile( FileIO& file ) const;
 
-    /** Implementation of _Vector::readLocalFromFile */
+    /** Implementation of _Vector::readFromFile */
 
-    virtual IndexType readLocalFromFile( const std::string& fileName );
+    virtual void readFromFile( FileIO& file );
 
     /** Implementation of _Vector::clearValues */
 

@@ -448,7 +448,7 @@ SCAI_LOG_DEF_LOGGER( MatrixMarketIO::logger, "FileIO.MatrixMarketIO" )
 
 /* --------------------------------------------------------------------------------- */
 
-void MatrixMarketIO::open( const char* fileName, const char* fileMode )
+void MatrixMarketIO::openIt( const std::string& fileName, const char* fileMode )
 {
     if ( strcmp( fileMode, "w" ) == 0 )
     {
@@ -468,7 +468,7 @@ void MatrixMarketIO::open( const char* fileName, const char* fileMode )
 
 /* --------------------------------------------------------------------------------- */
 
-void MatrixMarketIO::close()
+void MatrixMarketIO::closeIt()
 {
     mFile.close();
 }

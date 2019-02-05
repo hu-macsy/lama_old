@@ -118,18 +118,18 @@ LamaIO::LamaIO()
 
 /* --------------------------------------------------------------------------------- */
 
-void LamaIO::open( const char* fileName, const char* fileMode )
+void LamaIO::openIt( const std::string& fileName, const char* fileMode )
 {
     SCAI_ASSERT( mFileMode != FileMode::FORMATTED, "Formatted output not available for LamaIO" )
 
-    mFile->open( fileName, fileMode );
-
     mFileName = fileName;
+
+    mFile->open( fileName.c_str(), fileMode );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void LamaIO::close()
+void LamaIO::closeIt()
 {
     mFile->close();
 

@@ -121,15 +121,15 @@ struct COLORTABLE
 
 /* --------------------------------------------------------------------------------- */
 
-void BitmapIO::open( const char* fileName, const char* fileMode )
+void BitmapIO::openIt( const std::string& fileName, const char* fileMode )
 {
     if ( strcmp( fileMode, "w" ) == 0 )
     {
-        mFile = fopen( fileName, "wb" );
+        mFile = fopen( fileName.c_str(), "wb" );
     }
     else if ( strcmp( fileMode, "r" ) == 0 )
     {
-        mFile = fopen( fileName, "rb" );
+        mFile = fopen( fileName.c_str(), "rb" );
     }
     else
     {
@@ -141,7 +141,7 @@ void BitmapIO::open( const char* fileName, const char* fileMode )
 
 /* --------------------------------------------------------------------------------- */
 
-void BitmapIO::close()
+void BitmapIO::closeIt()
 {
     fclose( mFile );
 }

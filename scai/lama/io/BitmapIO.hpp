@@ -49,13 +49,13 @@ class COMMON_DLL_IMPORTEXPORT BitmapIO :
 
 public:
 
-    /** Implementation of pure virtual method FileIO::open */
+    /** Implementation of pure virtual method FileIO::openIt */
 
-    virtual void open( const char* fileName, const char* fileMode );
+    virtual void openIt( const std::string& fileName, const char* fileMode );
 
-    /** Implementation of pure virtual method FileIO::close */
+    /** Implementation of pure virtual method FileIO::closeIt */
 
-    virtual void close();
+    virtual void closeIt();
 
     /** Implementation of pure method FileIO::getStorageInfo */
 

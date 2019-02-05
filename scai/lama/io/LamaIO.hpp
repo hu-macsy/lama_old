@@ -73,13 +73,13 @@ public:
 
     LamaIO();
 
-    /** Implementation of pure virtual method FileIO::open */
+    /** Implementation of pure virtual method FileIO::openIt */
 
-    virtual void open( const char* fileName, const char* fileMode );
+    virtual void openIt( const std::string& fileName, const char* fileMode );
 
     /** Implementation of pure virtual method FileIO::close */
 
-    virtual void close();
+    virtual void closeIt();
 
     /** Implementation of pure virtual method FileIO::writeStorage */
 

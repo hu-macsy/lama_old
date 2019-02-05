@@ -34,6 +34,8 @@
 #include <scai/common/Factory.hpp>
 #include <scai/common/Printable.hpp>
 
+#include <scai/dmemo/Communicator.hpp>
+
 #include <scai/logging.hpp>
 
 #include <string>
@@ -59,6 +61,17 @@ enum class FileMode
     BINARY,             //!< binary
     FORMATTED,          //!< formatted text
     DEFAULT             //!< keep it as it is set by default
+};
+
+/**
+ *  @brief Enumeration class for different modes of distributed I/O
+ */
+enum class DistributedIOMode
+{
+    SINGLE,             //!< only master processor reads/writes the file
+    INDEPENDENT,        //!< each processor reads/writes is local data
+    COLLECTIVE,         //!< all processors access the same file
+    DEFAULT             //!< take the default mode of an IO class
 };
 
 /**
@@ -104,21 +117,42 @@ public:
     virtual ~FileIO();
 
     /**
-     *  @brief Pure method to open a file.
+     *  @brief Open a file.
      *
      *  @param[in] fileName specifies the name of the file
      *  @param[in] fileMode is either "r" for reading a file, "w" for writing into it, or "a" for append to it
      *
      *  This method might throw an IOException if the file could not be opened or if a mode is not supported.
+     * 
+     *  Distributed I/O mode is set to INDEPENDENT mode if fileName contains the pattern "%r".
      */
-    virtual void open( const char* fileName, const char* fileMode ) = 0;
+    void open( const char* fileName, const char* fileMode );
 
     /**
-     *  @brief Pure method to close the currently open file.
+     *  @brief Virtual method to query if an IO class supports collective I/O.
+     */
+    virtual bool hasCollectiveIO() const;
+
+    /**
+     *  @brief Query the actual distributed IO mode
+     *
+     *  @return the current mode, either SINGLE, INDEPENDENT or COLLECTIVE
+     */
+    DistributedIOMode getDistributedIOMode() const;
+
+    /**
+     *  @brief Query the communicator for the processors involved in I/O
+     *
+     *  Note: usually all processors are involved, also in SINGLE mode.
+     */
+    dmemo::CommunicatorPtr getCommunicatorPtr() const;
+
+    /**
+     *  @brief Method to close the currently open file.
      *
      *  This method might throw an IOEception if no file is open at all.
      */
-    virtual void close() = 0;
+    void close();
 
     /** Query if a certain file mode is supported
      *
@@ -388,6 +422,23 @@ public:
 
 protected:
 
+    /**
+     *  @brief Pure method to open a file.
+     *
+     *  @param[in] fileName specifies the name of the file
+     *  @param[in] fileMode is either "r" for reading a file, "w" for writing into it, or "a" for append to it
+     *
+     *  This open method must be implemented by each derived FileIO class.
+     */
+    virtual void openIt( const std::string& fileName, const char* fileMode ) = 0;
+
+    /**
+     *  @brief Pure method to close the currently open file.
+     *
+     *  This method might throw an IOEception if no file is open at all.
+     */
+    virtual void closeIt() = 0;
+
     /** write the global settings in the stream, useful for derived classes */
 
     void writeMode( std::ostream& stream ) const;
@@ -399,7 +450,8 @@ protected:
 
     int getDataPrecision( common::ScalarType valueType );
 
-    FileMode mFileMode;                     //!< if true binary mode must be respected
+    FileMode mFileMode;                     //!< can be set to force binary or text I/O
+    DistributedIOMode mDistMode;            //!< actual mode used for distributed I/O
     bool mAppendMode;                       //!< if true output is appended to existing files
 
     common::ScalarType mScalarTypeIndex; //!< representation type of row indexes

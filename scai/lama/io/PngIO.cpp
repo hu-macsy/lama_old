@@ -85,18 +85,18 @@ PngIO::PngIO()
 
 /* ------------------------------------------------------------------------------------ */
 
-void PngIO::open( const char* fileName, const char* fileMode )
+void PngIO::openIt( const std::string& fileName, const char* fileMode )
 {
     mFileName = fileName;
 
     if ( strcmp( fileMode, "w" ) == 0 )
     {
-        mFile = fopen( fileName, "wb" );
+        mFile = fopen( fileName.c_str(), "wb" );
         SCAI_ASSERT_ERROR( mFile, "File " << fileName << " could not be opened for writing" )
     }
     else if ( strcmp( fileMode, "r" ) == 0 )
     {
-        mFile = fopen( fileName, "rb" );
+        mFile = fopen( fileName.c_str(), "rb" );
         SCAI_ASSERT_ERROR( mFile, "File " << fileName << " could not be opened for reading" )
     }
     else
@@ -107,7 +107,7 @@ void PngIO::open( const char* fileName, const char* fileMode )
 
 /* --------------------------------------------------------------------------------- */
 
-void PngIO::close()
+void PngIO::closeIt()
 {
     fclose( mFile );
     mFileName = "";

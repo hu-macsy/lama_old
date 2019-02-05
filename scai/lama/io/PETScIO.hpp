@@ -59,14 +59,6 @@ public:
 
     PETScIO();
 
-    /** Implementation of pure virtual method FileIO::open */
-
-    virtual void open( const char* fileName, const char* fileMode );
-
-    /** Implementation of pure virtual method FileIO::close */
-
-    virtual void close();
-
     /** Implementation of pure virtual method FileIO::writeStorage */
 
     void writeStorage( const _MatrixStorage& storage );
@@ -178,6 +170,14 @@ public:
 private:
 
     class IOStream mFile;    // used file
+
+    /** Implementation of pure virtual method FileIO::openIt */
+
+    virtual void openIt( const std::string& fileName, const char* fileMode );
+
+    /** Implementation of pure virtual method FileIO::closeIt */
+
+    virtual void closeIt();
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for IO class
 };

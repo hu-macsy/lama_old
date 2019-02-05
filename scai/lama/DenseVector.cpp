@@ -45,6 +45,7 @@
 
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/dmemo/SingleDistribution.hpp>
 #include <scai/dmemo/GlobalAddressingPlan.hpp>
 #include <scai/dmemo/RedistributePlan.hpp>
 #include <scai/hmemo/ContextAccess.hpp>
@@ -1874,60 +1875,49 @@ void DenseVector<ValueType>::redistribute( const RedistributePlan& redistributor
 /* -- IO ------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::writeLocalToFile(
-    const std::string& fileName,
-    const std::string& fileType,
-    const common::ScalarType dataType,
-    const FileMode fileMode
-) const
+void DenseVector<ValueType>::writeLocalToFile( FileIO& file ) const
 {
-    std::string suffix = fileType;
+    // in contrary to writeToFile( file ) here data is already redistributed correctly
 
-    if ( suffix == "" )
-    {
-        suffix = FileIO::getSuffix( fileName );
-    }
-
-    if ( FileIO::canCreate( suffix ) )
-    {
-        // okay, we can use FileIO class from factory
-
-        std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
-
-        if ( dataType != common::ScalarType::UNKNOWN )
-        {
-            // overwrite the default settings
-
-            fileIO->setDataType( dataType );
-        }
-
-        if ( fileMode != FileMode::DEFAULT )
-        {
-            // overwrite the default settings
-
-            fileIO->setMode( fileMode );
-        }
-
-        fileIO->open( fileName.c_str(), "w" );
-        fileIO->writeArray( mLocalValues );
-        fileIO->close();
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "File : " << fileName << ", unknown suffix" )
-    }
+    file.writeArray( mLocalValues );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-IndexType DenseVector<ValueType>::readLocalFromFile( const std::string& fileName )
+void DenseVector<ValueType>::readFromFile( FileIO& file ) 
 {
-    SCAI_LOG_INFO( logger, "read local array from file " << fileName )
+    auto comm = file.getCommunicatorPtr();
+    
+    if ( file.getDistributedIOMode() == DistributedIOMode::SINGLE )
+    {   
+        const PartitionId MASTER = 0;
+        const PartitionId myRank = comm->getRank();
 
-    FileIO::read( mLocalValues, fileName, common::ScalarType::INTERNAL );
+        IndexType globalSize;
+        
+        if ( myRank == MASTER )
+        {
+            SCAI_LOG_INFO( logger, *comm << ": read local array from file " << file )
+            file.readArray( mLocalValues );
+            globalSize = mLocalValues.size();
+        }
+        else
+        {
+            mLocalValues.clear();
+        }
+        
+        comm->bcast( &globalSize, 1, MASTER );
+        
+        setDistributionPtr( dmemo::singleDistribution( globalSize, comm, MASTER ) );
+    }
+    else
+    {
+        // INDEPENDENT or COLLECTIVE 
 
-    return mLocalValues.size();
+        file.readArray( mLocalValues );
+        setDistributionPtr( genBlockDistributionBySize( mLocalValues.size(), comm ) );
+    }
 }
 
 /* ---------------------------------------------------------------------------------*/
