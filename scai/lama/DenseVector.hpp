@@ -596,7 +596,7 @@ public:
 
     virtual void resize( const dmemo::DistributionPtr distribution );
 
-private:
+protected:
 
     using _Vector::setDistributionPtr;
 

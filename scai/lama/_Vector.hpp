@@ -300,10 +300,9 @@ public:
     /**
      *  @brief Read a vector from an input file.
      *
-     *  Note: the file type (e.g. MatrixMarket, SAMG, ... ) decides about the file format.
-     *        There is no support for any automatic detection.
+     *  Note: the file type (i.g. MatrixMarket, SAMG, ... ) is derived by the suffix
      */
-    void readFromFile( const std::string& fileName, const std::string& fileType = "" );
+    void readFromFile( const std::string& fileName );
 
     /**
      *  @brief Read a vector from an input file with a certain distribution
@@ -323,19 +322,21 @@ public:
     /**
      * @brief write the vector to an output file
      *
-     * @param[in] fileName is the name of the output file (suffix must be added according to the file type)
-     * @param[in] fileType format of the output file ("frv" for SAMG, "mtx" for _MatrixMarket), default is to decide by suffix
-     * @param[in] dataType representation type for output values, if set it overrides IO settings
-     * @param[in] fileMode can be BINARY or FORMATTED, DEFAULT_MODE keeps default/environment settings
+     * @param[in] fileName is the name of the output file, suffix decides about used FileIO class
+     * @param[in] fileMode can be BINARY or FORMATTED, DEFAULT keeps default/environment settings
+     * @param[in] dataType representation type for data values, default is same as value type of entries
+     * @param[in] indexType representation type for values of type IndexType.
      */
     void writeToFile(
         const std::string& fileName,
-        const std::string& fileType = "",
-        const common::ScalarType dataType = common::ScalarType::UNKNOWN,
-        const FileMode fileMode = FileMode::DEFAULT  ) const;
+        const FileMode fileMode = FileMode::DEFAULT,
+        const common::ScalarType dataType = common::ScalarType::INTERNAL,
+        const common::ScalarType indexType = common::ScalarType::INDEX_TYPE ) const;
 
     /**
      *   @brief write the vector to an output file.
+     *
+     *   @param[in,out] outFile must be an open FileIO object.
      */
     void writeToFile( FileIO& outFile ) const;
 
@@ -614,10 +615,12 @@ private:
 
     hmemo::ContextPtr mContext; //!< decides about location of vector operations
 
-    /** write only the local data to a file, no communication here */
-
+    /** 
+     *  @brief Write only the local data to a file.
+     *
+     *  This method is called after a possible redistribution that fits the distributed I/O mode.
+     */
     virtual void writeLocalToFile( FileIO& file ) const = 0;
-
 };
 
 /* ========================================================================= */

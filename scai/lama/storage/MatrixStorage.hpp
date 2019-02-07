@@ -456,26 +456,6 @@ public:
 
     MatrixStorage& operator=( const MatrixStorage<ValueType>& other );
 
-    /** Implementation of pure routine _MatrixStorage::writeToFile */
-
-    virtual void writeToFile(
-        const std::string& fileName,
-        const std::string& fileType = "",
-        const common::ScalarType dataType = common::ScalarType::UNKNOWN,
-        const common::ScalarType indexType = common::ScalarType::UNKNOWN,
-        const FileMode fileMode = FileMode::DEFAULT  ) const;
-
-    virtual void writeToFile(
-        const PartitionId size,
-        const PartitionId rank,
-        const std::string& fileName,
-        const std::string& fileType,
-        const common::ScalarType dataType = common::ScalarType::UNKNOWN,
-        const common::ScalarType indexType = common::ScalarType::UNKNOWN,
-        const FileMode fileMode = FileMode::DEFAULT ) const;
-
-    virtual void readFromFile( const std::string& fileName );
-
     /******************************************************************
      *   invert                                                        *
      ******************************************************************/

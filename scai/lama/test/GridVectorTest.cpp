@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, scai_numeric_test_types )
 
     const common::Grid3D grid( n1, n2, n3 );
 
-    GridVector<ValueType> gv( grid );
+    GridVector<ValueType> gv( grid, ValueType( 1 ) );
 
     BOOST_CHECK_EQUAL( 3, gv.nDims() );
     BOOST_CHECK_EQUAL( n1, gv.size( 0 ) );
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ioTest, ValueType, scai_numeric_test_types )
     const auto comm = scai::dmemo::Communicator::getCommunicatorPtr();
     const auto fileName = uniquePathSharedAmongNodes(GlobalTempDir::getPath(), *comm, "tmpGrid") + ".mat";
 
-    GridVector<ValueType> gv1( common::Grid4D( n1, n2, n3, n4 ) );
+    GridVector<ValueType> gv1( common::Grid4D( n1, n2, n3, n4 ), ValueType( 0 ) );
 
     {
         GridWriteAccess<ValueType> wGV1( gv1 );
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ioTest, ValueType, scai_numeric_test_types )
 
     // read the grid vector from a file
 
-    GridVector<ValueType> gv2( fileName );
+    auto gv2 = read<GridVector<ValueType>>( fileName );
 
     SCAI_LOG_INFO( logger, "gv2( " << fileName << " ) = " << gv2 )
 

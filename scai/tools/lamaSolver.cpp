@@ -237,27 +237,9 @@ int main( int argc, const char* argv[] )
 
             // read matrix + rhs from disk
 
-            std::string distFilename = "";
+            HOST_PRINT( myRank, "Read matrix from file " << matrixFilename )
 
-            if ( common::Settings::getEnvironment( distFilename, "SCAI_DISTRIBUTION" ) )
-            {
-                if ( distFilename.size() < 2 )
-                {
-                    distFilename = "";
-                    HOST_PRINT( 0 , "Read matrix from file " << matrixFilename << ", with mapping by cols" )
-                }
-                else
-                {
-                    HOST_PRINT( 0, "Read matrix from file " << matrixFilename << ", with mapping from file " << distFilename )
-                }
-
-                inMatrix.readFromFile( matrixFilename, distFilename );
-            }
-            else
-            {
-                HOST_PRINT( myRank, "Read matrix from file " << matrixFilename )
-                inMatrix.readFromFile( matrixFilename );
-            }
+            inMatrix.readFromFile( matrixFilename );
 
             SCAI_ASSERT_EQUAL( inMatrix.getNumRows(), inMatrix.getNumColumns(), "solver only with square matrices" )
 

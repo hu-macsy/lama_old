@@ -114,14 +114,9 @@ _Vector::~_Vector()
 
 /* ---------------------------------------------------------------------------------------*/
 
-void _Vector::readFromFile( const std::string& fileName, const std::string& fileType )
+void _Vector::readFromFile( const std::string& fileName )
 {
-    std::string suffix = fileType;
-
-    if ( suffix == "" )
-    {
-        suffix = FileIO::getSuffix( fileName );
-    }
+    std::string suffix = FileIO::getSuffix( fileName );
 
     if ( FileIO::canCreate( suffix ) )
     {
@@ -237,17 +232,11 @@ void _Vector::writeToFile( FileIO& file ) const
 
 void _Vector::writeToFile(
     const std::string& fileName,
-    const std::string& fileType,               /* = "", take IO type by suffix   */
-    const common::ScalarType dataType, /* = UNKNOWN, take defaults of IO type */
-    const FileMode fileMode            /* = DEFAULT_MODE */
-) const
+    const FileMode fileMode,
+    const common::ScalarType dataType,
+    const common::ScalarType indexType  ) const
 {
-    std::string suffix = fileType;
-
-    if ( suffix == "" )
-    {
-        suffix = FileIO::getSuffix( fileName );
-    }
+    std::string suffix = FileIO::getSuffix( fileName );
 
     if ( FileIO::canCreate( suffix ) )
     {
@@ -255,19 +244,9 @@ void _Vector::writeToFile(
 
         std::unique_ptr<FileIO> file( FileIO::create( suffix ) );
 
-        if ( dataType != common::ScalarType::UNKNOWN )
-        {
-            // overwrite the default settings
-
-            file->setDataType( dataType );
-        }
-
-        if ( fileMode != FileMode::DEFAULT )
-        {
-            // overwrite the default settings
-
-            file->setMode( fileMode );
-        }
+        file->setMode( fileMode );
+        file->setDataType( dataType );
+        file->setIndexType( indexType );
 
         file->open( fileName.c_str(), "w" );
         writeToFile( *file );

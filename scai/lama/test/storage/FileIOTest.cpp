@@ -268,7 +268,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
 
         try
         {
-            csrStorage.writeToFile( fileName, "", ScalarType::INTERNAL, ScalarType::INDEX_TYPE, FileMode::FORMATTED );
+            csrStorage.writeToFile( fileName, FileMode::FORMATTED );
         } 
         catch( common::UnsupportedException& )
         {
@@ -365,9 +365,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryStorage, ValueType, scai_numeric_test_types
 
         try
         {
-            csrStorage.writeToFile( fileName, "", ScalarType::INTERNAL, ScalarType::INDEX_TYPE, FileMode::BINARY );
+            csrStorage.writeToFile( fileName, FileMode::BINARY );
         } 
-        catch( common::UnsupportedException& )
+        catch ( common::UnsupportedException& )
         {
             // if storage is unssupported just skip this test here
 

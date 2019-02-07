@@ -10,7 +10,7 @@ For a distributed vector, each processor stores only the values owned by it.
 These owned local values are internally stored in a ``HArray`` (see :ref:`scaihmemo:main-page_hmemo`)
 so a ``DenseVector`` can be used transparently on every device. 
 
-.. figure:: _images/sparse_vector.*
+.. figure:: _images/dense_vector.*
     :width: 600px
     :align: center
   

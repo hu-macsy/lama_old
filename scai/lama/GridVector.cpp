@@ -52,14 +52,40 @@ using namespace hmemo;
 namespace lama
 {
 
-template<typename ValueType>
-GridVector<ValueType>::GridVector( const std::string& filename ) : DenseVector<ValueType>() 
-{
-    // currently each processor reads the file, no distributed IO
-    // Problem: GridDistribution onto a single processor not supported yet
+/* ------------------------------------------------------------------------- */
 
-    GridVector::readLocalFromFile( filename, 0, invalidIndex );
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, GridVector<ValueType>::logger, "Vector.GridVector" )
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+GridVector<ValueType>::GridVector( hmemo::ContextPtr context ) : DenseVector<ValueType>( context )
+{
+    // give it a default grid distribution for consistency
+
+    this->setDistributionPtr( dmemo::gridDistributionReplicated( common::Grid() ) );
 }
+
+template<typename ValueType>
+GridVector<ValueType>::GridVector( const common::Grid& grid, const ValueType value, hmemo::ContextPtr context ) :
+
+    DenseVector<ValueType>( dmemo::gridDistributionReplicated( grid ), value, context )
+{
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+GridVector<ValueType>::GridVector( dmemo::DistributionPtr dist, const ValueType value, hmemo::ContextPtr context ) :
+
+    DenseVector<ValueType>( dist, value, context )
+
+{
+     SCAI_ASSERT_ERROR( dynamic_cast<const dmemo::GridDistribution*>( dist.get() ), 
+                        "Grid vector has no grid distribution, dist = " << *dist )
+}
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void GridVector<ValueType>::reduce( const GridVector<ValueType>& other, IndexType dim, const common::BinaryOp redOp )
@@ -191,47 +217,57 @@ void GridVector<ValueType>::setDiagonal( const GridSection<ValueType>& diagonal,
 /* -- IO ------------------------------------------------------------------- */
 
 template<typename ValueType>
-void GridVector<ValueType>::writeLocalToFile(
-    const std::string& fileName,
-    const std::string& fileType,
-    const common::ScalarType dataType,
-    const FileMode fileMode
-) const
+void GridVector<ValueType>::writeLocalToFile( FileIO& file ) const
 {
-    std::string suffix = fileType;
+    file.writeGridArray( this->mLocalValues, this->localGrid() );
+}
 
-    if ( suffix == "" )
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void GridVector<ValueType>::readFromFile( FileIO& file )
+{
+    auto comm = file.getCommunicatorPtr();
+
+    if ( file.getDistributedIOMode() == DistributedIOMode::SINGLE )
     {
-        suffix = FileIO::getSuffix( fileName );
-    }
+        const PartitionId MASTER = 0;
+        const PartitionId myRank = comm->getRank();
 
-    if ( FileIO::canCreate( suffix ) )
-    {
-        // okay, we can use FileIO class from factory
+        IndexType nDims;
+        IndexType globalGridDims[SCAI_GRID_MAX_DIMENSION];
 
-        std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+        common::Grid grid;
 
-        if ( dataType != common::ScalarType::UNKNOWN )
+        if ( myRank == MASTER )
         {
-            // overwrite the default settings
-
-            fileIO->setDataType( dataType );
+            SCAI_LOG_INFO( logger, *comm << ": read local array from file " << file )
+            file.readGridArray( this->mLocalValues, grid );
+            nDims = grid.nDims();
+            grid.getSizes( globalGridDims );
         }
 
-        if ( fileMode != FileMode::DEFAULT )
-        {
-            // overwrite the default settings
+        // single distribution for grid distribution not available, so replicate it
 
-            fileIO->setMode( fileMode );
-        }
+        comm->bcast( &nDims, 1, MASTER );
+        comm->bcast( globalGridDims, nDims, MASTER );
+        comm->bcastArray( this->mLocalValues, MASTER );
 
-        fileIO->open( fileName.c_str(), "w" );
-        fileIO->writeGridArray( this->getLocalValues(), this->localGrid() );
-        fileIO->close();
+        common::Grid globalGrid( nDims, globalGridDims );
+
+        this->setDistributionPtr( dmemo::gridDistributionReplicated( globalGrid ) );
     }
     else
     {
-        COMMON_THROWEXCEPTION( "File : " << fileName << ", unknown suffix" )
+        // INDEPENDENT or COLLECTIVE 
+
+        common::Grid localGrid;
+
+        file.readGridArray( this->mLocalValues, localGrid );
+
+        COMMON_THROWEXCEPTION( "not supported yet: read grid only SINGLE mode, local grid = "  << localGrid )
+
+        this->setDistributionPtr( dmemo::gridDistribution( localGrid ) );
     }
 }
 
@@ -242,30 +278,6 @@ void GridVector<ValueType>:: operator=( const GridSection<ValueType>& other )
 {
     GridSection<ValueType> fullSection = *this;
     fullSection = other;
-}
-
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
-IndexType GridVector<ValueType>::readLocalFromFile( const std::string& fileName, const IndexType first, const IndexType n )
-{
-    SCAI_REGION( "Vector.grid.readLocal" )
-
-    HArray<ValueType> data;
-    common::Grid grid;
-
-    FileIO::read( data, grid, fileName );
-
-    IndexType localN = data.size();
-
-    SCAI_ASSERT_EQ_ERROR( data.size(), grid.size(), "read data does not match this grid " << grid );
-
-    swap( data, grid );
-
-    SCAI_ASSERT_EQ_ERROR( 0, first, "block read not supported for sparse data" )
-    SCAI_ASSERT_EQ_ERROR( invalidIndex, n, "block read not supported for sparse data" )
-
-    return localN;
 }
 
 /* ========================================================================= */

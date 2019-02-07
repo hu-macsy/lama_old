@@ -81,6 +81,10 @@ public:
 
     virtual void closeIt();
 
+    /** Override default method as this class fully supports collective I/O */
+
+    virtual bool hasCollectiveIO() const;
+
     /** Implementation of pure virtual method FileIO::writeStorage */
 
     void writeStorage( const _MatrixStorage& storage );

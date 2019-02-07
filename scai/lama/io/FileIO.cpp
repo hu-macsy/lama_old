@@ -120,8 +120,12 @@ bool FileIO::hasCollectiveIO() const
 
 /* --------------------------------------------------------------------------------- */
 
-void FileIO::open( const char* fileName, const char* fileMode )
+void FileIO::open( const char* fileName, const char* fileMode, const DistributedIOMode distMode )
 {
+    mDistMode = distMode;
+
+    auto comm = dmemo::Communicator::getCommunicatorPtr();
+
     if ( strstr( fileName, "%r" ) != NULL )
     {
         mDistMode = DistributedIOMode::INDEPENDENT;
@@ -132,8 +136,6 @@ void FileIO::open( const char* fileName, const char* fileMode )
 
         std::ostringstream rankStr;
      
-        auto comm = dmemo::Communicator::getCommunicatorPtr();
-
         PartitionId size = comm->getSize();
         PartitionId rank = comm->getRank();
 
@@ -160,7 +162,12 @@ void FileIO::open( const char* fileName, const char* fileMode )
             }
         }
 
-        openIt( fileName, fileMode );
+        // in single mode only MASTER processor opens it
+
+        if ( mDistMode != DistributedIOMode::SINGLE || comm->getRank() == 0 ) 
+        {
+            openIt( fileName, fileMode );
+        }
     }
 }
 
@@ -168,9 +175,16 @@ void FileIO::open( const char* fileName, const char* fileMode )
 
 void FileIO::close()
 {
-    mDistMode = DistributedIOMode::DEFAULT;
+    auto comm = dmemo::Communicator::getCommunicatorPtr();
 
-    closeIt();
+    // in single mode only MASTER processor closes it
+
+    if ( mDistMode != DistributedIOMode::SINGLE || comm->getRank() == 0 ) 
+    {
+        closeIt();
+    }
+
+    mDistMode = DistributedIOMode::DEFAULT;
 }
 
 /* --------------------------------------------------------------------------------- */

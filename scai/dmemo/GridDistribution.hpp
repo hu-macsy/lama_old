@@ -36,6 +36,7 @@
 
 // base classes
 #include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/NoCommunicator.hpp>
 
 namespace scai
 {
@@ -259,6 +260,30 @@ const char* GridDistribution::getKind() const
 const char* GridDistribution::getId()
 {
     return "GRID";
+}
+
+/* -----------------------------------------------------------------------------*/
+/*  Inline functions for convenience                                            */
+/* -----------------------------------------------------------------------------*/
+
+inline std::shared_ptr<GridDistribution> gridDistribution(
+    const common::Grid& globalGrid, 
+    const CommunicatorPtr communicator, 
+    const common::Grid& procGrid )
+{
+    return std::make_shared<GridDistribution>( globalGrid, communicator, procGrid );
+}
+
+inline std::shared_ptr<GridDistribution> gridDistribution(
+    const common::Grid& globalGrid, 
+    const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() )
+{
+    return std::make_shared<GridDistribution>( globalGrid, communicator );
+}
+
+inline std::shared_ptr<GridDistribution> gridDistributionReplicated( const common::Grid& globalGrid )
+{
+    return std::make_shared<GridDistribution>( globalGrid, std::make_shared<NoCommunicator>() );
 }
 
 } /* end namespace dmemo */

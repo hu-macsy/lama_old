@@ -126,7 +126,7 @@ public:
      * 
      *  Distributed I/O mode is set to INDEPENDENT mode if fileName contains the pattern "%r".
      */
-    void open( const char* fileName, const char* fileMode );
+    void open( const char* fileName, const char* fileMode, const DistributedIOMode distMode = DistributedIOMode::DEFAULT );
 
     /**
      *  @brief Virtual method to query if an IO class supports collective I/O.

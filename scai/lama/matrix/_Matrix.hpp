@@ -102,19 +102,21 @@ public:
     /**
      * @brief write the matrix to an output file
      *
-     * @param[in] fileName is the name of the output file (suffix must be added according to the file type)
-     * @param[in] fileType format of the output file (SAMG, _MatrixMarket), default is to decide by suffix
-     * @param[in] dataType representation type for output values, default is same type as matrix values
-     * @param[in] indexType representation type for col/row index values
-     * @param[in] fileMode can be used to forche BINARY or FORMATTED output
+     * @param[in] fileName is the name of the output file, suffix decides about used FileIO class
+     * @param[in] fileMode can be BINARY or FORMATTED, DEFAULT keeps default/environment settings
+     * @param[in] dataType representation type for data values, default is same as value type of entries
+     * @param[in] indexType representation type for values of type IndexType.
      */
-
     void writeToFile(
         const std::string& fileName,
-        const std::string& fileType = "",
-        const common::ScalarType dataType = common::ScalarType::UNKNOWN,
-        const common::ScalarType indexType = common::ScalarType::UNKNOWN,
-        const FileMode fileMode = FileMode::DEFAULT  ) const;
+        const FileMode fileMode = FileMode::DEFAULT,
+        const common::ScalarType dataType = common::ScalarType::INTERNAL,
+        const common::ScalarType indexType = common::ScalarType::INDEX_TYPE ) const;
+
+    /**
+     *   @brief write the matrix to an output file.
+     */
+    void writeToFile( FileIO& outFile ) const;
 
     /**
      * @brief Checks for a given matrix whether the content of its data is sound.
@@ -204,48 +206,26 @@ public:
     void setIdentity( const IndexType n );
 
     /**
-     * This method sets a matrix by reading its values from one or multiple files.
+     *  @brief Read a matrix from an input file.
      *
-     * @param[in] fileName      the filename to read from
-     * @param[in] rowDist       distribution of the matrix
-     *
-     *   \code
-     *      CSRSparseMatrix<double> matrix;
-     *      matrix.readFromFile( "matrix.mtx", rowDist )           ! each processor gets its local part of the matrix in one file
-     *      matrix.readFromFile( "matrix_%r.mtx", rowDist )        ! read a partitioned matrix with the given distribution
-     *   \endcode
+     *  @param[in] fileName is the name of the file to be read, suffix decides about FileiO class.
      */
-    void readFromFile( const std::string& fileName, dmemo::DistributionPtr rowDist );
+    void readFromFile( const std::string& fileName );
 
     /**
-     * This method sets a matrix by reading its values from one or multiple files.
+     *  @brief Read a matrix from an input file with a certain distribution
      *
-     * @param[in] fileName      the filename to read from
-     * @param[in] comm          specifies the involved processes
-     *
-     *   \code
-     *      CSRSparseMatrix<double> matrix;
-     *      matrix.readFromFile( "matrix.mtx" )       ! read matrix only on processor 0, gets a SingleDistribution
-     *      matrix.readFromFile( "matrix_%r.mtx" )    ! general block distributed matrix, each processor reads it own file
-     *   \endcode
+     *  The global size of the distribution must match the number of rows of the matrix in the file.
      */
-    void readFromFile( const std::string& fileName, dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr() );
+    void readFromFile( const std::string& fileName, dmemo::DistributionPtr distribution );
 
     /**
-     *  This method sets a matrix a reading its values from one or multiple files and also the distribution from a file
+     * @brief Read a matrix from an opened IOFile.
      *
-     * @param[in] matrixFileName the single or partitioned filename to read from
-     * @param[in] distributionFileName the single or partitioned filename with the row distribution of the matrix
-     *
-     *   \code
-     *      CSRSparseMatrix<double> matrix;
-     *      matrix.readFromFile( "matrix.mtx", "owners.mtx" )
-     *      matrix.readFromFile( "matrix_%r.mtx", "owners.mtx" )
-     *      matrix.readFromFile( "matrix.mtx", "rows%r.mtx" )
-     *      matrix.readFromFile( "matrix_%r.mtx", "rows%r.mtx" )
-     *   \endcode
+     * - the distributed I/O mode of file decides how the data is read in
+     * - after reading, this matrix is either SINGLE distributed or BLOCK distributed
      */
-    void readFromFile( const std::string& matrixFileName, const std::string& distributionFileName );
+    virtual void readFromFile( FileIO& file );
 
     /** @brief Assignment of a matrix to this matrix
      *
@@ -754,20 +734,6 @@ private:
     void setDefaultKind(); // set default values for communication and compute kind
 
     static SyncKind getDefaultSyncKind();  // get default kind as set by environment
-
-    void writeToSingleFile(
-        const std::string& fileName,
-        const std::string& fileType,
-        const common::ScalarType dataType,
-        const common::ScalarType indexType,
-        const FileMode fileMode ) const;
-
-    void writeToPartitionedFile(
-        const std::string& fileName,
-        const std::string& fileType,
-        const common::ScalarType dataType,
-        const common::ScalarType indexType,
-        const FileMode fileMode ) const;
 };
 
 /* ======================================================================== */

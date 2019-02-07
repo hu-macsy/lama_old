@@ -243,14 +243,15 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
 
         // now write the distributed vector and its distribution, each to a single file
 
-        vector.writeToFile( vectorFileName, "", common::ScalarType::INTERNAL, FileMode::BINARY );
+        vector.writeToFile( vectorFileName, FileMode::BINARY );
         PartitionIO::write( *dist, distFileName );
 
         DenseVector<ValueType> readVector;
 
         // read vector and reconstruct its old distribution
 
-        readVector.readFromFile( vectorFileName, distFileName );
+        auto distRead = PartitionIO::readDistribution( distFileName );
+        readVector.readFromFile( vectorFileName, distRead );
 
         SCAI_LOG_DEBUG( logger, "Read vector from file " << vectorFileName << ", dist = " << distFileName 
                                 << ", read vector = " << readVector );
@@ -303,13 +304,13 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
 
         SCAI_LOG_INFO( logger, *comm << ": write vector to file " << vectorFileName << ": " << vector )
 
-        vector.writeToFile( vectorFileName, "", common::ScalarType::INTERNAL, FileMode::BINARY );
+        vector.writeToFile( vectorFileName, FileMode::BINARY );
 
         DenseVector<ValueType> readVector;
 
         if ( withDist )
         {
-            readVector.readFromFile( vectorFileName, distFileName );
+            readVector.readFromFile( vectorFileName, PartitionIO::readDistribution( distFileName ) );
 
             SCAI_LOG_INFO( logger, *comm << ": read vector ( " << vectorFileName
                            << " ) with dist ( " << distFileName << " ): " << readVector )
@@ -383,13 +384,13 @@ BOOST_AUTO_TEST_CASE( SparseVectorPartitionIO )
             PartitionIO::write( *dist, distFileName );
         }
 
-        vector.writeToFile( vectorFileName, "", common::ScalarType::INTERNAL, FileMode::BINARY );
+        vector.writeToFile( vectorFileName, FileMode::BINARY );
 
         SparseVector<ValueType> readVector;
 
         if ( withDist )
         {
-            readVector.readFromFile( vectorFileName, distFileName );
+            readVector.readFromFile( vectorFileName, PartitionIO::readDistribution( distFileName ) );
 
             SCAI_LOG_INFO( logger, "Read vector ( " << vectorFileName
                            << " ) with dist ( " << distFileName << " ): " << readVector )
@@ -459,7 +460,7 @@ BOOST_AUTO_TEST_CASE( _MatrixSingleIO )
 
         SCAI_LOG_DEBUG( logger, comm << ": write to file " << matrixFileName << " this matrix: " << matrix )
 
-        matrix.writeToFile( matrixFileName, "", common::ScalarType::INTERNAL, common::ScalarType::INTERNAL, FileMode::BINARY );
+        matrix.writeToFile( matrixFileName, FileMode::BINARY );
 
         SCAI_LOG_DEBUG( logger, comm << ": write to file " << distFileName << " this distribution: " << matrix )
 
@@ -469,7 +470,7 @@ BOOST_AUTO_TEST_CASE( _MatrixSingleIO )
 
         // read matrix and reconstruct its old distribution
 
-        readMatrix.readFromFile( matrixFileName, distFileName );
+        readMatrix.readFromFile( matrixFileName, PartitionIO::readDistribution( distFileName ) );
 
         SCAI_LOG_DEBUG( logger, comm << ": read this matrix ( " << matrixFileName << ", dist " << distFileName 
                                 << " ) : " << readMatrix )
@@ -522,7 +523,7 @@ BOOST_AUTO_TEST_CASE( _MatrixPartitionIO )
 
         MatrixCreator::fillRandom( matrix, fillRate );
 
-        matrix.writeToFile( matrixFileName, "", common::ScalarType::INTERNAL, common::ScalarType::INTERNAL, FileMode::BINARY );
+        matrix.writeToFile( matrixFileName, FileMode::BINARY );
 
         bool withDist = rowDist->getBlockDistributionSize() == invalidIndex;
 
@@ -537,7 +538,7 @@ BOOST_AUTO_TEST_CASE( _MatrixPartitionIO )
 
         if ( withDist )
         {
-            readMatrix.readFromFile( matrixFileName, distFileName );
+            readMatrix.readFromFile( matrixFileName, PartitionIO::readDistribution( distFileName ) );
 
             SCAI_LOG_INFO( logger, "Read matrix ( " << matrixFileName
                            << " ) with dist ( " << distFileName << " ): " << readMatrix )

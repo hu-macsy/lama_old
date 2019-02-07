@@ -105,7 +105,8 @@ void LamaIO::writeAt( std::ostream& stream ) const
 {
     stream << "LamaIO ( ";
     stream << "suffix = " << LAMA_SUFFIX << ", ";
-    writeMode( stream );
+    stream << "name = " << mFileName << ", ";
+    FileIO::writeMode( stream );
     stream << ", only binary )";
 }
 
@@ -113,7 +114,7 @@ void LamaIO::writeAt( std::ostream& stream ) const
 
 LamaIO::LamaIO()
 {
-    mFile = dmemo::Communicator::getCommunicatorPtr( dmemo::Communicator::NO )->collectiveFile();
+    SCAI_LOG_INFO( logger, "Constructor: " << *this )
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -121,6 +122,17 @@ LamaIO::LamaIO()
 void LamaIO::openIt( const std::string& fileName, const char* fileMode )
 {
     SCAI_ASSERT( mFileMode != FileMode::FORMATTED, "Formatted output not available for LamaIO" )
+
+    auto comm = getDistributedIOMode()  == DistributedIOMode::COLLECTIVE 
+                  ? dmemo::Communicator::getCommunicatorPtr()
+                  : dmemo::Communicator::getCommunicatorPtr( dmemo::Communicator::NO );
+
+    mFile = comm->collectiveFile();
+
+    SCAI_LOG_INFO( logger, *comm << ": openIt( name = " << fileName << ", mode = " << fileMode << ")"
+                                 << " with " << *this )
+
+    SCAI_ASSERT( mFile.get(), "Could not get collective file object for comm = " << comm )
 
     mFileName = fileName;
 
@@ -133,7 +145,16 @@ void LamaIO::closeIt()
 {
     mFile->close();
 
+    mFile.reset();
+
     mFileName.clear();
+}
+
+/* --------------------------------------------------------------------------------- */
+
+bool LamaIO::hasCollectiveIO() const
+{
+    return true;
 }
 
 /* --------------------------------------------------------------------------------- */
