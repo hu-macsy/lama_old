@@ -1153,7 +1153,7 @@ void Communicator::exchangeByPlan(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void Communicator::exchangeByPlanF(
+HArray<ValueType> Communicator::exchangeByPlanF(
     const CommunicationPlan& recvPlan,
     const hmemo::HArray<ValueType>& sendArray,
     const CommunicationPlan& sendPlan ) const
@@ -1346,6 +1346,12 @@ SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ALL_TYPES )
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::exchangeByPlan(                              \
             HArray<_type>& recvArray,                               \
+            const CommunicationPlan& recvPlan,                      \
+            const HArray<_type>& sendArray,                         \
+            const CommunicationPlan& sendPlan ) const;              \
+                                                                    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    HArray<_type> Communicator::exchangeByPlanF(                    \
             const CommunicationPlan& recvPlan,                      \
             const HArray<_type>& sendArray,                         \
             const CommunicationPlan& sendPlan ) const;              \

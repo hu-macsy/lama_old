@@ -205,7 +205,7 @@ private:
 
     GeneralDistribution();
 
-    GeneralDistribution& operator=( const GeneralDistribution& other ) = delete;
+    GeneralDistribution& operator=( const GeneralDistribution& ) = delete;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 

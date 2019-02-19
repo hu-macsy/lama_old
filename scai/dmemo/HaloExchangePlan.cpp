@@ -444,6 +444,11 @@ void HaloExchangePlan::updateByHalo(
         HArray<_type>& ) const;                                     \
                                                                     \
     template COMMON_DLL_IMPORTEXPORT                                \
+    HArray<_type> HaloExchangePlan::updateHaloF(                    \
+        const HArray<_type>&,                                       \
+        const Communicator& comm ) const;                           \
+                                                                    \
+    template COMMON_DLL_IMPORTEXPORT                                \
     void HaloExchangePlan::updateHaloDirect(                        \
         HArray<_type>&,                                             \
         const HArray<_type>&,                                       \

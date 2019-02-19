@@ -766,7 +766,7 @@ public:
     /** exchangeByPlan as function with result argument for convenience. */
 
     template<typename ValueType>
-    void exchangeByPlanF(
+    hmemo::HArray<ValueType> exchangeByPlanF(
         const CommunicationPlan& recvPlan,
         const hmemo::HArray<ValueType>& sendArray,
         const CommunicationPlan& sendPlan ) const;

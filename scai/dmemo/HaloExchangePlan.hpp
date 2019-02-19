@@ -219,11 +219,11 @@ public:
 
     /** Use default assignment operator. */
 
-    HaloExchangePlan& operator=( const HaloExchangePlan& other ) = default;
+    HaloExchangePlan& operator=( const HaloExchangePlan& ) = default;
 
     /** Use default move operator. */
 
-    HaloExchangePlan& operator=( HaloExchangePlan&& other ) = default;
+    HaloExchangePlan& operator=( HaloExchangePlan&& ) = default;
 
     /** Getter for communication plan used into/from hala */
 
