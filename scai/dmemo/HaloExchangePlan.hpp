@@ -116,11 +116,11 @@ public:
 
     /** Copy constructor. */
 
-    HaloExchangePlan( const HaloExchangePlan& halo ) = default;
+    HaloExchangePlan( const HaloExchangePlan& ) = default;
 
     /** Use default move contructor. */
 
-    HaloExchangePlan( HaloExchangePlan&& halo ) = default;
+    HaloExchangePlan( HaloExchangePlan&& ) = default;
 
     virtual ~HaloExchangePlan();
 
