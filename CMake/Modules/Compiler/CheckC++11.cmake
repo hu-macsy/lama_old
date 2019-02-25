@@ -47,9 +47,9 @@ if ( NOT WIN32 )
 
     set ( CXX11_COMPILE_FLAG "-std=c++11" )
 
-    if ( CMAKE_CXX_COMPILER_ID MATCHES Clang )
-        set ( CXX11_COMPILE_FLAG "${CXX11_COMPILE_FLAG} -stdlib=libc++" )
-    endif ( CMAKE_CXX_COMPILER_ID MATCHES Clang )
+    # if ( CMAKE_CXX_COMPILER_ID MATCHES Clang )
+    #     set ( CXX11_COMPILE_FLAG "${CXX11_COMPILE_FLAG} -stdlib=libc++" )
+    # endif ( CMAKE_CXX_COMPILER_ID MATCHES Clang )
 
     include ( CheckCXXCompilerFlag )
 
@@ -98,6 +98,8 @@ if ( NOT WIN32 )
         # restore CMAKE_CXX_FLAGS
         set ( CMAKE_CXX_FLAGS ${CHECK_CXX11_OLD_CMAKE_CXX_FLAGS} )
 
+    else ( CXX_SUPPORTS_C11 )
+        message( STATUS "Compiler does not support flag: ${CXX11_COMPILE_FLAG}" )
     endif ( CXX_SUPPORTS_C11 )
 
 else ( NOT WIN32 )
