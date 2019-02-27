@@ -268,7 +268,7 @@ void _MatrixStorage::writeToFile(
     const std::string& fileName,
     const FileMode mode,
     const common::ScalarType dataType,
-    const common::ScalarType indexType )
+    const common::ScalarType indexType ) const
 {
     SCAI_REGION( "Storage.writeToFile" )
 

@@ -448,7 +448,7 @@ public:
         const std::string& fileName,
         const FileMode fileMode = FileMode::DEFAULT,
         const common::ScalarType dataType = common::ScalarType::INTERNAL,
-        const common::ScalarType indexType = common::ScalarType::INDEX_TYPE );
+        const common::ScalarType indexType = common::ScalarType::INDEX_TYPE ) const;
 
     virtual bool checkSymmetry() const = 0;
 
