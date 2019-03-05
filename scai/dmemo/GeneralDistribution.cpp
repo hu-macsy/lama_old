@@ -473,6 +473,15 @@ void GeneralDistribution::enableBlockDistributedOwners() const
 
 /* ---------------------------------------------------------------------- */
 
+void GeneralDistribution::disableBlockDistributedOwners()
+{
+    SCAI_LOG_INFO( logger, "disableBlockDistributedOwners" )
+
+    mBlockDistributedOwners.reset();
+}
+
+/* ---------------------------------------------------------------------- */
+
 void GeneralDistribution::computeOwners(
     hmemo::HArray<PartitionId>& owners, 
     const hmemo::HArray<IndexType>& indexes ) const

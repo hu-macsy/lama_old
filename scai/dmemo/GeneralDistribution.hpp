@@ -201,6 +201,10 @@ protected:
  
     void enableBlockDistributedOwners() const;
 
+    /** Allow an explicit reset of block-distributed ownership */
+
+    void disableBlockDistributedOwners();
+
 private:
 
     GeneralDistribution();
