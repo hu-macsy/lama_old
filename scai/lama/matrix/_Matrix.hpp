@@ -672,7 +672,7 @@ protected:
      *
      *   Note: assignment operations with expressions are also not supported for the base class _Matrix.
      */
-    _Matrix& operator=( const _Matrix& other ) = delete;
+    _Matrix& operator=( const _Matrix& ) = delete;
 
     /**
      *   @brief Move assignment operator for base class _Matrix is explicitly disabled.
@@ -685,7 +685,7 @@ protected:
      *
      *   Note: move assignment operator is supported for full matrix classes.
      */
-    _Matrix& operator=( _Matrix&& other ) = delete;
+    _Matrix& operator=( _Matrix&& ) = delete;
 
     void readFromSingleFile( const std::string& fileName, 
                              dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr()  );

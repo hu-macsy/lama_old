@@ -130,14 +130,7 @@ std::shared_ptr<GeneralDistribution> generalDistributionBySingleOwners(
 
     SCAI_ASSERT_VALID_INDEX_ERROR( root, size, "illegal root processor specified" )
 
-    IndexType globalSize;
-
-    if ( rank == root )
-    {
-        globalSize = owners.size();
-    }
-
-    comm->bcast( &globalSize, 1, root );
+    IndexType globalSize[ 2 ];
 
     HArray<IndexType> localSizes;         // only defined by root
     HArray<IndexType> sortedIndexes;      // only defined by root
@@ -145,7 +138,14 @@ std::shared_ptr<GeneralDistribution> generalDistributionBySingleOwners(
     if ( rank == root )
     {
         HArrayUtils::bucketSortSizes( localSizes, sortedIndexes, owners, size );
+
+        globalSize[0] = owners.size();
+        globalSize[1] = sortedIndexes.size();
     }
+
+    comm->bcast( globalSize, 2, root );
+
+    SCAI_ASSERT_EQ_ERROR( globalSize[0], globalSize[1], "illegal owners specified" )
 
     HArray<IndexType> myGlobalIndexes;
 
@@ -153,7 +153,7 @@ std::shared_ptr<GeneralDistribution> generalDistributionBySingleOwners(
 
     bool checkFlag = false;  // no check required
 
-    return std::make_shared<GeneralDistribution>( globalSize, std::move( myGlobalIndexes ), checkFlag, comm );
+    return std::make_shared<GeneralDistribution>( globalSize[0], std::move( myGlobalIndexes ), checkFlag, comm );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -467,6 +467,15 @@ void GeneralDistribution::enableBlockDistributedOwners() const
 
     mBlockDistributedOwners.reset( new HArray<PartitionId>() );
     computeBlockDistributedOwners( *mBlockDistributedOwners, getGlobalSize(), mLocal2Global, getCommunicatorPtr() );
+}
+
+/* ---------------------------------------------------------------------- */
+
+void GeneralDistribution::disableBlockDistributedOwners()
+{
+    SCAI_LOG_INFO( logger, "disableBlockDistributedOwners" )
+
+    mBlockDistributedOwners.reset();
 }
 
 /* ---------------------------------------------------------------------- */

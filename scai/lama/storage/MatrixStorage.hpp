@@ -691,7 +691,7 @@ protected:
 
     /** Move assignment operator, explicity deleted as there is no virtual move semantic.
      */
-    MatrixStorage& operator=( MatrixStorage<ValueType>&& other ) = delete;
+    MatrixStorage& operator=( MatrixStorage<ValueType>&& ) = delete;
 
     /** Method that provides move semantic for this base class.
      

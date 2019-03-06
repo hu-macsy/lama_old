@@ -181,9 +181,9 @@ public:
     {
     }
 
-    OpMatrix<ValueType>( const OpMatrix<ValueType>& other ) = default;
+    OpMatrix<ValueType>( const OpMatrix<ValueType>& ) = default;
 
-    OpMatrix<ValueType>& operator=( const OpMatrix<ValueType>& other ) = delete;
+    OpMatrix<ValueType>& operator=( const OpMatrix<ValueType>& ) = delete;
 
     const Matrix<ValueType>& getMatrix() const 
     {
