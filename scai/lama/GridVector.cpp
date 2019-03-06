@@ -286,6 +286,25 @@ void GridVector<ValueType>:: operator=( const GridSection<ValueType>& other )
 
 SCAI_COMMON_INST_CLASS( GridVector, SCAI_ARRAY_TYPES_HOST )
 
+/* ========================================================================= */
+/*       Free functions instantiatons                                        */
+/* ========================================================================= */
+
+#define GRID_VECTOR_FUNCTIONS( ValueType )                  \
+                                                            \
+    template GridVector<ValueType> gridVectorUndefined(     \
+        const common::Grid& grid,                           \
+        hmemo::ContextPtr);                                 \
+                                                            \
+    template GridVector<ValueType> gridVectorUndefined(     \
+        dmemo::DistributionPtr dist,                        \
+        hmemo::ContextPtr);                                 \
+
+    SCAI_COMMON_LOOP( GRID_VECTOR_FUNCTIONS, SCAI_ARRAY_TYPES_HOST )
+
+#undef GRID_VECTOR_FUNCTIONS
+
 } /* end namespace lama */
+
 
 } /* end namespace scai */

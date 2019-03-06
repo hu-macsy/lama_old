@@ -210,6 +210,38 @@ protected:
 
 };
 
+/** 
+ *  @brief free function that returns an uninitialized replicated grid vector
+ *
+ *  In some situations it is not required to initialize a grid vector as its values
+ *  will be set in any case. 
+ *
+ *  @param[in] grid specifies topology of the replicated grid vector
+ *  @param[in] ctx specifies the context of the vector, i.e. device where memory is allocated
+ */
+template<typename ValueType>
+GridVector<ValueType> gridVectorUndefined(
+    const common::Grid& grid,
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    GridVector<ValueType> gridVector( ctx );
+    gridVector.allocate( dmemo::gridDistributionReplicated( grid ) );
+    return gridVector;
+}
+
+/** 
+ *  @brief free function that returns an uninitialized grid vector
+ */
+template<typename ValueType>
+GridVector<ValueType> gridVectorUndefined(
+    dmemo::DistributionPtr distribution,
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    GridVector<ValueType> gridVector( ctx );
+    gridVector.allocate( distribution );
+    return gridVector;
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

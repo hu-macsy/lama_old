@@ -132,7 +132,7 @@ int main( int argc, const char* argv[] )
 
     // read in the image file, must be a png file
 
-    GridVector<ValueType> image( inputFileName );   // size will be ( width , height, ncolors )
+    auto image = read<GridVector<ValueType>>( inputFileName );   // size will be ( width , height, ncolors )
 
     std::cout << "read image as grid vector : " << image << std::endl;
 
