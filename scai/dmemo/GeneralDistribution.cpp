@@ -81,7 +81,7 @@ GeneralDistribution::GeneralDistribution(
 
     SCAI_ASSERT_DEBUG( HArrayUtils::validIndexes( myIndexes, globalSize ), "myIndexes contains illegal values" )
 
-    // sort the array ascending, should be very fast if already sorted
+    // sort the array ascending in-place, should be very fast if already sorted
 
     HArrayUtils::sort( NULL, &mLocal2Global, mLocal2Global, true );
 
@@ -100,7 +100,19 @@ GeneralDistribution::GeneralDistribution(
 
 /* ---------------------------------------------------------------------- */
 
-std::shared_ptr<GeneralDistribution> generalDistribution( 
+GeneralDistribution::GeneralDistribution( GeneralDistribution&& other ) :
+
+    Distribution( other.getGlobalSize(), other.getCommunicatorPtr() ),
+    mLocal2Global( std::move( other.mLocal2Global ) ),
+    mGlobal2Local( std::move( other.mGlobal2Local ) )
+{
+    mBlockDistributedOwners.reset();
+    mAnyAddressing.reset();
+}    
+
+/* ---------------------------------------------------------------------- */
+
+std::shared_ptr<const GeneralDistribution> generalDistribution( 
     const IndexType globalSize,
     HArray<IndexType> myGlobalIndexes,
     const CommunicatorPtr comm )
@@ -110,7 +122,7 @@ std::shared_ptr<GeneralDistribution> generalDistribution(
 
 /* ---------------------------------------------------------------------- */
 
-std::shared_ptr<GeneralDistribution> generalDistributionUnchecked( 
+std::shared_ptr<const GeneralDistribution> generalDistributionUnchecked( 
     const IndexType globalSize,
     HArray<IndexType> myGlobalIndexes,
     const CommunicatorPtr comm )
@@ -120,7 +132,33 @@ std::shared_ptr<GeneralDistribution> generalDistributionUnchecked(
 
 /* ---------------------------------------------------------------------- */
 
-std::shared_ptr<GeneralDistribution> generalDistributionBySingleOwners(
+std::shared_ptr<const GeneralDistribution> generalDistributionUnchecked( std::shared_ptr<const Distribution> dist )
+{
+    const GeneralDistribution* genDist = dynamic_cast<const GeneralDistribution*>( dist.get() );
+
+    if ( genDist )
+    {
+        if ( dist.use_count() == 1 )
+        {
+            // we can reuse member variables as there was only one reference
+            GeneralDistribution& mutGenDist = const_cast<GeneralDistribution&>( *genDist );
+            return std::make_shared<GeneralDistribution>( std::move( mutGenDist ) );
+        }
+        else
+        {
+            const HArray<IndexType>& ownedIndexes = genDist->getMyIndexes();
+            return generalDistributionUnchecked( genDist->getGlobalSize(), ownedIndexes, genDist->getCommunicatorPtr() );
+        }
+    }
+    else
+    {
+        return generalDistributionUnchecked( dist->getGlobalSize(), dist->ownedGlobalIndexes(), dist->getCommunicatorPtr() );
+    }
+}
+
+/* ---------------------------------------------------------------------- */
+
+std::shared_ptr<const GeneralDistribution> generalDistributionBySingleOwners(
     const HArray<PartitionId>& owners,
     const PartitionId root,
     CommunicatorPtr comm ) 
@@ -158,7 +196,7 @@ std::shared_ptr<GeneralDistribution> generalDistributionBySingleOwners(
 
 /* ---------------------------------------------------------------------- */
 
-std::shared_ptr<GeneralDistribution> generalDistributionByNewOwners(
+std::shared_ptr<const GeneralDistribution> generalDistributionByNewOwners(
     const Distribution& dist,
     const hmemo::HArray<PartitionId>& newOwners )
 {
@@ -473,7 +511,7 @@ void GeneralDistribution::enableBlockDistributedOwners() const
 
 /* ---------------------------------------------------------------------- */
 
-void GeneralDistribution::disableBlockDistributedOwners()
+void GeneralDistribution::disableBlockDistributedOwners() const
 {
     SCAI_LOG_INFO( logger, "disableBlockDistributedOwners" )
 

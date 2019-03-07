@@ -71,7 +71,7 @@ GenBlockDistribution::GenBlockDistribution( std::unique_ptr<IndexType[]>&& offse
 
 /* ---------------------------------------------------------------------- */
 
-std::shared_ptr<GenBlockDistribution> genBlockDistributionBySize( 
+std::shared_ptr<const GenBlockDistribution> genBlockDistributionBySize( 
     const IndexType localSize, 
     CommunicatorPtr comm )
 {
@@ -102,7 +102,7 @@ std::shared_ptr<GenBlockDistribution> genBlockDistributionBySize(
 
 /* ---------------------------------------------------------------------- */
 
-std::shared_ptr<GenBlockDistribution> genBlockDistributionBySize( 
+std::shared_ptr<const GenBlockDistribution> genBlockDistributionBySize( 
     const IndexType globalSize,
     const IndexType localSize, 
     CommunicatorPtr comm )
@@ -114,7 +114,7 @@ std::shared_ptr<GenBlockDistribution> genBlockDistributionBySize(
 
 /* ---------------------------------------------------------------------- */
 
-std::shared_ptr<GenBlockDistribution> genBlockDistributionBySizes( 
+std::shared_ptr<const GenBlockDistribution> genBlockDistributionBySizes( 
     const std::vector<IndexType>& localSizes,
     CommunicatorPtr comm )
 {
@@ -381,7 +381,7 @@ DistributionPtr GenBlockDistribution::create( const DistributionArguments arg )
 
 /* ---------------------------------------------------------------------- */
 
-std::shared_ptr<GenBlockDistribution> genBlockDistributionByWeight(
+std::shared_ptr<const GenBlockDistribution> genBlockDistributionByWeight(
     const IndexType globalSize,
     const float weight,
     const CommunicatorPtr comm )

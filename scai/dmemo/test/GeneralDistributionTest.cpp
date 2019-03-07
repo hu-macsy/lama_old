@@ -89,7 +89,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.GeneralDistributionTest" );
 
 /* --------------------------------------------------------------------- */
 
-std::shared_ptr<GeneralDistribution> buildCyclic( 
+std::shared_ptr<const GeneralDistribution> buildCyclic( 
     const IndexType elemsPerProcessor, 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr() )
 
@@ -415,6 +415,117 @@ BOOST_AUTO_TEST_CASE( checkTest )
             dist = generalDistribution( 5, myIndexes, comm );
         }, common::Exception );
     }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( uncheckedTest )
+{
+    using namespace hmemo;
+    using namespace utilskernel;
+
+    const IndexType N = 10;
+
+    auto comm = Communicator::getCommunicatorPtr();
+
+    PartitionId rank = comm->getRank();
+    PartitionId size = comm->getSize();
+
+    // owned indexes for block( N * size )
+
+    HArray<IndexType> myIndexes;  // { rank * N, ..., rank * N + N - 1 } 
+    HArrayUtils::setSequence<IndexType>( myIndexes, N * rank, 1, N );
+
+    // save the pointer to the allocated host data to check for correct move 
+
+    const IndexType* ptr = hostReadAccess( myIndexes );
+
+    auto dist = generalDistributionUnchecked( N * size, std::move( myIndexes ), comm );
+
+    // due to move allocated memory is reused
+
+    BOOST_CHECK_EQUAL( ptr, hostReadAccess( dist->getMyIndexes() ) );
+
+    HArray<IndexType> globalIndexes;  // { 0, N, 2*N, (size-1) * N }
+    HArrayUtils::setSequence<IndexType>( globalIndexes, 0, N, size );
+
+    HArray<PartitionId> expectedOwners;
+    HArrayUtils::setSequence<PartitionId>( expectedOwners, 0, 1, comm->getSize() );
+
+    auto owners = dist->owner( globalIndexes );
+
+    BOOST_TEST( hostReadAccess( expectedOwners ) == hostReadAccess( owners ), boost::test_tools::per_element() );
+
+    if ( size < 2 ) 
+    {
+        return;
+    }
+
+    if ( rank < 2 )
+    {
+         // swap owned indexes for processors 0 and 1
+
+         HArrayUtils::setSequence<IndexType>( myIndexes, N * ( 1 - rank ), 1, N );
+         dist = generalDistributionUnchecked( N * size, std::move( myIndexes ), comm );
+    }
+    else
+    {
+         // mandatory to get all distributions in the same state, otherwise it hangs
+         dist = generalDistributionUnchecked( std::move( dist ) );
+    }
+
+    // update the expected owners
+
+    {
+        auto wExpectedOwners = hostWriteAccess( expectedOwners );
+        wExpectedOwners[0] = 1;
+        wExpectedOwners[1] = 0;
+    }
+
+    dist->computeOwners( owners, globalIndexes );
+
+    BOOST_TEST( hostReadAccess( expectedOwners ) == hostReadAccess( owners ), boost::test_tools::per_element() );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( uncheckedTestMove )
+{
+    using namespace hmemo;
+    using namespace utilskernel;
+
+    const IndexType N = 10;
+
+    auto comm = Communicator::getCommunicatorPtr();
+
+    PartitionId rank = comm->getRank();
+    PartitionId size = comm->getSize();
+
+    // owned indexes for block( N * size )
+
+    HArray<IndexType> myIndexes;  // { rank * N, ..., rank * N + N - 1 } 
+    HArrayUtils::setSequence<IndexType>( myIndexes, N * rank, 1, N );
+
+    // save the pointer to the allocated host data to check for correct move 
+
+    const IndexType* ptr = hostReadAccess( myIndexes );
+
+    auto dist = generalDistributionUnchecked( N * size, std::move( myIndexes ), comm );
+
+    // due to move allocated memory is reused
+
+    BOOST_CHECK_EQUAL( ptr, hostReadAccess( dist->getMyIndexes() ) );
+
+    auto dist1 = generalDistributionUnchecked( std::move( dist ) );
+
+    // due to move allocated memory is reused
+
+    BOOST_CHECK_EQUAL( ptr, hostReadAccess( dist1->getMyIndexes() ) );
+
+    auto dist2 = generalDistributionUnchecked( dist1 );
+
+    BOOST_CHECK_EQUAL( ptr, hostReadAccess( dist1->getMyIndexes() ) );
+    BOOST_CHECK( ptr != hostReadAccess( dist2->getMyIndexes() ) );
 }
 
 /* --------------------------------------------------------------------- */
