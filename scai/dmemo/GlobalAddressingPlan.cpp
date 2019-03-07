@@ -32,6 +32,7 @@
 
 #include <scai/dmemo/Distribution.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/tracing.hpp>
 
 namespace scai
 {
@@ -56,6 +57,8 @@ GlobalAddressingPlan GlobalAddressingPlan::globalAddressingPlan(
     const hmemo::HArray<IndexType>& globalIndexes, 
     const bool unique )
 {
+    SCAI_REGION( "GlobalAddressingPlan.construct" )
+
     auto exchangePlan = globalExchangePlan( dist.owner( globalIndexes ), dist.getCommunicatorPtr() );
 
     HArray<IndexType> localIndexes;
@@ -69,7 +72,7 @@ GlobalAddressingPlan GlobalAddressingPlan::globalAddressingPlan(
     return GlobalAddressingPlan( std::move( exchangePlan ), std::move( localIndexes ), unique );
 }
 
-void GlobalAddressingPlan::scatterOwner( HArray<PartitionId>& targetArray )
+void GlobalAddressingPlan::scatterOwner( HArray<PartitionId>& targetArray ) const
 {
     HArray<PartitionId> sources;  // will be same size as local indexes
 

@@ -32,7 +32,7 @@
 #include <scai/lama/Vector.hpp>
 #include <scai/lama/Scalar.hpp>
 
-#include "JoinedDistribution.hpp"
+#include <scai/dmemo/JoinedDistribution.hpp>
 
 namespace scai
 
@@ -335,7 +335,7 @@ public:
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-    virtual void redistribute( const scai::dmemo::Redistributor& )
+    virtual void redistribute( const scai::dmemo::RedistributePlan& )
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }

@@ -251,36 +251,14 @@ void ImageIO::writeSC( const GridVector<ValueType>& arrayData, const std::string
     writeSC( arrayData, minVal, maxVal, outputFileName );
 }
 
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-template<>
-void ImageIO::writeSC( const GridVector<ComplexFloat>&, const std::string& )
-{
-    COMMON_THROWEXCEPTION( "writeSC not supported for complex grid values" )
-}
-
-template<>
-void ImageIO::writeSC( const GridVector<ComplexDouble>&, const std::string& )
-{
-    COMMON_THROWEXCEPTION( "writeSC not supported for complex grid values" )
-}
-
-template<>
-void ImageIO::writeSC( const GridVector<ComplexLongDouble>&, const std::string& )
-{
-    COMMON_THROWEXCEPTION( "writeSC not supported for complex grid values" )
-}
-
-#endif 
-
-// instantiate methods for supported array/vector types
+// instantiate methods for supported array/vector types, not Complex
 
 #define SCAI_IMAGE_IO_INSTANTIATIONS( _type )                              \
                                                                            \
     template COMMON_DLL_IMPORTEXPORT                                       \
     void ImageIO::writeSC( const GridVector<_type>&, const std::string& ); \
 
-SCAI_COMMON_LOOP( SCAI_IMAGE_IO_INSTANTIATIONS, SCAI_ARRAY_TYPES_HOST )
+SCAI_COMMON_LOOP( SCAI_IMAGE_IO_INSTANTIATIONS, scai::IndexType, SCAI_REAL_TYPES_HOST )
 
 } /* end namespace lama */
 

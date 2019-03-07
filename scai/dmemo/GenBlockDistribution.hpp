@@ -199,7 +199,7 @@ const char* GenBlockDistribution::getId()
  *  @param[in] comm specifies the communicator used for this distribution
  *
  */
-std::shared_ptr<GenBlockDistribution> genBlockDistributionBySize( 
+std::shared_ptr<const GenBlockDistribution> genBlockDistributionBySize( 
     const IndexType localSize,
     CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
 
@@ -212,7 +212,7 @@ std::shared_ptr<GenBlockDistribution> genBlockDistributionBySize(
  *  In contrary to the function without the global size this function also checks for a
  *  correct global size.
  */
-std::shared_ptr<GenBlockDistribution> genBlockDistributionBySize( 
+std::shared_ptr<const GenBlockDistribution> genBlockDistributionBySize( 
     const IndexType globalSize,
     const IndexType localSize,
     CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
@@ -224,7 +224,7 @@ std::shared_ptr<GenBlockDistribution> genBlockDistributionBySize(
  *
  *  This constructor does not involve any global communication.
  */
-std::shared_ptr<GenBlockDistribution> genBlockDistributionBySizes( 
+std::shared_ptr<const GenBlockDistribution> genBlockDistributionBySizes( 
     const std::vector<IndexType>& localSizes,
     CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
 
@@ -236,9 +236,10 @@ std::shared_ptr<GenBlockDistribution> genBlockDistributionBySizes(
  *  @param weight is the weight of this processor (must not be negative)
  *  @param comm specifies the communicator used for this distribution
  */
-std::shared_ptr<GenBlockDistribution> genBlockDistributionByWeight( const IndexType globalSize,
-                                                                    const float weight,
-                                                                    const CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
+std::shared_ptr<const GenBlockDistribution> genBlockDistributionByWeight( 
+    const IndexType globalSize,
+    const float weight,
+    const CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
 
 } /* end namespace dmemo */
 

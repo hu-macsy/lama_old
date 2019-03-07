@@ -93,44 +93,52 @@ public:
      */
     GlobalAddressingPlan( GlobalExchangePlan plan, hmemo::HArray<IndexType> localIndexes, bool unique = false );
 
-    GlobalAddressingPlan( const GlobalAddressingPlan& other ) = default;
+    /**
+     * Default copy constructor is enabled.
+     */
+    GlobalAddressingPlan( const GlobalAddressingPlan& ) = default;
 
-    GlobalAddressingPlan( GlobalAddressingPlan&& other ) = default;
+    /**
+     * Default move constructor is enabled.
+     */
+    GlobalAddressingPlan( GlobalAddressingPlan&& ) = default;
 
-    GlobalAddressingPlan& operator=( const GlobalAddressingPlan& other ) = default;
+    /**
+     * Default assignment copy is enabled.
+     */
+    GlobalAddressingPlan& operator=( const GlobalAddressingPlan& ) = default;
 
-    GlobalAddressingPlan& operator=( GlobalAddressingPlan&& other ) = default;
+    /**
+     * Default move assignment is enabled.
+     */
+    GlobalAddressingPlan& operator=( GlobalAddressingPlan&& ) = default;
 
     /**
      *  Apply the global addressing plan for a gathering of remote data
      *
      *  @param[in,out] localArray is my local part of a 'distributed' array, size must be same to globalIndexes
      *  @param[in] remoteArray is my local part of the array that is remotely accessed
+     *  @param[in] op specifies how to combine the gathered values with the existing values.
      *
-     *  Note: for op == BinaryOp::COPY localArray is only out argument and will be resized correctly.
+     *  Note: also for op == BinaryOp::COPY the localArray should have been allocated with 
+     *        sufficient size as the plan might have been built with illegal global indexes.
      */
     template<typename ValueType>
     void gather( 
         hmemo::HArray<ValueType>& localArray, 
         const hmemo::HArray<ValueType>& remoteArray, 
-        const common::BinaryOp op = common::BinaryOp::COPY );
-
-    /**
-     *  @brief Provide gather method as function with result argument for convenience.
-     */
-    template<typename ValueType>
-    hmemo::HArray<ValueType> gatherF( const hmemo::HArray<ValueType>& remoteArray );
+        const common::BinaryOp op = common::BinaryOp::COPY ) const;
 
     template<typename ValueType>
     void scatter( 
         hmemo::HArray<ValueType>& remoteArray, 
         const hmemo::HArray<ValueType>& localArray, 
-        const common::BinaryOp op = common::BinaryOp::COPY );
+        const common::BinaryOp op = common::BinaryOp::COPY ) const;
 
     /** 
      *  Optimized version for scatter with sourceArray = rank (same value), op = COPY
      */
-    void scatterOwner( hmemo::HArray<PartitionId>& targetArray );
+    void scatterOwner( hmemo::HArray<PartitionId>& targetArray ) const;
 
     /** 
      *  Split up for member variables, so the data might be used for other purposes
@@ -167,7 +175,7 @@ template<typename ValueType>
 void GlobalAddressingPlan::gather( 
     hmemo::HArray<ValueType>& localArray, 
     const hmemo::HArray<ValueType>& remoteArray, 
-    const common::BinaryOp op )
+    const common::BinaryOp op ) const
 {
     // gather the values as required by global indexes used to build this plan
 
@@ -189,7 +197,7 @@ template<typename ValueType>
 void GlobalAddressingPlan::scatter( 
     hmemo::HArray<ValueType>& remoteArray, 
     const hmemo::HArray<ValueType>& localArray, 
-    const common::BinaryOp op )
+    const common::BinaryOp op ) const
 {
     hmemo::HArray<ValueType> recvData;
     exchange( recvData, localArray );

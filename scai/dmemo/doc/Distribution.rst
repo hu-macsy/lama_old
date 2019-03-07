@@ -297,8 +297,8 @@ One possible solution is to build on each processor an array that contains the o
 each global index. While this is the most efficient solution it has the big disadvantage that
 it might require too much memory, especially for a very large number of processors.
 
-Another less efficient solution is to set up a block distributed array of all owners. Each
-processor asks for its required indexes the corresponding processors for the owners.
+Another less efficient solution is to set up a block distributed array of all owners.
+Each processor asks for its required indexes the corresponding processors for the owners.
 This corresponds a gather operation of a distributed array.
 
 .. figure:: _images/compute_owners_general.* 
@@ -307,6 +307,12 @@ This corresponds a gather operation of a distributed array.
     :alt: ComputeOwnersGeneral
 
     Computation of ownership with a general distribution of 40 elements onto 4 processors.
+
+The above approach of using an intermediate block distributed array of owners
+is attributed to Moritz von Looz-Corswarem, who
+pointed out the optimization opportunity to us, and provided source code and experimental
+results to show its efficacy. It replaced an older approach that was based on shifting the
+individual queried indexes and corresponding owner arrays through all processors.
 
 Comparison of Distributions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^

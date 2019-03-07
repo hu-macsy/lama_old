@@ -96,16 +96,9 @@ public:
      */
     StencilStorage( const common::Grid& grid, const common::Stencil<ValueType>&  stencil );
 
-    /** Override default copy constructor to guarantee same behavior */
+    /** Override default copy constructor */
 
-    StencilStorage( const StencilStorage<ValueType>& other ) : 
-
-        MatrixStorage<ValueType>( other ),
-        mGrid( other.mGrid ),
-        mStencil( other.mStencil )
-
-    {
-    }
+    StencilStorage( const StencilStorage<ValueType>& other );
 
     /** 
      * @brief Implementation of pure method _MatrixStorage::allocate

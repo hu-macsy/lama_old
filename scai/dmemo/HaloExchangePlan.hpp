@@ -116,11 +116,11 @@ public:
 
     /** Copy constructor. */
 
-    HaloExchangePlan( const HaloExchangePlan& halo ) = default;
+    HaloExchangePlan( const HaloExchangePlan& ) = default;
 
     /** Use default move contructor. */
 
-    HaloExchangePlan( HaloExchangePlan&& halo ) = default;
+    HaloExchangePlan( HaloExchangePlan&& ) = default;
 
     virtual ~HaloExchangePlan();
 
@@ -219,11 +219,11 @@ public:
 
     /** Use default assignment operator. */
 
-    HaloExchangePlan& operator=( const HaloExchangePlan& other ) = default;
+    HaloExchangePlan& operator=( const HaloExchangePlan& ) = default;
 
     /** Use default move operator. */
 
-    HaloExchangePlan& operator=( HaloExchangePlan&& other ) = default;
+    HaloExchangePlan& operator=( HaloExchangePlan&& ) = default;
 
     /** Getter for communication plan used into/from hala */
 
@@ -295,20 +295,6 @@ public:
         const hmemo::HArray<IndexType>& globalIndexes, 
         const bool elimDouble );
 
-    /** Help routuine used for geographer, provided by Moritz Loos */
-
-    static HaloExchangePlan coarsenHalo(
-        const Distribution& coarseDistribution, 
-        const HaloExchangePlan& halo, 
-        const hmemo::HArray<IndexType>& localFineToCoarse, 
-        const hmemo::HArray<IndexType>& haloFineToCoarse );
-
-    static HaloExchangePlan buildWithPartner(
-        const Distribution& distribution,
-        const hmemo::HArray<IndexType>& requiredIndexes,
-        const hmemo::HArray<IndexType>& providedIndexes,
-        const PartitionId partner );
-    
 private:
 
     // Indexes for required values and values to provide are stored in HArrays

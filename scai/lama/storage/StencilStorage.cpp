@@ -89,6 +89,8 @@ StencilStorage<ValueType>::StencilStorage() :
     mGrid( common::Grid1D( 0 ) ),
     mStencil( common::Stencil1D<ValueType>() )
 {
+    SCAI_LOG_DEBUG( logger, "default constructor" )
+
     StencilUtils::setup( mGridInfo, mStencilInfo, mStencilValues, mGrid, mStencil );
 }
 
@@ -103,12 +105,28 @@ StencilStorage<ValueType>::StencilStorage( const common::Grid& grid, const commo
 
     SCAI_ASSERT_EQ_ERROR( grid.nDims(), stencil.nDims(), "dimensions of grid an stencil must be equal" )
 
+    SCAI_LOG_DEBUG( logger, "grid/stencil constructor" )
+
     StencilUtils::setup( mGridInfo, mStencilInfo, mStencilValues, mGrid, mStencil );
 }
 
 template<typename ValueType>
 StencilStorage<ValueType>::~StencilStorage()
 {
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+StencilStorage<ValueType>::StencilStorage( const StencilStorage<ValueType>& other ) :
+
+    MatrixStorage<ValueType>( other ),
+    mGrid( other.mGrid ),
+    mStencil( other.mStencil )
+{
+    SCAI_LOG_DEBUG( logger, "copy constructor, other = " << other )
+
+    StencilUtils::setup( mGridInfo, mStencilInfo, mStencilValues, mGrid, mStencil );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -241,7 +259,7 @@ void StencilStorage<ValueType>::getDiagonal( HArray<ValueType>& array ) const
         diagonalValue = *diagonalPtr;
     }
 
-    SCAI_LOG_ERROR( logger, "diagonal value is = " << diagonalValue );
+    SCAI_LOG_DEBUG( logger, "diagonal value is = " << diagonalValue );
 
     HArrayUtils::setScalar( array, diagonalValue, common::BinaryOp::COPY );
 }
@@ -252,6 +270,8 @@ template<typename ValueType>
 void StencilStorage<ValueType>::scale( const ValueType val )
 {
     mStencil.scale( val );
+
+    StencilUtils::setup( mGridInfo, mStencilInfo, mStencilValues, mGrid, mStencil );
 }
 
 /* --------------------------------------------------------------------------- */

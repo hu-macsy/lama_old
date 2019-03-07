@@ -59,25 +59,31 @@ As this is a very common construction, a corresponding function is provided:
     auto plan = redistributePlanByNewDistribution( targetDist, sourceDist );
 
 Very often a new target distribution is given by the new owner for each owned global index 
-that a processor owns in the current source distribution. 
+that a processor owns in the current source distribution. The following code shows
+the straightforward way to construct a new distribution from it and afterwards a
+new redistribution plan.
 
 .. code-block:: c++
 
-    HArray<PartitionId> newOwners = ...;   // specifiy for each element of data where it goes
+    DistributionPtr sourceDist =       ;   // current distribution 
+    HArray<PartitionId> newOwners = ...;   // specifiy for each element of local data where it goes
 
     auto targetDist = generalDistribution( sourceDist, newOwners );
     auto plan = redistributePlanByNewDistribution( targetDist, sourceDist );
 
-This solution is rather inefficient as it queries the owners of the owned global indexes of
-the current source distribution in the target distribution. But they are actually known
-and so the following constructor function is more efficient.
+This solution is rather inefficient as for building the redistribution plan a function is
+called to compute the new owners of the owned global indexes regarding the source
+distribution. This computation is expensive and waste as the new owners are already known
+before. Therefore a more efficient constructor function is provided that is used as
+follows:
 
 .. code-block:: c++
 
+    DistributionPtr sourceDist =       ;   // current distribution 
     HArray<PartitionId> newOwners = ...;   // specifiy for each element of data where it goes
-    auto plan = redistributePlanByNewOwners( newOwners, dist );
+    auto plan = redistributePlanByNewOwners( newOwners, sourceDist );
 
-The array with the new owners is used like in the global exchange plan to set up a global
+The array with the new owners is used to set up a global
 exchange plan. This global exchange plan is used to send each processor its new global indexes
 that it will own for the new distribution. The new global indexes coming from the different
 processors form the new target distribution and will be sorted in ascending order. The
@@ -88,7 +94,7 @@ corresponding permutation can be used to unpack the redistributed data.
     :align: center
     :alt: Redistribution
 
-    Definition of a new distribution by new owners for the local indexes of the current one.
+    Definition of a new distribution by new owners for the currently owned global indexes.
 
 This solution requires a sorting of all incoming global indexes from other processors to build
 the array of owned global indexes for the new target distribution. This sorting might be

@@ -166,6 +166,14 @@ public:
 
     virtual inline const char* getKind() const;
 
+    /** 
+     *  @brief Move constructor 
+     *
+     *  The move constructor moves all member variables but not help variables used for
+     *  any addressing or block-distributed owners.
+     */
+    GeneralDistribution( GeneralDistribution&& other );
+
 protected:
 
     static const char theCreateValue[];
@@ -179,9 +187,16 @@ protected:
      */
     std::unordered_map<IndexType, IndexType> mGlobal2Local;
 
-    /** Block distributed array of owners (used for compute owners and for sanity check)
+    /** 
+     *  Block distributed array of owners (used for compute owners and for sanity check)
      *
-     *  In the global view the array mBlockDistributedOwners[i] contains the owner of index i.
+     *  The approach of using an intermediate block distributed array of owners 
+     *  is attributed to Moritz von Looz-Corswarem, who
+     *  pointed out the optimization opportunity to us, and provided source code and experimental
+     *  results to show its efficacy.
+     *
+     *  The block distributed array of owners is built only on demand. This can be eiter for
+     *  calling a constructor with sanity check or when there are owners to be computed.
      */
     mutable std::unique_ptr<hmemo::HArray<PartitionId>> mBlockDistributedOwners;
 
@@ -194,11 +209,15 @@ protected:
  
     void enableBlockDistributedOwners() const;
 
+    /** Allow an explicit reset of block-distributed ownership */
+
+    void disableBlockDistributedOwners() const;
+
 private:
 
     GeneralDistribution();
 
-    GeneralDistribution& operator=( const GeneralDistribution& other ) = delete;
+    GeneralDistribution& operator=( const GeneralDistribution& ) = delete;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
@@ -212,7 +231,8 @@ private:
                                                CommunicatorPtr comm );
 };
 
-/** Constructor of a general distribution here as a function for convenience
+/** 
+ *  @brief Constructor of a general distribution here as a function for convenience, checkFlag is true
  *
  *  @param[in] globalSize is the size of the distributed range
  *  @param[in] myGlobalIndexes contains all indexes of range owned by this processor
@@ -220,20 +240,51 @@ private:
  *
  *  The method must be called by all processors of comm at the same time. 
  */
-std::shared_ptr<GeneralDistribution> generalDistribution( 
+std::shared_ptr<const GeneralDistribution> generalDistribution( 
     const IndexType globalSize,
     hmemo::HArray<IndexType> myGlobalIndexes,
     const CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
 
-/** Constructor of a general distribution here as a function for convenience
+/** 
+ *  @brief Constructor of a general distribution here as a function for convenience, chechFlag is false
  *
  *  Same as generalDistribution but it does not involve any checks and 
  *  and any global communication.
+ *
+ *  Note: if this method is called for only some processors the other processors should
+ *        call also an unchecked constructor.
+ * 
+ *  \code
+ *     auto dist = generalDistribution( ... );
+ *     ...
+ *     if ( cond )
+ *     {
+ *         dist = generalDistributionUnchecked( globalSize, newGlobalIndexes, comm );
+ *     }
+ *     else
+ *     {
+ *         // use of move will reuse allocated memory of arrays if there are not other references
+ *         dist = generalDistributionUnchecked( std::move( dist ) );
+ *     }
+ *  \endcode
+ *
+ *  By this way it is guaranteed that 
+ *
+ *   - all processors have not block-distributed owners enabled
+ *   - all processors have not any addressing enabled
+ *   - all processors have same pointer equality (might be used to query if distributions are equal)
  */
-std::shared_ptr<GeneralDistribution> generalDistributionUnchecked( 
+std::shared_ptr<const GeneralDistribution> generalDistributionUnchecked( 
     const IndexType globalSize,
     hmemo::HArray<IndexType> myGlobalIndexes,
     const CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
+
+/**
+ *  @brief Create a new general distribution by an existing one
+ *
+ *  @param[in] dist is a distribution pointer for which a general distribution is built
+ */
+std::shared_ptr<const GeneralDistribution> generalDistributionUnchecked( std::shared_ptr<const Distribution> dist );
 
 /** This function creates a general distribution by an array containing the owner for each element
  *
@@ -250,7 +301,7 @@ std::shared_ptr<GeneralDistribution> generalDistributionUnchecked(
  *     auto dist = generalDistributionByNewOwners( SingleDistribution( root, comm ), owners ) );
  *  \endcode
  */
-std::shared_ptr<GeneralDistribution> generalDistributionBySingleOwners( 
+std::shared_ptr<const GeneralDistribution> generalDistributionBySingleOwners( 
     const hmemo::HArray<PartitionId>& owners, 
     const PartitionId root, 
     CommunicatorPtr comm );
@@ -267,7 +318,7 @@ std::shared_ptr<GeneralDistribution> generalDistributionBySingleOwners(
  *    - newOwners.size() == dist.getLocalSize()
  *    - 0 <= newOwners[i] < dist.getCommunicator().getSize()
  */
-std::shared_ptr<GeneralDistribution> generalDistributionByNewOwners( 
+std::shared_ptr<const GeneralDistribution> generalDistributionByNewOwners( 
     const Distribution& dist,
     const hmemo::HArray<PartitionId>& newOwners );
 

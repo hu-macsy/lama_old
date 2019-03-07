@@ -37,6 +37,7 @@
 
 // internal scai libraries
 #include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/GlobalAddressingPlan.hpp>
 #include <scai/hmemo.hpp>
 
 #include <scai/tasking/SyncToken.hpp>
@@ -478,10 +479,17 @@ public:
      *  If op is COPY, this vector will have the same size and distribution as index, otherwise
      *  this vector and the other vector must have the same size and distribution.
      */
-    virtual void gather(
+    virtual void gatherInto(
         const DenseVector<ValueType>& source,
         const DenseVector<IndexType>& index,
         const common::BinaryOp op = common::BinaryOp::COPY );
+
+    /** Gathering from this vector into a target vector. */
+
+    virtual void gatherFrom(
+        DenseVector<ValueType>& target,
+        const DenseVector<IndexType>& index,
+        const common::BinaryOp op = common::BinaryOp::COPY ) const;
 
     /** Scattering values from another vector into this vector
      *
@@ -495,6 +503,53 @@ public:
     virtual void scatter(
         const DenseVector<IndexType>& index,
         const bool unique,
+        const DenseVector<ValueType>& source,
+        const common::BinaryOp op = common::BinaryOp::COPY );
+
+    /**
+     *  Build a global addressing plan for gather from or scatter into this vector.
+     *
+     *  @param[in] index  specifies positions where this vector is accessed
+     *  @param[in] unique might be set true if no entry appears twice in index (global view)
+     *  @returns   a plan that can be used to gather from this array or scatter into this array
+     */
+    dmemo::GlobalAddressingPlan globalAddressingPlan(
+        const DenseVector<IndexType>& index,
+        const bool unique = false );
+
+    /**
+     *  Gather data from this array with indexes for which a plan is available
+     * 
+     *  @param[in,out] target the vector that will contain the gathered data
+     *  @param[in] plan   contains communication pattern built for source array
+     *  @param[in] op     specifies how to combine elements with existing ones
+     * 
+     *  Note: the target array must have the same distribution as the index array used for building the plan
+     * 
+     *  \code
+     *      // target = source[ index ]
+     *      target.gather( source, index );
+     *      source.gatherFrom( target, index );
+     *      auto plan = source.globalAddressingPlan( index );
+     *      source.gatherByPlan( target, plan );
+     *  \endcode
+     */
+    void gatherByPlan( 
+        DenseVector<ValueType>& target,
+        const dmemo::GlobalAddressingPlan& plan,
+        const common::BinaryOp op = common::BinaryOp::COPY ) const;
+
+    /**
+     *  Scatter data into this distributed source array 
+     * 
+     *  @param[in] plan contains communication pattern built for indexing this vector
+     *  @param[in] source contains the data that will be scatter into this array
+     *  @param[in] op     specifies how to combine elements with existing ones
+     * 
+     *  Note: source must have the same distribution as index that has been used for building the plan
+     */
+    void scatterByPlan(
+        const dmemo::GlobalAddressingPlan& plan,
         const DenseVector<ValueType>& source,
         const common::BinaryOp op = common::BinaryOp::COPY );
 
@@ -651,6 +706,7 @@ DenseVector<ValueType> fillDenseVector(
     ValueType ( *fillFunction ) ( IndexType ),
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
 {
+    SCAI_ASSERT_ERROR( fillFunction, "NULL function for filling" )
     DenseVector<ValueType> result( ctx );
     result.allocate( distribution );
     result.fillByFunction( fillFunction );

@@ -152,9 +152,9 @@ DenseMatrix<ValueType>::DenseMatrix(
 
     Matrix<ValueType>( rowDistribution, std::make_shared<NoDistribution>( localStorage.getNumColumns() ) )
 {
-    // make some 'global' checks to verify correct sizes on all processors
+    // only local checks here, global checks might be done by isConsistent()
     
-    _Matrix::checkLocalStorageSizes( localStorage, *rowDistribution );
+    SCAI_ASSERT_EQ_ERROR( localStorage.getNumRows(), rowDistribution->getLocalSize(), "serious mismatch" )
 
     mData.clear();
     mData.resize( 1 );
@@ -325,6 +325,7 @@ template<typename ValueType>
 bool DenseMatrix<ValueType>::isConsistent() const
 {
     IndexType consistencyErrors = 0;
+
     const IndexType numLocalRows = getRowDistribution().getLocalSize();
 
     try
@@ -711,8 +712,10 @@ void DenseMatrix<ValueType>::assign( const _MatrixStorage& storage )
 template<typename ValueType>
 void DenseMatrix<ValueType>::assignLocal( const _MatrixStorage& storage, DistributionPtr rowDist )
 {
-    _Matrix::checkLocalStorageSizes( storage, *rowDist );
+    // here we make only local checks, global checks only by isConsistent() 
 
+    SCAI_ASSERT_EQ_ERROR( storage.getNumRows(), rowDist->getLocalSize(), "serious mismatch" )
+ 
     IndexType numColumns = storage.getNumColumns();  // same for all processors
 
     _Matrix::setDistributedMatrix( rowDist, std::make_shared<NoDistribution>( numColumns ) );

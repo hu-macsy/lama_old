@@ -141,7 +141,7 @@ static void bench( const IndexType N )
 
     tmpTime = Walltime::get();
 
-    Xcomp.gather( Xsave, perm );
+    Xsave.gatherFrom( Xcomp, perm );
     Xcomp -= X;
     RealType<ValueType> maxDiff = Xcomp.maxNorm();
 
