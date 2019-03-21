@@ -63,7 +63,7 @@ int main( int argc, const char* argv[] )
     const IndexType n3 = 2;
     const IndexType n4 = 4;
 
-    GridVector<double> gv1( common::Grid4D( n1, n2, n3, n4 ) );
+    auto gv1 = GridVector<double>( common::Grid4D( n1, n2, n3, n4 ), 0 );
 
     {
         GridWriteAccess<double> wGV1( gv1 );
@@ -78,9 +78,9 @@ int main( int argc, const char* argv[] )
 
     gv1.writeToFile( fileName );
 
-    GridVector<double> gv2( fileName );
+    GridVector<double> gv2 = read<GridVector<double>>( fileName );
 
-    SCAI_ASSERT_EQ_ERROR( gv1.globalGrid(), gv2.globalGrid(), "mismatch" );
+    SCAI_ASSERT_EQ_ERROR( gv1.globalGrid(), gv2.globalGrid(), "mismatch grid size" );
 
     {
         GridReadAccess<double> rGV1( gv1 );
@@ -92,29 +92,35 @@ int main( int argc, const char* argv[] )
         }
     }
 
+    return 0;
+
     IndexType m = 7;
     IndexType n = 5;
 
-    DenseMatrix<float> dMatrix( m, n );
+    DenseMatrix<double> dMatrix( m, n, 0 );
 
     {
-        hmemo::WriteAccess<float> wDense( dMatrix.getLocalStorage().getData() );
+        hmemo::WriteAccess<double> wDense( dMatrix.getLocalStorage().getData() );
 
         for ( IndexType i = 0; i < m; ++i )
         for ( IndexType j = 0; j < n; ++j )
 
-        wDense[ i * m + j ] = static_cast<float>( 10 * i + j ) ;
+        wDense[ i * m + j ] = static_cast<double>( 10 * i + j ) ;
     }
+
+    std::cout << dMatrix << ": write it to file " << fileName << std::endl;
 
     dMatrix.writeToFile( fileName );
 
-    GridVector<float> dg( fileName );
+    std::cout << dMatrix << " written to file " << fileName << std::endl;
+
+    auto dg = read<GridVector<double>>( fileName );
 
     SCAI_ASSERT_EQ_ERROR( dg.globalGrid(), common::Grid2D( m, n ), "mismatch" );
 
     {
-        hmemo::ReadAccess<float> rGrid( dg.getLocalValues() );
-        hmemo::ReadAccess<float> rDense( dMatrix.getLocalStorage().getData() );
+        hmemo::ReadAccess<double> rGrid( dg.getLocalValues() );
+        hmemo::ReadAccess<double> rDense( dMatrix.getLocalStorage().getData() );
 
         for ( IndexType i = 0; i < dg.size(); ++i )
         {

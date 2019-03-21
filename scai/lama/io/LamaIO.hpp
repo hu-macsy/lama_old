@@ -43,8 +43,10 @@ namespace lama
 // forward declarations
 
 class _MatrixStorage;
+
 template<typename ValueType> class MatrixStorage;
 template<typename ValueType> class CSRStorage;
+template<typename ValueType> class DenseStorage;
 
 /** 
  *  Collective/Parallel I/O format used by LAMA
@@ -153,6 +155,8 @@ public:
 
     void writeGridArray( const hmemo::_HArray& data, const common::Grid& grid );
 
+    /** Implementation of reading array with grid information */
+
     void readGridArray( hmemo::_HArray& data, common::Grid& grid );
 
     /** Typed version of writeStorage called via IOWrapper */
@@ -162,6 +166,9 @@ public:
 
     template<typename ValueType>
     void writeCSR( const CSRStorage<ValueType>& storage );
+
+    template<typename ValueType>
+    void writeDense( const DenseStorage<ValueType>& storage );
 
     /** Typed version of readStorage */
 
@@ -185,6 +192,13 @@ public:
         const hmemo::HArray<IndexType>& indexes,
         const hmemo::HArray<ValueType>& values );
 
+    /** Typed verison of writeGrid */
+ 
+    template<typename ValueType>
+    void writeGridImpl(
+        const hmemo::HArray<ValueType>& data,
+        const common::Grid& grid );
+
     /** Typed version of readArray */
 
     template<typename ValueType>
@@ -198,6 +212,13 @@ public:
         ValueType& zero,
         hmemo::HArray<IndexType>& indexes,
         hmemo::HArray<ValueType>& values );
+
+    /** Typed verison of readGrid */
+ 
+    template<typename ValueType>
+    void readGridImpl(
+        hmemo::HArray<ValueType>& data,
+        common::Grid& grid );
 
     void writeHeader( const int classId );
 

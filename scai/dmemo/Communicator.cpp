@@ -200,15 +200,15 @@ void Communicator::setSeed( int seed ) const
 
 /* -------------------------------------------------------------------------- */
 
-void Communicator::factorize2( PartitionId procgrid[2], const double sizeX, const double sizeY ) const
+void Communicator::factorize2( PartitionId procgrid[2], const PartitionId size, const double sizeX, const double sizeY )
 {
     PartitionId usergrid[3];
     getUserProcArray( usergrid );
     // assign partitions to 2d grid so as to minimize contact
     double bestline = 2.0 * ( sizeX + sizeY );
     bool found = false;
+
     // try all possible factorizations of size
-    PartitionId size = getSize();
 
     for ( PartitionId ipx = 1; ipx <= size; ipx++ )
     {
@@ -237,7 +237,6 @@ void Communicator::factorize2( PartitionId procgrid[2], const double sizeX, cons
             bestline = line;
             procgrid[0] = ipx;
             procgrid[1] = ipy;
-            ;
         }
     }
 
@@ -255,9 +254,10 @@ void Communicator::factorize2( PartitionId procgrid[2], const double sizeX, cons
 
 void Communicator::factorize3(
     PartitionId procgrid[3],
+    const PartitionId size,
     const double sizeX,
     const double sizeY,
-    const double sizeZ ) const
+    const double sizeZ )
 {
     PartitionId usergrid[3];
     getUserProcArray( usergrid );
@@ -268,7 +268,6 @@ void Communicator::factorize3(
     // try all possible factorizations of size
     // surface = surface area of a proc sub-domain
     // for 2d, insure ipz = 1
-    PartitionId size = getSize();
     bool found = false;
 
     for ( PartitionId ipx = 1; ipx <= size; ipx++ )

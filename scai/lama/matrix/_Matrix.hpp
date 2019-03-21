@@ -734,6 +734,14 @@ private:
     void setDefaultKind(); // set default values for communication and compute kind
 
     static SyncKind getDefaultSyncKind();  // get default kind as set by environment
+
+    /** help routine for writeToFile, single mode */
+
+    void writeToFileSingle( FileIO& outFile ) const;
+
+    /** help routine for writeToFile, independent/collective mode */
+
+    void writeToFileBlocked( FileIO& outFile ) const;
 };
 
 /* ======================================================================== */

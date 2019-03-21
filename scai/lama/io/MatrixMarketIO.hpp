@@ -44,6 +44,36 @@ class DenseStorage;
 template<typename ValueType>
 class MatrixStorage;
 
+/** Enumeration type for the different symmetry flags in the _Matrix Market file */
+
+enum class Symmetry
+{
+    GENERAL,               //!< no symmetry used
+    SYMMETRIC,             //!< a( i, j ) and a( j, i ) are always same
+    HERMITIAN,             //!< a( i, j ) == conj( a( i, j  ) )
+    SKEW_SYMMETRIC         //!< not exploited here
+};
+
+/** 
+ *  @brief Structure that contains all data available in the header of a matrix market file
+ */
+struct MMHeader
+{
+    common::ScalarType mmType;   //!< specifies the type of the data, e.g. real or complex
+
+    bool      isVector;          //!< either vector (1D) or matrix (2D)
+
+    IndexType numRows;           //!< number of rows
+    IndexType numColumns;        //!< number of columns, 1 if isVector
+    IndexType numValues;         //!< number of values if coordinates are used (sparse format)
+
+    Symmetry symmetry;           //!< only used for matrix, should be GENERAL for vector
+
+    /** Constructor of a header for a dense vector */
+
+    MMHeader( const common::ScalarType dataType, const IndexType size );
+};
+
 class MatrixMarketIO :
 
     public FileIO,
@@ -128,6 +158,8 @@ public:
 
     void writeGridArray( const hmemo::_HArray& data, const common::Grid& grid );
 
+    /** Implementation of FileIO::readGridArray */
+
     void readGridArray( hmemo::_HArray& data, common::Grid& grid );
 
 public:
@@ -173,42 +205,37 @@ public:
         hmemo::HArray<IndexType>& indexes,
         hmemo::HArray<ValueType>& values );
 
+    /** Typed version of readGridArray */
+
+    template<typename ValueType>
+    void readGridImpl( hmemo::HArray<ValueType>& data, common::Grid& grid );
+
+    /** Typed version of writeGridArray */
+
+    template<typename ValueType>
+    void writeGridImpl( const hmemo::HArray<ValueType>& data, const common::Grid& grid );
+
     SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for IO class
 
 private:
 
     class IOStream mFile;    // used file
 
-    /** Enumeration type for the different symmetry flags in the _Matrix Market file */
-
-    typedef enum
-    {
-        GENERAL,
-        SYMMETRIC,
-        HERMITIAN,
-        SKEW_SYMMETRIC
-    } Symmetry;
-
     /** Conversion of enum value to string */
 
     const char* symmetry2str( const Symmetry symmetry );
 
-    void writeMMHeader(
-        class IOStream& outFile,
-        const bool vector,
-        const IndexType numRows,
-        const IndexType numColumns,
-        const IndexType numValues,
-        const Symmetry symmetry,
-        const common::ScalarType dataType );
+    void writeMMHeader( class IOStream& outFile, const MMHeader& header );
 
-    void readMMHeader(
-        IndexType& numRows,
-        IndexType& numColumns,
-        IndexType& numValues,
-        common::ScalarType& dataType,
-        bool& isVector,
-        Symmetry& symmetry );
+    /** 
+     *  @brief read the complete header of a matrix-market file
+     */
+    MMHeader readMMHeader();
+
+    /** 
+     *  @brief same as readMMHeader but keep the current file position
+     */
+    MMHeader getMMHeader();
 
     /** Extend COO data by adding all symmetric data */
 

@@ -265,9 +265,9 @@ void GridVector<ValueType>::readFromFile( FileIO& file )
 
         file.readGridArray( this->mLocalValues, localGrid );
 
-        COMMON_THROWEXCEPTION( "not supported yet: read grid only SINGLE mode, local grid = "  << localGrid )
+        auto dist = dmemo::gridDistributionByLocalGrid( localGrid, comm );
 
-        this->setDistributionPtr( dmemo::gridDistribution( localGrid ) );
+        this->setDistributionPtr( dist );
     }
 }
 

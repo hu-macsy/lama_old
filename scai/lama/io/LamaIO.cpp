@@ -34,6 +34,7 @@
 #include <scai/lama/io/IOStream.hpp>
 #include <scai/lama/io/IOWrapper.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
+#include <scai/lama/storage/DenseStorage.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -59,6 +60,7 @@ namespace scai
 {
 
 using common::ScalarType;
+using common::Grid;
 
 using namespace hmemo;
 
@@ -129,10 +131,7 @@ void LamaIO::openIt( const std::string& fileName, const char* fileMode )
 
     mFile = comm->collectiveFile();
 
-    SCAI_LOG_INFO( logger, *comm << ": openIt( name = " << fileName << ", mode = " << fileMode << ")"
-                                 << " with " << *this )
-
-    SCAI_ASSERT( mFile.get(), "Could not get collective file object for comm = " << comm )
+    SCAI_ASSERT_ERROR( mFile.get(), "Could not get collective file object for comm = " << comm )
 
     mFileName = fileName;
 
@@ -146,7 +145,6 @@ void LamaIO::closeIt()
     mFile->close();
 
     mFile.reset();
-
     mFileName.clear();
 }
 
@@ -337,6 +335,17 @@ void LamaIO::readSparseImpl(
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void LamaIO::writeDense( const DenseStorage<ValueType>& dense )
+{
+    // dense storage is written as 2D grid data
+
+    common::Grid2D grid( dense.getNumRows(), dense.getNumColumns() );
+    writeGridImpl( dense.getValues(), grid );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void LamaIO::writeCSR( const CSRStorage<ValueType>& csr )
 {
     const auto& comm = mFile->getCommunicator();
@@ -434,7 +443,11 @@ void LamaIO::writeStorageImpl( const MatrixStorage<ValueType>& storage )
 {
     SCAI_REGION( "IO.Lama.writeStorage" )
 
-    if ( storage.getFormat() == Format::CSR )
+    if ( storage.getFormat() == Format::DENSE )
+    {
+        writeDense( static_cast<const DenseStorage<ValueType>&>( storage ) );
+    }
+    else if ( storage.getFormat() == Format::CSR )
     {
         writeCSR( static_cast<const CSRStorage<ValueType>&>( storage ) );
     }
@@ -490,21 +503,78 @@ void LamaIO::getStorageInfo( IndexType& numRows, IndexType& numColumns, IndexTyp
 
 /* --------------------------------------------------------------------------------- */
 
-void LamaIO::writeGridArray( const hmemo::_HArray& data, const common::Grid& grid )
+template<typename ValueType>
+void LamaIO::writeGridImpl( const hmemo::HArray<ValueType>& data, const common::Grid& grid )
 {
-    if ( grid.nDims() > 1 )
+    writeHeader( GRID_VECTOR_CLASSID );
+
+    IndexType nDims = grid.nDims();
+   
+    const auto& comm = mFile->getCommunicator();
+
+    common::Grid globalGrid( grid );
+    globalGrid.setSize( 0, comm.sum( globalGrid.size( 0 ) ) );
+
+    mFile->writeSingle( nDims, mScalarTypeIndex );
+    mFile->writeSingle( globalGrid.sizes(), nDims, mScalarTypeIndex );
+
+    mFile->writeAll( data, mScalarTypeData );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void LamaIO::readGridImpl( hmemo::HArray<ValueType>& data, common::Grid& grid )
+{
+    int val[3];     // array to read the first three entries from the file
+
+    mFile->readSingle( val, 3 );
+
+    SCAI_ASSERT_EQ_ERROR( val[0], GRID_VECTOR_CLASSID, "no grid vector in file" )
+
+    auto fileIndexType = ScalarType( val[1] );
+    auto fileDataType  = ScalarType( val[2] );
+
+    IndexType nDims;
+
+    mFile->readSingle( nDims, fileIndexType );
+
+    SCAI_ASSERT_LE_ERROR( nDims, SCAI_GRID_MAX_DIMENSION, "num dimensions too high" )
+
+    IndexType dims[SCAI_GRID_MAX_DIMENSION];
+
+    mFile->readSingle( dims, nDims, fileIndexType );
+ 
+    // in case of parallel I/O we assume block distribution in first dimension
+
+    auto dist = dmemo::blockDistribution( dims[0], mFile->getCommunicatorPtr() );
+
+    IndexType ntail = 1;
+
+    for ( IndexType i = 1; i < nDims; ++i )
     {
-        SCAI_LOG_WARN( logger, "Grid shape information is lost for array when writing to file" )
+        ntail *= dims[i];
     }
 
-    writeArray( data );
+    dims[0] = dist->getLocalSize();
+
+    grid = Grid( nDims, dims );
+
+    mFile->readAll( data, grid.size(), dist->lb() * ntail, fileDataType );
 }
+
+/* -------------------------------------------------------------------------------- */
+
+void LamaIO::writeGridArray( const hmemo::_HArray& data, const common::Grid& grid )
+{
+    IOWrapper<LamaIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeGrid( *this, data, grid );
+}
+
+/* --------------------------------------------------------------------------------- */
 
 void LamaIO::readGridArray( hmemo::_HArray& data, common::Grid& grid )
 {
-    readArray( data );
-    grid = common::Grid1D( data.size() );
-    SCAI_LOG_WARN( logger, "Lama does not support multidimensional array, take default shape " << grid )
+    IOWrapper<LamaIO, SCAI_ARRAY_TYPES_HOST_LIST>::readGrid( *this, data, grid );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -578,11 +648,11 @@ std::string LamaIO::getVectorFileSuffix() const
                                                             \
     template COMMON_DLL_IMPORTEXPORT                        \
     void LamaIO::writeArrayImpl(                            \
-        const hmemo::HArray<_type>& array );                \
+        const HArray<_type>& );                             \
                                                             \
     template COMMON_DLL_IMPORTEXPORT                        \
     void LamaIO::readArrayImpl(                             \
-        hmemo::HArray<_type>& array );                      \
+        HArray<_type>& );                                   \
                                                             \
     template COMMON_DLL_IMPORTEXPORT                        \
     void LamaIO::writeSparseImpl(                           \
@@ -596,7 +666,17 @@ std::string LamaIO::getVectorFileSuffix() const
         IndexType& size,                                    \
         _type& zero,                                        \
         HArray<IndexType>& indexes,                         \
-        HArray<_type>& values );
+        HArray<_type>& values );                            \
+                                                            \
+    template COMMON_DLL_IMPORTEXPORT                        \
+    void LamaIO::writeGridImpl(                             \
+        const HArray<_type>&,                               \
+        const common::Grid& );                              \
+                                                            \
+    template COMMON_DLL_IMPORTEXPORT                        \
+    void LamaIO::readGridImpl(                              \
+        HArray<_type>& array,                               \
+        common::Grid& );               
 
 SCAI_COMMON_LOOP( SCAI_LAMA_METHOD_INSTANTIATIONS, SCAI_ARRAY_TYPES_HOST )
 

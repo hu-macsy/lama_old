@@ -122,6 +122,8 @@ bool FileIO::hasCollectiveIO() const
 
 void FileIO::open( const char* fileName, const char* fileMode, const DistributedIOMode distMode )
 {
+    SCAI_LOG_INFO( logger, *this << "open, name = " << fileName << ", mode = " << fileMode )
+
     mDistMode = distMode;
 
     auto comm = dmemo::Communicator::getCommunicatorPtr();
@@ -169,6 +171,8 @@ void FileIO::open( const char* fileName, const char* fileMode, const Distributed
             openIt( fileName, fileMode );
         }
     }
+
+    SCAI_LOG_DEBUG( logger, *this << " is now open" )
 }
 
 /* --------------------------------------------------------------------------------- */

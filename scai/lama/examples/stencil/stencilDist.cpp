@@ -89,9 +89,9 @@ int main( int argc, const char* argv[] )
 
     common::Grid3D grid( N, N, N );
 
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr(); 
+    // take default communicator and default processor array for mapping of the grid
 
-    dmemo::DistributionPtr gridDistribution( new GridDistribution( grid, comm ) );
+    auto gridDistribution = dmemo::gridDistribution( grid );
 
     StencilMatrix<ValueType> distStencilMatrix( gridDistribution, stencil );
     CSRSparseMatrix<ValueType> distCSRMatrix( distStencilMatrix );

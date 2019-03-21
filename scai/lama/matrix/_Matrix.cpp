@@ -268,6 +268,8 @@ void _Matrix::writeToFile(
     const common::ScalarType dataType,
     const common::ScalarType indexType ) const
 {
+    SCAI_LOG_INFO( logger, *this << ": writeToFile " << fileName )
+
     std::string suffix = FileIO::getSuffix( fileName );
 
     if ( FileIO::canCreate( suffix ) )
@@ -281,6 +283,7 @@ void _Matrix::writeToFile(
         file->setIndexType( indexType );
 
         file->open( fileName.c_str(), "w" );
+        SCAI_LOG_DEBUG( logger, *this << ": writeToFile uses opened " << *file )
         writeToFile( *file );
         file->close();
     }
@@ -292,53 +295,108 @@ void _Matrix::writeToFile(
 
 /* ---------------------------------------------------------------------------------*/
 
+void _Matrix::writeToFileBlocked( FileIO& file ) const
+{
+    // this matrix must be block distributed onto the processors assigned to the file
+
+    const Communicator& fileComm = *file.getCommunicatorPtr();
+
+    SCAI_LOG_ERROR( logger, "matrix distribution = " << getDistribution() << ", file comm = " << fileComm )
+
+    bool isBlockDistributed = true;
+
+    if ( getDistribution().isReplicated() && fileComm.getSize() > 1 )
+    {
+        // other solution could be to convert it to a SingleDistribution
+
+        isBlockDistributed = false;
+    }
+    else if ( getDistribution().getBlockDistributionSize() == invalidIndex )
+    {
+        isBlockDistributed = false;
+    }
+    else
+    {
+        isBlockDistributed = true;
+    }
+
+    if ( !isBlockDistributed )
+    {
+        SCAI_LOG_DEBUG( logger, *this << ": independent/collective write, redistribution to block dist required" )
+
+        auto rowDist = blockDistribution( getNumRows(), file.getCommunicatorPtr() );
+        auto colDist = noDistribution( getNumColumns() );
+        std::unique_ptr<_Matrix> matBlockDistributed( copyRedistributed( rowDist, colDist ) );
+        matBlockDistributed->writeToFile( file );
+    }
+    else if ( !getColDistribution().isReplicated() )
+    {
+        // restore complete columns (replicate), but use current block distribution 
+
+        SCAI_LOG_DEBUG( logger, *this << ": independent/collective write, replicate col distribution" )
+        auto rowDist = getRowDistributionPtr();
+        auto colDist = noDistribution( getNumColumns() );
+        std::unique_ptr<_Matrix> matBlockDistributed( copyRedistributed( rowDist, colDist ) );
+        matBlockDistributed->writeToFile( file );
+    }
+    else
+    {
+        SCAI_LOG_ERROR( logger, *this << ": independent/collective write, write local storage: " << getLocalStorage() )
+        file.writeStorage( getLocalStorage() );
+    }
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void _Matrix::writeToFileSingle( FileIO& file ) const
+{
+    // SINGLE mode: only master process writes to file the whole storage
+
+    const Distribution& rowDist = getDistribution();
+
+    bool isSingleDistributed = rowDist.getLocalSize() == rowDist.getGlobalSize();
+
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    if ( isSingleDistributed && getColDistribution().isReplicated() )
+    {
+        SCAI_LOG_DEBUG( logger, *this << ": single mode, only MASTER writes it" )
+
+        if ( comm->getRank() == 0 )
+        {
+            file.writeStorage( getLocalStorage() );
+        }
+ 
+        // add a barrier ??, might be better to have it on the close that is called by all processors
+    }
+    else
+    {
+        SCAI_LOG_DEBUG( logger, *this << ": single mode, replicate it" )
+
+        auto rowDist = singleDistribution( getNumRows(), comm, 0 );
+        auto colDist = noDistribution( getNumColumns() );
+        std::unique_ptr<_Matrix> matSingle( copyRedistributed( rowDist, colDist ) );
+        matSingle->writeToFile( file );
+    }
+}
+
+/* ---------------------------------------------------------------------------------*/
+
 void _Matrix::writeToFile( FileIO& file ) const
 {
     SCAI_LOG_INFO( logger, *this << ": writeToFile( file = " << file << " )" )
 
     if ( file.getDistributedIOMode() == DistributedIOMode::SINGLE )
     {
-        // SINGLE mode: only master process writes to file
+        // master processor will write the whole data
 
-        if ( getDistribution().isReplicated() && getColDistribution().isReplicated() )
-        {
-            const Communicator& comm = *Communicator::getCommunicatorPtr();
-
-            if ( comm.getRank() == 0 )
-            {
-                file.writeStorage( getLocalStorage() );
-            }
-        }
-        else
-        {
-            auto rowDist = noDistribution( getNumRows() );
-            auto colDist = noDistribution( getNumColumns() );
-            std::unique_ptr<_Matrix> matReplicated( copyRedistributed( rowDist, colDist ) );
-            matReplicated->writeToFile( file );
-        }
+        writeToFileSingle( file );
     }
     else
     {
-        // INDEPENDENT / COLLECTIVE mode: write local parts of block distributed matrix
+        // all processors will write the 'block-distributed' data
 
-        if ( getDistribution().getBlockDistributionSize() == invalidIndex )
-        {
-            auto rowDist = blockDistribution( getNumRows() );
-            auto colDist = noDistribution( getNumColumns() );
-            std::unique_ptr<_Matrix> matBlockDistributed( copyRedistributed( rowDist, colDist ) );
-            matBlockDistributed->writeToFile( file );
-        }
-        else if ( !getColDistribution().isReplicated() )
-        {
-            auto rowDist = getRowDistributionPtr();
-            auto colDist = noDistribution( getNumColumns() );
-            std::unique_ptr<_Matrix> matBlockDistributed( copyRedistributed( rowDist, colDist ) );
-            matBlockDistributed->writeToFile( file );
-        }
-        else
-        {
-            file.writeStorage( getLocalStorage() );
-        }
+        writeToFileBlocked( file );
     }
 }
 

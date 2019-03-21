@@ -280,9 +280,9 @@ void MatrixCreator::buildPoisson(
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr( );   // get the default communicator
 
-    std::shared_ptr<GridDistribution> gridDistribution( new GridDistribution( globalGrid, comm ) );
+    auto gridDist = dmemo::gridDistribution( globalGrid, comm );
 
-    SCAI_LOG_INFO( logger, *comm << ": " << *gridDistribution )
+    SCAI_LOG_INFO( logger, *comm << ": " << *gridDist )
 
     IndexType myNNA = 0; // accumulated sum for number of my entries
 
@@ -300,8 +300,8 @@ void MatrixCreator::buildPoisson(
     // Loop over all local grid points and count number of matrix values needed
     // Actual we could make a guess here with getLocalSize * nPoints
 
-    const common::Grid& localGrid = gridDistribution->getLocalGrid();
-    const IndexType localSize = gridDistribution->getLocalSize();
+    const common::Grid& localGrid = gridDist->getLocalGrid();
+    const IndexType localSize = gridDist->getLocalSize();
 
     IndexType localGridPos[3]  = { 0, 0, 0 };
     IndexType globalGridPos[3] = { 0, 0, 0 };
@@ -309,7 +309,7 @@ void MatrixCreator::buildPoisson(
     for ( IndexType i = 0; i < localSize; ++i )
     {
         localGrid.gridPos( localGridPos, i );
-        gridDistribution->local2Global( globalGridPos, localGridPos );
+        gridDist->local2Global( globalGridPos, localGridPos );
 
         const IndexType numNonZeros = getNStencilValues( globalGridPos, globalGrid, length, maxDistance );
 
@@ -347,7 +347,7 @@ void MatrixCreator::buildPoisson(
         for ( IndexType i = 0; i < localSize; ++i )
         {
             localGrid.gridPos( localGridPos, i );
-            gridDistribution->local2Global( globalGridPos, localGridPos );
+            gridDist->local2Global( globalGridPos, localGridPos );
 
             // get column positions and values of matrix, diagonal element is first
 
@@ -381,8 +381,8 @@ void MatrixCreator::buildPoisson(
 
     localMatrix.swap( csrIA, csrJA, csrValues );
     SCAI_LOG_DEBUG( logger, "replace owned data with " << localMatrix )
-    matrix.assignLocal( localMatrix, gridDistribution );   
-    matrix.redistribute( gridDistribution, gridDistribution );     // builds also halo
+    matrix.assignLocal( localMatrix, gridDist );   
+    matrix.redistribute( gridDist, gridDist );     // builds also halo
 
     SCAI_LOG_INFO( logger, "built matrix A = " << matrix )
 }

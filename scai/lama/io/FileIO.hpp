@@ -249,6 +249,17 @@ public:
      */
     virtual void readArray( hmemo::_HArray& array ) = 0;
 
+    /** Read in a grid (i.e. multi-dimensional array) from the file
+     *
+     *  @param[out] array    will contain the corresponding array values
+     *  @param[out] grid    will contain array topology as a grid
+     *
+     *  If the routine succeeds, array.size() will be equal to grid.size(). The
+     *  values in array are stored in row-major order.
+     *
+     *  This routine should return a two-dimensional array if the file contains
+     *  a matrix storage or a one-dimensional array if the file contains an array.
+     */
     virtual void readGridArray(
         hmemo::_HArray& array,
         common::Grid& grid ) = 0;

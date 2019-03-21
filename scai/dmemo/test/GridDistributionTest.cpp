@@ -123,7 +123,9 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 
     comm = Communicator::getCommunicatorPtr();
 
-    GridDistribution bdist( globalGrid, comm );
+    auto procGrid = GridDistribution::getDefaultProcGrid( globalGrid, comm->getSize() );
+
+    GridDistribution bdist( globalGrid, comm, procGrid );
 
     BOOST_CHECK_EQUAL( bdist.getGlobalSize(), globalSize * globalSize );
 

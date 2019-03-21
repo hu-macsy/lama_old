@@ -67,7 +67,7 @@ void bench( const common::Grid& grid, const common::Stencil<ValueType>& stencil 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     ContextPtr ctx = Context::getContextPtr();
 
-    dmemo::DistributionPtr gridDistribution( new GridDistribution( grid, comm ) );
+    auto gridDistribution = dmemo::gridDistribution( grid, comm );
 
     std::cout << *comm << ": distribution = " << *gridDistribution << std::endl;
 

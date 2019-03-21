@@ -132,9 +132,8 @@ public:
 
     void swap( hmemo::HArray<ValueType>& data, const common::Grid& grid )
     {
-        dmemo::CommunicatorPtr comm( new dmemo::NoCommunicator() );
-        dmemo::DistributionPtr dist( new dmemo::GridDistribution( grid, comm ) );
-   
+        auto dist = dmemo::gridDistributionReplicated( grid );
+
         DenseVector<ValueType>::swap( data, dist );
     }
 

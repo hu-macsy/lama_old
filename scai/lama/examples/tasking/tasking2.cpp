@@ -79,7 +79,7 @@ int main( int argc, const char* argv[] )
 
     // (block) distribute the problem space onto the available processors
 
-    auto dist = std::make_shared<dmemo::GridDistribution>( space );
+    auto dist = dmemo::gridDistribution( space );
 
     std::cout << *commWorld << ": distributed grid = " << *dist << std::endl;
 

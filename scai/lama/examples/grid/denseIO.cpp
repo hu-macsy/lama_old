@@ -1,5 +1,5 @@
 /**
- * @file lama/examples/grid/denseIO.cpp
+ * @file denseIO.cpp
  *
  * @license
  * Copyright (c) 2009-2018
@@ -22,7 +22,7 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief Example program to work on image data
+ * @brief Example program to read/write dense matrix as 2D grid vector
  * @author Thomas Brandes
  * @date 19.05.2017
  */
@@ -44,7 +44,7 @@ using namespace lama;
 
 int main( int argc, const char* argv[] )
 {
-    // relevant SCAI arguments:
+    // relevant SCAI arguments: 
     //   SCAI_CONTEXT = ...    set default context
     //   SCAI_DEVICE  = ...    set default device
 
@@ -58,44 +58,42 @@ int main( int argc, const char* argv[] )
 
     std::string fileName = argv[1];
 
-    const IndexType m = 9;
-    const IndexType n = 5;
+    IndexType m = 7;
+    IndexType n = 5;
 
-    DenseMatrix<float> dMatrix( m, n );
-
-    std::cout << "dMatrix = " << dMatrix << std::endl;
+    DenseMatrix<double> dMatrix( m, n );
 
     {
-        hmemo::HArray<float>& denseData = dMatrix.getLocalStorage().getData();
-
-        std::cout << "denseData = " << denseData << std::endl;
-
-        hmemo::WriteAccess<float> wDense( dMatrix.getLocalStorage().getData() );
+        hmemo::WriteAccess<double> wDense( dMatrix.getLocalStorage().getData() );
 
         for ( IndexType i = 0; i < m; ++i )
         {
             for ( IndexType j = 0; j < n; ++j )
-
             {
-                wDense[ i * n + j ] = static_cast<float>( 10 * i + j );
+                wDense[ i * n + j ] = static_cast<double>( 10 * i + j ) ;
             }
         }
     }
 
+    std::cout << dMatrix << ": write it to file " << fileName << std::endl;
+
     dMatrix.writeToFile( fileName );
 
-    if ( true )
-    {
-        return 0;
-    }
+    std::cout << dMatrix << " written to file " << fileName << std::endl;
 
-    GridVector<float> dg( fileName );
+    auto dg = read<GridVector<double>>( fileName );
+
+    std::cout << "read this grid vector from file " << fileName << ": " << dg << std::endl;
 
     SCAI_ASSERT_EQ_ERROR( dg.globalGrid(), common::Grid2D( m, n ), "mismatch" );
 
+    // dg might be distributed, for check we replicate it
+
+    dg.replicate();
+
     {
-        hmemo::ReadAccess<float> rGrid( dg.getLocalValues() );
-        hmemo::ReadAccess<float> rDense( dMatrix.getLocalStorage().getData() );
+        hmemo::ReadAccess<double> rGrid( dg.getLocalValues() );
+        hmemo::ReadAccess<double> rDense( dMatrix.getLocalStorage().getData() );
 
         for ( IndexType i = 0; i < dg.size(); ++i )
         {
