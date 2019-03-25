@@ -61,6 +61,8 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.MMIOTest" );
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( ReadGeneralDenseTest, ValueType, scai_numeric_test_types )
 {
+    // write a dense matrix file by hand and read it by Lama IO routines
+
     const IndexType m   = 3;
     const IndexType n   = 4;
 
@@ -72,7 +74,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadGeneralDenseTest, ValueType, scai_numeric_tes
 
     const char header[] = "%%MatrixMarket matrix array real general";
 
-    const auto fileName = uniquePath(GlobalTempDir::getPath(), "mm_array_gen") + ".mtx";
+    const auto fileName = uniquePath( GlobalTempDir::getPath(), "mm_array_gen" ) + ".mtx";
 
     {
         using namespace std;
@@ -94,7 +96,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadGeneralDenseTest, ValueType, scai_numeric_tes
     DenseStorage<ValueType> denseStorage;
 
     MatrixMarketIO reader;
-    FileIO& freader = reader;
+
+    FileIO& freader = reader;   // for test use base class reference 
 
     freader.open( fileName.c_str(), "r" );
     freader.readStorage( denseStorage );
@@ -104,8 +107,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadGeneralDenseTest, ValueType, scai_numeric_tes
     BOOST_CHECK_EQUAL( n, denseStorage.getNumColumns() );
 
     {
-        const HArray<ValueType>& data = denseStorage.getData();
-        ReadAccess<ValueType> rVals( data );
+        auto rVals = hostReadAccess( denseStorage.getData() );
 
         for ( IndexType i = 0; i < m; ++i )
         {
@@ -143,7 +145,7 @@ BOOST_AUTO_TEST_CASE( ReadErrorTest )
 
     for ( IndexType icase = 0; icase < ncases; ++icase )
     {
-        const auto fileName = uniquePath(GlobalTempDir::getPath(), "mm_wrong") + ".mtx";
+        const auto fileName = uniquePath( GlobalTempDir::getPath(), "mm_wrong" ) + ".mtx";
 
         {
             fstream myFile;
@@ -155,7 +157,7 @@ BOOST_AUTO_TEST_CASE( ReadErrorTest )
         }
 
         MatrixMarketIO reader;
- 
+
         SCAI_LOG_INFO( logger, "Test this header: " << header[icase] )
 
         BOOST_CHECK_THROW(
@@ -189,11 +191,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadSymmetricDenseTest, ValueType, scai_numeric_t
 
     const IndexType n_vals = sizeof( vals ) / sizeof( ValueType );
 
-    SCAI_ASSERT_EQ_ERROR( n_vals, n * ( n + 1 ) / 2 , "number of symmentric values must fit to matrix " << n << " x " << n );
+    SCAI_ASSERT_EQ_ERROR( n_vals, n * ( n + 1 ) / 2, "number of symmentric values must fit to matrix " << n << " x " << n );
 
     const char header[] = "%%MatrixMarket matrix array real symmetric";
 
-    const auto fileName = uniquePath(GlobalTempDir::getPath(), "mm_array_symm") + ".mtx";
+    const auto fileName = uniquePath( GlobalTempDir::getPath(), "mm_array_symm" ) + ".mtx";
 
     {
         using namespace std;
@@ -260,14 +262,15 @@ BOOST_AUTO_TEST_CASE( RectangularTest )
                             4, 5, 6,
                             7, 8, 9,
                             10, 11, 12,
-                            13, 14, 15 };
+                            13, 14, 15
+                          };
 
     DenseStorage<DefaultReal> denseOut;
     DenseStorage<DefaultReal> denseIn;
 
     denseOut.setRawDenseData( m, n, vals );
 
-    const auto fileName = uniquePath(GlobalTempDir::getPath(), "dense") + ".mtx";
+    const auto fileName = uniquePath( GlobalTempDir::getPath(), "dense" ) + ".mtx";
 
     MatrixMarketIO io;
     FileIO& fio = io;

@@ -47,15 +47,6 @@
 
 #define LAMA_SUFFIX ".lmf"
 
-/** Internal identification of file items */
-
-#define DENSE_VECTOR_CLASSID  0x4711E00
-#define GRID_VECTOR_CLASSID   0x4711E01
-#define SPARSE_VECTOR_CLASSID 0x4711E02
-#define DENSE_MATRIX_CLASSID  0x4711E10
-#define CSR_MATRIX_CLASSID    0x4711E11
-#define COO_MATRIX_CLASSID    0x4711E12
-
 namespace scai
 {
 
@@ -68,6 +59,12 @@ using utilskernel::HArrayUtils;
 
 namespace lama
 {
+
+std::ostream& operator<<( std::ostream& stream, const LamaClassId& object )
+{
+    stream << static_cast<int>( object );
+    return stream;
+}
 
 /* --------------------------------------------------------------------------------- */
 
@@ -157,9 +154,9 @@ bool LamaIO::hasCollectiveIO() const
 
 /* --------------------------------------------------------------------------------- */
 
-void LamaIO::writeHeader( const int classId )
+void LamaIO::writeHeader( const LamaClassId classId )
 {
-    const int header[] = { classId,
+    const int header[] = { static_cast<int>( classId ),
                            static_cast<int>( mScalarTypeIndex ),
                            static_cast<int>( mScalarTypeData ) 
                          };
@@ -172,7 +169,7 @@ void LamaIO::writeHeader( const int classId )
 template<typename ValueType>
 void LamaIO::writeArrayImpl( const hmemo::HArray<ValueType>& array )
 {
-    // int       DENSE_VECTOR_CLASSID
+    // int       DENSE_VECTOR
     // int       IndexType.id
     // int       DataType.id
     // IndexType number of elements
@@ -185,7 +182,7 @@ void LamaIO::writeArrayImpl( const hmemo::HArray<ValueType>& array )
     SCAI_LOG_INFO( logger, "LamaIO: write array " << array << " to file " << mFileName 
                             << ", IndexType = " << mScalarTypeIndex << ", DataType = " << mScalarTypeData )
 
-    writeHeader( DENSE_VECTOR_CLASSID );
+    writeHeader( LamaClassId::DENSE_VECTOR );
 
     mFile->writeSingle( n, mScalarTypeIndex ),
     mFile->writeAll( array, mScalarTypeData );
@@ -202,7 +199,7 @@ void LamaIO::writeSparseImpl(
 {
     SCAI_ASSERT_EQ_ERROR( indexes.size(), values.size(), "mismatch cooridinates/values sizes" )
 
-    // int       SPARSE_VECTOR_CLASSID
+    // int       SPARSE_VECTOR
     // int       IndexType.id
     // int       DataType.id
     // IndexType vector size
@@ -216,7 +213,7 @@ void LamaIO::writeSparseImpl(
     IndexType n   = comm.sum( size );
     IndexType nnz = comm.sum( indexes.size() );
 
-    writeHeader( SPARSE_VECTOR_CLASSID );
+    writeHeader( LamaClassId::SPARSE_VECTOR );
 
     mFile->writeSingle( n, mScalarTypeIndex ),
     mFile->writeSingle( zero, mScalarTypeData );
@@ -239,7 +236,9 @@ void LamaIO::getArrayInfo( IndexType& size )
 
     mFile->readSingle( header, 3 );
 
-    if ( header[0] == DENSE_VECTOR_CLASSID || header[0] == SPARSE_VECTOR_CLASSID )
+    LamaClassId classId = LamaClassId( header[0] );
+
+    if ( classId == LamaClassId::DENSE_VECTOR || classId == LamaClassId::SPARSE_VECTOR )
     {
         auto fileIndexType = ScalarType( header[1] );
 
@@ -260,7 +259,7 @@ void LamaIO::readArrayImpl( hmemo::HArray<ValueType>& array )
 {
     SCAI_REGION( "IO.Lama.readArray" )
 
-    // int    VEC_FILE_CLASSID
+    // int    VEC_FILE
     // int    number of rows
     // type   values
 
@@ -271,7 +270,7 @@ void LamaIO::readArrayImpl( hmemo::HArray<ValueType>& array )
 
     mFile->readSingle( val, 3 );
 
-    SCAI_ASSERT_EQ_ERROR( val[0], DENSE_VECTOR_CLASSID, "no dense vector in file" )
+    SCAI_ASSERT_EQ_ERROR( LamaClassId( val[0] ), LamaClassId::DENSE_VECTOR, "no dense vector in file" )
 
     auto fileIndexType = ScalarType( val[1] );
     auto fileDataType  = ScalarType( val[2] );
@@ -294,7 +293,7 @@ void LamaIO::readSparseImpl(
     HArray<IndexType>& indexes,
     HArray<ValueType>& values )
 {
-    // int       SPARSE_VECTOR_CLASSID
+    // int       SPARSE_VECTOR
     // int       IndexType.id
     // int       DataType.id
     // IndexType vector size
@@ -309,7 +308,7 @@ void LamaIO::readSparseImpl(
 
     mFile->readSingle( header, 3 );
 
-    SCAI_ASSERT_EQ_ERROR( header[0], SPARSE_VECTOR_CLASSID, "no sparse vector in file" )
+    SCAI_ASSERT_EQ_ERROR( LamaClassId( header[0] ), LamaClassId::SPARSE_VECTOR, "no sparse vector in file" )
 
     auto fileIndexType = ScalarType( header[1] );
     auto fileDataType  = ScalarType( header[2] );
@@ -346,6 +345,27 @@ void LamaIO::writeDense( const DenseStorage<ValueType>& dense )
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void LamaIO::readDense( DenseStorage<ValueType>& dense )
+{
+    // dense storage is written as 2D grid data
+
+    HArray<ValueType> data;
+    common::Grid grid;
+    IndexType dummyRows;
+    IndexType dummyCols;
+
+    dense.splitUp( dummyRows, dummyCols, data );
+
+    readGridImpl( data, grid );
+
+    SCAI_ASSERT_EQ_ERROR( grid.nDims(), 2, "grid data is not general matrix" )
+
+    dense = DenseStorage<ValueType>( grid.size( 0 ), grid.size( 1 ), std::move( data ) );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void LamaIO::writeCSR( const CSRStorage<ValueType>& csr )
 {
     const auto& comm = mFile->getCommunicator();
@@ -356,7 +376,7 @@ void LamaIO::writeCSR( const CSRStorage<ValueType>& csr )
 
     // Meta-data for CSR storage, header + 'global' sizes
 
-    writeHeader( CSR_MATRIX_CLASSID );
+    writeHeader( LamaClassId::CSR_MATRIX );
 
     mFile->writeSingle( numRows, mScalarTypeIndex );
     mFile->writeSingle( numCols, mScalarTypeIndex );
@@ -388,7 +408,7 @@ void LamaIO::readCSR( CSRStorage<ValueType>& csr )
 
     SCAI_LOG_INFO( logger, comm << ": read header for CSR matrix: " << val[0] << ", " << val[1] << ", " << val[2] )
 
-    SCAI_ASSERT_EQ_ERROR( val[0], CSR_MATRIX_CLASSID, "no CSR matrix in file" )
+    SCAI_ASSERT_EQ_ERROR( LamaClassId( val[0] ), LamaClassId::CSR_MATRIX, "no CSR matrix in file" )
 
     auto fileIndexType = ScalarType( val[1] );
     auto fileDataType  = ScalarType( val[2] );
@@ -461,20 +481,57 @@ void LamaIO::writeStorageImpl( const MatrixStorage<ValueType>& storage )
 
 /* --------------------------------------------------------------------------------- */
 
+LamaClassId LamaIO::getClassId()
+{
+    size_t pos = mFile->getOffset();
+
+    int classId;
+
+    mFile->readSingle( classId );
+
+    mFile->setOffset( pos );
+
+    return LamaClassId( classId );
+}
+
+/* --------------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void LamaIO::readStorageImpl( MatrixStorage<ValueType>& storage )
 {
     SCAI_REGION( "IO.Lama.readStorage" )
 
-    if ( storage.getFormat() == Format::CSR )
+    auto id = getClassId();
+
+    if ( id == LamaClassId::CSR_MATRIX )
     {
-        readCSR( static_cast<CSRStorage<ValueType>&>( storage ) );
+        if ( storage.getFormat() == Format::CSR )
+        {
+            readCSR( static_cast<CSRStorage<ValueType>&>( storage ) );
+        }
+        else
+        {
+            CSRStorage<ValueType> tmp;
+            readCSR( tmp );
+            storage = tmp;
+        }
+    }
+    else if ( id == LamaClassId::GRID_VECTOR )
+    {
+        if ( storage.getFormat() == Format::DENSE )
+        {
+            readDense( static_cast<DenseStorage<ValueType>&>( storage ) );
+        }
+        else
+        {
+            DenseStorage<ValueType> tmp;
+            readStorage( tmp );
+            storage = tmp;
+        }
     }
     else
     {
-        CSRStorage<ValueType> tmp;
-        readCSR( tmp );
-        storage = tmp;
+        COMMON_THROWEXCEPTION( "read storage, but illegal class id: " << id )
     }
 }
 
@@ -490,7 +547,7 @@ void LamaIO::getStorageInfo( IndexType& numRows, IndexType& numColumns, IndexTyp
 
     mFile->readSingle( header, 3 );
 
-    SCAI_ASSERT_EQ_ERROR( header[0], CSR_MATRIX_CLASSID, "no CSR matrix in file" )
+    SCAI_ASSERT_EQ_ERROR( LamaClassId( header[0] ), LamaClassId::CSR_MATRIX, "no CSR matrix in file" )
 
     auto fileIndexType = ScalarType( header[1] );
 
@@ -506,7 +563,7 @@ void LamaIO::getStorageInfo( IndexType& numRows, IndexType& numColumns, IndexTyp
 template<typename ValueType>
 void LamaIO::writeGridImpl( const hmemo::HArray<ValueType>& data, const common::Grid& grid )
 {
-    writeHeader( GRID_VECTOR_CLASSID );
+    writeHeader( LamaClassId::GRID_VECTOR );
 
     IndexType nDims = grid.nDims();
    
@@ -530,7 +587,7 @@ void LamaIO::readGridImpl( hmemo::HArray<ValueType>& data, common::Grid& grid )
 
     mFile->readSingle( val, 3 );
 
-    SCAI_ASSERT_EQ_ERROR( val[0], GRID_VECTOR_CLASSID, "no grid vector in file" )
+    SCAI_ASSERT_EQ_ERROR( LamaClassId( val[0] ), LamaClassId::GRID_VECTOR, "no grid vector in file" )
 
     auto fileIndexType = ScalarType( val[1] );
     auto fileDataType  = ScalarType( val[2] );

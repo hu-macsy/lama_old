@@ -83,7 +83,7 @@ void MPICollectiveFile::close()
 
 void MPICollectiveFile::writeSingleImpl( const size_t offset, const void* val, const size_t n, const common::ScalarType stype )
 {
-    SCAI_LOG_ERROR( logger, *mComm << ": writeSingle( offset = " << offset << ", size = " << n << ", type = " << stype )
+    SCAI_LOG_INFO( logger, *mComm << ": writeSingle( offset = " << offset << ", size = " << n << ", type = " << stype )
 
     MPI_Status stat;
     SCAI_MPICALL( logger, 
@@ -93,7 +93,7 @@ void MPICollectiveFile::writeSingleImpl( const size_t offset, const void* val, c
 
 void MPICollectiveFile::writeAllImpl( const size_t offset, const void* val, const size_t n, const common::ScalarType stype )
 {
-    SCAI_LOG_ERROR( logger, *mComm << ": writeAll( offset = " << offset << ", size = " << n << ", type = " << stype )
+    SCAI_LOG_INFO( logger, *mComm << ": writeAll( offset = " << offset << ", size = " << n << ", type = " << stype )
 
     MPI_Status stat;
 

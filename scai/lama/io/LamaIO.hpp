@@ -48,6 +48,23 @@ template<typename ValueType> class MatrixStorage;
 template<typename ValueType> class CSRStorage;
 template<typename ValueType> class DenseStorage;
 
+/** Internal identification of file items */
+
+enum class LamaClassId
+{
+    DENSE_VECTOR  = 0x4711E00,
+    GRID_VECTOR   = 0x4711E01,
+    SPARSE_VECTOR = 0x4711E02,
+    DENSE_MATRIX  = 0x4711E10,
+    CSR_MATRIX    = 0x4711E11,
+    COO_MATRIX    = 0x4711E12
+};
+
+/*
+ * Output of LamaClassId in stream by writing strings instead of numbers
+ */
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const LamaClassId& object );
+
 /** 
  *  Collective/Parallel I/O format used by LAMA
  *
@@ -143,6 +160,10 @@ public:
 
     static std::string createValue();
 
+    /** Read the next class id from file and keep file position */
+
+    LamaClassId getClassId();
+
     /** Implementation of pure methdod FileIO::getStorageInfo */
 
     virtual void getStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues );
@@ -177,6 +198,9 @@ public:
 
     template<typename ValueType>
     void readCSR( CSRStorage<ValueType>& storage );
+
+    template<typename ValueType>
+    void readDense( DenseStorage<ValueType>& storage );
 
     /** Typed version of the writeArray */
 
@@ -220,7 +244,7 @@ public:
         hmemo::HArray<ValueType>& data,
         common::Grid& grid );
 
-    void writeHeader( const int classId );
+    void writeHeader( enum LamaClassId classId );
 
 private:
 

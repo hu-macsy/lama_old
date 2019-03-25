@@ -63,15 +63,19 @@ struct MMHeader
 
     bool      isVector;          //!< either vector (1D) or matrix (2D)
 
-    IndexType numRows;           //!< number of rows
-    IndexType numColumns;        //!< number of columns, 1 if isVector
-    IndexType numValues;         //!< number of values if coordinates are used (sparse format)
+    IndexType mNumRows;           //!< number of rows
+    IndexType mNumColumns;        //!< number of columns, 1 if isVector
+    IndexType mNumValues;         //!< number of values if coordinates are used (sparse format)
 
     Symmetry symmetry;           //!< only used for matrix, should be GENERAL for vector
 
     /** Constructor of a header for a dense vector */
 
     MMHeader( const common::ScalarType dataType, const IndexType size );
+
+    /** Constructor of a header for a dense matrix */
+
+    MMHeader( const common::ScalarType dataType, const IndexType numRows, const IndexType numColumns );
 };
 
 class MatrixMarketIO :
@@ -270,6 +274,9 @@ private:
 
     template<typename ValueType>
     void writeDenseMatrix( const DenseStorage<ValueType>& storage );
+
+    template<typename ValueType>
+    void writeArray2D( const IndexType numRows, const IndexType numColumns, const hmemo::HArray<ValueType>& data );
 
 };
 

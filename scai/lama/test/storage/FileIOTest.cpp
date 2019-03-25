@@ -615,8 +615,9 @@ BOOST_AUTO_TEST_CASE( EmptyStorage )
             try
             {
                 m.writeToFile( fileName );
+                SCAI_LOG_DEBUG( logger, "written empty storage " << m << " to file " << fileName )
             } 
-            catch( common::UnsupportedException& )
+            catch ( common::UnsupportedException& )
             {
                 continue;
             }
@@ -624,6 +625,8 @@ BOOST_AUTO_TEST_CASE( EmptyStorage )
             BOOST_CHECK( FileIO::fileExists( fileName ) );
 
             setNonSquareData( m );  // just set dummy data to see it will be rewritten
+
+            SCAI_LOG_DEBUG( logger, "read empty storage " << m << " from file " << fileName )
 
             m.readFromFile( fileName );
 

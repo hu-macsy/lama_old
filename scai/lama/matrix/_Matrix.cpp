@@ -301,7 +301,7 @@ void _Matrix::writeToFileBlocked( FileIO& file ) const
 
     const Communicator& fileComm = *file.getCommunicatorPtr();
 
-    SCAI_LOG_ERROR( logger, "matrix distribution = " << getDistribution() << ", file comm = " << fileComm )
+    SCAI_LOG_DEBUG( logger, "matrix distribution = " << getDistribution() << ", file comm = " << fileComm )
 
     bool isBlockDistributed = true;
 
@@ -341,7 +341,7 @@ void _Matrix::writeToFileBlocked( FileIO& file ) const
     }
     else
     {
-        SCAI_LOG_ERROR( logger, *this << ": independent/collective write, write local storage: " << getLocalStorage() )
+        SCAI_LOG_DEBUG( logger, *this << ": independent/collective write, write local storage: " << getLocalStorage() )
         file.writeStorage( getLocalStorage() );
     }
 }
