@@ -36,7 +36,7 @@
 
 #include <fstream>
 
-#define MAT_SUFFIX ".bmp" 
+#define MAT_SUFFIX ".bmp"
 
 namespace scai
 {
@@ -164,8 +164,8 @@ void BitmapIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid )
 
 
     SCAI_LOG_INFO( logger, "fileHeader, bfSize = " << fileHeader.bfSize
-                           << ", bfReserved = " << fileHeader.bfReserved 
-                           << ", bfOffBits = " << fileHeader.bfOffBits )
+                   << ", bfReserved = " << fileHeader.bfReserved
+                   << ", bfOffBits = " << fileHeader.bfOffBits )
 
 
     nRecords = fread( &infoHeader, sizeof( infoHeader ), 1, mFile );
@@ -246,7 +246,7 @@ void BitmapIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid )
 
         unsigned char ColorMasks [256][4];
 
-        IndexType nBytes = fread( ColorMasks, 1, sizeof( ColorMasks), mFile );
+        IndexType nBytes = fread( ColorMasks, 1, sizeof( ColorMasks ), mFile );
         SCAI_LOG_INFO( logger, "read color mask, nbytes = " << nBytes )
         std::unique_ptr<unsigned char[]> tmp( new unsigned char[ width * height ] );
         nBytes = fread( tmp.get(), 1, width * height, mFile );
@@ -263,7 +263,7 @@ void BitmapIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid )
                     IndexType bmpPos = i * width + j;
                     unsigned char colorIndex = tmp[ bmpPos ];
                     IndexType imgPos = 3 * ( ( height - 1 - i ) * width + j );
-                    wData[ imgPos   ] = static_cast<ValueType>( ColorMasks[colorIndex][2]);
+                    wData[ imgPos   ] = static_cast<ValueType>( ColorMasks[colorIndex][2] );
                     wData[ imgPos + 1 ] = static_cast<ValueType>( ColorMasks[colorIndex][1] );
                     wData[ imgPos + 2 ] = static_cast<ValueType>( ColorMasks[colorIndex][0] );
                 }
@@ -271,7 +271,7 @@ void BitmapIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid )
         }
         SCAI_LOG_INFO( logger, "set full colo values" )
     }
-    else 
+    else
     {
         COMMON_THROWEXCEPTION( "Unsupported biBitCount = " << infoHeader.biBitCount )
     }
@@ -359,7 +359,7 @@ void BitmapIO::writeGridArray( const _HArray& data, const common::Grid& grid )
 
 void BitmapIO::writeStorage( const _MatrixStorage& storage )
 {
-    // todo: write dense storage as bitmap, maybe greyscale 
+    // todo: write dense storage as bitmap, maybe greyscale
 
     SCAI_THROWEXCEPTION( common::UnsupportedException, "write storage " << storage )
 }
@@ -391,20 +391,20 @@ std::string BitmapIO::getVectorFileSuffix() const
 
 void BitmapIO::writeArray( const hmemo::_HArray& array )
 {
-    SCAI_THROWEXCEPTION( common::UnsupportedException, 
+    SCAI_THROWEXCEPTION( common::UnsupportedException,
                          "Unsupported for bitmap file: write array " << array )
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void BitmapIO::writeSparse( 
-    const IndexType n, 
+void BitmapIO::writeSparse(
+    const IndexType n,
     const void*,
-    const hmemo::HArray<IndexType>& indexes, 
+    const hmemo::HArray<IndexType>& indexes,
     const hmemo::_HArray& values )
 {
-    SCAI_THROWEXCEPTION( common::UnsupportedException, 
-                         "Unsupported for bitmap file: write spare array ( n = " << n 
+    SCAI_THROWEXCEPTION( common::UnsupportedException,
+                         "Unsupported for bitmap file: write spare array ( n = " << n
                          << ", indexes = " << indexes << ", values = " << values << " )" )
 }
 
@@ -437,10 +437,10 @@ void BitmapIO::readArray( hmemo::_HArray& array )
 
 /* --------------------------------------------------------------------------------- */
 
-void BitmapIO::readSparse( 
-    IndexType& size, 
+void BitmapIO::readSparse(
+    IndexType& size,
     void*,
-    hmemo::HArray<IndexType>& indexes, 
+    hmemo::HArray<IndexType>& indexes,
     hmemo::_HArray& values )
 {
     size = 0;

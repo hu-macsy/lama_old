@@ -144,6 +144,8 @@ public:
         DenseVector<ValueType>::swap( other );
     }
 
+    virtual void writeAt( std::ostream& stream ) const;
+
     using _Vector::swap;
 
     /** Set this grid vector by another grid vector that is reduced in one dimension */
@@ -192,6 +194,11 @@ public:
     {
         return GridSection<ValueType>( *this, r1, r2, r3, r4 );
     }
+
+    /**
+     * Implementation of _Vector::copy with covariant return type.
+     */
+    virtual GridVector* copy() const;
 
     /** Implementation of _Vector::writeLocalToFile */
 

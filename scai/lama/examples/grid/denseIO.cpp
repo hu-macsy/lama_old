@@ -35,6 +35,7 @@
 #include <scai/lama/GridVector.hpp>
 #include <scai/lama/GridWriteAccess.hpp>
 #include <scai/lama/GridReadAccess.hpp>
+#include <scai/hmemo/HostReadAccess.hpp>
 #include <scai/common/Settings.hpp>
 
 #include <scai/lama.hpp>
@@ -92,8 +93,8 @@ int main( int argc, const char* argv[] )
     dg.replicate();
 
     {
-        hmemo::ReadAccess<double> rGrid( dg.getLocalValues() );
-        hmemo::ReadAccess<double> rDense( dMatrix.getLocalStorage().getData() );
+        auto rGrid = hmemo::hostReadAccess( dg.getLocalValues() );
+        auto rDense = hmemo::hostReadAccess( dMatrix.getLocalStorage().getData() );
 
         for ( IndexType i = 0; i < dg.size(); ++i )
         {

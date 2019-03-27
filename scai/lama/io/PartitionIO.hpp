@@ -49,8 +49,8 @@ class COMMON_DLL_IMPORTEXPORT PartitionIO
 {
 public:
 
-    static dmemo::DistributionPtr readDistribution( 
-        const std::string& inFileName, 
+    static dmemo::DistributionPtr readDistribution(
+        const std::string& inFileName,
         dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr() );
 
     /** This method reads a distribution from a single input file.

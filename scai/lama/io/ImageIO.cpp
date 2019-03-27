@@ -51,70 +51,70 @@ SCAI_LOG_DEF_LOGGER( ImageIO::logger, "ImageIO" )
 
 static double colorMap[] =
 {
-   0.00000,  0.00000,  0.56250,
-   0.00000,  0.00000,  0.62500,
-   0.00000,  0.00000,  0.68750,
-   0.00000,  0.00000,  0.75000,
-   0.00000,  0.00000,  0.81250,
-   0.00000,  0.00000,  0.87500,
-   0.00000,  0.00000,  0.93750,
-   0.00000,  0.00000,  1.00000,
-   0.00000,  0.06250,  1.00000,
-   0.00000,  0.12500,  1.00000,
-   0.00000,  0.18750,  1.00000,
-   0.00000,  0.25000,  1.00000,
-   0.00000,  0.31250,  1.00000,
-   0.00000,  0.37500,  1.00000,
-   0.00000,  0.43750,  1.00000,
-   0.00000,  0.50000,  1.00000,
-   0.00000,  0.56250,  1.00000,
-   0.00000,  0.62500,  1.00000,
-   0.00000,  0.68750,  1.00000,
-   0.00000,  0.75000,  1.00000,
-   0.00000,  0.81250,  1.00000,
-   0.00000,  0.87500,  1.00000,
-   0.00000,  0.93750,  1.00000,
-   0.00000,  1.00000,  1.00000,
-   0.06250,  1.00000,  0.93750,
-   0.12500,  1.00000,  0.87500,
-   0.18750,  1.00000,  0.81250,
-   0.25000,  1.00000,  0.75000,
-   0.31250,  1.00000,  0.68750,
-   0.37500,  1.00000,  0.62500,
-   0.43750,  1.00000,  0.56250,
-   0.50000,  1.00000,  0.50000,
-   0.56250,  1.00000,  0.43750,
-   0.62500,  1.00000,  0.37500,
-   0.68750,  1.00000,  0.31250,
-   0.75000,  1.00000,  0.25000,
-   0.81250,  1.00000,  0.18750,
-   0.87500,  1.00000,  0.12500,
-   0.93750,  1.00000,  0.06250,
-   1.00000,  1.00000,  0.00000,
-   1.00000,  0.93750,  0.00000,
-   1.00000,  0.87500,  0.00000,
-   1.00000,  0.81250,  0.00000,
-   1.00000,  0.75000,  0.00000,
-   1.00000,  0.68750,  0.00000,
-   1.00000,  0.62500,  0.00000,
-   1.00000,  0.56250,  0.00000,
-   1.00000,  0.50000,  0.00000,
-   1.00000,  0.43750,  0.00000,
-   1.00000,  0.37500,  0.00000,
-   1.00000,  0.31250,  0.00000,
-   1.00000,  0.25000,  0.00000,
-   1.00000,  0.18750,  0.00000,
-   1.00000,  0.12500,  0.00000,
-   1.00000,  0.06250,  0.00000,
-   1.00000,  0.00000,  0.00000,
-   0.93750,  0.00000,  0.00000,
-   0.87500,  0.00000,  0.00000,
-   0.81250,  0.00000,  0.00000,
-   0.75000,  0.00000,  0.00000,
-   0.68750,  0.00000,  0.00000,
-   0.62500,  0.00000,  0.00000,
-   0.56250,  0.00000,  0.00000,
-   0.50000,  0.00000,  0.00000
+    0.00000,  0.00000,  0.56250,
+    0.00000,  0.00000,  0.62500,
+    0.00000,  0.00000,  0.68750,
+    0.00000,  0.00000,  0.75000,
+    0.00000,  0.00000,  0.81250,
+    0.00000,  0.00000,  0.87500,
+    0.00000,  0.00000,  0.93750,
+    0.00000,  0.00000,  1.00000,
+    0.00000,  0.06250,  1.00000,
+    0.00000,  0.12500,  1.00000,
+    0.00000,  0.18750,  1.00000,
+    0.00000,  0.25000,  1.00000,
+    0.00000,  0.31250,  1.00000,
+    0.00000,  0.37500,  1.00000,
+    0.00000,  0.43750,  1.00000,
+    0.00000,  0.50000,  1.00000,
+    0.00000,  0.56250,  1.00000,
+    0.00000,  0.62500,  1.00000,
+    0.00000,  0.68750,  1.00000,
+    0.00000,  0.75000,  1.00000,
+    0.00000,  0.81250,  1.00000,
+    0.00000,  0.87500,  1.00000,
+    0.00000,  0.93750,  1.00000,
+    0.00000,  1.00000,  1.00000,
+    0.06250,  1.00000,  0.93750,
+    0.12500,  1.00000,  0.87500,
+    0.18750,  1.00000,  0.81250,
+    0.25000,  1.00000,  0.75000,
+    0.31250,  1.00000,  0.68750,
+    0.37500,  1.00000,  0.62500,
+    0.43750,  1.00000,  0.56250,
+    0.50000,  1.00000,  0.50000,
+    0.56250,  1.00000,  0.43750,
+    0.62500,  1.00000,  0.37500,
+    0.68750,  1.00000,  0.31250,
+    0.75000,  1.00000,  0.25000,
+    0.81250,  1.00000,  0.18750,
+    0.87500,  1.00000,  0.12500,
+    0.93750,  1.00000,  0.06250,
+    1.00000,  1.00000,  0.00000,
+    1.00000,  0.93750,  0.00000,
+    1.00000,  0.87500,  0.00000,
+    1.00000,  0.81250,  0.00000,
+    1.00000,  0.75000,  0.00000,
+    1.00000,  0.68750,  0.00000,
+    1.00000,  0.62500,  0.00000,
+    1.00000,  0.56250,  0.00000,
+    1.00000,  0.50000,  0.00000,
+    1.00000,  0.43750,  0.00000,
+    1.00000,  0.37500,  0.00000,
+    1.00000,  0.31250,  0.00000,
+    1.00000,  0.25000,  0.00000,
+    1.00000,  0.18750,  0.00000,
+    1.00000,  0.12500,  0.00000,
+    1.00000,  0.06250,  0.00000,
+    1.00000,  0.00000,  0.00000,
+    0.93750,  0.00000,  0.00000,
+    0.87500,  0.00000,  0.00000,
+    0.81250,  0.00000,  0.00000,
+    0.75000,  0.00000,  0.00000,
+    0.68750,  0.00000,  0.00000,
+    0.62500,  0.00000,  0.00000,
+    0.56250,  0.00000,  0.00000,
+    0.50000,  0.00000,  0.00000
 };
 
 /** Interpolate a color value between two colors.
@@ -131,10 +131,10 @@ static void interpolateColor( double color[3], const double color1[3], const dou
     color[2] = ( 1.0 - factor ) * color1[2] + factor * color2[2];
 }
 
-/** Compute for a value in range [0:1] a corresponding color entry by a color map 
+/** Compute for a value in range [0:1] a corresponding color entry by a color map
  *
  *  @param[in] value must be between 0.0 and 1.0
- *  @param[out] color is the computed color 
+ *  @param[out] color is the computed color
  */
 
 static void computeColor( double color[3], const double value )
@@ -149,7 +149,7 @@ static void computeColor( double color[3], const double value )
     double v = common::Math::min( 1.0, value );
     v = common::Math::max( 0.0, v );
 
-    // find entry 
+    // find entry
 
     IndexType colorIndex = static_cast<IndexType>( common::Math::floor( value * nSections ) );
 
@@ -167,8 +167,8 @@ static void computeColor( double color[3], const double value )
 }
 
 template<typename ValueType>
-void ImageIO::writeSC( 
-    const GridVector<ValueType>& arrayData, 
+void ImageIO::writeSC(
+    const GridVector<ValueType>& arrayData,
     const ValueType minVal,
     const ValueType maxVal,
     const std::string& outputFileName )
@@ -181,7 +181,7 @@ void ImageIO::writeSC(
 
     const common::Grid2D& arrayGrid = reinterpret_cast<const common::Grid2D&>( arrayData.globalGrid() );
 
-    common::Grid3D imageGrid( arrayGrid.size(0), arrayGrid.size(1), 3 );
+    common::Grid3D imageGrid( arrayGrid.size( 0 ), arrayGrid.size( 1 ), 3 );
 
     GridVector<DefaultReal> imageData( imageGrid, 0 );
 
@@ -205,7 +205,8 @@ void ImageIO::writeSC(
 
                 if ( val < minVal || val > maxVal )
 
-                {   // take grey as background color
+                {
+                    // take grey as background color
                     color[0] = 0.8;
                     color[1] = 0.8;
                     color[2] = 0.8;
@@ -215,7 +216,7 @@ void ImageIO::writeSC(
                     // interpolate color by color table
 
                     double scaledVal = static_cast<double>( ( val - minVal ) / scale );  // val in [0,1]
-                    computeColor( color, scaledVal ); 
+                    computeColor( color, scaledVal );
                 }
 
                 wImage( i, j, 0 ) = static_cast<DefaultReal>( color[ 0 ] * 255.0 + 0.5 );
@@ -252,7 +253,7 @@ void ImageIO::writeSC( const GridVector<ValueType>& arrayData, const std::string
 // instantiate methods for supported array/vector types, not Complex
 
 #define SCAI_IMAGE_IO_INSTANTIATIONS( _type )                              \
-                                                                           \
+    \
     template COMMON_DLL_IMPORTEXPORT                                       \
     void ImageIO::writeSC( const GridVector<_type>&, const std::string& ); \
 

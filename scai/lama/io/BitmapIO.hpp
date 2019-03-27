@@ -40,7 +40,7 @@ namespace scai
 namespace lama
 {
 
-class COMMON_DLL_IMPORTEXPORT BitmapIO : 
+class COMMON_DLL_IMPORTEXPORT BitmapIO :
 
     public FileIO,
     public FileIO::Register<BitmapIO>    // register at factory

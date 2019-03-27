@@ -65,23 +65,23 @@ enum class LamaClassId
  */
 COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const LamaClassId& object );
 
-/** 
+/**
  *  Collective/Parallel I/O format used by LAMA
  *
  *   - supports collective mode, i.e. parallel read/write at different offsets
- *   - supports dense vector  
+ *   - supports dense vector
  *   - supports sparse vector
  *   - supports dense matrix
  *   - supports csr matrix
  *   - supports coo matrix
  *
- *  Note: coo/sparse format allows to write vector/matrices that are not 
+ *  Note: coo/sparse format allows to write vector/matrices that are not
  *        block distributed (global coordinates)
  *        dense vector/matrix and csr must be block distributed
  */
 class LamaIO :
 
-    public FileIO, 
+    public FileIO,
     public FileIO::Register<LamaIO>    // register at factory
 
 {
@@ -217,7 +217,7 @@ public:
         const hmemo::HArray<ValueType>& values );
 
     /** Typed verison of writeGrid */
- 
+
     template<typename ValueType>
     void writeGridImpl(
         const hmemo::HArray<ValueType>& data,
@@ -238,7 +238,7 @@ public:
         hmemo::HArray<ValueType>& values );
 
     /** Typed verison of readGrid */
- 
+
     template<typename ValueType>
     void readGridImpl(
         hmemo::HArray<ValueType>& data,

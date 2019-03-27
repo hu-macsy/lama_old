@@ -54,7 +54,7 @@ enum class Symmetry
     SKEW_SYMMETRIC         //!< not exploited here
 };
 
-/** 
+/**
  *  @brief Structure that contains all data available in the header of a matrix market file
  */
 struct MMHeader
@@ -231,12 +231,12 @@ private:
 
     void writeMMHeader( class IOStream& outFile, const MMHeader& header );
 
-    /** 
+    /**
      *  @brief read the complete header of a matrix-market file
      */
     MMHeader readMMHeader();
 
-    /** 
+    /**
      *  @brief same as readMMHeader but keep the current file position
      */
     MMHeader getMMHeader();

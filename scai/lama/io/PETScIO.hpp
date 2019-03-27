@@ -48,7 +48,7 @@ namespace lama
 
 class PETScIO :
 
-    public FileIO, 
+    public FileIO,
     public FileIO::Register<PETScIO>    // register at factory
 
 {

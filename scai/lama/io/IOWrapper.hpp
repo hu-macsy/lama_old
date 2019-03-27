@@ -44,7 +44,7 @@ namespace lama
 /*  Metaprogramming for different Value Types                                        */
 /* --------------------------------------------------------------------------------- */
 
-/** Metaprogramming structure to call a routine for each type in a typelist 
+/** Metaprogramming structure to call a routine for each type in a typelist
  *
  *  \code
  *      IOWrapper<MatrixMarketIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArray( *this, array );
@@ -142,11 +142,11 @@ struct IOWrapper<IOClass, common::mepr::TypeList<ValueType, TailTypes> >
         }
     }
 
-    static void writeSparse( 
-        IOClass& io, 
-        const IndexType size, 
+    static void writeSparse(
+        IOClass& io,
+        const IndexType size,
         const void* zero,
-        const hmemo::HArray<IndexType>& indexes, 
+        const hmemo::HArray<IndexType>& indexes,
         const hmemo::_HArray& values )
     {
         if ( values.getValueType() == common::getScalarType<ValueType>() )
@@ -175,9 +175,9 @@ struct IOWrapper<IOClass, common::mepr::TypeList<ValueType, TailTypes> >
 
     static void readSparse(
         IOClass& io,
-        IndexType& size, 
+        IndexType& size,
         void* zero,
-        hmemo::HArray<IndexType>& indexes, 
+        hmemo::HArray<IndexType>& indexes,
         hmemo::_HArray& values )
     {
         if ( values.getValueType() == common::getScalarType<ValueType>() )

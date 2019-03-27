@@ -36,7 +36,7 @@
 #include<png.h>
 #include<fstream>
 
-#define MAT_SUFFIX ".png" 
+#define MAT_SUFFIX ".png"
 
 namespace scai
 {
@@ -162,15 +162,15 @@ void PngIO::readGridImpl( HArray<ValueType>& imageData, common::Grid& imageSize 
     int number_of_passes = png_set_interlace_handling( png_ptr );
 
     SCAI_LOG_INFO( logger, "color_type = " << static_cast<int>( color_type )
-                    << ", png_bit_depth = " << static_cast<int>( png_bit_depth )
-                    << ", passes = " << number_of_passes )
+                   << ", png_bit_depth = " << static_cast<int>( png_bit_depth )
+                   << ", passes = " << number_of_passes )
 
     SCAI_ASSERT_EQ_ERROR( 8, png_bit_depth, "read only 8-bit depth supported" )
 
     if ( number_of_passes != 1 )
     {
         SCAI_LOG_WARN( logger, "Reading " << mFileName << ": multiple passes not supported"
-                               << ", #passes = " << number_of_passes )
+                       << ", #passes = " << number_of_passes )
     }
 
     png_read_update_info( png_ptr, info_ptr );
@@ -189,13 +189,17 @@ void PngIO::readGridImpl( HArray<ValueType>& imageData, common::Grid& imageSize 
     IndexType valsPerPixel;
 
     switch ( color_type )
-    {  
-        case PNG_COLOR_TYPE_RGBA :  valsPerPixel = 4; 
-                                    break;
-        case PNG_COLOR_TYPE_RGB  :  valsPerPixel = 3;
-                                    break;
+    {
+        case PNG_COLOR_TYPE_RGBA :
+            valsPerPixel = 4;
+            break;
 
-        default: COMMON_THROWEXCEPTION( "color type = " << ( int ) color_type << " not supported" )
+        case PNG_COLOR_TYPE_RGB  :
+            valsPerPixel = 3;
+            break;
+
+        default:
+            COMMON_THROWEXCEPTION( "color type = " << ( int ) color_type << " not supported" )
     }
 
     imageSize = common::Grid3D( height, width, 3 );
@@ -295,9 +299,9 @@ void PngIO::writeGridArray( const _HArray& data, const common::Grid& grid )
 
 void PngIO::writeStorage( const _MatrixStorage& storage )
 {
-    // todo: write dense storage as bitmap, maybe greyscale 
+    // todo: write dense storage as bitmap, maybe greyscale
 
-    SCAI_THROWEXCEPTION( common::UnsupportedException, 
+    SCAI_THROWEXCEPTION( common::UnsupportedException,
                          "write storage " << storage << " to " << mFileName )
 }
 
@@ -307,7 +311,7 @@ void PngIO::readStorage( _MatrixStorage& storage )
 {
     storage.clear();
 
-    SCAI_THROWEXCEPTION( common::UnsupportedException, 
+    SCAI_THROWEXCEPTION( common::UnsupportedException,
                          "Unsupported for bitmap file: read storage from " << mFileName )
 }
 
@@ -329,7 +333,7 @@ std::string PngIO::getVectorFileSuffix() const
 
 void PngIO::writeArray( const hmemo::_HArray& array )
 {
-    SCAI_THROWEXCEPTION( common::UnsupportedException, 
+    SCAI_THROWEXCEPTION( common::UnsupportedException,
                          "Unsupported for bitmap file: write array " << array << " to " << mFileName )
 }
 
@@ -350,7 +354,7 @@ void PngIO::getArrayInfo( IndexType& size )
 {
     size = 0;
 
-    SCAI_THROWEXCEPTION( common::UnsupportedException, 
+    SCAI_THROWEXCEPTION( common::UnsupportedException,
                          "Unsupported for bitmap file: read array info from file " )
 }
 
@@ -360,7 +364,7 @@ void PngIO::readArray( hmemo::_HArray& array )
 {
     array.clear();
 
-    SCAI_THROWEXCEPTION( common::UnsupportedException, 
+    SCAI_THROWEXCEPTION( common::UnsupportedException,
                          "Unsupported for bitmap file: read array from file " << mFileName )
 }
 

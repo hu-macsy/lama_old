@@ -137,7 +137,7 @@ void FileIO::open( const char* fileName, const char* fileMode, const Distributed
         size_t pos = independentFileName.find( "%r" );
 
         std::ostringstream rankStr;
-     
+
         PartitionId size = comm->getSize();
         PartitionId rank = comm->getRank();
 
@@ -166,7 +166,7 @@ void FileIO::open( const char* fileName, const char* fileMode, const Distributed
 
         // in single mode only MASTER processor opens it
 
-        if ( mDistMode != DistributedIOMode::SINGLE || comm->getRank() == 0 ) 
+        if ( mDistMode != DistributedIOMode::SINGLE || comm->getRank() == 0 )
         {
             openIt( fileName, fileMode );
         }
@@ -179,13 +179,20 @@ void FileIO::open( const char* fileName, const char* fileMode, const Distributed
 
 void FileIO::close()
 {
-    auto comm = dmemo::Communicator::getCommunicatorPtr();
+    auto comm = getCommunicatorPtr();
 
     // in single mode only MASTER processor closes it
 
-    if ( mDistMode != DistributedIOMode::SINGLE || comm->getRank() == 0 ) 
+    if ( mDistMode != DistributedIOMode::SINGLE || comm->getRank() == 0 )
     {
         closeIt();
+    }
+
+    // synchronize at close avoids that file is seen by all processors in same state
+
+    if ( mDistMode == DistributedIOMode::SINGLE )
+    {
+        comm->synchronize();
     }
 
     mDistMode = DistributedIOMode::DEFAULT;
@@ -603,7 +610,7 @@ DistributedIOMode FileIO::getDistributedIOMode() const
 /* --------------------------------------------------------------------------------- */
 
 dmemo::CommunicatorPtr FileIO::getCommunicatorPtr() const
-{   
+{
     return dmemo::Communicator::getCommunicatorPtr();
 }
 

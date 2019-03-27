@@ -64,7 +64,7 @@ namespace lama
 
 class TextIO :
 
-    public FileIO,    
+    public FileIO,
     public FileIO::Register<TextIO>    // register at factory
 {
 

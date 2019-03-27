@@ -376,7 +376,7 @@ MMHeader MatrixMarketIO::readMMHeader()
     SCAI_LOG_INFO( logger, "read MM header: size = " << header.mNumRows << " x " << header.mNumColumns
                    << ", #nnz = " << header.mNumValues << ", type = " << header.mmType
                    << ", symmetry = " << symmetry2str( header.symmetry ) )
- 
+
     return header;
 }
 
@@ -582,10 +582,10 @@ void MatrixMarketIO::getArrayInfo( IndexType& size )
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixMarketIO::readVectorCoordinates( 
-    HArray<IndexType>& indexes, 
+void MatrixMarketIO::readVectorCoordinates(
+    HArray<IndexType>& indexes,
     HArray<ValueType>& values,
-    const IndexType numValues, 
+    const IndexType numValues,
     const bool isVector,
     common::ScalarType mmType )
 {
@@ -638,7 +638,7 @@ void MatrixMarketIO::readArrayImpl( hmemo::HArray<ValueType>& array )
         HArray<ValueType> values;
 
         readVectorCoordinates( indexes, values, header.mNumValues, header.isVector, header.mmType );
- 
+
         HArrayUtils::buildDenseArray( array, size, values, indexes, ValueType( 0 ) );
     }
     else
@@ -968,7 +968,7 @@ void MatrixMarketIO::writeStorageImpl( const MatrixStorage<ValueType>& storage )
     HArray<IndexType> cooJA;       // = coo.getJA()
     HArray<ValueType> cooValues;   // = coo.getValues
 
-    // use splitUp to avoid copies of the data 
+    // use splitUp to avoid copies of the data
 
     coo.splitUp( numRows, numCols, cooIA, cooJA, cooValues );
 
@@ -1159,9 +1159,9 @@ void MatrixMarketIO::readStorageImpl( MatrixStorage<ValueType>& storage )
 
     MMHeader header = readMMHeader();
 
-    SCAI_LOG_DEBUG( logger, "from header: nrows = " << header.mNumRows << ", ncols = " << header.mNumColumns 
-                             << ", nnz = " << header.mNumValues
-                             << ", mmType = " << header.mmType << ", symmetry = " << symmetry2str( header.symmetry ) )
+    SCAI_LOG_DEBUG( logger, "from header: nrows = " << header.mNumRows << ", ncols = " << header.mNumColumns
+                    << ", nnz = " << header.mNumValues
+                    << ", mmType = " << header.mmType << ", symmetry = " << symmetry2str( header.symmetry ) )
 
     // check for consistency
 

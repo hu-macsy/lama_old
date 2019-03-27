@@ -40,7 +40,7 @@ namespace scai
 namespace lama
 {
 
-class COMMON_DLL_IMPORTEXPORT PngIO : 
+class COMMON_DLL_IMPORTEXPORT PngIO :
 
     public FileIO,
     public FileIO::Register<PngIO>    // register at factory

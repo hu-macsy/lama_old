@@ -45,6 +45,8 @@
 
 #include <scai/dmemo/BlockDistribution.hpp>
 
+#include <iomanip>
+
 #define LAMA_SUFFIX ".lmf"
 
 namespace scai
@@ -62,7 +64,30 @@ namespace lama
 
 std::ostream& operator<<( std::ostream& stream, const LamaClassId& object )
 {
-    stream << static_cast<int>( object );
+    switch ( object )
+    {
+        case LamaClassId::SPARSE_VECTOR:
+            stream << "SPARSE_VECTOR";
+            break;
+
+        case LamaClassId::GRID_VECTOR:
+            stream << "GRID_VECTOR";
+            break;
+
+        case LamaClassId::CSR_MATRIX:
+            stream << "CSR_MATRIX";
+            break;
+
+        case LamaClassId::COO_MATRIX:
+            stream << "COO_MATRIX";
+            break;
+
+        default:
+            stream << static_cast<int>( object );
+    }
+
+    stream << " ( " << std::hex << static_cast<int>( object ) << std::dec << " )";
+
     return stream;
 }
 
@@ -122,9 +147,9 @@ void LamaIO::openIt( const std::string& fileName, const char* fileMode )
 {
     SCAI_ASSERT( mFileMode != FileMode::FORMATTED, "Formatted output not available for LamaIO" )
 
-    auto comm = getDistributedIOMode()  == DistributedIOMode::COLLECTIVE 
-                  ? dmemo::Communicator::getCommunicatorPtr()
-                  : dmemo::Communicator::getCommunicatorPtr( dmemo::Communicator::NO );
+    auto comm = getDistributedIOMode()  == DistributedIOMode::COLLECTIVE
+                ? dmemo::Communicator::getCommunicatorPtr()
+                : dmemo::Communicator::getCommunicatorPtr( dmemo::Communicator::NO );
 
     mFile = comm->collectiveFile();
 
@@ -158,7 +183,7 @@ void LamaIO::writeHeader( const LamaClassId classId )
 {
     const int header[] = { static_cast<int>( classId ),
                            static_cast<int>( mScalarTypeIndex ),
-                           static_cast<int>( mScalarTypeData ) 
+                           static_cast<int>( mScalarTypeData )
                          };
 
     mFile->writeSingle( header, 3 );
@@ -169,23 +194,10 @@ void LamaIO::writeHeader( const LamaClassId classId )
 template<typename ValueType>
 void LamaIO::writeArrayImpl( const hmemo::HArray<ValueType>& array )
 {
-    // int       DENSE_VECTOR
-    // int       IndexType.id
-    // int       DataType.id
-    // IndexType number of elements
-    // DataType  values
+    // handle array like a one-dimensional grid array
 
-    const auto& comm = mFile->getCommunicator();
-
-    IndexType n = comm.sum( array.size() );
-
-    SCAI_LOG_INFO( logger, "LamaIO: write array " << array << " to file " << mFileName 
-                            << ", IndexType = " << mScalarTypeIndex << ", DataType = " << mScalarTypeData )
-
-    writeHeader( LamaClassId::DENSE_VECTOR );
-
-    mFile->writeSingle( n, mScalarTypeIndex ),
-    mFile->writeAll( array, mScalarTypeData );
+    common::Grid1D grid1d( array.size() );
+    writeGridImpl( array, grid1d );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -216,10 +228,10 @@ void LamaIO::writeSparseImpl(
     writeHeader( LamaClassId::SPARSE_VECTOR );
 
     mFile->writeSingle( n, mScalarTypeIndex ),
-    mFile->writeSingle( zero, mScalarTypeData );
+          mFile->writeSingle( zero, mScalarTypeData );
     mFile->writeSingle( nnz, mScalarTypeIndex ),
-    mFile->writeAll( indexes, mScalarTypeIndex ),
-    mFile->writeAll( values, mScalarTypeData );
+          mFile->writeAll( indexes, mScalarTypeIndex ),
+          mFile->writeAll( values, mScalarTypeData );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -238,11 +250,24 @@ void LamaIO::getArrayInfo( IndexType& size )
 
     LamaClassId classId = LamaClassId( header[0] );
 
-    if ( classId == LamaClassId::DENSE_VECTOR || classId == LamaClassId::SPARSE_VECTOR )
-    {
-        auto fileIndexType = ScalarType( header[1] );
+    auto fileIndexType = ScalarType( header[1] );
 
+    if ( classId == LamaClassId::SPARSE_VECTOR )
+    {
         mFile->readSingle( size, fileIndexType );
+    }
+    else if ( classId == LamaClassId::GRID_VECTOR )
+    {
+        size = 1;
+
+        IndexType nDims;
+        mFile->readSingle( nDims, fileIndexType );
+        for ( IndexType i = 0; i < nDims; ++i )
+        {
+            IndexType dimSize;
+            mFile->readSingle( dimSize, fileIndexType );
+            size *= dimSize;
+        }
     }
     else
     {
@@ -259,29 +284,15 @@ void LamaIO::readArrayImpl( hmemo::HArray<ValueType>& array )
 {
     SCAI_REGION( "IO.Lama.readArray" )
 
-    // int    VEC_FILE
-    // int    number of rows
-    // type   values
+    common::Grid grid;
 
-    SCAI_LOG_INFO( logger, "Read array<" << common::TypeTraits<ValueType>::id()
-                           << "> from file " << mFileName << ", type = " << mScalarTypeData )
+    readGridImpl( array, grid );
 
-    int val[3];     // array to read the first three entries from the file
-
-    mFile->readSingle( val, 3 );
-
-    SCAI_ASSERT_EQ_ERROR( LamaClassId( val[0] ), LamaClassId::DENSE_VECTOR, "no dense vector in file" )
-
-    auto fileIndexType = ScalarType( val[1] );
-    auto fileDataType  = ScalarType( val[2] );
-
-    IndexType N;
-
-    mFile->readSingle( N, fileIndexType );
-
-    auto dist = dmemo::blockDistribution( N, mFile->getCommunicatorPtr() );
-
-    mFile->readAll( array, dist->getLocalSize(), dist->lb(), fileDataType );
+    if ( grid.nDims() > 1 )
+    {
+        SCAI_LOG_WARN( logger, "multidimensional array " << grid << ") in file " 
+                                << *this << " considered as 1D" )
+    }
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -566,7 +577,7 @@ void LamaIO::writeGridImpl( const hmemo::HArray<ValueType>& data, const common::
     writeHeader( LamaClassId::GRID_VECTOR );
 
     IndexType nDims = grid.nDims();
-   
+
     const auto& comm = mFile->getCommunicator();
 
     common::Grid globalGrid( grid );
@@ -601,7 +612,7 @@ void LamaIO::readGridImpl( hmemo::HArray<ValueType>& data, common::Grid& grid )
     IndexType dims[SCAI_GRID_MAX_DIMENSION];
 
     mFile->readSingle( dims, nDims, fileIndexType );
- 
+
     // in case of parallel I/O we assume block distribution in first dimension
 
     auto dist = dmemo::blockDistribution( dims[0], mFile->getCommunicatorPtr() );
@@ -702,52 +713,52 @@ std::string LamaIO::getVectorFileSuffix() const
 /* --------------------------------------------------------------------------------- */
 
 #define SCAI_LAMA_METHOD_INSTANTIATIONS( _type )            \
-                                                            \
+    \
     template COMMON_DLL_IMPORTEXPORT                        \
     void LamaIO::writeArrayImpl(                            \
-        const HArray<_type>& );                             \
-                                                            \
+            const HArray<_type>& );                             \
+    \
     template COMMON_DLL_IMPORTEXPORT                        \
     void LamaIO::readArrayImpl(                             \
-        HArray<_type>& );                                   \
-                                                            \
+            HArray<_type>& );                                   \
+    \
     template COMMON_DLL_IMPORTEXPORT                        \
     void LamaIO::writeSparseImpl(                           \
-        const IndexType size,                               \
-        const _type& zero,                                  \
-        const HArray<IndexType>& index,                     \
-        const HArray<_type>& values );                      \
-                                                            \
+            const IndexType size,                               \
+            const _type& zero,                                  \
+            const HArray<IndexType>& index,                     \
+            const HArray<_type>& values );                      \
+    \
     template COMMON_DLL_IMPORTEXPORT                        \
     void LamaIO::readSparseImpl(                            \
-        IndexType& size,                                    \
-        _type& zero,                                        \
-        HArray<IndexType>& indexes,                         \
-        HArray<_type>& values );                            \
-                                                            \
+            IndexType& size,                                    \
+            _type& zero,                                        \
+            HArray<IndexType>& indexes,                         \
+            HArray<_type>& values );                            \
+    \
     template COMMON_DLL_IMPORTEXPORT                        \
     void LamaIO::writeGridImpl(                             \
-        const HArray<_type>&,                               \
-        const common::Grid& );                              \
-                                                            \
+            const HArray<_type>&,                               \
+            const common::Grid& );                              \
+    \
     template COMMON_DLL_IMPORTEXPORT                        \
     void LamaIO::readGridImpl(                              \
-        HArray<_type>& array,                               \
-        common::Grid& );               
+            HArray<_type>& array,                               \
+            common::Grid& );
 
 SCAI_COMMON_LOOP( SCAI_LAMA_METHOD_INSTANTIATIONS, SCAI_ARRAY_TYPES_HOST )
 
 #undef SCAI_LAMA_METHOD_INSTANTIATIONS
 
 #define SCAI_LAMA_METHOD_INSTANTIATIONS( _type )        \
-                                                        \
+    \
     template COMMON_DLL_IMPORTEXPORT                    \
     void LamaIO::writeStorageImpl(                      \
-        const MatrixStorage<_type>& storage );          \
-                                                        \
+            const MatrixStorage<_type>& storage );          \
+    \
     template COMMON_DLL_IMPORTEXPORT                    \
     void LamaIO::readStorageImpl(                       \
-        MatrixStorage<_type>& storage );                \
+            MatrixStorage<_type>& storage );                \
 
 SCAI_COMMON_LOOP( SCAI_LAMA_METHOD_INSTANTIATIONS, SCAI_NUMERIC_TYPES_HOST )
 

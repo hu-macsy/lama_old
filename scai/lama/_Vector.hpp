@@ -341,6 +341,23 @@ public:
     void writeToFile( FileIO& outFile ) const;
 
     /**
+     *   @brief write the vector to an output file in SINGLE mode
+     *
+     *   In SINGLE mode only the master processor writes all data to the file
+     */
+    void writeToFileSingle( FileIO& outFile ) const;
+
+    /**
+     *   @brief write the vector to an output file in COLLECTIVE/INDEPNDENT mode
+     *
+     *   Each processor writes its local part, either in an independent file or in one
+     *   collective file.
+     *
+     *   This works only if the file is block distributed onto the 'file' processors.
+     */
+    void writeToFileBlocked( FileIO& outFile ) const;
+
+    /**
      * @brief Queries the value type of the vector elements, e.g. DOUBLE or FLOAT.
      */
     virtual common::ScalarType getValueType() const = 0;

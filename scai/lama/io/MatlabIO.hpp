@@ -72,7 +72,7 @@ namespace lama
 
 class MatlabIO :
 
-    public FileIO,        
+    public FileIO,
     public FileIO::Register<MatlabIO>    // register at factory
 {
 
@@ -195,7 +195,7 @@ public:
     /** Implementation of pure method FileIO::writeGridArray.
      *
      *  The MATLAB format supports writing the shape information.
-     */  
+     */
     void writeGridArray( const hmemo::_HArray& data, const common::Grid& grid );
 
     /** Typed version of MatlabIO::writeGridArray */

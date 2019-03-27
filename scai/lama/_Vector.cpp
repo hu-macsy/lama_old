@@ -182,49 +182,92 @@ void _Vector::replicate()
         return;
     }
 
-    redistribute( dmemo::noDistribution( size() ) );
+    redistribute( getDistribution().toReplicatedDistribution() );
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+void _Vector::writeToFileSingle( FileIO& file ) const
+{
+    // SINGLE mode: only master process writes to file the whole storage
+
+    CommunicatorPtr comm = file.getCommunicatorPtr();
+
+    const Distribution& dist = getDistribution();
+
+    if ( dist.isSingleDistributed( comm ) )
+    {
+        SCAI_LOG_DEBUG( logger, *this << ": single mode, only MASTER writes it" )
+
+        if ( comm->getRank() == 0 )
+        {
+            writeLocalToFile( file );
+        }
+
+        // add a barrier ??, might be better to have it on the close that is called by all processors
+    }
+    else
+    {
+        SCAI_LOG_DEBUG( logger, *this << ": single mode, replicate it" )
+
+        DistributionPtr singleDist = dist.toSingleDistribution( comm );
+
+        std::unique_ptr<_Vector> vecSingle( copy() );
+        vecSingle->redistribute( singleDist );
+        vecSingle->writeToFile( file );
+    }
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+void _Vector::writeToFileBlocked( FileIO& file ) const
+{
+    // this vector must be block distributed onto the processors assigned to the file
+
+    CommunicatorPtr comm = file.getCommunicatorPtr();
+
+    const Distribution& dist = getDistribution();
+
+    SCAI_LOG_DEBUG( logger, "matrix distribution = " << dist << ", file comm = " << *comm )
+
+    if ( dist.isBlockDistributed( comm ) )
+    {
+        SCAI_LOG_INFO( logger, *this << ": independent/collective write blocked, write local data" )
+        writeLocalToFile( file );
+    }
+    else
+    {
+        SCAI_LOG_DEBUG( logger, *this << ": independent/collective write, not blocked yet" )
+
+        DistributionPtr blockDist = dist.toBlockDistribution( comm );
+
+        SCAI_ASSERT_DEBUG( blockDist->isBlockDistributed( comm ), *blockDist << " no block distribution" )
+
+        std::unique_ptr<_Vector> vecBlockDistributed( copy() );
+        vecBlockDistributed->redistribute( blockDist );
+        vecBlockDistributed->writeToFile( file );
+    }
 }
 
 /* ---------------------------------------------------------------------------------------*/
 
 void _Vector::writeToFile( FileIO& file ) const
 {
+    // Note: this method must be called by all processors of the file communicator
+
     SCAI_LOG_INFO( logger, *this << ": writeToFile( file = " << file << " )" )
 
     if ( file.getDistributedIOMode() == DistributedIOMode::SINGLE )
     {
-        // SINGLE mode: only master process writes to file
+        // master processor will write the whole data
 
-        if ( getDistribution().isReplicated() )
-        {
-            const Communicator& comm = *Communicator::getCommunicatorPtr();
-
-            if ( comm.getRank() == 0 )
-            {
-                writeLocalToFile( file );
-            }
-        }
-        else
-        {
-            std::unique_ptr<_Vector> repV( copy() );
-            repV->replicate();
-            repV->writeToFile( file );
-        }
+        writeToFileSingle( file );
     }
     else
     {
-        // INDEPENDENT / COLLECTIVE mode: write local parts of block distributed vector
+        // all processors will write the 'block-distributed' data
 
-        if ( getDistribution().getBlockDistributionSize() == invalidIndex )
-        {
-            std::unique_ptr<_Vector> vBlockDistributed( copy() );
-            vBlockDistributed->redistribute( blockDistribution( vBlockDistributed->size() ) );
-            vBlockDistributed->writeToFile( file );
-        }
-        else
-        {
-            writeLocalToFile( file );
-        }
+        writeToFileBlocked( file );
     }
 }
 

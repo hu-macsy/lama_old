@@ -42,9 +42,12 @@
 using namespace scai;
 using namespace lama;
 
+/**
+ *  @brief Example program that writes a grid vector to a file and reads it back from the file
+ */
 int main( int argc, const char* argv[] )
 {
-    // relevant SCAI arguments: 
+    // relevant SCAI arguments:
     //   SCAI_CONTEXT = ...    set default context
     //   SCAI_DEVICE  = ...    set default device
 
@@ -69,16 +72,29 @@ int main( int argc, const char* argv[] )
         GridWriteAccess<double> wGV1( gv1 );
 
         for ( IndexType i1 = 0; i1 < n1; ++i1 )
-        for ( IndexType i2 = 0; i2 < n2; ++i2 )
-        for ( IndexType i3 = 0; i3 < n3; ++i3 )
-        for ( IndexType i4 = 0; i4 < n4; ++i4 )
-
-        wGV1( i1, i2, i3, i4 ) = 1000 * ( i1 + 1 ) + 100 * ( i2 + 1 ) + 10 * ( i3 + 1 ) + i4 + 1;
+        {
+            for ( IndexType i2 = 0; i2 < n2; ++i2 )
+            {
+                for ( IndexType i3 = 0; i3 < n3; ++i3 )
+                {
+                    for ( IndexType i4 = 0; i4 < n4; ++i4 )
+                    {
+                        wGV1( i1, i2, i3, i4 ) = 1000 * ( i1 + 1 ) + 100 * ( i2 + 1 ) + 10 * ( i3 + 1 ) + i4 + 1;
+                    }
+                }
+            }
+        }
     }
+
+    std::cout << "write to file " << fileName << " this grid vector: " << gv1 << std::endl;
 
     gv1.writeToFile( fileName );
 
     GridVector<double> gv2 = read<GridVector<double>>( fileName );
+
+    std::cout << "read from file " << fileName << " this grid vector: " << gv2 << std::endl;
+
+    gv2.replicate();
 
     SCAI_ASSERT_EQ_ERROR( gv1.globalGrid(), gv2.globalGrid(), "mismatch grid size" );
 
@@ -89,42 +105,6 @@ int main( int argc, const char* argv[] )
         for ( IndexType i = 0; i < gv1.size(); ++i )
         {
             SCAI_ASSERT_EQ_ERROR( rGV1[i], rGV2[i], "different val at i = " << i )
-        }
-    }
-
-    return 0;
-
-    IndexType m = 7;
-    IndexType n = 5;
-
-    DenseMatrix<double> dMatrix( m, n, 0 );
-
-    {
-        hmemo::WriteAccess<double> wDense( dMatrix.getLocalStorage().getData() );
-
-        for ( IndexType i = 0; i < m; ++i )
-        for ( IndexType j = 0; j < n; ++j )
-
-        wDense[ i * m + j ] = static_cast<double>( 10 * i + j ) ;
-    }
-
-    std::cout << dMatrix << ": write it to file " << fileName << std::endl;
-
-    dMatrix.writeToFile( fileName );
-
-    std::cout << dMatrix << " written to file " << fileName << std::endl;
-
-    auto dg = read<GridVector<double>>( fileName );
-
-    SCAI_ASSERT_EQ_ERROR( dg.globalGrid(), common::Grid2D( m, n ), "mismatch" );
-
-    {
-        hmemo::ReadAccess<double> rGrid( dg.getLocalValues() );
-        hmemo::ReadAccess<double> rDense( dMatrix.getLocalStorage().getData() );
-
-        for ( IndexType i = 0; i < dg.size(); ++i )
-        {
-            SCAI_ASSERT_EQ_ERROR( rGrid[i], rDense[i], "different val at i = " << i )
         }
     }
 }

@@ -143,7 +143,7 @@ void MatlabIO::readMATArrayImpl( hmemo::HArray<ArrayType>& array, const void* da
     IndexType elemSize  = sizeof( DataType );
     IndexType arraySize = nBytes / elemSize;
 
-    SCAI_ASSERT_EQ_ERROR( elemSize* arraySize, nBytes, "Size mismatch, elemSize = " << elemSize << ", arraySize = " << arraySize )
+    SCAI_ASSERT_EQ_ERROR( elemSize * arraySize, nBytes, "Size mismatch, elemSize = " << elemSize << ", arraySize = " << arraySize )
 
     if ( typeid( ArrayType ) == typeid( DataType ) )
     {
@@ -186,33 +186,43 @@ void MatlabIO::readMATArray( hmemo::HArray<ValueType>& array, const char* data, 
         case MATIOStream::MAT_DOUBLE  :
             readMATArrayImpl<ValueType, double>( array, data, nBytes );
             break;
+
         case MATIOStream::MAT_FLOAT   :
             readMATArrayImpl<ValueType, float>( array, data, nBytes );
             break;
+
         case MATIOStream::MAT_LDOUBLE :
             readMATArrayImpl<ValueType, long double>( array, data, nBytes );
             break;
+
         case MATIOStream::MAT_INT8    :
             readMATArrayImpl<ValueType, int8_t>( array, data, nBytes );
             break;
+
         case MATIOStream::MAT_UINT8   :
             readMATArrayImpl<ValueType, uint8_t>( array, data, nBytes );
             break;
+
         case MATIOStream::MAT_INT16   :
             readMATArrayImpl<ValueType, int16_t>( array, data, nBytes );
             break;
+
         case MATIOStream::MAT_UINT16  :
             readMATArrayImpl<ValueType, uint16_t>( array, data, nBytes );
             break;
+
         case MATIOStream::MAT_INT32   :
             readMATArrayImpl<ValueType, int32_t>( array, data, nBytes );
             break;
+
         case MATIOStream::MAT_UINT32  :
             readMATArrayImpl<ValueType, uint32_t>( array, data, nBytes );
             break;
+
         case MATIOStream::MAT_INT64   :
             readMATArrayImpl<ValueType, int64_t>( array, data, nBytes );
             break;
+
         case MATIOStream::MAT_UINT64  :
             readMATArrayImpl<ValueType, uint64_t>( array, data, nBytes );
             break;
@@ -298,7 +308,7 @@ static void changeMajor( hmemo::HArray<ValueType>& out, const hmemo::HArray<Valu
     IndexType rowMajorDist[ SCAI_GRID_MAX_DIMENSION ];  // used in LAMA
     IndexType colMajorDist[ SCAI_GRID_MAX_DIMENSION ];  // required for MATLAB
 
-    grid.getDistances( rowMajorDist );  
+    grid.getDistances( rowMajorDist );
 
     // column major ordering of grid( n1, n2, n3, n4 ) is dist (1, n1, n1*n2, n1*n2*n3 )
 
@@ -323,16 +333,16 @@ static void changeMajor( hmemo::HArray<ValueType>& out, const hmemo::HArray<Valu
     {
         // convert row-major ordering to column-major ordering
 
-        utilskernel::OpenMPSection::assign( wOut.get(), nDims, grid.sizes(), colMajorDist, 
-                                            rIn.get(), rowMajorDist, 
+        utilskernel::OpenMPSection::assign( wOut.get(), nDims, grid.sizes(), colMajorDist,
+                                            rIn.get(), rowMajorDist,
                                             common::BinaryOp::COPY, false );
     }
     else
     {
         // convert column-major ordering to row-major ordering
 
-        utilskernel::OpenMPSection::assign( wOut.get(), nDims, grid.sizes(), rowMajorDist, 
-                                            rIn.get(), colMajorDist, 
+        utilskernel::OpenMPSection::assign( wOut.get(), nDims, grid.sizes(), rowMajorDist,
+                                            rIn.get(), colMajorDist,
                                             common::BinaryOp::COPY, false );
     }
 }
@@ -508,11 +518,11 @@ void MatlabIO::writeGridImpl(
     const hmemo::HArray<ValueType>& data,
     const common::Grid& grid )
 {
-    SCAI_LOG_INFO( logger, "writeGridImpl<" << common::TypeTraits<ValueType>::id() 
-                            << ">, shape = " << grid << ", data = " << data )
+    SCAI_LOG_INFO( logger, "writeGridImpl<" << common::TypeTraits<ValueType>::id()
+                   << ">, shape = " << grid << ", data = " << data )
 
     HArray<ValueType> tmpData( grid.size() );
- 
+
     bool isRow2Col = true;
 
     changeMajor( tmpData, data, grid, isRow2Col );
@@ -545,7 +555,7 @@ void MatlabIO::writeStorageImpl( const MatrixStorage<ValueType>& storage )
     IndexType numCols = storage.getNumColumns();
     IndexType numValues = storage.getNumValues();
 
-    if ( numValues * 2 >= numRows* numCols && mScalarTypeData != common::ScalarType::PATTERN )
+    if ( numValues * 2 >= numRows * numCols && mScalarTypeData != common::ScalarType::PATTERN )
     {
         SCAI_LOG_INFO( logger, "Write storage as dense matrix to file " << mFile.getFileName() << ": " << storage )
 
@@ -984,42 +994,42 @@ std::string MatlabIO::getVectorFileSuffix() const
 /* --------------------------------------------------------------------------------- */
 
 #define SCAI_MATLAB_METHOD_INSTANTIATIONS( _type )           \
-                                                             \
+    \
     template COMMON_DLL_IMPORTEXPORT                         \
     void MatlabIO::writeArrayImpl(                           \
-        const hmemo::HArray<_type>& array );                 \
-                                                             \
+            const hmemo::HArray<_type>& array );                 \
+    \
     template COMMON_DLL_IMPORTEXPORT                         \
     void MatlabIO::readArrayImpl(                            \
-        hmemo::HArray<_type>& array );                       \
-                                                             \
+            hmemo::HArray<_type>& array );                       \
+    \
     template COMMON_DLL_IMPORTEXPORT                         \
     void MatlabIO::writeSparseImpl(                          \
-        const IndexType size,                                \
-        const _type& zero,                                   \
-        const HArray<IndexType>& index,                      \
-        const HArray<_type>& values );                       \
-                                                             \
+            const IndexType size,                                \
+            const _type& zero,                                   \
+            const HArray<IndexType>& index,                      \
+            const HArray<_type>& values );                       \
+    \
     template COMMON_DLL_IMPORTEXPORT                         \
     void MatlabIO::readSparseImpl(                           \
-        IndexType& size,                                     \
-        _type& zero,                                         \
-        HArray<IndexType>& indexes,                          \
-        HArray<_type>& values );                             \
+            IndexType& size,                                     \
+            _type& zero,                                         \
+            HArray<IndexType>& indexes,                          \
+            HArray<_type>& values );                             \
 
 SCAI_COMMON_LOOP( SCAI_MATLAB_METHOD_INSTANTIATIONS, SCAI_ARRAY_TYPES_HOST )
 
 #undef SCAI_MATLAB_METHOD_INSTANTIATIONS
 
 #define SCAI_MATLAB_METHOD_INSTANTIATIONS( _type )      \
-                                                        \
+    \
     template COMMON_DLL_IMPORTEXPORT                    \
     void MatlabIO::writeStorageImpl(                    \
-        const MatrixStorage<_type>& storage );          \
-                                                        \
+            const MatrixStorage<_type>& storage );          \
+    \
     template COMMON_DLL_IMPORTEXPORT                    \
     void MatlabIO::readStorageImpl(                     \
-        MatrixStorage<_type>& storage );                \
+            MatrixStorage<_type>& storage );                \
 
 SCAI_COMMON_LOOP( SCAI_MATLAB_METHOD_INSTANTIATIONS, SCAI_NUMERIC_TYPES_HOST )
 

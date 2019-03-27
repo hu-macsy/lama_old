@@ -299,50 +299,27 @@ void _Matrix::writeToFileBlocked( FileIO& file ) const
 {
     // this matrix must be block distributed onto the processors assigned to the file
 
-    const Communicator& fileComm = *file.getCommunicatorPtr();
+    CommunicatorPtr comm = file.getCommunicatorPtr();
 
-    SCAI_LOG_DEBUG( logger, "matrix distribution = " << getDistribution() << ", file comm = " << fileComm )
+    DistributionPtr dist = getDistributionPtr();
 
-    bool isBlockDistributed = true;
+    SCAI_LOG_DEBUG( logger, "matrix distribution = " << *dist << ", file comm = " << *comm )
 
-    if ( getDistribution().isReplicated() && fileComm.getSize() > 1 )
-    {
-        // other solution could be to convert it to a SingleDistribution
+    bool isBlockDistributed = dist->isBlockDistributed( comm );
 
-        isBlockDistributed = false;
-    }
-    else if ( getDistribution().getBlockDistributionSize() == invalidIndex )
-    {
-        isBlockDistributed = false;
-    }
-    else
-    {
-        isBlockDistributed = true;
-    }
-
-    if ( !isBlockDistributed )
-    {
-        SCAI_LOG_DEBUG( logger, *this << ": independent/collective write, redistribution to block dist required" )
-
-        auto rowDist = blockDistribution( getNumRows(), file.getCommunicatorPtr() );
-        auto colDist = noDistribution( getNumColumns() );
-        std::unique_ptr<_Matrix> matBlockDistributed( copyRedistributed( rowDist, colDist ) );
-        matBlockDistributed->writeToFile( file );
-    }
-    else if ( !getColDistribution().isReplicated() )
-    {
-        // restore complete columns (replicate), but use current block distribution 
-
-        SCAI_LOG_DEBUG( logger, *this << ": independent/collective write, replicate col distribution" )
-        auto rowDist = getRowDistributionPtr();
-        auto colDist = noDistribution( getNumColumns() );
-        std::unique_ptr<_Matrix> matBlockDistributed( copyRedistributed( rowDist, colDist ) );
-        matBlockDistributed->writeToFile( file );
-    }
-    else
+    if ( isBlockDistributed && getColDistribution().isReplicated() )
     {
         SCAI_LOG_DEBUG( logger, *this << ": independent/collective write, write local storage: " << getLocalStorage() )
         file.writeStorage( getLocalStorage() );
+    }
+    else
+    {
+        SCAI_LOG_DEBUG( logger, *this << ": independent/collective write, redistribution to block dist required" )
+
+        auto rowDist = isBlockDistributed ? dist : dist->toBlockDistribution( comm );
+        auto colDist = noDistribution( getNumColumns() );
+        std::unique_ptr<_Matrix> matBlockDistributed( copyRedistributed( rowDist, colDist ) );
+        matBlockDistributed->writeToFile( file );
     }
 }
 
@@ -352,11 +329,11 @@ void _Matrix::writeToFileSingle( FileIO& file ) const
 {
     // SINGLE mode: only master process writes to file the whole storage
 
-    const Distribution& rowDist = getDistribution();
+    DistributionPtr dist = getDistributionPtr();
 
-    bool isSingleDistributed = rowDist.getLocalSize() == rowDist.getGlobalSize();
+    CommunicatorPtr comm = file.getCommunicatorPtr();
 
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    bool isSingleDistributed = dist->isSingleDistributed( comm );
 
     if ( isSingleDistributed && getColDistribution().isReplicated() )
     {
@@ -373,7 +350,7 @@ void _Matrix::writeToFileSingle( FileIO& file ) const
     {
         SCAI_LOG_DEBUG( logger, *this << ": single mode, replicate it" )
 
-        auto rowDist = singleDistribution( getNumRows(), comm, 0 );
+        auto rowDist = isSingleDistributed ? dist : dist->toSingleDistribution( comm );
         auto colDist = noDistribution( getNumColumns() );
         std::unique_ptr<_Matrix> matSingle( copyRedistributed( rowDist, colDist ) );
         matSingle->writeToFile( file );

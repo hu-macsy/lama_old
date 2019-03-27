@@ -180,7 +180,7 @@ void SAMGIO::openIt( const std::string& fileName, const char* fileMode )
     else if ( strcmp( fileMode, "r" ) == 0 )
     {
         readFileMode();
-        mHeaderFile.seekg( 0, std::ios::beg ); 
+        mHeaderFile.seekg( 0, std::ios::beg );
     }
 
     if ( mBinary )
@@ -214,7 +214,7 @@ void SAMGIO::readFileMode()
         COMMON_THROWEXCEPTION( "Invalid SAMG vector header file: " << mHeaderFile.getFileName()
                                << ", fileType = " << fileType << " illegal" )
     }
- 
+
     // ToDo: verify if file mode matches dataFile if it has already been opened
 }
 
@@ -245,8 +245,8 @@ template<typename ValueType>
 void SAMGIO::writeArrayImpl( const HArray<ValueType>& array )
 {
 
-    SCAI_LOG_INFO( logger, "writeArrayImpl<" << common::TypeTraits<ValueType>::id() << ">, array = " << array 
-                           << " to " << mHeaderFile.getFileName() << ", " << mDataFile.getFileName() )
+    SCAI_LOG_INFO( logger, "writeArrayImpl<" << common::TypeTraits<ValueType>::id() << ">, array = " << array
+                   << " to " << mHeaderFile.getFileName() << ", " << mDataFile.getFileName() )
 
     // needed for header file: type size is size of data type used in output
 
@@ -282,8 +282,8 @@ void SAMGIO::writeSparseImpl(
 {
     // sparse unsupported for SAMG file format, write it dense
 
-    SCAI_LOG_INFO( logger, "writeSparseImpl, size = " << size << ", nnz = " << values.size() 
-                            << " to " << mHeaderFile.getFileName() );
+    SCAI_LOG_INFO( logger, "writeSparseImpl, size = " << size << ", nnz = " << values.size()
+                   << " to " << mHeaderFile.getFileName() );
 
     HArray<ValueType> denseArray;
     utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes, zero );

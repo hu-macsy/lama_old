@@ -296,7 +296,7 @@ void PETScIO::writeStorageImpl( const MatrixStorage<ValueType>& storage )
 
     mFile.writeBinary( headValues, mScalarTypeIndex );
     mFile.writeBinary( csrIA, mScalarTypeIndex );
-    mFile.writeBinary( csrJA , mScalarTypeIndex );
+    mFile.writeBinary( csrJA, mScalarTypeIndex );
 
     // output of values is skipped for PATTERN
 
@@ -468,42 +468,42 @@ std::string PETScIO::getVectorFileSuffix() const
 /* --------------------------------------------------------------------------------- */
 
 #define SCAI_PETSC_METHOD_INSTANTIATIONS( _type )           \
-                                                            \
+    \
     template COMMON_DLL_IMPORTEXPORT                        \
     void PETScIO::writeArrayImpl(                           \
-        const hmemo::HArray<_type>& array );                \
-                                                            \
+            const hmemo::HArray<_type>& array );                \
+    \
     template COMMON_DLL_IMPORTEXPORT                        \
     void PETScIO::readArrayImpl(                            \
-        hmemo::HArray<_type>& array );                      \
-                                                            \
+            hmemo::HArray<_type>& array );                      \
+    \
     template COMMON_DLL_IMPORTEXPORT                        \
     void PETScIO::writeSparseImpl(                          \
-        const IndexType size,                               \
-        const _type& zero,                                  \
-        const HArray<IndexType>& index,                     \
-        const HArray<_type>& values );                      \
-                                                            \
+            const IndexType size,                               \
+            const _type& zero,                                  \
+            const HArray<IndexType>& index,                     \
+            const HArray<_type>& values );                      \
+    \
     template COMMON_DLL_IMPORTEXPORT                        \
     void PETScIO::readSparseImpl(                           \
-        IndexType& size,                                    \
-        _type& zero,                                        \
-        HArray<IndexType>& indexes,                         \
-        HArray<_type>& values );
+            IndexType& size,                                    \
+            _type& zero,                                        \
+            HArray<IndexType>& indexes,                         \
+            HArray<_type>& values );
 
 SCAI_COMMON_LOOP( SCAI_PETSC_METHOD_INSTANTIATIONS, SCAI_ARRAY_TYPES_HOST )
 
 #undef SCAI_PETSC_METHOD_INSTANTIATIONS
 
 #define SCAI_PETSC_METHOD_INSTANTIATIONS( _type )       \
-                                                        \
+    \
     template COMMON_DLL_IMPORTEXPORT                    \
     void PETScIO::writeStorageImpl(                     \
-        const MatrixStorage<_type>& storage );          \
-                                                        \
+            const MatrixStorage<_type>& storage );          \
+    \
     template COMMON_DLL_IMPORTEXPORT                    \
     void PETScIO::readStorageImpl(                      \
-        MatrixStorage<_type>& storage );                \
+            MatrixStorage<_type>& storage );                \
 
 SCAI_COMMON_LOOP( SCAI_PETSC_METHOD_INSTANTIATIONS, SCAI_NUMERIC_TYPES_HOST )
 

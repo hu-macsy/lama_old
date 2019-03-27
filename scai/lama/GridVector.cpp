@@ -219,6 +219,8 @@ void GridVector<ValueType>::setDiagonal( const GridSection<ValueType>& diagonal,
 template<typename ValueType>
 void GridVector<ValueType>::writeLocalToFile( FileIO& file ) const
 {
+    SCAI_LOG_INFO( logger, "write local part to file " << file << ": " << *this )
+
     file.writeGridArray( this->mLocalValues, this->localGrid() );
 }
 
@@ -274,10 +276,28 @@ void GridVector<ValueType>::readFromFile( FileIO& file )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void GridVector<ValueType>::writeAt( std::ostream& stream ) const
+{
+    stream << "GridVector<" << this->getValueType() << ">" << "( size = " << size() << ", local = " << this->mLocalValues.size()
+           << ", dist = " << this->getDistribution() << ", loc  = " << *this->getContextPtr() << " )";
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void GridVector<ValueType>:: operator=( const GridSection<ValueType>& other )
 {
     GridSection<ValueType> fullSection = *this;
     fullSection = other;
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+GridVector<ValueType>* GridVector<ValueType>::copy() const
+{
+    // create a new grid vector with the copy constructor
+    return new GridVector<ValueType>( *this );
 }
 
 /* ========================================================================= */

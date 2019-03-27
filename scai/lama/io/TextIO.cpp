@@ -242,7 +242,7 @@ void TextIO::readGridArray( hmemo::_HArray& data, common::Grid& grid )
 template<typename ValueType>
 void TextIO::readSparseImpl(
     IndexType& size,
-    ValueType& zero, 
+    ValueType& zero,
     HArray<IndexType>& indexes,
     HArray<ValueType>& values )
 {

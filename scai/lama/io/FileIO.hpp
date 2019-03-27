@@ -45,7 +45,7 @@ namespace scai
 
 namespace common
 {
-    class Grid;
+class Grid;
 }
 
 namespace lama
@@ -123,7 +123,7 @@ public:
      *  @param[in] fileMode is either "r" for reading a file, "w" for writing into it, or "a" for append to it
      *
      *  This method might throw an IOException if the file could not be opened or if a mode is not supported.
-     * 
+     *
      *  Distributed I/O mode is set to INDEPENDENT mode if fileName contains the pattern "%r".
      */
     void open( const char* fileName, const char* fileMode, const DistributedIOMode distMode = DistributedIOMode::DEFAULT );
@@ -148,9 +148,9 @@ public:
     dmemo::CommunicatorPtr getCommunicatorPtr() const;
 
     /**
-     *  @brief Method to close the currently open file.
+     *  @brief Method to close the currently opened file.
      *
-     *  This method might throw an IOEception if no file is open at all.
+     *  There is an implicit synchronization for all file processors.
      */
     void close();
 
@@ -177,7 +177,7 @@ public:
 
     virtual void writeStorage( const _MatrixStorage& storage ) = 0;
 
-    /** 
+    /**
      *  @brief Write 'dense' array of arbitrary type into the current file.
      *
      *  @param[in] array is the (local) array data that is written
@@ -206,10 +206,10 @@ public:
      *
      *  Here we provide a default implementation that uses a dense array.
      */
-    virtual void writeSparse( 
-        const IndexType size, 
+    virtual void writeSparse(
+        const IndexType size,
         const void* zeroVal,
-        const hmemo::HArray<IndexType>& indexes, 
+        const hmemo::HArray<IndexType>& indexes,
         const hmemo::_HArray& values );
 
     /** Typed version of the writeSparse */
@@ -273,7 +273,7 @@ public:
         hmemo::HArray<IndexType>& indexes,
         hmemo::HArray<ValueType>& values );
 
-    /** 
+    /**
      *  @brief Read in a 'sparse' array from a file using its file format.
      *
      *  @param[out] size is the size of the array
@@ -285,7 +285,7 @@ public:
      *  translates it into a sparse array. It takes the value 0 as zero element.
      *  Derived classes should override this method for more efficient implementations.
      */
-    virtual void readSparse( 
+    virtual void readSparse(
         IndexType& size,
         void* zeroVal,
         hmemo::HArray<IndexType>& indexes,
@@ -306,8 +306,8 @@ public:
      */
     virtual int deleteFile( const std::string& fileName );
 
-    /** 
-     *  @brief Setter for representation type used for indexes in file. 
+    /**
+     *  @brief Setter for representation type used for indexes in file.
      *
      *  This method can be used to force that values of IndexType are converted
      *  into another type. The following example shows how to force that 4-byte
