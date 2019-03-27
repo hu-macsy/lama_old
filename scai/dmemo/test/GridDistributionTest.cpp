@@ -306,6 +306,58 @@ BOOST_AUTO_TEST_CASE( ownedIndexesTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( convertTest )
+{   
+    common::Grid2D grid( 6, 4 );
+    
+    std::vector<DistributionPtr> gridDistributions;
+
+    gridDistributions.push_back( gridDistribution( grid ) );
+    gridDistributions.push_back( gridDistributionReplicated( grid ) );
+    
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    
+    for ( size_t i = 0; i < gridDistributions.size(); ++i )
+    {   
+        DistributionPtr dist = gridDistributions[i];
+        
+        DistributionPtr blockedDist = dist->toBlockDistribution( comm );
+        
+        BOOST_CHECK_EQUAL( blockedDist->getGlobalSize(), dist->getGlobalSize() );
+
+        if ( !blockedDist->isBlockDistributed( comm ) )
+        {   
+            SCAI_LOG_ERROR( logger, "dist = " << *dist << ", blocked = " << *blockedDist )
+        }
+
+        BOOST_CHECK( blockedDist->isBlockDistributed( comm ) );
+        
+        DistributionPtr singleDist = dist->toSingleDistribution( comm );
+        
+        BOOST_CHECK_EQUAL( singleDist->getGlobalSize(), dist->getGlobalSize() );
+        
+        if ( !singleDist->isSingleDistributed( comm ) )
+        {   
+            SCAI_LOG_ERROR( logger, "dist = " << *dist << ", single = " << *singleDist )
+        }
+        
+        BOOST_CHECK( singleDist->isSingleDistributed( comm ) );
+        
+        DistributionPtr repDist = dist->toReplicatedDistribution();
+        
+        BOOST_CHECK_EQUAL( repDist->getGlobalSize(), dist->getGlobalSize() );
+        
+        if ( !repDist->isReplicated() )
+        {   
+            SCAI_LOG_ERROR( logger, "dist = " << *dist << ", rep = " << *repDist )
+        }
+
+        BOOST_CHECK( repDist->isReplicated() );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( isEqualTest )
 {
     Grid2D globalGrid( 10, 10 );

@@ -65,6 +65,23 @@ GridDistribution::GridDistribution( const Grid& globalGrid, const CommunicatorPt
 
 /* ---------------------------------------------------------------------- */
 
+/** 
+ *  @brief  Return a n-dimnsion processor array where all processors are assigned to first dim
+ */
+static common::Grid getProcGrid1D( IndexType nDims, const PartitionId np )
+{
+    PartitionId procDims[ SCAI_GRID_MAX_DIMENSION ];
+
+    procDims[0] = np;
+
+    for ( IndexType i = 1; i < nDims; ++i )
+    {
+        procDims[i] = 1;
+    }
+
+    return common::Grid( nDims, procDims );
+}
+
 common::Grid GridDistribution::getDefaultProcGrid( const common::Grid& grid, const PartitionId np )
 {
     // Note: static method, uses no member variables
@@ -515,18 +532,45 @@ IndexType GridDistribution::getAnyGlobalIndex( const IndexType localIndex, const
 
 /* ---------------------------------------------------------------------- */
 
+DistributionPtr GridDistribution::toBlockDistribution( CommunicatorPtr comm ) const
+{
+    common::Grid procGrid = getProcGrid1D( mGlobalGrid.nDims(), comm->getSize() );
+
+    return gridDistribution( mGlobalGrid, comm, procGrid );
+}
+
+/* ---------------------------------------------------------------------- */
+
+DistributionPtr GridDistribution::toSingleDistribution( CommunicatorPtr ) const
+{
+    return gridDistributionReplicated( mGlobalGrid );
+}
+
+/* ---------------------------------------------------------------------- */
+
+DistributionPtr GridDistribution::toReplicatedDistribution() const
+{
+    return gridDistributionReplicated( mGlobalGrid );
+}
+
+/* ---------------------------------------------------------------------- */
+
 bool GridDistribution::isEqual( const Distribution& other ) const
 {
+    SCAI_LOG_DEBUG( logger, "check equality: " << *this << ", " << other )
+
     bool isSame = false;
 
     bool proven = proveEquality( isSame, other );
+
+    SCAI_LOG_DEBUG( logger, "proven = " << proven << ", isSame = " << isSame )
 
     if ( proven )
     {
         return isSame;
     }
 
-    if ( other.getKind() == getKind() )
+    if ( strcmp( other.getKind(), getKind() ) == 0 )
     {
         const GridDistribution& gridOther = reinterpret_cast<const GridDistribution&>( other );
 

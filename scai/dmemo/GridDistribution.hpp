@@ -201,6 +201,27 @@ public:
     }
 
     /**
+     *   @brief Override Distribution::toBlockDistribution()
+     *
+     *   Create a grid distribution where only first dimension is distributed
+     */
+    virtual DistributionPtr toBlockDistribution( CommunicatorPtr comm ) const;
+
+    /**
+     *   @brief Override Distribution::toSingleDistribution()
+     *
+     *   Create a replicated grid distribution (single not supported here)
+     */
+    virtual DistributionPtr toSingleDistribution( CommunicatorPtr comm ) const;
+
+    /**
+     *   @brief Override Distribution::toReplicatedDistribution()
+     *
+     *   Create a replicated grid distribution
+     */
+    virtual DistributionPtr toReplicatedDistribution() const;
+
+    /**
      *  @brief (static) method to get the default processor grid
      *
      *  @param[in] grid specifies the data grid

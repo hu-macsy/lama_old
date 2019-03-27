@@ -434,6 +434,49 @@ BOOST_AUTO_TEST_CASE( getBlockDistributionSizeTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( convertTest )
+{
+    const IndexType N = 30;  // global size
+
+    TestDistributions allDist( N );
+
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    for ( size_t i = 0; i < allDist.size(); ++i )
+    {
+        DistributionPtr dist = allDist[i];
+
+        DistributionPtr blockedDist = dist->toBlockDistribution( comm );
+
+        BOOST_CHECK_EQUAL( blockedDist->getGlobalSize(), dist->getGlobalSize() );
+        BOOST_CHECK( blockedDist->isBlockDistributed( comm ) );
+
+        DistributionPtr singleDist = dist->toSingleDistribution( comm );
+
+        BOOST_CHECK_EQUAL( singleDist->getGlobalSize(), dist->getGlobalSize() );
+
+        if ( !singleDist->isSingleDistributed( comm ) )
+        {
+            SCAI_LOG_ERROR( logger, "dist = " << *dist << ", single = " << *singleDist )
+        }
+
+        BOOST_CHECK( singleDist->isSingleDistributed( comm ) );
+
+        DistributionPtr repDist = dist->toReplicatedDistribution();
+
+        BOOST_CHECK_EQUAL( repDist->getGlobalSize(), dist->getGlobalSize() );
+
+        if ( !repDist->isReplicated() )
+        {
+            SCAI_LOG_ERROR( logger, "dist = " << *dist << ", rep = " << *repDist )
+        }
+
+        BOOST_CHECK( repDist->isReplicated() );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( replicateTest )
 {
     const IndexType N = 30;  // global size
