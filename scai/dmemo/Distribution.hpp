@@ -397,7 +397,7 @@ public:
      *
      *  Data might also be replicated.
      */
-    virtual bool isSingleDistributed( CommunicatorPtr comm ) const;
+    virtual bool isMasterDistributed( CommunicatorPtr comm ) const;
 
     /**
      *   @brief Create a single distribution from the current one 
@@ -405,7 +405,7 @@ public:
      *   The generated distribution must have the same size/shape as the current one.
      *   Process 0 should be owner of all elements.
      */
-    virtual DistributionPtr toSingleDistribution( CommunicatorPtr comm ) const;
+    virtual DistributionPtr toMasterDistribution( CommunicatorPtr comm ) const;
 
     /**
      *   @brief Create a replicaed distribution from the current one 

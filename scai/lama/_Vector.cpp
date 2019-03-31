@@ -187,7 +187,7 @@ void _Vector::replicate()
 
 /* ---------------------------------------------------------------------------------------*/
 
-void _Vector::writeToFileSingle( FileIO& file ) const
+void _Vector::writeToFileMaster( FileIO& file ) const
 {
     // SINGLE mode: only master process writes to file the whole storage
 
@@ -195,9 +195,9 @@ void _Vector::writeToFileSingle( FileIO& file ) const
 
     const Distribution& dist = getDistribution();
 
-    if ( dist.isSingleDistributed( comm ) )
+    if ( dist.isMasterDistributed( comm ) )
     {
-        SCAI_LOG_DEBUG( logger, *this << ": single mode, only MASTER writes it" )
+        SCAI_LOG_DEBUG( logger, *this << ": MASTER writes it" )
 
         if ( comm->getRank() == 0 )
         {
@@ -208,13 +208,13 @@ void _Vector::writeToFileSingle( FileIO& file ) const
     }
     else
     {
-        SCAI_LOG_DEBUG( logger, *this << ": single mode, replicate it" )
+        SCAI_LOG_DEBUG( logger, *this << ": master mode, replicate it" )
 
-        DistributionPtr singleDist = dist.toSingleDistribution( comm );
+        DistributionPtr masterDist = dist.toMasterDistribution( comm );
 
-        std::unique_ptr<_Vector> vecSingle( copy() );
-        vecSingle->redistribute( singleDist );
-        vecSingle->writeToFile( file );
+        std::unique_ptr<_Vector> vecMaster( copy() );
+        vecMaster->redistribute( masterDist );
+        vecMaster->writeToFile( file );
     }
 }
 
@@ -257,11 +257,11 @@ void _Vector::writeToFile( FileIO& file ) const
 
     SCAI_LOG_INFO( logger, *this << ": writeToFile( file = " << file << " )" )
 
-    if ( file.getDistributedIOMode() == DistributedIOMode::SINGLE )
+    if ( file.getDistributedIOMode() == DistributedIOMode::MASTER )
     {
         // master processor will write the whole data
 
-        writeToFileSingle( file );
+        writeToFileMaster( file );
     }
     else
     {

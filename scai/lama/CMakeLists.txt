@@ -66,8 +66,6 @@ scai_project (
         GridVector
         GridSection
 
-        CollectiveIO
-
     HEADERS                  # .hpp only
 
         Scalar

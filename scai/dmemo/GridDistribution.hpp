@@ -208,11 +208,11 @@ public:
     virtual DistributionPtr toBlockDistribution( CommunicatorPtr comm ) const;
 
     /**
-     *   @brief Override Distribution::toSingleDistribution()
+     *   @brief Override Distribution::toMasterDistribution()
      *
      *   Create a replicated grid distribution (single not supported here)
      */
-    virtual DistributionPtr toSingleDistribution( CommunicatorPtr comm ) const;
+    virtual DistributionPtr toMasterDistribution( CommunicatorPtr comm ) const;
 
     /**
      *   @brief Override Distribution::toReplicatedDistribution()

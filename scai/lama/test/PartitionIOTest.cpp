@@ -129,12 +129,12 @@ BOOST_AUTO_TEST_CASE( DistributionSingleIO )
 
         CommunicatorPtr comm = dist->getCommunicatorPtr();
         const std::string distFileName = uniquePathSharedAmongNodes(
-                                            GlobalTempDir::getPath(),
-                                            *comm,
-                                            "TestDist"
+                                             GlobalTempDir::getPath(),
+                                             *comm,
+                                             "TestDist"
                                          ) + ".txt";
 
-        BOOST_TEST_MESSAGE("DistributionSingleIO: distFilename = " << distFileName);
+        BOOST_TEST_MESSAGE( "DistributionSingleIO: distFilename = " << distFileName );
 
         SCAI_LOG_INFO( logger, *comm << ": writeDistribution " << *dist )
         PartitionIO::write( *dist, distFileName );
@@ -151,6 +151,9 @@ BOOST_AUTO_TEST_CASE( DistributionSingleIO )
 
         BOOST_TEST( hostReadAccess( myIndexes1 ) == hostReadAccess( myIndexes2 ), per_element() );
 
+        // make sure that file is not deleted before other processors
+        comm->synchronize();
+
 #ifdef DELETE_OUTPUT_FILES
         // only one processor should delete the file
         int rc = PartitionIO::removeFile( distFileName, *comm );
@@ -165,8 +168,6 @@ BOOST_AUTO_TEST_CASE( DistributionSingleIO )
 
 BOOST_AUTO_TEST_CASE( DistributionMultipleIO )
 {
-    return;
-
     // Purpose: write and read of different distributions into a partitioned file
 
     const IndexType n = 25;
@@ -180,12 +181,12 @@ BOOST_AUTO_TEST_CASE( DistributionMultipleIO )
         CommunicatorPtr comm = dist->getCommunicatorPtr();
 
         const std::string fileName = uniquePathSharedAmongNodes(
-                                        GlobalTempDir::getPath(),
-                                        *comm,
-                                        "TestDist%r"
-                                        ) + ".txt";
+                                         GlobalTempDir::getPath(),
+                                         *comm,
+                                         "TestDist%r"
+                                     ) + ".txt";
 
-        BOOST_TEST_MESSAGE("DistributionMultipleIO: fileName = " << fileName);
+        BOOST_TEST_MESSAGE( "DistributionMultipleIO: fileName = " << fileName );
 
         std::string pFileName = fileName;
         bool isPartitioned;
@@ -197,7 +198,7 @@ BOOST_AUTO_TEST_CASE( DistributionMultipleIO )
         }
 
         SCAI_LOG_INFO( logger, *comm << ": writeDistribution " << *dist << " to " << pFileName )
-        PartitionIO::write( *dist, pFileName );
+        PartitionIO::write( *dist, fileName );
         BOOST_CHECK( FileIO::fileExists( pFileName ) );
         DistributionPtr newDist = PartitionIO::readDistribution( fileName, comm );
         SCAI_LOG_INFO( logger, *comm << ": readDistribution " << *newDist << " from " << pFileName )
@@ -255,8 +256,8 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
         auto distRead = PartitionIO::readDistribution( distFileName );
         readVector.readFromFile( vectorFileName, distRead );
 
-        SCAI_LOG_DEBUG( logger, "Read vector from file " << vectorFileName << ", dist = " << distFileName 
-                                << ", read vector = " << readVector );
+        SCAI_LOG_DEBUG( logger, "Read vector from file " << vectorFileName << ", dist = " << distFileName
+                        << ", read vector = " << readVector );
 
         // The local parts of the two vectors must be exactly the same
 
@@ -377,7 +378,7 @@ BOOST_AUTO_TEST_CASE( SparseVectorPartitionIO )
 
         vector.setSparseRandom( dist, 0, fillRate, 1 );
 
-        // find out it we have also to write a distribution file 
+        // find out it we have also to write a distribution file
 
         bool withDist = dist->getBlockDistributionSize() == invalidIndex;
 
@@ -474,8 +475,8 @@ BOOST_AUTO_TEST_CASE( _MatrixSingleIO )
 
         readMatrix.readFromFile( matrixFileName, PartitionIO::readDistribution( distFileName ) );
 
-        SCAI_LOG_DEBUG( logger, comm << ": read this matrix ( " << matrixFileName << ", dist " << distFileName 
-                                << " ) : " << readMatrix )
+        SCAI_LOG_DEBUG( logger, comm << ": read this matrix ( " << matrixFileName << ", dist " << distFileName
+                        << " ) : " << readMatrix )
 
         // The local parts of the two matrices must be exactly the same
 

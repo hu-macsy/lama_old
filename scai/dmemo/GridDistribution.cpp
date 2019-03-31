@@ -541,7 +541,7 @@ DistributionPtr GridDistribution::toBlockDistribution( CommunicatorPtr comm ) co
 
 /* ---------------------------------------------------------------------- */
 
-DistributionPtr GridDistribution::toSingleDistribution( CommunicatorPtr ) const
+DistributionPtr GridDistribution::toMasterDistribution( CommunicatorPtr ) const
 {
     return gridDistributionReplicated( mGlobalGrid );
 }

@@ -50,7 +50,6 @@ scai_project (
         NormTest
         ScalarTest
         PartitionIOTest
-        CollectiveIOTest
         SparseVectorTest
         VectorTest
         VectorAssemblyTest

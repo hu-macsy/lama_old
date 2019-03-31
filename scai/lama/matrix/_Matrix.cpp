@@ -327,15 +327,15 @@ void _Matrix::writeToFileBlocked( FileIO& file ) const
 
 void _Matrix::writeToFileSingle( FileIO& file ) const
 {
-    // SINGLE mode: only master process writes to file the whole storage
+    // MASTER mode: only master process 0 writes to file the whole storage
 
     DistributionPtr dist = getDistributionPtr();
 
     CommunicatorPtr comm = file.getCommunicatorPtr();
 
-    bool isSingleDistributed = dist->isSingleDistributed( comm );
+    bool isMasterDistributed = dist->isMasterDistributed( comm );
 
-    if ( isSingleDistributed && getColDistribution().isReplicated() )
+    if ( isMasterDistributed && getColDistribution().isReplicated() )
     {
         SCAI_LOG_DEBUG( logger, *this << ": single mode, only MASTER writes it" )
 
@@ -350,7 +350,7 @@ void _Matrix::writeToFileSingle( FileIO& file ) const
     {
         SCAI_LOG_DEBUG( logger, *this << ": single mode, replicate it" )
 
-        auto rowDist = isSingleDistributed ? dist : dist->toSingleDistribution( comm );
+        auto rowDist = isMasterDistributed ? dist : dist->toMasterDistribution( comm );
         auto colDist = noDistribution( getNumColumns() );
         std::unique_ptr<_Matrix> matSingle( copyRedistributed( rowDist, colDist ) );
         matSingle->writeToFile( file );
@@ -363,7 +363,7 @@ void _Matrix::writeToFile( FileIO& file ) const
 {
     SCAI_LOG_INFO( logger, *this << ": writeToFile( file = " << file << " )" )
 
-    if ( file.getDistributedIOMode() == DistributedIOMode::SINGLE )
+    if ( file.getDistributedIOMode() == DistributedIOMode::MASTER )
     {
         // master processor will write the whole data
 
@@ -420,7 +420,7 @@ void _Matrix::readFromFile( FileIO& file )
 
     auto comm = dmemo::Communicator::getCommunicatorPtr();   // current communicator
 
-    if ( file.getDistributedIOMode() == DistributedIOMode::SINGLE )
+    if ( file.getDistributedIOMode() == DistributedIOMode::MASTER )
     {
         const PartitionId MASTER = 0;
         const PartitionId myRank = comm->getRank();

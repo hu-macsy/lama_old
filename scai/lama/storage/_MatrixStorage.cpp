@@ -286,7 +286,7 @@ void _MatrixStorage::writeToFile(
 
         SCAI_LOG_INFO( logger, "write matrix storage to file, FileIO = " << *fileIO << ", storage = " << *this )
 
-        fileIO->open( fileName.c_str(), "w", DistributedIOMode::SINGLE );
+        fileIO->open( fileName.c_str(), "w", DistributedIOMode::INDEPENDENT );
         fileIO->writeStorage( *this );
         fileIO->close();
     }
@@ -316,7 +316,7 @@ void _MatrixStorage::readFromFile( const std::string& fileName )
 
         SCAI_LOG_INFO( logger, "Got from factory: " << *fileIO )
 
-        fileIO->open( fileName.c_str(), "r", DistributedIOMode::SINGLE );
+        fileIO->open( fileName.c_str(), "r", DistributedIOMode::INDEPENDENT );
         fileIO->readStorage( *this );
         fileIO->close();
     }

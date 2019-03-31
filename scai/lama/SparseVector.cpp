@@ -581,7 +581,7 @@ void SparseVector<ValueType>::readFromFile( FileIO& file )
 {
     auto comm = file.getCommunicatorPtr();
 
-    if ( file.getDistributedIOMode() == DistributedIOMode::SINGLE )
+    if ( file.getDistributedIOMode() == DistributedIOMode::MASTER )
     {
         const PartitionId MASTER = 0;
         const PartitionId myRank = comm->getRank();

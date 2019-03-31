@@ -332,16 +332,16 @@ BOOST_AUTO_TEST_CASE( convertTest )
 
         BOOST_CHECK( blockedDist->isBlockDistributed( comm ) );
         
-        DistributionPtr singleDist = dist->toSingleDistribution( comm );
+        DistributionPtr masterDist = dist->toMasterDistribution( comm );
         
-        BOOST_CHECK_EQUAL( singleDist->getGlobalSize(), dist->getGlobalSize() );
+        BOOST_CHECK_EQUAL( masterDist->getGlobalSize(), dist->getGlobalSize() );
         
-        if ( !singleDist->isSingleDistributed( comm ) )
+        if ( !masterDist->isMasterDistributed( comm ) )
         {   
-            SCAI_LOG_ERROR( logger, "dist = " << *dist << ", single = " << *singleDist )
+            SCAI_LOG_ERROR( logger, "dist = " << *dist << ", single = " << *masterDist )
         }
         
-        BOOST_CHECK( singleDist->isSingleDistributed( comm ) );
+        BOOST_CHECK( masterDist->isMasterDistributed( comm ) );
         
         DistributionPtr repDist = dist->toReplicatedDistribution();
         

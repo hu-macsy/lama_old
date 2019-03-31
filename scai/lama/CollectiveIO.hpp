@@ -1,5 +1,5 @@
 /**
- * @file CollectioveIO.hpp
+ * @file CollectiveIO.hpp
  *
  * @license
  * Copyright (c) 2009-2018
@@ -94,7 +94,7 @@ public:
     static void write( dmemo::CollectiveFile& file, const Vector<ValueType>& vector );
 
     /**
-     *  @brief Write a vector into a collective file.
+     *  @brief Write a matrix into a collective file.
      *  
      *  @param[in] file is the collecitve file (must have been opened for write)
      *  @param[in] vector is the vector to be written

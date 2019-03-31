@@ -315,7 +315,7 @@ public:
      * @brief Pure method to read a vector from an open IOFile.
      *
      * - the distributed I/O mode of file decides how the data is read in
-     * - the final vector is either SINGLE distributed or BLOCK distributed
+     * - the final vector is either SINGLE (master) distributed or BLOCK distributed
      */
     virtual void readFromFile( FileIO& file ) = 0;
 
@@ -343,9 +343,9 @@ public:
     /**
      *   @brief write the vector to an output file in SINGLE mode
      *
-     *   In SINGLE mode only the master processor writes all data to the file
+     *   In MASTER mode only the master processor writes all data to the file
      */
-    void writeToFileSingle( FileIO& outFile ) const;
+    void writeToFileMaster( FileIO& outFile ) const;
 
     /**
      *   @brief write the vector to an output file in COLLECTIVE/INDEPNDENT mode

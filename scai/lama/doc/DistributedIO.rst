@@ -41,7 +41,7 @@ Disadvantages:
 
     DenseVector<double> vector;
 
-    // read vector from file in SINGLE mode
+    // read vector from file in MASTER mode
     {
         HArray<double> localData;
         if ( comm->getRank() == MASTER )
@@ -150,7 +150,7 @@ The code for collective I/O looks exactly the same as for the independent IO mod
 Selection of Distributed I/O-Mode
 ---------------------------------
 
-For most FileIO classes, the SINGLE mode is the default mode. If the class supports
+For most FileIO classes, the MASTER mode is the default mode. If the class supports
 the COLLECTIVE mode, this becomes the default mode.
 The INDENDENT mode is chosen if the pattern "%r" appears in the file name with the
 open method. This placeholder pattern will be replaced with the corresponding rank and size value
@@ -172,7 +172,7 @@ of the communcator.
     ...
     file.close();
 
-    file.setDistributedIOMode( DistributedIOMode::SINGLE );
+    file.setDistributedIOMode( DistributedIOMode::MASTER );
     file.open( "data.lfm", "r" );     // single mode
     ...
     file.close();

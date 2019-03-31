@@ -68,8 +68,8 @@ enum class FileMode
  */
 enum class DistributedIOMode
 {
-    SINGLE,             //!< only master processor reads/writes the file
-    INDEPENDENT,        //!< each processor reads/writes is local data
+    MASTER,             //!< only master processor reads/writes the file
+    INDEPENDENT,        //!< each processor reads/writes its own data in own file
     COLLECTIVE,         //!< all processors access the same file
     DEFAULT             //!< take the default mode of an IO class
 };
@@ -121,6 +121,7 @@ public:
      *
      *  @param[in] fileName specifies the name of the file
      *  @param[in] fileMode is either "r" for reading a file, "w" for writing into it, or "a" for append to it
+     *  @param[in] distMode specifies the mode how the file is accessed by multiple processors
      *
      *  This method might throw an IOException if the file could not be opened or if a mode is not supported.
      *
@@ -136,14 +137,14 @@ public:
     /**
      *  @brief Query the actual distributed IO mode
      *
-     *  @return the current mode, either SINGLE, INDEPENDENT or COLLECTIVE
+     *  @return the current mode, either MASTER, INDEPENDENT or COLLECTIVE
      */
     DistributedIOMode getDistributedIOMode() const;
 
     /**
      *  @brief Query the communicator for the processors involved in I/O
      *
-     *  Note: usually all processors are involved, also in SINGLE mode.
+     *  Note: usually all processors are involved, also in MASTER mode.
      */
     dmemo::CommunicatorPtr getCommunicatorPtr() const;
 
@@ -277,7 +278,7 @@ public:
      *  @brief Read in a 'sparse' array from a file using its file format.
      *
      *  @param[out] size is the size of the array
-     *  @param[out] zero pointer to variable that will be set with the zero value.
+     *  @param[out] zeroVal pointer to variable that will be set with the zero value.
      *  @param[out] indexes are the positions with non-zero values
      *  @param[out] values are the values at the corresponding positions.
      *
@@ -320,7 +321,7 @@ public:
      *      file.writeArray( indexes );
      *  \endcode
      *
-     *  By default, the value is `common::TypeTraits<IndexType>::stype`.
+     *  By default, the value is common::TypeTraits<IndexType>::stype.
      */
 
     void setIndexType( common::ScalarType type );
@@ -365,6 +366,8 @@ public:
      *  @param[in] dataType  specifies the type to be used for representation in output file
      *
      *  If the optional argument dataType is not set, array.getValueType() is used.
+     *
+     *  This routine writes in INDEPENDENT mode, so user must take care of synchronization
      */
     static void write(
         const hmemo::_HArray& array,
@@ -378,6 +381,8 @@ public:
      *  @param[in] dataType  specifies the type to be used for representation in output file
      *
      *  If the optional argument dataType is not set, array.getValueType() is used.
+     *
+     *  This routine writes in INDEPENDENT mode, so user must take care of synchronization
      */
     static void write(
         const IndexType size,

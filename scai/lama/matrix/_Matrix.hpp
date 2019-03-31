@@ -223,7 +223,7 @@ public:
      * @brief Read a matrix from an opened IOFile.
      *
      * - the distributed I/O mode of file decides how the data is read in
-     * - after reading, this matrix is either SINGLE distributed or BLOCK distributed
+     * - after reading, this matrix is either SINGLE (master) distributed or BLOCK distributed
      */
     virtual void readFromFile( FileIO& file );
 

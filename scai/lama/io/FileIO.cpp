@@ -160,13 +160,13 @@ void FileIO::open( const char* fileName, const char* fileMode, const Distributed
             }
             else
             {
-                mDistMode = DistributedIOMode::SINGLE;
+                mDistMode = DistributedIOMode::MASTER;
             }
         }
 
         // in single mode only MASTER processor opens it
 
-        if ( mDistMode != DistributedIOMode::SINGLE || comm->getRank() == 0 )
+        if ( mDistMode != DistributedIOMode::MASTER || comm->getRank() == 0 )
         {
             openIt( fileName, fileMode );
         }
@@ -183,14 +183,14 @@ void FileIO::close()
 
     // in single mode only MASTER processor closes it
 
-    if ( mDistMode != DistributedIOMode::SINGLE || comm->getRank() == 0 )
+    if ( mDistMode != DistributedIOMode::MASTER || comm->getRank() == 0 )
     {
         closeIt();
     }
 
     // synchronize at close avoids that file is seen by all processors in same state
 
-    if ( mDistMode == DistributedIOMode::SINGLE )
+    if ( mDistMode == DistributedIOMode::MASTER )
     {
         comm->synchronize();
     }
@@ -228,9 +228,9 @@ void FileIO::writeMode( std::ostream& stream ) const
 
     stream << ", DistributedIOMode = ";
 
-    if ( mDistMode == DistributedIOMode::SINGLE )
+    if ( mDistMode == DistributedIOMode::MASTER )
     {
-        stream << "SINGLE";
+        stream << "MASTER";
     }
     else if ( mDistMode == DistributedIOMode::INDEPENDENT )
     {
@@ -394,7 +394,7 @@ void FileIO::write(
     std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
-    fileIO->open( outFileName.c_str(), "w" );
+    fileIO->open( outFileName.c_str(), "w", DistributedIOMode::INDEPENDENT );
     fileIO->writeArray( array );
     fileIO->close();
 }
@@ -421,7 +421,7 @@ void FileIO::write(
     std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
-    fileIO->open( outFileName.c_str(), "w" );
+    fileIO->open( outFileName.c_str(), "w", DistributedIOMode::INDEPENDENT );
     fileIO->writeSparse( size, zero, indexes, values );
     fileIO->close();
 }
@@ -444,7 +444,7 @@ void FileIO::read(
     std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
-    fileIO->open( inFileName.c_str(), "r" );
+    fileIO->open( inFileName.c_str(), "r", DistributedIOMode::INDEPENDENT );
     fileIO->readArray( array );
     fileIO->close();
 }
@@ -468,7 +468,7 @@ void FileIO::read(
     std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
-    fileIO->open( inFileName.c_str(), "r" );
+    fileIO->open( inFileName.c_str(), "r", DistributedIOMode::INDEPENDENT );
     fileIO->readGridArray( array, grid );
     fileIO->close();
 }
@@ -494,7 +494,7 @@ void FileIO::read(
     std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
-    fileIO->open( inFileName.c_str(), "r" );
+    fileIO->open( inFileName.c_str(), "r", DistributedIOMode::INDEPENDENT );
     fileIO->readSparse( size, zero, indexes, values );
     fileIO->close();
 }
@@ -515,7 +515,7 @@ IndexType FileIO::getArraySize( const std::string& inFileName )
 
     IndexType size = invalidIndex;
 
-    fileIO->open( inFileName.c_str(), "r" );
+    fileIO->open( inFileName.c_str(), "r", DistributedIOMode::INDEPENDENT );
     fileIO->getArrayInfo( size );
     fileIO->close();
 
@@ -540,7 +540,7 @@ IndexType FileIO::getStorageSize( const std::string& fileName )
     IndexType numColumns = 0;   // dummy
     IndexType numValues = 0;    // dummy
 
-    fileIO->open( fileName.c_str(), "r" );
+    fileIO->open( fileName.c_str(), "r", DistributedIOMode::INDEPENDENT );
     fileIO->getStorageInfo( size, numColumns, numValues );
     fileIO->close();
 

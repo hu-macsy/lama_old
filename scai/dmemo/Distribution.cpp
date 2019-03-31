@@ -642,13 +642,15 @@ void Distribution::replicateRagged(
 
 /* ---------------------------------------------------------------------- */
 
-bool Distribution::isSingleDistributed( CommunicatorPtr comm ) const
+bool Distribution::isMasterDistributed( CommunicatorPtr comm ) const
 {
     int fullHost = getLocalSize() == getGlobalSize() ? 1 : 0;
 
     // relelevant is value on host processor only, so broadcast it
 
-    comm->bcast( &fullHost, 1, 0 );
+    PartitionId master = 0;
+
+    comm->bcast( &fullHost, 1, master );
 
     return fullHost == 1;
 }
@@ -670,9 +672,11 @@ DistributionPtr Distribution::toBlockDistribution( CommunicatorPtr comm ) const
     return blockDistribution( getGlobalSize(), comm );
 }
 
-DistributionPtr Distribution::toSingleDistribution( CommunicatorPtr comm ) const
+DistributionPtr Distribution::toMasterDistribution( CommunicatorPtr comm ) const
 {
-    return singleDistribution( getGlobalSize(), comm, 0 );
+    PartitionId master = 0;
+
+    return singleDistribution( getGlobalSize(), comm, master );
 }
 
 DistributionPtr Distribution::toReplicatedDistribution( ) const
