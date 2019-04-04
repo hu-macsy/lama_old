@@ -86,19 +86,19 @@ public:
 
     /** Default copy constructor works fine as all member variables have a copy constructor. */
 
-    GlobalExchangePlan( const GlobalExchangePlan& other ) = default;
+    GlobalExchangePlan( const GlobalExchangePlan& ) = default;
 
     /** Default move constructor works fine as all member variables have a move constructor. */
 
-    GlobalExchangePlan( GlobalExchangePlan&& other ) = default;
+    GlobalExchangePlan( GlobalExchangePlan&& ) = default;
 
     /** Default copy assignment works fine as all member variables support it. */
 
-    GlobalExchangePlan& operator=( const GlobalExchangePlan& other ) = default;
+    GlobalExchangePlan& operator=( const GlobalExchangePlan& ) = default;
 
     /** Default move assignment works fine as all member variables support it. */
 
-    GlobalExchangePlan& operator=( GlobalExchangePlan&& other ) = default;
+    GlobalExchangePlan& operator=( GlobalExchangePlan&& ) = default;
 
     /**
      *  Query the number of values for that this processor will send

@@ -108,18 +108,20 @@ SparseMatrix<ValueType>::SparseMatrix( shared_ptr<MatrixStorage<ValueType> > sto
 template<typename ValueType>
 SparseMatrix<ValueType>::SparseMatrix( DistributionPtr rowDist, shared_ptr<MatrixStorage<ValueType> > storage ) :
 
-    Matrix<ValueType>( rowDist, std::make_shared<NoDistribution>( storage->getNumColumns() ) )
+    Matrix<ValueType>( rowDist, noDistribution( storage->getNumColumns() ) )
 
 {
-    // make some 'global' checks to verify correct sizes on all processors
+    IndexType localNumRows = storage->getNumRows();
 
-    _Matrix::checkLocalStorageSizes( *storage, *rowDist );
+    // only local checks here, global checks by isConsistent
+
+    SCAI_ASSERT_EQ_ERROR( localNumRows, rowDist->getLocalSize(), "serious mismatch" )
 
     mLocalData = storage;
 
     // create empty halo with same storage format
 
-    mHaloData.reset( storage->newMatrixStorage( storage->getNumRows(), 0 ) );
+    mHaloData.reset( storage->newMatrixStorage( localNumRows, 0 ) );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -184,24 +186,25 @@ void SparseMatrix<ValueType>::checkSettings()
 template<typename ValueType>
 bool SparseMatrix<ValueType>::isConsistent() const
 {
-    return true;
-
     const Communicator& comm = *Communicator::getCommunicatorPtr();
 
-    SCAI_LOG_INFO( logger, comm << ": check for consistency: " << *this )
+    // Note: processors might have different sizes for local sparse matrices
+
+    const Communicator& commMatrix = getRowDistribution().getCommunicator();
+
+    IndexType maxColumns = commMatrix.max( getNumColumns() );
+    IndexType maxRows = commMatrix.max( getNumRows() );
 
     IndexType consistencyErrors = 0;
 
-    // ToDo: this implementation should use a corresponding predicate of MatrixStorage
-
     try
     {
-        _Matrix::checkSettings();
+        SCAI_ASSERT_EQ_ERROR( maxColumns, getNumColumns(), "inconsistent number of columns" )
+        SCAI_ASSERT_EQ_ERROR( maxRows, getNumRows(), "inconsistent number of rows" )
+
         SCAI_ASSERT_EQUAL_ERROR( getRowDistribution().getLocalSize(), mLocalData->getNumRows() )
         SCAI_ASSERT_EQUAL_ERROR( mHaloData->getNumRows(), mLocalData->getNumRows() )
-        mLocalData->check( "check for consistency" );
-        mHaloData->check( "check for consistency" );
-        // ToDo: check Halo
+
         SCAI_LOG_DEBUG( logger, comm << ": is consistent : " << *this )
     }
     catch ( common::Exception& e )
@@ -479,12 +482,14 @@ void SparseMatrix<ValueType>::assign( const _MatrixStorage& storage )
 template<typename ValueType>
 void SparseMatrix<ValueType>::assignLocal( const _MatrixStorage& storage, DistributionPtr rowDist )
 {
-    _Matrix::checkLocalStorageSizes( storage, *rowDist );   // consistency check among all processors
+    // only local checks here
+
+    SCAI_ASSERT_EQ_ERROR( storage.getNumRows(), rowDist->getLocalSize(), "serious mismatch" )
 
     const IndexType numRows    = storage.getNumRows();
     const IndexType numColumns = storage.getNumColumns();
 
-    _Matrix::setDistributedMatrix( rowDist, std::make_shared<NoDistribution>( numColumns ) );
+    _Matrix::setDistributedMatrix( rowDist, noDistribution( numColumns ) );
    
     mLocalData->assign( storage );
     mHaloData->allocate( numRows, 0 );
@@ -648,10 +653,9 @@ void SparseMatrix<ValueType>::redistribute( const RedistributePlan& redistributo
 
     if ( !getColDistribution().isReplicated() )
     {
-        // Halo must be removed before redistribution 
+        // Halo must be removed before redistribution, i.e. set replicated columnn distribution
 
-        DistributionPtr repColDistributionPtr( new NoDistribution( getNumColumns() ) );
-        redistribute( getRowDistributionPtr(), repColDistributionPtr );
+        redistribute( getRowDistributionPtr(), noDistribution( getNumColumns() ) );
     }
 
     shared_ptr<MatrixStorage<ValueType> > newData( mLocalData->newMatrixStorage() );

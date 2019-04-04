@@ -81,12 +81,6 @@ GeneralDistribution::GeneralDistribution(
 
     SCAI_ASSERT_DEBUG( HArrayUtils::validIndexes( myIndexes, globalSize ), "myIndexes contains illegal values" )
 
-    // Note: the constructor is completely local, but make some consistency check now
-
-    IndexType nLocal = mLocal2Global.size();
-
-    SCAI_ASSERT_EQ_ERROR( mGlobalSize, comm->sum( nLocal ), "illegal general distribution" )
-
     // sort the array ascending, should be very fast if already sorted
 
     HArrayUtils::sort( NULL, &mLocal2Global, mLocal2Global, true );
@@ -95,6 +89,9 @@ GeneralDistribution::GeneralDistribution(
 
     if ( checkFlag )
     {
+        SCAI_ASSERT_EQ_ERROR( mGlobalSize, comm->sum( mLocal2Global.size() ), 
+                              "illegal general distribution, total number of owned indexes not global size" )
+
         // this method also verifies that each global index appears only once
 
         enableBlockDistributedOwners();
@@ -133,14 +130,7 @@ std::shared_ptr<GeneralDistribution> generalDistributionBySingleOwners(
 
     SCAI_ASSERT_VALID_INDEX_ERROR( root, size, "illegal root processor specified" )
 
-    IndexType globalSize;
-
-    if ( rank == root )
-    {
-        globalSize = owners.size();
-    }
-
-    comm->bcast( &globalSize, 1, root );
+    IndexType globalSize[ 2 ];
 
     HArray<IndexType> localSizes;         // only defined by root
     HArray<IndexType> sortedIndexes;      // only defined by root
@@ -148,7 +138,14 @@ std::shared_ptr<GeneralDistribution> generalDistributionBySingleOwners(
     if ( rank == root )
     {
         HArrayUtils::bucketSortSizes( localSizes, sortedIndexes, owners, size );
+
+        globalSize[0] = owners.size();
+        globalSize[1] = sortedIndexes.size();
     }
+
+    comm->bcast( globalSize, 2, root );
+
+    SCAI_ASSERT_EQ_ERROR( globalSize[0], globalSize[1], "illegal owners specified" )
 
     HArray<IndexType> myGlobalIndexes;
 
@@ -156,7 +153,7 @@ std::shared_ptr<GeneralDistribution> generalDistributionBySingleOwners(
 
     bool checkFlag = false;  // no check required
 
-    return std::make_shared<GeneralDistribution>( globalSize, std::move( myGlobalIndexes ), checkFlag, comm );
+    return std::make_shared<GeneralDistribution>( globalSize[0], std::move( myGlobalIndexes ), checkFlag, comm );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -472,6 +469,15 @@ void GeneralDistribution::enableBlockDistributedOwners() const
 
     mBlockDistributedOwners.reset( new HArray<PartitionId>() );
     computeBlockDistributedOwners( *mBlockDistributedOwners, getGlobalSize(), mLocal2Global, getCommunicatorPtr() );
+}
+
+/* ---------------------------------------------------------------------- */
+
+void GeneralDistribution::disableBlockDistributedOwners()
+{
+    SCAI_LOG_INFO( logger, "disableBlockDistributedOwners" )
+
+    mBlockDistributedOwners.reset();
 }
 
 /* ---------------------------------------------------------------------- */

@@ -170,7 +170,7 @@ private:
 
     // disable the default copy constructor
 
-    ContextData( const ContextData& other ) = delete;
+    ContextData( const ContextData& ) = delete;
 
     ContextData& operator=( ContextData&& other ) noexcept;
 };

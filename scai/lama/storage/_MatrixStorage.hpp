@@ -368,7 +368,7 @@ public:
      *  for the derived classes. 
      */
 
-    _MatrixStorage& operator=( _MatrixStorage&& other ) = delete;
+    _MatrixStorage& operator=( _MatrixStorage&& ) = delete;
 
     /******************************************************************
      *   Query routines                                                *

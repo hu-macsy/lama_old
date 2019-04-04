@@ -86,7 +86,7 @@ public:
      */
     virtual MyJacobi* copy();
 
-    using scai::solver::IterativeSolver<ValueType>::IterativeSolverRuntime;
+    using typename scai::solver::IterativeSolver<ValueType>::IterativeSolverRuntime;
 
     struct MyJacobiRuntime:scai::solver::IterativeSolver<ValueType>::IterativeSolverRuntime
     {

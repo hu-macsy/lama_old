@@ -96,22 +96,22 @@ public:
     /**
      * Default copy constructor is enabled.
      */
-    GlobalAddressingPlan( const GlobalAddressingPlan& other ) = default;
+    GlobalAddressingPlan( const GlobalAddressingPlan& ) = default;
 
     /**
      * Default move constructor is enabled.
      */
-    GlobalAddressingPlan( GlobalAddressingPlan&& other ) = default;
+    GlobalAddressingPlan( GlobalAddressingPlan&& ) = default;
 
     /**
      * Default assignment copy is enabled.
      */
-    GlobalAddressingPlan& operator=( const GlobalAddressingPlan& other ) = default;
+    GlobalAddressingPlan& operator=( const GlobalAddressingPlan& ) = default;
 
     /**
      * Default move assignment is enabled.
      */
-    GlobalAddressingPlan& operator=( GlobalAddressingPlan&& other ) = default;
+    GlobalAddressingPlan& operator=( GlobalAddressingPlan&& ) = default;
 
     /**
      *  Apply the global addressing plan for a gathering of remote data

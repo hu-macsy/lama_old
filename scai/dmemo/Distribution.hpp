@@ -147,7 +147,7 @@ public:
 
     /** Distributions should never be copied. */
 
-    Distribution( const Distribution& other ) = delete;
+    Distribution( const Distribution& other );
 
     /** Destructor of distribution. */
 
@@ -155,7 +155,7 @@ public:
 
     /** Distributions should never be assigned */
 
-    Distribution& operator=( const Distribution& other ) = delete;
+    Distribution& operator=( const Distribution& ) = delete;
 
     /** Getter routine for the communicator of the distribution. */
 
