@@ -1,0 +1,3 @@
+/p/home/jusers/brandes1/juwels/git/lama/CMake/Tests/CUDA/CMakeFiles/rebuild_cache.dir
+/p/home/jusers/brandes1/juwels/git/lama/CMake/Tests/CUDA/CMakeFiles/CUDADevices.dir
+/p/home/jusers/brandes1/juwels/git/lama/CMake/Tests/CUDA/CMakeFiles/edit_cache.dir

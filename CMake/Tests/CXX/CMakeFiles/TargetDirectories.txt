@@ -1,0 +1,3 @@
+/p/home/jusers/brandes1/juwels/git/lama/CMake/Tests/CXX/CMakeFiles/rebuild_cache.dir
+/p/home/jusers/brandes1/juwels/git/lama/CMake/Tests/CXX/CMakeFiles/example.dir
+/p/home/jusers/brandes1/juwels/git/lama/CMake/Tests/CXX/CMakeFiles/edit_cache.dir

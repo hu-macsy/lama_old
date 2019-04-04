@@ -1,0 +1,1 @@
+/gpfs/software/juwels/stages/2018b/software/GCCcore/7.3.0/bin/c++  -O3 -DNDEBUG  -rdynamic CMakeFiles/CUDADevices.dir/CUDADevices_generated_main.cu.o  -o CUDADevices -Wl,-Bstatic -lcudart_static -Wl,-Bdynamic -lpthread -ldl -lrt 
