@@ -94,6 +94,8 @@
 #define HASH_C1 1
 #define NUM_CHUNKS_PER_WARP 128
 
+#define FULL_MASK 0xffffffff
+
 using namespace scai::common;
 using namespace scai::hmemo;
 
@@ -1426,7 +1428,7 @@ __global__ void matrixAddSizesKernel(
     IndexType numWarpsGlobal = ( blockDim.x * gridDim.x ) / warpSize;
     IndexType rowIt = globalWarpId;
 
-    for ( ; __any( rowIt < numRows ); rowIt += numWarpsGlobal )
+    for ( ; __any_sync( FULL_MASK, rowIt < numRows ); rowIt += numWarpsGlobal )
     {
         if ( rowIt < numRows )
         {
@@ -1440,7 +1442,7 @@ __global__ void matrixAddSizesKernel(
                 cIa[rowIt] = bColEnd - bColIt;
             }
 
-            for ( IndexType aColItOffset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, aColItOffset += warpSize )
+            for ( IndexType aColItOffset = 0; __any_sync( FULL_MASK, aColIt < aColEnd ); aColIt += warpSize, aColItOffset += warpSize )
             {
                 IndexType colA = aColIt < aColEnd ? aJa[aColIt] : cudaNIndex;
                 IndexType end = multHlp_getNumActiveThreads( aColIt, aColEnd, aIa, rowIt, aColItOffset );
@@ -1454,7 +1456,7 @@ __global__ void matrixAddSizesKernel(
 
                     sFound[localWarpId] = false;
 
-                    for ( IndexType bColItOffset = 0; !sFound[localWarpId] && __any( ( bColIt + bColItOffset ) < bColEnd );
+                    for ( IndexType bColItOffset = 0; !sFound[localWarpId] && __any_sync( FULL_MASK, ( bColIt + bColItOffset ) < bColEnd );
                             bColItOffset += warpSize )
                     {
                         IndexType colB = ( bColIt + bColItOffset ) < bColEnd ? bJa[bColIt + bColItOffset] : cudaNIndex;
@@ -1881,7 +1883,7 @@ void matrixMultiplySizesKernel(
                                           sChunkList,
                                           sReservedChunks );
 
-                for ( IndexType offset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, offset += warpSize )
+                for ( IndexType offset = 0; __any_sync( FULL_MASK, aColIt < aColEnd ); aColIt += warpSize, offset += warpSize )
                 {
                     IndexType colA = aColIt < aColEnd ? aJA[aColIt] : cudaNIndex;
                     IndexType end = multHlp_getNumActiveThreads( aColIt, aColEnd, aIA, aRowIt, offset );
@@ -1896,7 +1898,7 @@ void matrixMultiplySizesKernel(
                         IndexType bColIt = bIA[sColA] + laneId;
                         IndexType bColEnd = bIA[sColA + 1];
 
-                        for ( ; __any( bColIt < bColEnd ); bColIt += warpSize )
+                        for ( ; __any_sync( FULL_MASK, bColIt < bColEnd ); bColIt += warpSize )
                         {
                             colB = bColIt < bColEnd ? bJA[bColIt] : cudaNIndex;
 
@@ -1935,7 +1937,7 @@ void matrixMultiplySizesKernel(
                     }
                 }
 
-                if ( __any( localSystemError ) )
+                if ( __any_sync( FULL_MASK, localSystemError ) )
                 {
                     *hashError = true;
                     return;
@@ -2111,7 +2113,7 @@ void matrixAddKernel(
     IndexType numWarpsGlobal = ( blockDim.x * gridDim.x ) / warpSize;
     IndexType rowIt = globalWarpId;
 
-    for ( ; __any( rowIt < numRows ); rowIt += numWarpsGlobal )
+    for ( ; __any_sync( FULL_MASK, rowIt < numRows ); rowIt += numWarpsGlobal )
     {
         if ( rowIt < numRows )
         {
@@ -2123,7 +2125,7 @@ void matrixAddKernel(
 
             // Copy values of b to C
 
-            for ( IndexType bColOffset = 0; __any( ( bColIt + bColOffset ) < bColEnd ); bColOffset += warpSize )
+            for ( IndexType bColOffset = 0; __any_sync( FULL_MASK, ( bColIt + bColOffset ) < bColEnd ); bColOffset += warpSize )
             {
                 IndexType colB = ( bColIt + bColOffset ) < bColEnd ? bJA[bColIt + bColOffset] : cudaNIndex;
                 ValueType valB = ( bColIt + bColOffset ) < bColEnd ? bValues[bColIt + bColOffset] : static_cast<ValueType>( 0 );
@@ -2139,7 +2141,7 @@ void matrixAddKernel(
             IndexType cColOffset = bIA[rowIt + 1] - bIA[rowIt];
 
             // Add values of a to c
-            for ( IndexType aColItOffset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, aColItOffset += warpSize )
+            for ( IndexType aColItOffset = 0; __any_sync( FULL_MASK, aColIt < aColEnd ); aColIt += warpSize, aColItOffset += warpSize )
             {
                 IndexType colA = aColIt < aColEnd ? aJA[aColIt] : cudaNIndex;
                 ValueType valA = aColIt < aColEnd ? aValues[aColIt] : static_cast<ValueType>( 0 );
@@ -2154,7 +2156,7 @@ void matrixAddKernel(
                         sFoundJa[localWarpId] = cudaNIndex;
                     }
 
-                    for ( IndexType bColItOffset = 0; ( sFoundJa[localWarpId] == cudaNIndex ) && __any( ( bColIt + bColItOffset ) < bColEnd );
+                    for ( IndexType bColItOffset = 0; ( sFoundJa[localWarpId] == cudaNIndex ) && __any_sync( FULL_MASK, ( bColIt + bColItOffset ) < bColEnd );
                             bColItOffset += warpSize )
                     {
                         IndexType colB = ( bColIt + bColItOffset ) < bColEnd ? bJA[bColIt + bColItOffset] : cudaNIndex;
@@ -2361,7 +2363,7 @@ void matrixMultiplyKernel(
                 localSystemError = true;
             }
 
-            if ( __any( localSystemError ) )
+            if ( __any_sync( FULL_MASK, localSystemError ) )
             {
                 *hashError = true;
                 return;
@@ -2379,7 +2381,7 @@ void matrixMultiplyKernel(
                                           sChunkList,
                                           sReservedChunks );
 
-                for ( IndexType offset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, offset += warpSize )
+                for ( IndexType offset = 0; __any_sync( FULL_MASK, aColIt < aColEnd ); aColIt += warpSize, offset += warpSize )
                 {
                     IndexType colA = aColIt < aColEnd ? aJA[aColIt] : cudaNIndex;
                     ValueType valA = aColIt < aColEnd ? aValues[aColIt] : static_cast<ValueType>( 0 );
@@ -2396,7 +2398,7 @@ void matrixMultiplyKernel(
                         IndexType bColIt = bIA[sColA] + laneId;
                         IndexType bColEnd = bIA[sColA + 1];
 
-                        for ( ; __any( bColIt < bColEnd ); bColIt += warpSize )
+                        for ( ; __any_sync( FULL_MASK, bColIt < bColEnd ); bColIt += warpSize )
                         {
                             colB = bColIt < bColEnd ? bJA[bColIt] : cudaNIndex;
                             ValueType valB = bColIt < bColEnd ? bValues[bColIt] : static_cast<ValueType>( 0 );
@@ -2446,7 +2448,7 @@ void matrixMultiplyKernel(
                         localSystemError = true;
                     }
 
-                    if ( __any( localSystemError ) )
+                    if ( __any_sync( FULL_MASK, localSystemError ) )
                     {
                         *hashError = true;
                         return;
