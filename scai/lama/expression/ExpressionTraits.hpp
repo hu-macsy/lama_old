@@ -119,7 +119,11 @@ struct ExpressionTraits< ComplexPartVectorExpression<ValueType, kind> >
 template<typename ValueType>
 struct ExpressionTraits< ComplexBuildVectorExpression<ValueType> >
 {
+#ifdef SCAI_COMPLEX_SUPPORTED
     typedef common::Complex<RealType<ValueType>> ExpType;
+#else
+    typedef ValueType ExpType;
+#endif
 };
 
 /**
