@@ -1,1 +1,0 @@
-/gpfs/software/juwels/stages/2018b/software/icc/2019.0.117-GCC-7.3.0/compilers_and_libraries_2019.0.117/linux/bin/intel64/icpc    -rdynamic CMakeFiles/example.dir/example.cpp.o  -o example 
