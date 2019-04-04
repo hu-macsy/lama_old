@@ -650,6 +650,8 @@ std::shared_ptr<GridDistribution> gridDistributionByLocalGrid( const common::Gri
 
     IndexType gridDims[ SCAI_GRID_MAX_DIMENSION ];
 
+    gridDims[0] = 0;  // just as fallback for 0-dimensional grid
+
     localGrid.getSizes( gridDims );
 
     IndexType procDims[ SCAI_GRID_MAX_DIMENSION ];
