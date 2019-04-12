@@ -70,7 +70,7 @@ CUDAContext::CUDAContext( int deviceNr ) :
     CUDACtx( deviceNr )
 
 {
-    SCAI_LOG_DEBUG( logger, "construct CUDAContext, device nr = = " << deviceNr )
+    SCAI_LOG_INFO( logger, "construct CUDAContext, device nr = = " << deviceNr )
     // Note: logging is safe as CUDA context is always created after static initializations
     {
         char deviceName[256];
@@ -79,7 +79,7 @@ CUDAContext::CUDAContext( int deviceNr ) :
         SCAI_LOG_DEBUG( logger, "got device " << mDeviceName )
     }
     // count used devices to shutdown CUDA if no more device is used
-    SCAI_LOG_INFO( logger, *this << " constructed, is disabled" )
+    SCAI_LOG_DEBUG( logger, *this << " constructed, is disabled" )
 }
 
 /*  destructor  ---------------------------------------------------------------- */
@@ -208,7 +208,7 @@ CUDAStreamSyncToken* CUDAContext::getTransferSyncToken() const
 /* ----------------------------------------------------------------------------- */
 
 #define SCAI_DEFAULT_DEVICE_NUMBER -1
-#define SCAI_MAX_CUDA_DEVICES 4
+#define SCAI_MAX_CUDA_DEVICES 8
 
 static int getDefaultDeviceNr()
 {
@@ -225,19 +225,17 @@ static std::weak_ptr<CUDAContext> mCUDAContext[SCAI_MAX_CUDA_DEVICES];
 
 ContextPtr CUDAContext::create( int deviceNr )
 {
+    SCAI_LOG_INFO( logger, "create CUDAContext( device = " << deviceNr << " )" )
+
     int cudaDeviceNr = deviceNr;
 
     if ( cudaDeviceNr == SCAI_DEFAULT_DEVICE_NUMBER )
     {
         cudaDeviceNr = getDefaultDeviceNr();
-        // no need here to check for a good value
     }
-    else
-    {
-        SCAI_ASSERT(
-            0 <= cudaDeviceNr && cudaDeviceNr < SCAI_MAX_CUDA_DEVICES,
-            "device = " << cudaDeviceNr << " out of range" << ", max supported device = " << SCAI_MAX_CUDA_DEVICES )
-    }
+
+    SCAI_ASSERT_VALID_INDEX_ERROR( cudaDeviceNr, SCAI_MAX_CUDA_DEVICES, 
+                                   "illegal device specified, MAX_DEVICES = " << SCAI_MAX_CUDA_DEVICES )
 
     std::shared_ptr<CUDAContext> context = std::shared_ptr<CUDAContext>();
 
