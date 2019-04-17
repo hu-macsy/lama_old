@@ -377,6 +377,11 @@ void Matrix<ValueType>::setColumn(
     const IndexType colIndex,
     const common::BinaryOp op )
 {
+    SCAI_LOG_DEBUG( logger, "setColumn, this matrix = " << *this << ", col = " << colIndex << 
+                            ", vector = " << column << ", op = " << op )
+
+    SCAI_ASSERT_EQ_ERROR( column.size(), getNumRows(), "setColumn: column vector size does not match number of rows in matrix." )
+
     using namespace scai::hmemo;
 
     bool needsTmp = false;
