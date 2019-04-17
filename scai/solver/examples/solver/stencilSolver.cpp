@@ -34,9 +34,7 @@
 #include <scai/lama/io/FileIO.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/dmemo/GenBlockDistribution.hpp>
-#include <scai/dmemo/CyclicDistribution.hpp>
-#include <scai/dmemo/NoDistribution.hpp>
+#include <scai/dmemo/GridDistribution.hpp>
 #include <scai/lama/norm/Norm.hpp>
 #include <scai/lama/matrix/StencilMatrix.hpp>
 
@@ -174,7 +172,7 @@ int main( int argc, const char* argv[] )
             {
                 common::Stencil1D<DefaultReal> stencil( nPoints );
                 common::Grid1D grid( n1 );
-                matrixPtr.reset( new StencilMatrix<DefaultReal>( grid, stencil ) );
+                matrixPtr.reset( new StencilMatrix<DefaultReal>( gridDistribution( grid ), stencil ) );
                 break;
             }
          
@@ -184,7 +182,7 @@ int main( int argc, const char* argv[] )
                 IndexType n2 = n1;
                 stencilSpecification >> n2;
                 common::Grid2D grid( n1, n2 );
-                matrixPtr.reset( new StencilMatrix<DefaultReal>( grid, stencil ) );
+                matrixPtr.reset( new StencilMatrix<DefaultReal>( gridDistribution( grid ), stencil ) );
                 break;
             }
          
@@ -196,7 +194,7 @@ int main( int argc, const char* argv[] )
                 IndexType n3 = n2;
                 stencilSpecification >> n3;
                 common::Grid3D grid( n1, n2, n3 );
-                matrixPtr.reset( new StencilMatrix<DefaultReal>( grid, stencil ) );
+                matrixPtr.reset( new StencilMatrix<DefaultReal>( gridDistribution( grid ), stencil ) );
                 break;
             }
  
@@ -210,7 +208,7 @@ int main( int argc, const char* argv[] )
                 IndexType n4 = n3;
                 stencilSpecification >> n4;
                 common::Grid4D grid( n1, n2, n3, n4 );
-                matrixPtr.reset( new StencilMatrix<DefaultReal>( grid, stencil ) );
+                matrixPtr.reset( new StencilMatrix<DefaultReal>( gridDistribution( grid ), stencil ) );
                 break;
             }
  
@@ -332,9 +330,12 @@ int main( int argc, const char* argv[] )
 
         loggerName << solverName << ", " << lamaconf.getCommunicator() << ": ";
 
+        bool suppressWriting = comm.getRank() > 0;   // only host processor logs
+
         LoggerPtr logger( new CommonLogger ( loggerName.str(),
                                              lamaconf.getLogLevel(),
-                                             LoggerWriteBehaviour::toConsoleOnly ) );
+                                             LoggerWriteBehaviour::toConsoleOnly,
+                                             suppressWriting ) );
 
         mySolver->setLogger( logger );
 
@@ -399,39 +400,6 @@ int main( int argc, const char* argv[] )
         {
             cout << "Not iterative solver, stopping criterion ignored" << endl;
         }
-
-        // Allow individual settings for GMRES solver
-
-        /*
-
-        GMRES* gmresSolver = dynamic_cast<GMRES*>( mySolver.get() );
-
-        if ( gmresSolver )
-        {
-            // here is the possibility to set solver specific values
-
-            int dim = 5;
-
-            common::Settings::getEnvironment( dim, "SCAI_KRYLOV_DIM" );
-
-            HOST_PRINT( myRank, "GMRES solver, krylov dim = " << dim )
-
-            gmresSolver->setKrylovDim( dim );
-        }
-
-        // Allow individual settings for AMG solver
-
-        SimpleAMG* amgSolver = dynamic_cast<SimpleAMG*>( mySolver.get() );
-
-        if ( amgSolver )
-        {
-            amgSolver->setHostOnlyLevel( 4 );
-            amgSolver->setReplicatedLevel( 5 );
-            amgSolver->setMaxLevels( 25 );
-            amgSolver->setMinVarsCoarseLevel( 200 );
-        }
-
-        */
 
         // Initialization with timing
 
