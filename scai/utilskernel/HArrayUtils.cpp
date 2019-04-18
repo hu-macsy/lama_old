@@ -584,7 +584,7 @@ void HArrayUtils::scatter(
 
     if ( loc == ContextPtr() )
     {
-        loc = source.getValidContext();
+        loc = target.getValidContext();
     }
 
     setScatter.getSupportedContext( loc );
