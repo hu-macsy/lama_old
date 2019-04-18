@@ -1289,6 +1289,8 @@ void DenseVector<ValueType>::gatherInto(
     const DenseVector<IndexType>& index,
     const BinaryOp op )
 {
+    SCAI_REGION( "Vector.Dense.gatherInto" )
+
     if ( op != BinaryOp::COPY )
     {
         SCAI_ASSERT_EQ_ERROR( getDistribution(), index.getDistribution(), "both vectors must have same distribution" )
