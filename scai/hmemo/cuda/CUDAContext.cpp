@@ -91,6 +91,25 @@ CUDAContext::~CUDAContext()
 
 /* ----------------------------------------------------------------------------- */
 
+bool CUDAContext::isEqual( const Context& other ) const
+{
+    if ( &other == this )
+    {
+        return true;
+    }
+
+    if ( other.getType() != common::ContextType::CUDA )
+    {
+        return false;
+    }
+
+    const CUDAContext& otherCUDA = static_cast<const CUDAContext&>( other );
+   
+    return getDeviceNr() == otherCUDA.getDeviceNr();
+}
+
+/* ----------------------------------------------------------------------------- */
+
 MemoryPtr CUDAContext::getLocalMemoryPtr() const
 {
     MemoryPtr memory;

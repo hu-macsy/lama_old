@@ -32,6 +32,7 @@
 
 // local library
 #include <scai/hmemo/Memory.hpp>
+#include <scai/hmemo/ContextStack.hpp>
 
 // internal scai libraries
 #include <scai/common/macros/throw.hpp>
@@ -168,6 +169,11 @@ ContextPtr Context::getContextPtr( ContextType type, int deviceNr )
 
 ContextPtr Context::getContextPtr()
 {
+    if ( !ContextStack::empty() )
+    {
+        return ContextStack::top();
+    }
+
     std::string ctx_string;
 
     if ( common::Settings::getEnvironment( ctx_string, "SCAI_CONTEXT" ) )
@@ -200,18 +206,18 @@ ContextPtr Context::getContextPtr()
 
 void Context::setCurrent() const
 {
-    contextStack.push( this );
+    threadContextStack.push( this );
 }
 
 void Context::unsetCurrent() const
 {
-    if ( contextStack.empty() )
+    if ( threadContextStack.empty() )
     {
         SCAI_LOG_WARN( logger, "unset this context " << *this << " but not set before" )
         return;
     }
 
-    const Context* current = contextStack.top();
+    const Context* current = threadContextStack.top();
 
     if ( current != this )
     {
@@ -222,22 +228,32 @@ void Context::unsetCurrent() const
         SCAI_LOG_INFO( logger, "unset this context " << *this << " was current" )
     }
 
-    contextStack.pop();
+    threadContextStack.pop();
 }
 
 const Context* Context::getCurrentContext()
 {
-    if ( contextStack.empty() )
+    if ( threadContextStack.empty() )
     {
         return NULL;
     }
 
-    return contextStack.top();
+    return threadContextStack.top();
+}
+
+bool Context::operator==( const Context& other ) const
+{
+    return isEqual( other );
+}
+
+bool Context::operator!=( const Context& other ) const
+{
+    return !isEqual( other );
 }
 
 /** Important: Each thread has its own context stack */
 
-thread_local Context::ContextStack Context::contextStack;
+thread_local Context::ThreadContextStack Context::threadContextStack;
 
 /* ----------------------------------------------------------------------- */
 
