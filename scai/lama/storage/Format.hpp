@@ -52,6 +52,7 @@ enum class Format
     JDS,      //!< Jagged Diagonal Storage
     COO,      //!< Coordinate list
     STENCIL,  //!< stencil pattern
+    ASSEMBLY, //!< fast format for assembling, CSR like but usess std::vector
     UNDEFINED //!< Default value
 };
 

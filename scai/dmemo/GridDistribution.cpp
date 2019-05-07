@@ -644,7 +644,7 @@ DistributionPtr GridDistribution::create( const DistributionArguments arg )
     }
 }
 
-std::shared_ptr<GridDistribution> gridDistributionByLocalGrid( const common::Grid& localGrid, CommunicatorPtr comm )
+std::shared_ptr<const GridDistribution> gridDistributionByLocalGrid( const common::Grid& localGrid, CommunicatorPtr comm )
 {
     IndexType nDims = localGrid.nDims();
 

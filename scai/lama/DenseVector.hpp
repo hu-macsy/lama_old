@@ -527,11 +527,12 @@ public:
      *  @param[in] plan   contains communication pattern built for source array
      *  @param[in] op     specifies how to combine elements with existing ones
      * 
-     *  Note: the target array must have the same distribution as the index array used for building the plan
+     *  Note: the target array must have been allocated before with the same distribution 
+     *        as the index array used for building the plan (also for op == COPY)
      * 
      *  \code
      *      // target = source[ index ]
-     *      target.gather( source, index );
+     *      target.gatherInto( source, index );
      *      source.gatherFrom( target, index );
      *      auto plan = source.globalAddressingPlan( index );
      *      source.gatherByPlan( target, plan );

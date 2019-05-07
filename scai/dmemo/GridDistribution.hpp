@@ -302,7 +302,7 @@ inline std::shared_ptr<GridDistribution> gridDistribution(
  *  The size of the grid can be set by the environment variable SCAI_NP, e.g. SCAI_NP=3x3x3, but the product has to
  *  be the same as the total number of processors in the communicator.
  */
-inline std::shared_ptr<GridDistribution> gridDistribution(
+inline std::shared_ptr<const GridDistribution> gridDistribution(
     const common::Grid& globalGrid, 
     const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() )
 {
@@ -312,7 +312,7 @@ inline std::shared_ptr<GridDistribution> gridDistribution(
                                                GridDistribution::getDefaultProcGrid( globalGrid, np ) );
 }
 
-inline std::shared_ptr<GridDistribution> gridDistributionReplicated( const common::Grid& globalGrid )
+inline std::shared_ptr<const GridDistribution> gridDistributionReplicated( const common::Grid& globalGrid )
 {
     return std::make_shared<GridDistribution>( globalGrid, std::make_shared<NoCommunicator>(), 
                                                GridDistribution::getDefaultProcGrid( globalGrid, 1 ) );
@@ -328,7 +328,7 @@ inline std::shared_ptr<GridDistribution> gridDistributionReplicated( const commo
  *  It is assumed that the processor grid is ( nprocs, 1, 1, ... ), i.e. the global grid
  *  is block distributed only in the first dimension.
  */
-std::shared_ptr<GridDistribution> gridDistributionByLocalGrid( 
+std::shared_ptr<const GridDistribution> gridDistributionByLocalGrid( 
     const common::Grid& localGrid,
     const CommunicatorPtr communicator );
 

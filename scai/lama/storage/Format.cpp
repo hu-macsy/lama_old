@@ -71,6 +71,10 @@ const char* format2Str( const Format storageFormat )
             return "Stencil";
             break;
 
+        case Format::ASSEMBLY:
+            return "Assembly";
+            break;
+
         case Format::UNDEFINED:
             return "UNDEFINED";
             break;

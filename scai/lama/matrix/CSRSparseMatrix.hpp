@@ -37,9 +37,6 @@
 // local library
 #include <scai/lama/storage/CSRStorage.hpp>
 
-#include <scai/dmemo/GeneralDistribution.hpp>
-#include <scai/dmemo/NoDistribution.hpp>
-
 namespace scai
 {
 

@@ -209,7 +209,7 @@ IndexType CyclicDistribution::chunkSize() const
 
 /** Inline function for convenience */
 
-inline std::shared_ptr<CyclicDistribution> cyclicDistribution( 
+inline std::shared_ptr<const CyclicDistribution> cyclicDistribution( 
     const IndexType globalSize,
     const IndexType chunkSize,
     const CommunicatorPtr comm = Communicator::getCommunicatorPtr() )

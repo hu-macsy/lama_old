@@ -22,7 +22,7 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief Benchmarking of memory transfers HOST <-> context
+ * @brief Benchmarking of memory transfers HOST <-> context and different contextes
  * @author Thomas Brandes
  * @date 14.09.2015
  */
@@ -40,33 +40,32 @@ using namespace std;
 using namespace scai::hmemo;
 using scai::common::ContextType;
 
-void bench( ContextPtr host, ContextPtr device )
+/** number of iterations for the different problem cases */
+static int ITER_VEC[] = { 1000, 1000,  1000,    300,     100,      50,       20,        10 };
+
+/** number of array entries for the different problem cases 
+ *
+ *  Decrease values if they do not fit in memory.
+ */
+static int N_VEC[]    = {    1,  100, 10000, 100000, 1000000, 8000000, 16000000, 128000000 };
+
+/**
+ *  Benchmark memory transfer between host and device
+ */
+void benchHostGPU( ContextPtr host, ContextPtr device )
 {
-    static int ITER_VEC[] = { 1000, 1000, 1000, 300, 100, 50, 20 };
-    static int N_VEC[]    = { 1, 10, 100, 1000, 10000, 100000, 1000000 };
     int NCASES = sizeof( ITER_VEC ) / sizeof( int );
 
     for ( int k = 0; k < NCASES; ++k )
     {
         int ITER = ITER_VEC[k];
         int N    = N_VEC[k];
+
         cout << "Case " << k << ": N = " << N << ", ITER = " << ITER << endl;
+
+        HArray<double> array( N, double( 0 ), device );
+
         double time = scai::common::Walltime::get();
-
-        // measure time for allocation
-
-        for ( int i = 0; i < ITER; ++i )
-        {
-            HArray<double> array;
-            // write access always allocates the data on device
-            {
-                WriteOnlyAccess<double> devWrite( array, device, N );
-            }
-        }
-
-        double t0 = ( scai::common::Walltime::get() - time ) * 1000.0;
-        time = scai::common::Walltime::get();
-        HArray<double> array;
 
         for ( int i = 0; i < ITER; ++i )
         {
@@ -79,7 +78,8 @@ void bench( ContextPtr host, ContextPtr device )
             }
         }
 
-        double t1 = ( scai::common::Walltime::get() - time ) * 1000.0;
+        double t1 = scai::common::Walltime::get() - time;
+
         time = scai::common::Walltime::get();
 
         for ( int i = 0; i < ITER; ++i )
@@ -92,32 +92,108 @@ void bench( ContextPtr host, ContextPtr device )
             }
         }
 
-        double t2 = ( scai::common::Walltime::get() - time ) * 1000.0;
+        double t2 = scai::common::Walltime::get() - time;
         double Bytes = static_cast<double>( N ) * sizeof( double ) * ITER;
-        double MBytes0 = Bytes / ( 1024.0 * 1024.0 * t0 ) * 1000;
-        double MBytes1 = Bytes / ( 1024.0 * 1024.0 * t1 ) * 1000;
-        double MBytes2 = Bytes / ( 1024.0 * 1024.0 * t2 ) * 1000;
+        double GByte = 1024.0 * 1024.0 * 1024.0;
+        double GBytes1 = ( Bytes / GByte ) / t1;
+        double GBytes2 = ( Bytes / GByte ) / t2;
         cout << "Case " << k << ": N = " << N << ", ITER = " << ITER << ", Bytes = " << Bytes << endl;
-        cout << "Alloc Dev: " << t0 << " ms, is " << MBytes0 << " MByte/s" << endl;
-        cout << "Host->Dev: " << t1 << " ms, is " << MBytes1 << " MByte/s" << endl;
-        cout << "Dev->Host: " << t2 << " ms, is " << MBytes2 << " MByte/s" << endl;
+        cout << "Host -> " << *device << " : " << t1 << " s, is " << GBytes1 << " GByte/s" << endl;
+        cout << *device << " -> Host : " << t2 << " s, is " << GBytes2 << " GByte/s" << endl;
         cout << endl;
     }
 }
+
+/**
+ *  Benchmark memory transfer from device gpu1 to device gpu2
+ */
+void benchInterGPU( ContextPtr gpu1, ContextPtr gpu2 )
+{
+    int NCASES = sizeof( ITER_VEC ) / sizeof( int );
+
+    for ( int k = 0; k < NCASES; ++k )
+    {
+        int ITER = ITER_VEC[k];
+        int N    = N_VEC[k];
+        cout << "Case " << k << ": N = " << N << ", ITER = " << ITER << endl;
+
+        HArray<double> array( N, gpu1 );  // allocate on gpu1
+
+        {
+            WriteAccess<double> wGPU2( array, gpu2 );
+        }
+        {
+            ReadAccess<double> wGPU1( array, gpu1 );
+        }
+
+        double time = scai::common::Walltime::get();
+
+        for ( int i = 0; i < ITER; ++i )
+        {
+            // write access invalidates all data
+            {
+                WriteAccess<double> write( array, gpu1 );
+            }
+            // read access: transfer data from gpu1 to gpu2 
+            {
+                ReadAccess<double> read( array, gpu2 );
+            }
+        }
+
+        time = scai::common::Walltime::get() - time;
+
+        double Bytes = static_cast<double>( N ) * sizeof( double ) * ITER;
+        double GBytes = Bytes / ( 1024.0 * 1024.0 * 1024.0 * time );
+        cout << "Case " << k << ": N = " << N << ", ITER = " << ITER << ", Bytes = " << Bytes << endl;
+        cout << "Transfer " << *gpu1 << " -> " << *gpu2 << ": " << GBytes << " GByte/s" << endl;
+        cout << endl;
+    }
+}
+
+#define MAX_DEVICES 8
 
 int main()
 {
     ContextPtr host = Context::getHostPtr();
 
-    if ( Context::canCreate( ContextType::CUDA ) )
+    ContextPtr devices[MAX_DEVICES];
+
+    int countDevices = 0;
+
+    for ( int i = 0; i < MAX_DEVICES; ++i )
     {
-        ContextPtr cuda = Context::getContextPtr( ContextType::CUDA );
-        std::cout << "CUDA bench test, context = " << *cuda << std::endl;
-        bench( host, cuda );
+        try
+        {
+            ContextPtr cuda = Context::getContextPtr( ContextType::CUDA, i );
+            devices[ countDevices++ ] = cuda;
+            std::cout << "Context " << *cuda << " created." << std::endl;
+        }
+        catch ( std::exception& )
+        {
+            std::cout << "Failed to create CUDA device " << i << std::endl;
+        }
     }
-    else
+
+    std::cout << "Benchmark host - device memory transfer for " << countDevices << " devices." << std::endl;
+
+    for ( int i = 0; i < countDevices; ++ i )
     {
-        std::cout << "No CUDA bench test, CUDA context not available" << std::endl;
+        std::cout << "CUDA bench test, context = " << *devices[i] << std::endl;
+        benchHostGPU( host, devices[i] );
+    }
+
+    std::cout << "Benchmark device - device memory transfer for " << countDevices << " devices." << std::endl;
+
+    for ( int i = 0; i < countDevices; ++i )
+    {
+        for ( int j = 0; j < countDevices; ++j )
+        {
+            if ( i == j )
+            {
+                continue;
+            }
+
+            benchInterGPU( devices[i], devices[j] );
+        }
     }
 }
-

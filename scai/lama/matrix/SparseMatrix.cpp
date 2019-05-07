@@ -371,29 +371,31 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
     }
     else
     {
+        const Communicator& comm = getRowDistribution().getCommunicator();
+
         // rows and columns are both distributed
-        SCAI_LOG_INFO( logger, "local transpose of " << matrix.getLocalStorage() )
+        SCAI_LOG_INFO( logger, comm << ": local transpose of " << matrix.getLocalStorage() )
         mLocalData->assignTranspose( matrix.getLocalStorage() );
-        SCAI_LOG_INFO( logger, "local transposed = " << *mLocalData )
-        SCAI_LOG_INFO( logger, "halo transpose of " << matrix.getHaloStorage() )
+        SCAI_LOG_INFO( logger, comm << ": local transposed = " << *mLocalData )
+        SCAI_LOG_INFO( logger, comm << ": halo transpose of " << matrix.getHaloStorage() )
         HArray<IndexType> sendIA;
         HArray<IndexType> sendSizes;
         HArray<IndexType> sendJA;
         HArray<ValueType> sendValues;
         matrix.getHaloStorage().buildCSCData( sendIA, sendJA, sendValues );
-        SCAI_LOG_DEBUG( logger,
-                        matrix.getHaloStorage() << ": CSC data, IA = " << sendIA << ", JA = " << sendJA << ", Values = " << sendValues )
+        SCAI_LOG_INFO( logger,
+                       matrix.getHaloStorage() << ": CSC data, IA = " << sendIA << ", JA = " << sendJA << ", Values = " << sendValues )
         // for initial communication we need the sizes and not the offsets
         CSRUtils::offsets2sizes( sendSizes, sendIA, Context::getHostPtr() );
-        SCAI_LOG_DEBUG( logger, "sendSizes with " << sendSizes.size() << " entries" )
+        SCAI_LOG_INFO( logger, comm << ": sendSizes with " << sendSizes.size() << " entries" )
         HArray<IndexType> recvSizes;
         const HaloExchangePlan& matrixHalo = matrix.getHaloExchangePlan();
         SCAI_ASSERT_EQUAL_DEBUG( sendSizes.size(), matrix.getHaloStorage().getNumColumns() )
         // send all other processors the number of columns
-        const Communicator& comm = getRowDistribution().getCommunicator();
         // Use communication plans of halo in inverse manner to send col sizes
         const CommunicationPlan& sendSizesPlan = matrixHalo.getHaloCommunicationPlan();
         const CommunicationPlan& recvSizesPlan = matrixHalo.getLocalCommunicationPlan();
+        SCAI_LOG_INFO( logger, comm << ": haloExchange, sendPlan = " << sendSizesPlan << ", recvPlan = " << recvSizesPlan )
         comm.exchangeByPlan( recvSizes, recvSizesPlan, sendSizes, sendSizesPlan );
         ContextPtr contextPtr = Context::getHostPtr();
         // Now we know the sizes, we can pack the data
@@ -404,6 +406,8 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 
         auto sendDataPlan = sendSizesPlan.constructRaggedBySizes( sendSizes );
         auto recvDataPlan = recvSizesPlan.constructRaggedBySizes( recvSizes );
+
+        SCAI_LOG_INFO( logger, comm << ": haloExchange data, sendPlan = " << sendDataPlan << ", recvPlan = " << recvDataPlan )
 
         comm.exchangeByPlan( recvJA, recvDataPlan, sendJA, sendDataPlan );
         comm.exchangeByPlan( recvValues, recvDataPlan, sendValues, sendDataPlan );

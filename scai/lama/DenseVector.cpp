@@ -1290,6 +1290,8 @@ void DenseVector<ValueType>::gatherInto(
     const DenseVector<IndexType>& index,
     const BinaryOp op )
 {
+    SCAI_REGION( "Vector.Dense.gatherInto" )
+
     if ( op != BinaryOp::COPY )
     {
         SCAI_ASSERT_EQ_ERROR( getDistribution(), index.getDistribution(), "both vectors must have same distribution" )
@@ -1427,6 +1429,8 @@ void DenseVector<ValueType>::gatherByPlan(
     const dmemo::GlobalAddressingPlan& plan,
     const common::BinaryOp op ) const
 {
+    SCAI_REGION( "Vector.Dense.gatherPlan" )
+
     SCAI_ASSERT_EQ_ERROR( plan.sendSize(), target.getDistribution().getLocalSize(), "serious mismatch" )
     plan.gather( target.getLocalValues(), mLocalValues, op );
 }
@@ -1439,6 +1443,8 @@ void DenseVector<ValueType>::scatterByPlan(
     const DenseVector<ValueType>& source,
     const common::BinaryOp op )
 {
+    SCAI_REGION( "Vector.Dense.scatterPlan" )
+
     // plan does not contain any information about remote distribution for which it was built
     // so we have here no checks that plan matches
 

@@ -65,11 +65,11 @@ public:
     /** 
      *  @brief Method to setup heterogeneous arrays that contain all relevant grid and stencil info.
      *
-     *  @param[in] grid (nDims) contains grid sizes for the actual grid to which stencil is applied
-     *  @param[in] stencil contains the stencil positions and values (nPoints)
-     *  @param[out] gridInfo contains gridSizes (nDims), gridDistances(nDims), gridBorders(2*nDims), gridStencilWidth(2*nDims)
-     *  @param[out] stencilInfo contains stencilPositions (nDims*nPoints), stencilOffsets(nPoints)
+     *  @param[out] gridInfo contains gridSizes[nDims], gridDistances[nDims], gridBorders[2*nDims], gridStencilWidth[2*nDims]
+     *  @param[out] stencilInfo contains stencilPositions[nDims*nPoints], stencilOffsets[nPoints]
      *  @param[out] stencilValues contains stencil values[nPoints]
+     *  @param[in] grid contains grid sizes for the actual grid to which stencil is applied
+     *  @param[in] stencil contains the stencil positions and values
      *
      *  The heterogeneous arrays are required to call stencil kernels on arbitrary devices and to avoid recomputation of
      *  data that is reused, e.g. for multiple matrix-vector multiplications.
