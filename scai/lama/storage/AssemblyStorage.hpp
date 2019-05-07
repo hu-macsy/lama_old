@@ -28,8 +28,8 @@
  * @endlicense
  *
  * @brief AssemblyStorage.hpp
- * @author Jiri Kraus
- * @date 07.11.2011
+ * @author Thomas, Jiri Kraus
+ * @date 07.05.2019
  */
 #pragma once
 
@@ -387,15 +387,13 @@ public:
     void buildCSRData( hmemo::HArray<IndexType>& csrIA, hmemo::HArray<IndexType>& csrJA, hmemo::_HArray& csrValues ) const;
 
     /**
-     * @brief fills Assembly sparse matrix by csr sparse data.
+     * @brief fills assembly matrix by csr sparse data.
      *
      * @param[in] numRows    number of rows
-     * @param[in] numColumns number of columns
-     * @param[in] numValues  the number of stored elements in the matrix
-     * @param[in] ia         row pointer of the input csr sparse matrix
+     * @param[in] numColumns the number of columsns
+     * @param[in] ia         row offset array for access to ja and values
      * @param[in] ja         column indexes of the input csr sparse matrix
      * @param[in] values     the data values of the input csr sparse matrix
-     * @param[in] loc        is the context where filling takes place
      */
     template<typename OtherValueType>
     void setCSRDataImpl(
@@ -405,18 +403,14 @@ public:
         const hmemo::HArray<IndexType>& ja,
         const hmemo::HArray<OtherValueType>& values );
 
-    /** Implementation of _MatrixStorage::setCSRData for this class.  */
+    /** Implementation of pure method _MatrixStorage::setCSRData for this class.  */
 
     void setCSRData(
         const IndexType numRows,
         const IndexType numColumns,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
-        const hmemo::_HArray& values )
-    {
-        mepr::StorageWrapper<AssemblyStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
-            setCSRDataImpl( this, numRows, numColumns, ia, ja, values );
-    }
+        const hmemo::_HArray& values );
 
     /**
      * @brief fills Assembly sparse matrix by dia sparse data.

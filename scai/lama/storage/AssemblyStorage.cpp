@@ -811,6 +811,20 @@ void AssemblyStorage<ValueType>::buildCSR(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void AssemblyStorage<ValueType>::setCSRData(
+    const IndexType numRows,
+    const IndexType numColumns,
+    const hmemo::HArray<IndexType>& ia,
+    const hmemo::HArray<IndexType>& ja,
+    const hmemo::_HArray& values )
+{
+    mepr::StorageWrapper<AssemblyStorage, SCAI_NUMERIC_TYPES_HOST_LIST>::
+        setCSRDataImpl( this, numRows, numColumns, ia, ja, values );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void AssemblyStorage<ValueType>::buildCSRData(
     hmemo::HArray<IndexType>& csrIA,
     hmemo::HArray<IndexType>& csrJA,
