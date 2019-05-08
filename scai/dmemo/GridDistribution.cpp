@@ -65,6 +65,20 @@ GridDistribution::GridDistribution( const Grid& globalGrid, const CommunicatorPt
 
 /* ---------------------------------------------------------------------- */
 
+GridDistribution::GridDistribution( const Grid& globalGrid, const CommunicatorPtr communicator ) :
+
+    Distribution( globalGrid.size(), communicator ),
+    mGlobalGrid( globalGrid ),
+    mLocalGrid( globalGrid ),
+    mProcGrid( getDefaultProcGrid( globalGrid, communicator->getSize() ) )
+{
+    // assertions for proc grid are no more required hiere
+
+    localize();
+}
+
+/* ---------------------------------------------------------------------- */
+
 /** 
  *  @brief  Return a n-dimnsion processor array where all processors are assigned to first dim
  */

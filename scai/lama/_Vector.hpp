@@ -312,6 +312,24 @@ public:
     void readFromFile( const std::string& fileName, dmemo::DistributionPtr distribution );
 
     /**
+     *  This method sets a vector by reading its values from a file. Its final distribution
+     *  is also read from a file.
+     *
+     *  @param[in] vectorFileName contains the vector data
+     *  @param[in] distributionFileName is name of the file that contains the owner for each element.
+     *
+     *   \code
+     *      DenseVector<double> vector;
+     *      vector.readFromFile( "vector.mtx", "BLOCK" );
+     *      vector.readFromFile( "vector.mtx", "owners.mtx" )
+     *      vector.readFromFile( "vector_%r.mtx", "owners.mtx" )
+     *      vector.readFromFile( "vector.mtx", "owners_%r.mtx" )
+     *      vector.readFromFile( "vector_%r.mtx", "owners_%r.mtx" )
+     *   \endcode
+     */
+    void readFromFile( const std::string& vectorFileName, const std::string& distributionFileName );
+
+    /**
      * @brief Pure method to read a vector from an open IOFile.
      *
      * - the distributed I/O mode of file decides how the data is read in

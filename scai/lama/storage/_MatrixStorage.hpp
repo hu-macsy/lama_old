@@ -433,6 +433,20 @@ public:
     void readFromFile( const std::string& fileName );
 
     /**
+     * @brief read contiguous part of matrix storage from an input file
+     *
+     * @param[in] fileName is the name of the input file (suffix must be added according to the file type)
+     * @param[in] firstRow is the first row to read
+     * @param[in] nRows    specifies the number of rows to read, defaults to number of rows of full storage - firstRow
+     *
+     * Note: default argument for nRows is invalidIndex as the number of rows in full storage might not be known
+     */
+    virtual void readFromFile(
+        const std::string& fileName,
+        const IndexType firstRow = 0,
+        const IndexType nRows = invalidIndex ) = 0;
+
+    /**
      * @brief write the matrix storage to an output file
      *
      * @param[in] fileName  is the name of the output file, suffix determines FileIO class used for writing

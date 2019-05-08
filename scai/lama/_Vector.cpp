@@ -38,6 +38,7 @@
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/dmemo/SingleDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/dmemo/GeneralDistribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/Distribution.hpp>
 
@@ -140,6 +141,40 @@ void _Vector::readFromFile( const std::string& fileName, DistributionPtr distrib
 {
     // ToDo: distribution might be used for collective mode if it is a block distribution
     readFromFile( fileName );
+    redistribute( distribution );
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+void _Vector::readFromFile( const std::string& vectorFileName, const std::string& distributionFileName )
+{
+    readFromFile( vectorFileName );
+
+    DistributionPtr distribution;
+
+    if ( distributionFileName == "BLOCK" )
+    {
+        std::string kind = getDistribution().getKind();  // kind of the current distribution
+
+        if ( kind == "BLOCK" ||  kind == "GEN_BLOCK" )
+        {
+            return;   // already done.
+        }
+
+        distribution = dmemo::blockDistribution( this->size() );
+    }
+    else
+    {
+        DenseVector<IndexType> owners;
+
+        owners.readFromFile( distributionFileName );
+
+        SCAI_ASSERT_EQ_ERROR( owners.size(), this->size(), 
+                              "size of distribution does not match size of vector" )
+
+        distribution = generalDistributionByNewOwners( owners.getDistribution(), owners.getLocalValues() );
+    }
+
     redistribute( distribution );
 }
 

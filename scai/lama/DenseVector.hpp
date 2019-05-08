@@ -696,6 +696,22 @@ DenseVector<ValueType> denseVectorLinear(
     denseVector.fillLinearValues( startValue, inc );
     return denseVector;
 }
+
+// deprecated old function
+
+template<typename ValueType>
+DenseVector<ValueType> linearDenseVector(
+    const IndexType n,
+    const ValueType startValue,
+    const ValueType inc,
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    DenseVector<ValueType> denseVector( ctx );
+    denseVector.allocate( n );
+    denseVector.fillLinearValues( startValue, inc );
+    return denseVector;
+}
+
 /**
  * @brief create a distributed vector and fill it with linear values
  *

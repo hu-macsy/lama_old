@@ -121,6 +121,23 @@ common::ScalarType MatrixStorage<ValueType>::getValueType() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void MatrixStorage<ValueType>::readFromFile( const std::string& fileName, const IndexType firstRow, IndexType nRows )
+{
+    if ( firstRow == 0 && nRows == invalidIndex )
+    {
+        readFromFile( fileName );
+    }
+    else
+    {
+        CSRStorage<ValueType> tmp;
+        tmp.readFromFile( fileName );
+        tmp.copyBlockTo( *this, firstRow, nRows );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void MatrixStorage<ValueType>::buildCSCData(
     HArray<IndexType>& colIA,
     HArray<IndexType>& colJA,

@@ -104,6 +104,10 @@ public:
         return newMatrixStorage( getNumRows(), getNumColumns() );
     }
 
+    /** Implemenation of pure method _MatrixStorage::readFromFile */
+
+    virtual void readFromFile( const std::string& fileName, const IndexType firstRow = 0, const IndexType nRows = invalidIndex );
+
     /** Implementation of pure method. */
 
     virtual common::ScalarType getValueType() const;
