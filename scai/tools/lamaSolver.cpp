@@ -46,6 +46,7 @@
 #include <scai/solver/CG.hpp>
 #include <scai/solver/SimpleAMG.hpp>
 #include <scai/solver/GMRES.hpp>
+#include <scai/solver/Jacobi.hpp>
 #include <scai/solver/Kaczmarz.hpp>
 #include <scai/solver/Richardson.hpp>
 #include <scai/solver/BiCGstab.hpp>
@@ -408,6 +409,13 @@ int main( int argc, const char* argv[] )
             crit.reset( new ResidualThreshold<ValueType>( norm, eps, ResidualCheck::Absolute ) );
         }
 
+        shared_ptr<Solver<ValueType> > myPreconditioner;
+
+        if ( lamaconf.getPreconditionerName().length() > 0 )
+        {
+            myPreconditioner.reset( Solver<ValueType>::getSolver( lamaconf.getPreconditionerName() ) );
+        }
+
         // Stopping criterion can ony be set for an iterative solver
 
         IterativeSolver<ValueType>* itSolver = dynamic_cast<IterativeSolver<ValueType>*>( mySolver.get() );
@@ -415,6 +423,11 @@ int main( int argc, const char* argv[] )
         if ( itSolver != NULL )
         {
             itSolver->setStoppingCriterion( crit );
+
+            if ( myPreconditioner )
+            {
+                itSolver->setPreconditioner( myPreconditioner );
+            }
         }
         else
         {

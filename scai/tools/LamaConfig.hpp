@@ -100,6 +100,10 @@ public:
 
     const std::string& getSolverName( ) const;
 
+    /** Getter for the preconditioner id */
+
+    const std::string& getPreconditionerName( ) const;
+
     /** Getter for the norm id */
 
     const std::string& getNorm( ) const;
@@ -183,6 +187,7 @@ public:
 private:
 
     std::string mSolverName;   // name of solver, used for factory
+    std::string mPreconditionerName;   // name of solver, used for factory
     std::string mNorm;         // name of norm, not yet factory
 
     lama::Format mMatrixFormat;
@@ -349,6 +354,7 @@ LamaConfig::LamaConfig()
     }
 
     mSolverName = "CG";
+    mPreconditionerName = "";
 
     if ( common::Settings::getEnvironment( val, "SCAI_SOLVER" ) )
     {
@@ -361,6 +367,20 @@ LamaConfig::LamaConfig()
         else
         {
             mSolverName = val;
+        }
+    }
+
+    if ( common::Settings::getEnvironment( val, "SCAI_PRECONDITIONER" ) )
+    {
+        // check if preconditioner is available
+
+        if ( !solver::_Solver::canCreate( solver::SolverCreateKeyType( mValueType, val ) ) )
+        {
+            CONFIG_ERROR( "preconditioner " << val << " not available" )
+        }
+        else
+        {
+            mPreconditionerName = val;
         }
     }
 
@@ -403,6 +423,7 @@ void LamaConfig::writeAt( std::ostream& stream ) const
     stream << "lamaSolver configuration" << std::endl;
     stream << "========================" << std::endl;
     stream << "Solver            = " << mSolverName << std::endl;
+    stream << "Preconditioner    = " << mPreconditionerName << std::endl;
     stream << "Solver Logging    = " << mLogLevel << std::endl;
     stream << "Context           = " << getContext() << std::endl;
     stream << "Communicator      = " << *mComm << std::endl;
@@ -475,6 +496,11 @@ solver::LogLevel LamaConfig::getLogLevel() const
 const std::string& LamaConfig::getSolverName( ) const
 {
     return mSolverName;
+}
+
+const std::string& LamaConfig::getPreconditionerName( ) const
+{
+    return mPreconditionerName;
 }
 
 const std::string& LamaConfig::getNorm( ) const
