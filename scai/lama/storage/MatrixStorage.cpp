@@ -123,16 +123,51 @@ common::ScalarType MatrixStorage<ValueType>::getValueType() const
 template<typename ValueType>
 void MatrixStorage<ValueType>::readFromFile( const std::string& fileName, const IndexType firstRow, IndexType nRows )
 {
+    SCAI_LOG_INFO( logger, "MatrixStorage<" << getValueType() << ">::readFromFile( " << fileName 
+                           << " ), first = " << firstRow << ", n = " << nRows )
+
+    SCAI_REGION( "Storage.readFromFile" )
+
+    std::string suffix = FileIO::getSuffix( fileName );
+
+    // Note: reading does not care about binary argument, just read as it is
+
+    if ( !FileIO::canCreate( suffix ) )
+    {
+        COMMON_THROWEXCEPTION( "readFromFile " << fileName << ", illegal suffix " << suffix )
+    }
+
+    // okay, we can use FileIO class from factory
+
+    std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+
+    fileIO->open( fileName.c_str(), "r", DistributedIOMode::INDEPENDENT );
+
     if ( firstRow == 0 && nRows == invalidIndex )
     {
-        readFromFile( fileName );
+        fileIO->readStorage( *this );
     }
     else
     {
-        CSRStorage<ValueType> tmp;
-        tmp.readFromFile( fileName );
-        tmp.copyBlockTo( *this, firstRow, nRows );
+        // section not yet supported here, so read the complete storage and restrict it to the selected range
+
+        CSRStorage<ValueType> allStorage;
+
+        fileIO->readStorage( allStorage );
+
+        IndexType nRowsUsed = nRows;
+
+        if ( nRows == invalidIndex )
+        {
+            nRowsUsed = allStorage.getNumRows() - firstRow;
+        }
+
+        allStorage.copyBlockTo( *this, firstRow, nRowsUsed );
     }
+
+    fileIO->close();
+
+    check( "read matrix" );
 }
 
 /* --------------------------------------------------------------------------- */

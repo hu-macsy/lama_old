@@ -426,20 +426,15 @@ public:
     virtual MatrixStorageCreateKeyType getCreateValue() const = 0;
 
     /**
-     * @brief read the matrix storage from an input file
-     *
-     * @param[in] fileName is the name of the input file (suffix must be added according to the file type)
-     */
-    void readFromFile( const std::string& fileName );
-
-    /**
-     * @brief read contiguous part of matrix storage from an input file
+     * @brief Pure independent method to read full or a contiguous part of matrix storage from an input file
      *
      * @param[in] fileName is the name of the input file (suffix must be added according to the file type)
      * @param[in] firstRow is the first row to read
      * @param[in] nRows    specifies the number of rows to read, defaults to number of rows of full storage - firstRow
      *
      * Note: default argument for nRows is invalidIndex as the number of rows in full storage might not be known
+     *
+     * This routine is completely independent, i.e. if called by multiple processors, each processor opens the file.
      */
     virtual void readFromFile(
         const std::string& fileName,

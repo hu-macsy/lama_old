@@ -296,38 +296,6 @@ void _MatrixStorage::writeToFile(
     }
 }
 
-/* ========================================================================= */
-
-void _MatrixStorage::readFromFile( const std::string& fileName )
-{
-    SCAI_LOG_INFO( logger, "MatrixStorage<" << getValueType() << ">::readFromFile( " << fileName << ")" )
-
-    SCAI_REGION( "Storage.readFromFile" )
-
-    std::string suffix = FileIO::getSuffix( fileName );
-
-    // Note: reading does not care about binary argument, just read as it is
-
-    if ( FileIO::canCreate( suffix ) )
-    {
-        // okay, we can use FileIO class from factory
-
-        std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
-
-        SCAI_LOG_INFO( logger, "Got from factory: " << *fileIO )
-
-        fileIO->open( fileName.c_str(), "r", DistributedIOMode::INDEPENDENT );
-        fileIO->readStorage( *this );
-        fileIO->close();
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "readFromFile " << fileName << ", illegal suffix " << suffix )
-    }
-
-    check( "read matrix" );
-}
-
 /* ---------------------------------------------------------------------------------- */
 
 size_t _MatrixStorage::getMemoryUsage() const

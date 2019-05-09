@@ -795,6 +795,7 @@ void AssemblyStorage<ValueType>::buildCSR(
     auto csrJA = hostWriteOnlyAccess( *ja, mNumValues );
     auto csrValues = hostWriteOnlyAccess( *values, mNumValues );
 
+    #pragma omp parallel for
     for ( IndexType i = 0; i < getNumRows(); ++i )
     {
         IndexType offset = 0;
@@ -1105,7 +1106,15 @@ void AssemblyStorage<ValueType>::matrixTimesVector(
     const HArray<ValueType>& y,
     const common::MatrixOp op ) const
 {
-    SCAI_LOG_ERROR( logger, "matrixTimesVector not supported on an assembly storage, please convert" )
+    static bool warn = true;   
+
+    if ( warn )
+    {
+        SCAI_LOG_WARN( logger, "matrixTimesVector<" << getValueType() 
+                                << "> not supported on an assembly storage, will be converted to CSR" )
+
+        warn = false;  // print warning only once
+    }
 
     CSRStorage<ValueType> csr;
     csr.assign( *this );
