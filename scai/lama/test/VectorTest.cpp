@@ -583,6 +583,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( PowTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( ComplexTest, ValueType, scai_numeric_test_types )
 {
     // skip this test if ValueType is not complex as imag would return 0
@@ -633,6 +635,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ComplexTest, ValueType, scai_numeric_test_types )
         BOOST_CHECK_EQUAL( diff, 0 );
     }
 }
+
+#endif
 
 /* --------------------------------------------------------------------- */
 
