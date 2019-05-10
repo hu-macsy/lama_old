@@ -82,7 +82,7 @@ void bench( const Communicator& comm, const PartitionId source, const PartitionI
 
     double time = common::Walltime::get();
 
-    for ( int iter = 0; iter < NITER; ++iter )
+    for ( IndexType iter = 0; iter < NITER; ++iter )
     {
         comm.exchangeByPlan( targetArray, recvPlan, sourceArray, sendPlan );
     
