@@ -58,9 +58,6 @@ namespace solver
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SimpleAMG<ValueType>::logger, 
                               "Solver.IterativeSolver.SimpleAMG" )
 
-SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SimpleAMG<ValueType>::SimpleAMGRuntime::logger, 
-                              "Solver.IterativeSolver.SimpleAMG.SimpleAMGRuntime" )
-
 using lama::Matrix;
 using lama::Vector;
 
@@ -127,8 +124,17 @@ SimpleAMG<ValueType>::SimpleAMGRuntime::SimpleAMGRuntime() :
 }
 
 template<typename ValueType>
+SimpleAMG<ValueType>::SimpleAMGRuntime::~SimpleAMGRuntime() 
+{
+    SCAI_LOG_INFO( logger, "~SimpleAMGRuntime, delete setup" )
+    mSetup.reset();
+    SCAI_LOG_INFO( logger, "~SimpleAMGRuntime" )
+}
+
+template<typename ValueType>
 SimpleAMG<ValueType>::~SimpleAMG()
 {
+    SCAI_LOG_INFO( logger, "~SimpleAMG" )
 }
 
 /* ========================================================================= */
