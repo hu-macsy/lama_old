@@ -496,6 +496,13 @@ void _Matrix::redistribute( const dmemo::RedistributePlan& redistributor )
 
 /* ---------------------------------------------------------------------------------*/
 
+void _Matrix::replicate()
+{
+    redistribute( dmemo::noDistribution( getNumRows() ), dmemo::noDistribution( getNumColumns() ) );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
 void _Matrix::checkLocalStorageSizes( const _MatrixStorage& localStorage, const Distribution& rowDist )
 {
     // make some 'global' checks to verify correct sizes on all processors

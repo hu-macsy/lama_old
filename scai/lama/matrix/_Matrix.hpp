@@ -326,6 +326,11 @@ public:
      */
     virtual void redistribute( const dmemo::RedistributePlan& redistributor );
 
+    /** 
+     * @brief Replicate this matrix, i.e. redistribute with NoDistribution( numRows ), NoDistribution( numColuns ) )
+     */
+    void replicate();
+
     /**
      *  @brief Resize a given matrix.
      *
