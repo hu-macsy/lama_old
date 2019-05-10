@@ -505,14 +505,6 @@ private:
 
     IndexType mNumValues; //!< count number of all row elements
 
-    bool mDiagonalProperty;
-
-    /**
-     * @brief checks if in each row the diagonal element is stored first.
-     *
-     */
-    virtual bool checkDiagonalProperty() const;
-
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     static std::string initTypeName();
