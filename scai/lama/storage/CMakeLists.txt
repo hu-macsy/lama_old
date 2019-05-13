@@ -43,6 +43,7 @@ set ( CLASSES
         ELLStorage
         JDSStorage
         StencilStorage
+        AssemblyStorage
 
         StorageMethods
     )

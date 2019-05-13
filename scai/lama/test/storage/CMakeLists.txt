@@ -43,6 +43,7 @@ scai_project (
         TypedStorageTest
         StorageConstructorTest
 
+        AssemblyStorageTest
         COOStorageTest
         CSRStorageTest
         ELLStorageTest
