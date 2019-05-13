@@ -67,6 +67,7 @@
 #include <thrust/tuple.h>
 #include <thrust/transform.h>
 #include <thrust/transform_reduce.h>
+#include <thrust/device_malloc.h>
 
 #include <functional>
 

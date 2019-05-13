@@ -77,6 +77,8 @@
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/zip_iterator.h>
 #include <thrust/reduce.h>
+#include <thrust/device_malloc.h>
+#include <thrust/device_free.h>
 
 #include <functional>
 

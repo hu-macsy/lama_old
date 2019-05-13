@@ -49,6 +49,7 @@
 
 // thrust
 #include <thrust/device_vector.h>
+#include <thrust/device_malloc.h>
 #include <thrust/fill.h>
 #include <thrust/functional.h>
 #include <thrust/iterator/constant_iterator.h>
