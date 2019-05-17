@@ -121,6 +121,14 @@ public:
 
     virtual bool isEqual( const Distribution& other ) const;
 
+    /** Check if this general block distribution is same as other one */
+
+    bool isSameGenBlockDistribution( const GenBlockDistribution& other ) const;
+
+    /** Check if this general block distribution is the usual block distribution */
+
+    bool isBlockDistribution() const;
+
     virtual void writeAt( std::ostream& stream ) const;
 
     /** Override Distribution::computeOwners

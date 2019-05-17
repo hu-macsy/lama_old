@@ -32,6 +32,7 @@
 
 // local library
 #include <scai/dmemo/Distributed.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 
 // std
@@ -353,6 +354,58 @@ IndexType GenBlockDistribution::getAnyGlobalIndex( const IndexType localIndex, c
 
 /* ---------------------------------------------------------------------- */
 
+bool GenBlockDistribution::isSameGenBlockDistribution( const GenBlockDistribution& other ) const
+{
+    // make at least sure that both distribution have same processor set
+
+    if ( getCommunicator() != other.getCommunicator() )
+    {
+        return false;
+    }
+
+    PartitionId np = getCommunicator().getSize();
+
+    bool equal = true;
+
+    for ( PartitionId p = 0; p < np + 1; ++p )
+    {
+        if ( mOffsets[p] != other.mOffsets[p] )
+        {
+            equal = false;
+            break;
+        }
+    }
+
+    return equal;
+}
+
+/* ---------------------------------------------------------------------- */
+
+bool GenBlockDistribution::isBlockDistribution() const
+{
+    const PartitionId np = getCommunicator().getSize();
+    const IndexType   N  = getGlobalSize();
+
+    const IndexType blockSize = ( N + np - 1 ) / np;
+
+    bool equal = true;
+
+    for ( PartitionId p = 0; p < np + 1; ++p )
+    {
+        IndexType otherOffset = std::min( p * blockSize, N );
+
+        if ( mOffsets[p] != otherOffset )
+        {
+            equal = false;
+            break;
+        }
+    }
+
+    return equal;
+}
+
+/* ---------------------------------------------------------------------- */
+
 bool GenBlockDistribution::isEqual( const Distribution& other ) const
 {
     bool isSame = false;
@@ -364,25 +417,19 @@ bool GenBlockDistribution::isEqual( const Distribution& other ) const
         return isSame;
     }
 
-    if ( other.getKind() != getKind() )
+    if ( strcmp( other.getKind(), BlockDistribution::getId() ) == 0 )
     {
-        return false;
+        // other is block distribution, we know already same size and same number of processors
+
+        return isBlockDistribution();
     }
 
-    const GenBlockDistribution& otherBlock = reinterpret_cast<const GenBlockDistribution&>( other );
-
-    bool equal = true;
-
-    for ( PartitionId p = 0; p < mCommunicator->getSize() + 1; ++p )
+    if ( strcmp( other.getKind(), GenBlockDistribution::getId() ) == 0 )
     {
-        if ( mOffsets[p] != otherBlock.mOffsets[p] )
-        {
-            equal = false;
-            break;
-        }
+        return isSameGenBlockDistribution( static_cast<const GenBlockDistribution&>( other ) );
     }
 
-    return equal;
+    return isSame;
 }
 
 /* ---------------------------------------------------------------------- */

@@ -213,6 +213,21 @@ BOOST_AUTO_TEST_CASE( isEqualTest )
     BOOST_CHECK( ( *genblockdist1 ).isEqual( *genblockdist2 ) );
     BOOST_CHECK( ( *genblockdist1 ).isEqual( *genblockdist3 ) );
     BOOST_CHECK( !( *genblockdist1 ).isEqual( *genblockdist4 ) );
+
+    BOOST_CHECK( genblockdist1->isSameGenBlockDistribution( *genblockdist3 ) );
+    BOOST_CHECK( genblockdist1->isBlockDistribution() );
+    BOOST_CHECK( genblockdist4->isBlockDistribution() );
+
+    const IndexType N = 1000 * comm->getSize();
+    auto genblockdist5 = genBlockDistributionByWeight( N, 1.0f );
+    BOOST_CHECK( genblockdist5->isBlockDistribution() );
+    auto genblockdist6 = genBlockDistributionByWeight( N, float( comm->getRank() + 1 ) );
+    if ( comm->getSize() > 1 )
+    {
+        BOOST_CHECK( !genblockdist6->isBlockDistribution() );
+    }
+    auto genblockdist7 = genBlockDistributionByWeight( N, 2.0f );
+    BOOST_CHECK( genblockdist7->isSameGenBlockDistribution( *genblockdist5 ) );
 }
 
 /* --------------------------------------------------------------------- */
