@@ -37,6 +37,7 @@ scai_project (
 
 	SOURCES
 
+    	AMGSetupTest
     	BiCGstabTest
         CGTest
         CGSTest

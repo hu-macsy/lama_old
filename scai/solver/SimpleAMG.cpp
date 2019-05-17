@@ -146,14 +146,14 @@ void SimpleAMG<ValueType>::loadSetupLibs()
 {
     std::string amgSetupLibrary;
 
-    if ( common::Settings::getEnvironment( amgSetupLibrary, "SCAI_AMG_SETUP_LIBRARY" ) )
+    if ( common::Settings::getEnvironment( amgSetupLibrary, "SCAI_LIBRARY_PATH" ) )
     {
         SCAI_LOG_INFO( logger, "Load all module libraries in " << amgSetupLibrary  )
         scai::common::LibModule::loadLibsByPath( amgSetupLibrary.c_str() );
     }
     else
     {
-        SCAI_LOG_WARN( logger, "SCAI_AMG_SETUP_LIBRARY not set, take SingleGridSetup" )
+        SCAI_LOG_WARN( logger, "SCAI_LIBRARY_PATH not set, only defaults can be used" )
     }
 }
 
@@ -170,42 +170,38 @@ void SimpleAMG<ValueType>::initialize( const Matrix<ValueType>& coefficients )
         loadSetupLibs();
     }
 
-    // Info about available AMGSetup f
+    std::string amgSetupKey = "SingleGridSetup";    // take this as default
 
-    std::vector<AMGSetupCreateKeyType> values;  // string is create type for the factory
-
-    _AMGSetup::getCreateValues( values );
-
-    SCAI_LOG_INFO( logger, "Factory of AMGSetup: " << values.size() << " entries" )
-
-    for ( size_t i = 0; i < values.size(); ++i )
+    if ( common::Settings::getEnvironment( amgSetupKey, "SCAI_AMG_SETUP" ) )
     {
-        // SCAI_LOG_DEBUG( logger, "   Registered values[" << i << "] = " << values[i] )
+        if ( !AMGSetup<ValueType>::canCreate( amgSetupKey ) )
+        {
+            std::vector<std::string> values;
+
+            AMGSetup<ValueType>::getCreateValues( values );
+
+            std::string valuesStr;
+
+            for ( auto const& v : values )
+            {
+                if ( valuesStr.length() )
+                {
+                    valuesStr += ":";
+                }
+                valuesStr += v;
+            }
+
+            SCAI_LOG_ERROR( logger, "AMGSetup" << amgSetupKey << " not available, only " << valuesStr )
+
+            amgSetupKey = "SingleGridSetup";
+        }
     }
 
-    if ( runtime.mSetup.get() == NULL )
-    {
-        // no setup defined yet, so we take on from the factory
-        if ( AMGSetup<ValueType>::canCreate( "SAMGPSetup" ) )
-        {
-            runtime.mSetup.reset( AMGSetup<ValueType>::getAMGSetup( "SAMGPSetup" ) );
-            SCAI_LOG_INFO( logger, "SimpleAMG: take SAMGPSetup as AMGSetup" )
-        }
-        else if ( AMGSetup<ValueType>::canCreate( "SimpleAMGSetup" ) )
-        {
-            runtime.mSetup.reset( AMGSetup<ValueType>::getAMGSetup( "SimpleAMGSetup" ) );
-            SCAI_LOG_INFO( logger, "SimpleAMG: take SimpleAMGSetup as AMGSetup" )
-        }
-        else if ( AMGSetup<ValueType>::canCreate( "SingleGridSetup" ) ) 
-        {
-            runtime.mSetup.reset( AMGSetup<ValueType>::getAMGSetup( "SingleGridSetup" ) );
-            SCAI_LOG_INFO( logger, "SimpleAMG: take SingleGridSetup as AMGSetup" )
-        }
-    }
+    runtime.mSetup.reset( AMGSetup<ValueType>::getAMGSetup( amgSetupKey ) );
 
     if ( !runtime.mSetup )
     {
-        COMMON_THROWEXCEPTION( "No AMGSetup found" )
+        COMMON_THROWEXCEPTION( "No AMGSetup found, key = " << amgSetupKey )
     }
 
     AMGSetup<ValueType>& amgSetup = *runtime.mSetup;

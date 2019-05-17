@@ -1179,10 +1179,8 @@ void SparseMatrix<ValueType>::setLocalColumn( const HArray<ValueType>& column,
 template<typename ValueType>
 void SparseMatrix<ValueType>::getDiagonal( Vector<ValueType>& diagonal ) const
 {
-    if ( getRowDistribution() != getColDistribution() )
-    {
-        COMMON_THROWEXCEPTION( "Diagonal calculation only for square matrices with same row/col distribution" )
-    }
+    SCAI_ASSERT_EQ_ERROR( getRowDistribution(), getColDistribution(), 
+                          "getDiagonal only for square matrices with same row/col distribution" )
 
     if ( diagonal.getVectorKind() != VectorKind::DENSE )
     {
