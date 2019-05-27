@@ -156,7 +156,13 @@ void AMGSetup<ValueType>::initialize( const Matrix<ValueType>& mainSystemMatrix 
 
     mMainGalerkinMatrix = &mainSystemMatrix;
 
-    createMatrixHierarchy();   // virtual function to be implemented by all classes
+    // clear the last matrix hierarchy
+
+    mGalerkinMatrices.clear();
+    mInterpolationMatrices.clear();
+    mRestrictionMatrices.clear();
+
+    createMatrixHierarchy();   // virtual function implemented individually by derived AMGSetup classes
 
     createVectorHierarchy();   // create objects for rhs, solution, residual on each level
 
@@ -241,8 +247,10 @@ void AMGSetup<ValueType>::addNextLevel(
 
     // check for a correct interpolation matrix, #rows must be same as size of last galerkin matrix
 
-    SCAI_ASSERT_EQ_ERROR( interpolationMatrix->getNumRows(), getGalerkin( getNumLevels() ).getNumRows(), 
-                          "interpolation matrix for level does not match size of Galerkin matrix." )
+    const Matrix<ValueType>& lastGalerkin = getGalerkin( getNumLevels() - 1 );
+
+    SCAI_ASSERT_EQ_ERROR( interpolationMatrix->getNumRows(), lastGalerkin.getNumRows(), 
+                          "interpolation matrix for level does not match size of last Galerkin matrix." )
 
     if ( restrictionMatrix.get() )
     {

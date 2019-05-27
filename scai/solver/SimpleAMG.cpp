@@ -174,6 +174,8 @@ void SimpleAMG<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 
     if ( common::Settings::getEnvironment( amgSetupKey, "SCAI_AMG_SETUP" ) )
     {
+        // give an error message if key is unknown, printing all possible keys
+
         if ( !AMGSetup<ValueType>::canCreate( amgSetupKey ) )
         {
             std::vector<std::string> values;
@@ -191,10 +193,14 @@ void SimpleAMG<ValueType>::initialize( const Matrix<ValueType>& coefficients )
                 valuesStr += v;
             }
 
-            SCAI_LOG_ERROR( logger, "AMGSetup" << amgSetupKey << " not available, only " << valuesStr )
+            SCAI_LOG_ERROR( logger, "SCAI_AMG_SETUP=" << amgSetupKey << ", key not available, only " << valuesStr )
 
             amgSetupKey = "SingleGridSetup";
         }
+    }
+    else
+    {
+        SCAI_LOG_WARN( logger, "Environment variable SCAI_AMG_SETUP not set, take default: " << amgSetupKey )
     }
 
     runtime.mSetup.reset( AMGSetup<ValueType>::getAMGSetup( amgSetupKey ) );
