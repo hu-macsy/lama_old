@@ -42,6 +42,7 @@
 
 #include <scai/tracing.hpp>
 #include <scai/common/macros/instantiate.hpp>
+#include <scai/common/exception/InvalidArgumentException.hpp>
 
 // std
 #include <cstdlib>
@@ -193,13 +194,13 @@ void SimpleAMG<ValueType>::initialize( const Matrix<ValueType>& coefficients )
                 valuesStr += v;
             }
 
-            SCAI_LOG_ERROR( logger, "SCAI_AMG_SETUP=" << amgSetupKey << ", key not available, only " << valuesStr )
-
-            amgSetupKey = "SingleGridSetup";
+            SCAI_THROWEXCEPTION( common::InvalidArgumentException, 
+                                 "SCAI_AMG_SETUP=" << amgSetupKey << ", key not available, only " << valuesStr )
         }
     }
     else
     {
+        // ToDo: choose a better setup if available
         SCAI_LOG_WARN( logger, "Environment variable SCAI_AMG_SETUP not set, take default: " << amgSetupKey )
     }
 
