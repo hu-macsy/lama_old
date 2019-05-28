@@ -35,6 +35,7 @@
 #include <scai/solver/logger/CommonLogger.hpp>
 #include <scai/solver/logger/FileLogger.hpp>
 #include <scai/solver/CG.hpp>
+#include <scai/solver/Jacobi.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
@@ -79,7 +80,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, ValueType, scai_numeric_test_typ
 
 // ---------------------------------------------------------------------------------------------------------------
 
-//TODO:
 BOOST_AUTO_TEST_CASE ( SetterTest )
 {
     typedef SCAI_TEST_TYPE ValueType;
@@ -87,21 +87,29 @@ BOOST_AUTO_TEST_CASE ( SetterTest )
     scai::lama::CSRSparseMatrix<ValueType> coefficients;
     scai::lama::MatrixCreator::buildPoisson2D( coefficients, 5, N, N );
     SimpleAMG<ValueType> SimpleAMGSolver( "SimpleAMGSolver" );
+
     /* cant not be tested: not getter
+
     SimpleAMGSolver.setHostOnlyLevel( IndexType hostOnlyLevel );
     SimpleAMGSolver.setHostOnlyVars( IndexType hostOnlyVars );
     SimpleAMGSolver.setReplicatedLevel( IndexType replicatedLevel );
     SimpleAMGSolver.setMaxLevels( unsigned int levels );
     SimpleAMGSolver.setMinVarsCoarseLevel( unsigned int vars );*/
+
     SolverPtr<ValueType> cgSolver ( new CG<ValueType> ( "CGCoarseLevelSolver" ) );
-    scai::hmemo::ContextPtr context = scai::hmemo::Context::getContextPtr();
-    // does not work because coarselevelsolver in SingleGridSetup gets overridden by smoother
-    //SimpleAMGSolver.setCoarseLevelSolver( cgSolver );
-    //SimpleAMGSolver.initialize( coefficients ); // solver needs to be initialized to have a AMGSetup to pass coarselevelsolver to setup
-    //BOOST_CHECK_EQUAL( SimpleAMGSolver.getCoarseLevelSolver().getId(), cgSolver->getId() );
-    SimpleAMGSolver.setSmoother( cgSolver );
-    SimpleAMGSolver.initialize( coefficients ); // solver needs to be initialized to have a AMGSetup to pass coarselevelsolver to setup
-    BOOST_CHECK_EQUAL( SimpleAMGSolver.getSmoother( 0 ).getId(), cgSolver->getId() );
+    SimpleAMGSolver.setCoarseLevelSolver( cgSolver );
+
+    SolverPtr<ValueType> jacobiSolver ( new Jacobi<ValueType> ( "JacobiSmoother" ) );
+    SimpleAMGSolver.setSmoother( jacobiSolver );
+
+    SimpleAMGSolver.initialize( coefficients ); 
+
+    BOOST_CHECK_EQUAL( SimpleAMGSolver.getCoarseLevelSolver().getId(), cgSolver->getId() );
+
+    for ( IndexType i = 0; i < SimpleAMGSolver.getNumLevels() - 1; ++i )
+    {
+        BOOST_CHECK_EQUAL( SimpleAMGSolver.getSmoother( i ).getId(), jacobiSolver->getId() );
+    }
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -134,26 +142,6 @@ BOOST_AUTO_TEST_CASE ( SolveTest )
 
     simpleAMGSolver.initialize( coefficients );
 
-    for ( IndexType i = 0; i < simpleAMGSolver.getNumLevels(); ++i )
-    {
-        const Matrix<ValueType>& galerkin    = simpleAMGSolver.getGalerkin( i );
-        const Matrix<ValueType>& restriction = simpleAMGSolver.getRestriction( i );
-        const Matrix<ValueType>& interpol    = simpleAMGSolver.getInterpolation( i );
-        const Solver<ValueType>& smoother    = simpleAMGSolver.getSmoother( i );
-
-        if ( i == 0 )
-        {
-            BOOST_CHECK_EQUAL( galerkin.getNumRows(), coefficients.getNumRows() );
-        }
-
-        BOOST_CHECK_EQUAL( restriction.getNumRows(), interpol.getNumColumns() );
-        BOOST_CHECK_EQUAL( interpol.getNumRows(), restriction.getNumColumns() );
-
-        // smoother must be an iterative solver
-
-        BOOST_CHECK( dynamic_cast<const IterativeSolver<ValueType>*>( &smoother ) );
-    }
-
     auto rhs = denseVector<ValueType>( coefficients.getRowDistributionPtr(), 1 );
     auto x = denseVector<ValueType>( coefficients.getColDistributionPtr(), 0 );
 
@@ -161,9 +149,12 @@ BOOST_AUTO_TEST_CASE ( SolveTest )
 
     // check that timing works
 
-    BOOST_CHECK( simpleAMGSolver.getAverageSmootherTime() > 0.0 );
-    BOOST_CHECK( simpleAMGSolver.getAverageTransferTime() > 0.0 );
-    BOOST_CHECK( simpleAMGSolver.getAverageResidualTime() > 0.0 );
+    if ( simpleAMGSolver.getNumLevels() > 1 )
+    {
+        BOOST_CHECK( simpleAMGSolver.getAverageSmootherTime() > 0.0 );
+        BOOST_CHECK( simpleAMGSolver.getAverageTransferTime() > 0.0 );
+        BOOST_CHECK( simpleAMGSolver.getAverageResidualTime() > 0.0 );
+    }
 
     // Now delete the logger file, close it before
 
