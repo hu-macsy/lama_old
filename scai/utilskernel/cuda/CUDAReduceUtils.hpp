@@ -74,6 +74,24 @@ public:
         const ValueType zero,
         const common::BinaryOp redOp );
 
+    /** CUDA implementation for UtilKernelTrait::allCompare */
+
+    template<typename ValueType>
+    static bool allCompare(
+        const ValueType array1[],
+        const ValueType array2[],
+        const IndexType n,
+        const common::CompareOp op );
+
+    /** CUDA implementation for UtilKernelTrait::allCompareScalar */
+
+    template<typename ValueType>
+    static bool allCompareScalar(
+        const ValueType array[],
+        const ValueType scalar,
+        const IndexType n,
+        const common::CompareOp op );
+
     /** CUDA implementation for UtilKernelTrait::scan */
 
     template<typename ValueType>
