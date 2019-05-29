@@ -206,6 +206,7 @@ void CUDAELLUtils::check(
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "fill result with false failed" )
         bool integrity = thrust::reduce( resultPtr, resultPtr + numRows, true, thrust::logical_and<bool>() );
         SCAI_ASSERT_ERROR( integrity, msg << ": ia to large, or ja out of range" )
+        thrust::device_free( resultPtr );
     }
 }
 
@@ -314,10 +315,12 @@ ValueType CUDAELLUtils::getValue(
         getValueKernel <<< dimGrid, dimBlock>>>( i, j, numRows, rowNumColumns, ja, values, resultRawPtr );
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "getValueKernel failed" );
         SCAI_CHECK_CUDA_ERROR
-        return thrust::reduce( resultPtr, resultPtr + rowNumColumns );
+        ValueType val = thrust::reduce( resultPtr, resultPtr + rowNumColumns );
+        thrust::device_free( resultPtr );
+        return val;
     }
 
-    return static_cast<ValueType>( 0.0 );
+    return static_cast<ValueType>( 0 );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
