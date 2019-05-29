@@ -170,6 +170,8 @@ template<typename ValueType>
 template<typename OtherValueType>
 void SparseVector<ValueType>::assignSparse( const SparseVector<OtherValueType>& other )
 {
+    SCAI_REGION( "Vector.Sparse.assginSparse" )
+
     SCAI_LOG_INFO( logger, "sparseVector<" << common::TypeTraits<ValueType>::id() << "> = "
                         << "sparseVector<" << common::TypeTraits<OtherValueType>::id() )
 
@@ -179,14 +181,19 @@ void SparseVector<ValueType>::assignSparse( const SparseVector<OtherValueType>& 
     } 
 
     allocate( other.getDistributionPtr() );
-    setScalar( static_cast<ValueType>( other.getZero() ) );
-    fillSparseData( other.getNonZeroIndexes(), other.getNonZeroValues(), common::BinaryOp::COPY );
+
+    mZeroValue = static_cast<ValueType>( other.getZero() );
+
+    HArrayUtils::setArray( mNonZeroIndexes, other.getNonZeroIndexes(), common::BinaryOp::COPY, getContextPtr() );
+    HArrayUtils::_setArray( mNonZeroValues, other.getNonZeroValues(), common::BinaryOp::COPY, getContextPtr() );
 }
 
 template<typename ValueType>
 template<typename OtherValueType>
 void SparseVector<ValueType>::assignDense( const DenseVector<OtherValueType>& other )
 {   
+    SCAI_REGION( "Vector.Sparse.assignDense" )
+
     SCAI_LOG_INFO( logger, "sparseVector<" << common::TypeTraits<ValueType>::id() << "> = "
                         << "denseVector<" << common::TypeTraits<OtherValueType>::id() )
 
@@ -209,6 +216,9 @@ SparseVector<ValueType>::SparseVector(
     mNonZeroValues( std::move( nonZeroValues ) ),
     mZeroValue( zero )
 {
+    SCAI_ASSERT_EQ_ERROR( mNonZeroIndexes.size(), mNonZeroValues.size(), 
+                          "#indexes and #values must be same for sparse vector" )
+
     const IndexType size = getDistribution().getLocalSize();
 
     bool isValid = HArrayUtils::validIndexes( mNonZeroIndexes, size, getContextPtr() );
@@ -236,6 +246,9 @@ SparseVector<ValueType>::SparseVector(
     mNonZeroValues( std::move( nonZeroValues ) ),
     mZeroValue( zero )
 {
+    SCAI_ASSERT_EQ_ERROR( mNonZeroIndexes.size(), mNonZeroValues.size(), 
+                          "#indexes and #values must be same for sparse vector" )
+
     bool isValid = HArrayUtils::validIndexes( nonZeroIndexes, n, getContextPtr() );
     
     if ( !isValid )
@@ -460,7 +473,18 @@ void SparseVector<ValueType>::gatherLocalValues(
     const common::BinaryOp op,
     ContextPtr loc ) const
 {
-    HArrayUtils::_sparseGather( values, mZeroValue, mNonZeroValues, mNonZeroIndexes, indexes, op, loc );
+    // for operations on sparse vectors with same patterns it is worth to check for same indexes
+
+    if ( HArrayUtils::all( mNonZeroIndexes, common::CompareOp::EQ, indexes, loc ) )
+    {
+        HArrayUtils::_assign( values, mNonZeroValues, loc );
+    }
+    else
+    {
+        // this operation is not very efficient
+
+        HArrayUtils::_sparseGather( values, mZeroValue, mNonZeroValues, mNonZeroIndexes, indexes, op, loc );
+    }
 }
 
 /* ------------------------------------------------------------------------- */
@@ -477,6 +501,8 @@ template<typename ValueType>
 template<typename OtherValueType>
 void SparseVector<ValueType>::setDenseValuesImpl( const hmemo::HArray<OtherValueType>& values )
 {
+    SCAI_REGION( "Vector.Sparse.setDense" )
+
     const IndexType size = getDistribution().getLocalSize();
 
     SCAI_ASSERT_EQ_ERROR( size, values.size(), "size of local values does not match local size of vector" )
@@ -1064,6 +1090,7 @@ void SparseVector<ValueType>::binaryOp( const Vector<ValueType>& x, const common
 
     if ( x.getVectorKind() == VectorKind::SPARSE && y.getVectorKind() == VectorKind::SPARSE )
     {
+        SCAI_REGION( "Vector.Sparse.binOpSD" )
         const SparseVector<ValueType>& sparseX = static_cast<const SparseVector<ValueType>&>( x );
         const SparseVector<ValueType>& sparseY = static_cast<const SparseVector<ValueType>&>( y );
 
@@ -1071,6 +1098,7 @@ void SparseVector<ValueType>::binaryOp( const Vector<ValueType>& x, const common
     }
     else
     {
+        SCAI_REGION( "Vector.Sparse.binOpSD" )
         SCAI_UNSUPPORTED( "SparseVector<" << common::TypeTraits<ValueType>::id() << ">::binaryOp x " << op << " y" )
         DenseVector<ValueType> tmp;
         tmp.binaryOp( x, op, y );
@@ -1133,6 +1161,8 @@ void SparseVector<ValueType>::binaryOpScalar( const Vector<ValueType>& x, const 
 template<typename ValueType>
 void SparseVector<ValueType>::binaryOpSparse( const SparseVector<ValueType>& x, const common::BinaryOp op, const SparseVector<ValueType>& y )
 {
+    SCAI_REGION( "Vector.Sparse.binOpSparse" )
+
     SCAI_ASSERT_EQ_DEBUG( x.getDistribution(), y.getDistribution(), "serious space mismatch" )
 
     if ( getDistribution() != x.getDistribution() )
@@ -1176,7 +1206,10 @@ void SparseVector<ValueType>::binaryOpSparse( const SparseVector<ValueType>& x, 
 
     // Note: entries in non-zero values that are now ZERO are not removed
 
-    swapSparseValues( resultIndexes, resultValues );
+    mNonZeroIndexes.swap( resultIndexes );
+    mNonZeroValues.swap( resultValues );
+
+    // Note: checks are not required here
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1430,6 +1463,8 @@ void SparseVector<ValueType>::setVector( const _Vector& other, common::BinaryOp 
 
     if ( op == common::BinaryOp::COPY )
     {
+        SCAI_REGION( "Vector.Sparse.setVectorCopy" )
+
         SCAI_ASSERT_ERROR( !swapArgs, "swapping for binary COPY operator not allowed" )
 
         if ( &other == this )
@@ -1449,6 +1484,8 @@ void SparseVector<ValueType>::setVector( const _Vector& other, common::BinaryOp 
 
     if ( mZeroValue == ValueType( 0 ) && op == common::BinaryOp::MULT )
     {
+        SCAI_REGION( "Vector.Sparse.setVectorMult0" )
+
         SCAI_LOG_INFO( logger, "setVector: thisSparse( zero = 0 ) *= otherSparse, other = " << other )
 
         // gather the values from other vector at the non-zero positions 
@@ -1461,6 +1498,8 @@ void SparseVector<ValueType>::setVector( const _Vector& other, common::BinaryOp 
     }
     else if ( other.getValueType() == getValueType() )
     {
+        SCAI_REGION( "Vector.Sparse.setVectorBinary" )
+
         const Vector<ValueType>& otherTyped = static_cast<const Vector<ValueType>&>( other );
 
         if ( !swapArgs )
@@ -1474,6 +1513,8 @@ void SparseVector<ValueType>::setVector( const _Vector& other, common::BinaryOp 
     }
     else
     {
+        SCAI_REGION( "Vector.Sparse.setVectorConvert" )
+
         // Maybe not very efficient if other vector is dense
 
         SparseVector<ValueType> tmpOther;
