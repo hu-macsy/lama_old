@@ -31,7 +31,7 @@ include ( scai_macro/scai_add_example )
 include ( scai_macro/scai_example_makefile )
 include ( scai_macro/scai_run_script )
 
-foreach ( executable blas1 matrix matrix1 simple vector vector_exp vector_op example )
+foreach ( executable blas1 matrix matrix1 simple vector vector_exp vector_op example sparse_vector )
 
     scai_add_example( EXECUTABLE ${executable}.exe
                       FILES      ${executable}.cpp )
