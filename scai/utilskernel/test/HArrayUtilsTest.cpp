@@ -720,7 +720,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( allSparseTest, ValueType, scai_numeric_test_types
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( allTest, ValueType, scai_numeric_test_types )
 {
-    // check of all binary ops on sparse arrays with same pattern
+    // Test for the all reduction operator for HArray
 
     ContextPtr ctx  = Context::getContextPtr();
 

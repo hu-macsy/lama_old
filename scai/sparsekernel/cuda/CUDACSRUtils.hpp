@@ -234,7 +234,8 @@ public:
         IndexType csrJA[],
         ValueType csrValues[],
         const IndexType numDiagonals,
-        const IndexType csrIA[] );
+        const IndexType csrIA[], 
+        const IndexType diagonalIndexes[] );
 
     /** CUDA implementation for CSRKernelTrait::sortRows */
 

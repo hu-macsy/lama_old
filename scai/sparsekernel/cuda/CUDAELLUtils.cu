@@ -67,7 +67,6 @@
 #include <thrust/tuple.h>
 #include <thrust/transform.h>
 #include <thrust/transform_reduce.h>
-#include <thrust/device_malloc.h>
 
 #include <functional>
 
@@ -196,17 +195,15 @@ void CUDAELLUtils::check(
 
     if ( numRows > 0 )
     {
-        thrust::device_ptr<bool> resultPtr = thrust::device_malloc<bool>( numRows );
-        thrust::fill( resultPtr, resultPtr + numRows, false );
-        bool* resultRawPtr = thrust::raw_pointer_cast( resultPtr );
+        thrust::device_vector<bool> result( numRows, false );
+        bool* resultRawPtr = result.data().get();
         const int blockSize = CUDASettings::getBlockSize( numRows );
         dim3 dimBlock( blockSize, 1, 1 );
         dim3 dimGrid = makeGrid( numRows, dimBlock.x );
         checkKernel <<< dimGrid, dimBlock>>>( numRows, numValuesPerRow, numColumns, ia, ja, resultRawPtr );
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "fill result with false failed" )
-        bool integrity = thrust::reduce( resultPtr, resultPtr + numRows, true, thrust::logical_and<bool>() );
+        bool integrity = thrust::reduce( thrust::cuda::par, result.data(), result.data() + numRows, true, thrust::logical_and<bool>() );
         SCAI_ASSERT_ERROR( integrity, msg << ": ia to large, or ja out of range" )
-        thrust::device_free( resultPtr );
     }
 }
 
@@ -306,17 +303,15 @@ ValueType CUDAELLUtils::getValue(
 
     if ( rowNumColumns > 0 )
     {
-        thrust::device_ptr<ValueType> resultPtr = thrust::device_malloc < ValueType > ( rowNumColumns );
-        thrust::fill( resultPtr, resultPtr + rowNumColumns, static_cast<ValueType>( 0.0 ) );
-        ValueType* resultRawPtr = thrust::raw_pointer_cast( resultPtr );
+        thrust::device_vector<ValueType> result( rowNumColumns, static_cast<ValueType>( 0 ) );
+        ValueType* resultRawPtr = result.data().get();
         const int blockSize = CUDASettings::getBlockSize();
         dim3 dimBlock( blockSize, 1, 1 );
         dim3 dimGrid = makeGrid( rowNumColumns, dimBlock.x );
         getValueKernel <<< dimGrid, dimBlock>>>( i, j, numRows, rowNumColumns, ja, values, resultRawPtr );
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "getValueKernel failed" );
         SCAI_CHECK_CUDA_ERROR
-        ValueType val = thrust::reduce( resultPtr, resultPtr + rowNumColumns );
-        thrust::device_free( resultPtr );
+        ValueType val = thrust::reduce( result.data(), result.data() + rowNumColumns );
         return val;
     }
 

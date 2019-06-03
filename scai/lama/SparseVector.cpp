@@ -1159,6 +1159,40 @@ void SparseVector<ValueType>::binaryOpScalar( const Vector<ValueType>& x, const 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseVector<ValueType>::binaryOpSparseSamePattern( const SparseVector<ValueType>& x, const common::BinaryOp op, const SparseVector<ValueType>& y )
+{
+    // here we know that x.getNonZeroIndexes() == y.getNonZeroIndexes() )
+
+    SCAI_REGION( "Vector.Sparse.binOpSparseSamePat" )
+
+    SCAI_ASSERT_EQ_DEBUG( x.getDistribution(), y.getDistribution(), "serious space mismatch" )
+
+    if ( getDistribution() != x.getDistribution() )
+    {
+        // there is no alias of this vector, neither with x nor with y
+
+        allocate( x.getDistributionPtr() );
+    }
+
+    SCAI_LOG_INFO( logger, "binaryOpSparse: this = x " << op << " y, with x = " << x << ", y = " << y );
+
+    const HArray<ValueType>& xValues  = x.getNonZeroValues();
+    const HArray<ValueType>& yValues  = y.getNonZeroValues();
+
+    // copy the non-zero indexes
+
+    mNonZeroIndexes = x.getNonZeroIndexes();
+
+    // binary operation on values array
+
+    HArrayUtils::binaryOp( mNonZeroValues, xValues, yValues, op, getContextPtr() );
+    
+    mZeroValue = common::applyBinary( x.getZero(), op, y.getZero() );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void SparseVector<ValueType>::binaryOpSparse( const SparseVector<ValueType>& x, const common::BinaryOp op, const SparseVector<ValueType>& y )
 {
     SCAI_REGION( "Vector.Sparse.binOpSparse" )
@@ -1171,6 +1205,21 @@ void SparseVector<ValueType>::binaryOpSparse( const SparseVector<ValueType>& x, 
 
         allocate( x.getDistributionPtr() );
     }
+
+    if ( HArrayUtils::all( x.getNonZeroIndexes(), common::CompareOp::EQ, y.getNonZeroIndexes() ) )
+    {
+        binaryOpSparseSamePattern( x, op, y );
+    }
+    else
+    {
+        binaryOpSparseNewPattern( x, op, y );
+    }
+}
+
+template<typename ValueType>
+void SparseVector<ValueType>::binaryOpSparseNewPattern( const SparseVector<ValueType>& x, const common::BinaryOp op, const SparseVector<ValueType>& y )
+{
+    SCAI_REGION( "Vector.Sparse.binOpSparse" )
 
     SCAI_LOG_INFO( logger, "binaryOpSparse: this = x " << op << " y, with x = " << x << ", y = " << y );
 
@@ -1196,7 +1245,7 @@ void SparseVector<ValueType>::binaryOpSparse( const SparseVector<ValueType>& x, 
 
     if ( op == common::BinaryOp::DIVIDE && yZero == common::Constants::ZERO )
     {
-        SCAI_ASSERT_ERROR( resultIndexes.size() == getDistribution().getLocalSize(), "Sparse vector in division has zero elements: " << y )
+        SCAI_ASSERT_EQ_ERROR( resultIndexes.size(), getDistribution().getLocalSize(), "Sparse vector in division has zero elements: " << y )
         mZeroValue = xZero;
     }
     else
@@ -1204,12 +1253,8 @@ void SparseVector<ValueType>::binaryOpSparse( const SparseVector<ValueType>& x, 
         mZeroValue = common::applyBinary( xZero, op, yZero);
     }
 
-    // Note: entries in non-zero values that are now ZERO are not removed
-
     mNonZeroIndexes.swap( resultIndexes );
     mNonZeroValues.swap( resultValues );
-
-    // Note: checks are not required here
 }
 
 /* ------------------------------------------------------------------------- */

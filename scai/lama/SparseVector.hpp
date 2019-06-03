@@ -447,6 +447,14 @@ private:
 
     void binaryOpSparse( const SparseVector<ValueType>& x, const common::BinaryOp op, const SparseVector<ValueType>& y );
 
+    /** Help routine for binary operation of two sparse vectors with same pattern */
+
+    void binaryOpSparseSamePattern( const SparseVector<ValueType>& x, const common::BinaryOp op, const SparseVector<ValueType>& y );
+
+    /** Help routine for binary operation of two sparse vectors with different pattern */
+
+    void binaryOpSparseNewPattern( const SparseVector<ValueType>& x, const common::BinaryOp op, const SparseVector<ValueType>& y );
+
     hmemo::HArray<IndexType> mNonZeroIndexes;  //!< my local indexes for non-zero values
     hmemo::HArray<ValueType> mNonZeroValues;   //!< my local non-zero values
 
