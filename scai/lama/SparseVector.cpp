@@ -195,7 +195,7 @@ void SparseVector<ValueType>::assignDense( const DenseVector<OtherValueType>& ot
     SCAI_REGION( "Vector.Sparse.assignDense" )
 
     SCAI_LOG_INFO( logger, "sparseVector<" << common::TypeTraits<ValueType>::id() << "> = "
-                        << "denseVector<" << common::TypeTraits<OtherValueType>::id() )
+                        << "denseVector<" << common::TypeTraits<OtherValueType>::id() << ">" )
 
     allocate( other.getDistributionPtr() );
     setDenseValuesImpl( other.getLocalValues() );
@@ -475,7 +475,14 @@ void SparseVector<ValueType>::gatherLocalValues(
 {
     // for operations on sparse vectors with same patterns it is worth to check for same indexes
 
-    if ( HArrayUtils::all( mNonZeroIndexes, common::CompareOp::EQ, indexes, loc ) )
+    bool samePattern = mNonZeroIndexes.size() == indexes.size();
+
+    if ( samePattern )
+    {
+        samePattern = HArrayUtils::all( mNonZeroIndexes, common::CompareOp::EQ, indexes, loc );
+    }
+
+    if ( samePattern )
     {
         HArrayUtils::_assign( values, mNonZeroValues, loc );
     }
@@ -949,8 +956,11 @@ RealType<ValueType> SparseVector<ValueType>::maxDiffNorm( const Vector<ValueType
 
     // ToDo: find some more efficient solutions wherever possible
 
+    SCAI_LOG_INFO( logger, "maxDiffNorm, this = " << *this << ", other = " << other )
+
     SparseVector<ValueType> tmp;
     tmp.binaryOp( *this, common::BinaryOp::SUB, other );
+
     return tmp.maxNorm();
 }
 
@@ -1090,7 +1100,7 @@ void SparseVector<ValueType>::binaryOp( const Vector<ValueType>& x, const common
 
     if ( x.getVectorKind() == VectorKind::SPARSE && y.getVectorKind() == VectorKind::SPARSE )
     {
-        SCAI_REGION( "Vector.Sparse.binOpSD" )
+        SCAI_REGION( "Vector.Sparse.binOpSS" )
         const SparseVector<ValueType>& sparseX = static_cast<const SparseVector<ValueType>&>( x );
         const SparseVector<ValueType>& sparseY = static_cast<const SparseVector<ValueType>&>( y );
 
@@ -1174,7 +1184,7 @@ void SparseVector<ValueType>::binaryOpSparseSamePattern( const SparseVector<Valu
         allocate( x.getDistributionPtr() );
     }
 
-    SCAI_LOG_INFO( logger, "binaryOpSparse: this = x " << op << " y, with x = " << x << ", y = " << y );
+    SCAI_LOG_INFO( logger, "binaryOpSparseSamePattern: this = x " << op << " y, with x = " << x << ", y = " << y );
 
     const HArray<ValueType>& xValues  = x.getNonZeroValues();
     const HArray<ValueType>& yValues  = y.getNonZeroValues();
@@ -1188,6 +1198,8 @@ void SparseVector<ValueType>::binaryOpSparseSamePattern( const SparseVector<Valu
     HArrayUtils::binaryOp( mNonZeroValues, xValues, yValues, op, getContextPtr() );
     
     mZeroValue = common::applyBinary( x.getZero(), op, y.getZero() );
+
+    SCAI_LOG_INFO( logger, "result = " << *this )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1206,7 +1218,16 @@ void SparseVector<ValueType>::binaryOpSparse( const SparseVector<ValueType>& x, 
         allocate( x.getDistributionPtr() );
     }
 
-    if ( HArrayUtils::all( x.getNonZeroIndexes(), common::CompareOp::EQ, y.getNonZeroIndexes() ) )
+    SCAI_LOG_INFO( logger, "binaryOpSparse, x = " << x << ", y = " << y )
+
+    bool samePattern = x.getNonZeroIndexes().size() == y.getNonZeroIndexes().size();
+
+    if ( samePattern )
+    {
+        samePattern = HArrayUtils::all( x.getNonZeroIndexes(), common::CompareOp::EQ, y.getNonZeroIndexes() );
+    }
+
+    if ( samePattern )
     {
         binaryOpSparseSamePattern( x, op, y );
     }
@@ -1219,9 +1240,9 @@ void SparseVector<ValueType>::binaryOpSparse( const SparseVector<ValueType>& x, 
 template<typename ValueType>
 void SparseVector<ValueType>::binaryOpSparseNewPattern( const SparseVector<ValueType>& x, const common::BinaryOp op, const SparseVector<ValueType>& y )
 {
-    SCAI_REGION( "Vector.Sparse.binOpSparse" )
+    SCAI_REGION( "Vector.Sparse.binOpSparseNewPat" )
 
-    SCAI_LOG_INFO( logger, "binaryOpSparse: this = x " << op << " y, with x = " << x << ", y = " << y );
+    SCAI_LOG_INFO( logger, "binaryOpSparseNewPattern: this = x " << op << " y, with x = " << x << ", y = " << y );
 
     const HArray<IndexType>& xIndexes = x.getNonZeroIndexes();
     const HArray<ValueType>& xValues  = x.getNonZeroValues();
