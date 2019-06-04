@@ -368,7 +368,7 @@ IndexType CSRUtils::shiftDiagonalFirst(
 
     IndexType numDiagonals = common::Math::min( numRows, numColumns );
 
-    return shiftDiagonal[loc]( wJA.get(), wValues.get(), numDiagonals, rIA.get() );
+    return shiftDiagonal[loc]( wJA.get(), wValues.get(), numDiagonals, rIA.get(), NULL );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -402,7 +402,7 @@ IndexType CSRUtils::shiftDiagonalFirst(
     WriteAccess<IndexType> wJA( ja, loc );
     WriteAccess<ValueType> wValues( values, loc );
 
-    return shiftDiagonalV[loc]( wJA.get(), wValues.get(), numDiagonals, rIA.get(), rDiagonal.get() );
+    return shiftDiagonal[loc]( wJA.get(), wValues.get(), numRows, rIA.get(), rDiagonals.get() );
 }
 
 /* -------------------------------------------------------------------------- */

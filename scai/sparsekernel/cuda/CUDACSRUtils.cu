@@ -2688,7 +2688,7 @@ void shiftDiagKernel(
 
     if ( end < start )
     {
-        count[i] = 0;  // empty row, no diagonal element
+        count[i] = 0;  // empty row, no diagonal element
         return;
     }
 

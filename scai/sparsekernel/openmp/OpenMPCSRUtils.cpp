@@ -709,7 +709,7 @@ IndexType OpenMPCSRUtils::shiftDiagonal(
     ValueType csrValues[],
     const IndexType numDiagonals,
     const IndexType csrIA[],
-    const IndexType diagonalIndexess[] )
+    const IndexType diagonalIndexes[] )
 {
     IndexType numFoundDiagonals = 0;
 
@@ -725,7 +725,7 @@ IndexType OpenMPCSRUtils::shiftDiagonal(
 
             if ( diagonalIndexes != NULL )
             {
-                diagonalIndex = diagonals[i];
+                diagonalIndex = diagonalIndexes[i];
             };
 
             bool found = false;

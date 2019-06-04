@@ -202,7 +202,7 @@ void CUDAELLUtils::check(
         dim3 dimGrid = makeGrid( numRows, dimBlock.x );
         checkKernel <<< dimGrid, dimBlock>>>( numRows, numValuesPerRow, numColumns, ia, ja, resultRawPtr );
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "fill result with false failed" )
-        bool integrity = thrust::reduce( thrust::cuda::par, result.data(), result.data() + numRows, true, thrust::logical_and<bool>() );
+        bool integrity = thrust::reduce( result.data(), result.data() + numRows, true, thrust::logical_and<bool>() );
         SCAI_ASSERT_ERROR( integrity, msg << ": ia to large, or ja out of range" )
     }
 }
