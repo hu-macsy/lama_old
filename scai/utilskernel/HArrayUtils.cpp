@@ -911,6 +911,8 @@ bool HArrayUtils::all(
 {
     SCAI_REGION( "HArray.all" )
 
+    SCAI_ASSERT_EQ_ERROR( array1.size(), array2.size(), "all only for arrays with same size" )
+
     const IndexType n = array1.size();
 
     static LAMAKernel<UtilKernelTrait::allCompare<ValueType> > allCompare;
