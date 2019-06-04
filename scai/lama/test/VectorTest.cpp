@@ -195,20 +195,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConversionTest, ValueType, scai_numeric_test_type
 
     // define some vector used for operations later
 
-    const IndexType raw_indexes[] = { 1, 7, 11 };
-    const OtherValueType raw_values[] = { 5, 7, 9 };
+    hmemo::HArray<IndexType> indexes( { 1, 7, 11 } );
+    hmemo::HArray<OtherValueType> values( { 5, 7, 9 } );
 
-    hmemo::HArray<IndexType> indexes( 3, raw_indexes );
-    hmemo::HArray<OtherValueType> values( 3, raw_values );
+    OtherValueType zero = 1;
 
-    SparseVector<OtherValueType> sparseVector;
-    sparseVector.setSparseData( n, indexes, values, OtherValueType( 1 ) );
+    SparseVector<OtherValueType> sparseVector( n, indexes, values, zero );
 
     auto denseVector = convert<DenseVector<OtherValueType>>( sparseVector );
 
     TestVectors<ValueType> vectors;
 
-    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
+    dmemo::DistributionPtr dist = dmemo::blockDistribution( n, comm );
 
     RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 

@@ -1197,7 +1197,18 @@ void SparseVector<ValueType>::binaryOpSparseSamePattern( const SparseVector<Valu
 
     HArrayUtils::binaryOp( mNonZeroValues, xValues, yValues, op, getContextPtr() );
     
-    mZeroValue = common::applyBinary( x.getZero(), op, y.getZero() );
+    // zero value requires special handling in case of division
+
+    if ( op == common::BinaryOp::DIVIDE && y.getZero() == common::Constants::ZERO )
+    {
+        SCAI_ASSERT_EQ_ERROR( mNonZeroValues.size(), getDistribution().getLocalSize(), 
+                              "Sparse vector in division has zero elements: " << y )
+        mZeroValue = x.getZero();
+    }
+    else
+    {
+        mZeroValue = common::applyBinary( x.getZero(), op, y.getZero() );
+    }
 
     SCAI_LOG_INFO( logger, "result = " << *this )
 }
