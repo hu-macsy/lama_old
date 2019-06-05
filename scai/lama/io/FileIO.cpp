@@ -48,6 +48,47 @@ namespace scai
 namespace lama
 {
 
+std::ostream& operator<<( std::ostream& stream, const FileMode& value )
+{
+    switch ( value ) 
+    {
+        case FileMode::BINARY: 
+            stream << "BINARY"; 
+            break;
+        case FileMode::FORMATTED: 
+            stream << "FORMATTED"; 
+            break;
+        case FileMode::DEFAULT: 
+            stream << "DEFAULT"; 
+            break;
+        default:
+            stream << "UnknownFileMode";
+    }
+    return stream;
+}
+
+std::ostream& operator<<( std::ostream& stream, const DistributedIOMode& value )
+{
+    switch ( value ) 
+    {
+        case DistributedIOMode::MASTER: 
+            stream << "MASTER"; 
+            break;
+        case DistributedIOMode::INDEPENDENT: 
+            stream << "INDEPENDENT"; 
+            break;
+        case DistributedIOMode::COLLECTIVE: 
+            stream << "COLLECTIVE"; 
+            break;
+        case DistributedIOMode::DEFAULT: 
+            stream << "DEFAULT"; 
+            break;
+        default:
+            stream << "UnknownDistributedIOMode";
+    }
+    return stream;
+}
+
 FileIO::FileIO() :
 
     mFileMode( FileMode::DEFAULT ),                      // no force of anything
@@ -69,7 +110,7 @@ FileIO::FileIO() :
             mFileMode = FileMode::FORMATTED;
         }
 
-        SCAI_LOG_INFO( logger, "File mode set by SCAI_IO_BINARY = " << binary )
+        SCAI_LOG_INFO( logger, "File mode set by SCAI_IO_BINARY = " << binary << " : " << mFileMode )
     }
 
     common::Settings::getEnvironment( mAppendMode, "SCAI_IO_APPEND" );
@@ -120,9 +161,9 @@ bool FileIO::hasCollectiveIO() const
 
 /* --------------------------------------------------------------------------------- */
 
-void FileIO::open( const char* fileName, const char* fileMode, const DistributedIOMode distMode )
+void FileIO::open( const char* fileName, const char* openMode, const DistributedIOMode distMode )
 {
-    SCAI_LOG_INFO( logger, *this << "open, name = " << fileName << ", mode = " << fileMode )
+    SCAI_LOG_INFO( logger, *this << ": open, name = " << fileName << ", open mode = " << openMode )
 
     mDistMode = distMode;
 
@@ -148,7 +189,7 @@ void FileIO::open( const char* fileName, const char* fileMode, const Distributed
 
         independentFileName.replace( pos, 2, rankStr.str() );
 
-        openIt( independentFileName.c_str(), fileMode );
+        openIt( independentFileName.c_str(), openMode );
     }
     else
     {
@@ -168,7 +209,7 @@ void FileIO::open( const char* fileName, const char* fileMode, const Distributed
 
         if ( mDistMode != DistributedIOMode::MASTER || comm->getRank() == 0 )
         {
-            openIt( fileName, fileMode );
+            openIt( fileName, openMode );
         }
     }
 
@@ -211,40 +252,8 @@ void FileIO::writeAt( std::ostream& stream ) const
 
 void FileIO::writeMode( std::ostream& stream ) const
 {
-    stream << "FileMode = ";
-
-    if ( mFileMode == FileMode::BINARY )
-    {
-        stream << "binary";
-    }
-    else if ( mFileMode == FileMode::FORMATTED )
-    {
-        stream << "formatted";
-    }
-    else
-    {
-        stream << "DEFAULT";
-    }
-
-    stream << ", DistributedIOMode = ";
-
-    if ( mDistMode == DistributedIOMode::MASTER )
-    {
-        stream << "MASTER";
-    }
-    else if ( mDistMode == DistributedIOMode::INDEPENDENT )
-    {
-        stream << "INDEPENDENT";
-    }
-    else if ( mDistMode == DistributedIOMode::COLLECTIVE )
-    {
-        stream << "COLLECTIVE";
-    }
-    else
-    {
-        stream << "DEFAULT";
-    }
-
+    stream << "FileMode = " << mFileMode;
+    stream << ", DistributedIOMode = " << mDistMode;
     stream << ", append = " << mAppendMode;
     stream << ", data = " << mScalarTypeData;
     stream << ", index = " << mScalarTypeIndex;
@@ -286,7 +295,12 @@ void FileIO::setDataType( common::ScalarType type )
 
 void FileIO::setMode( const FileMode mode )
 {
-    mFileMode = mode;
+    // only a forced file mode overwrites the current file mode
+
+    if ( mode != FileMode::DEFAULT )
+    {
+        mFileMode = mode;
+    }
 }
 
 void FileIO::enableAppendMode( bool flag )

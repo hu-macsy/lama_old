@@ -63,6 +63,8 @@ enum class FileMode
     DEFAULT             //!< keep it as it is set by default
 };
 
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const FileMode& value );
+
 /**
  *  @brief Enumeration class for different modes of distributed I/O
  */
@@ -73,6 +75,8 @@ enum class DistributedIOMode
     COLLECTIVE,         //!< all processors access the same file
     DEFAULT             //!< take the default mode of an IO class
 };
+
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const DistributedIOMode& value );
 
 /**
  *  Enum type for entities that might be stored in a file.
@@ -442,11 +446,11 @@ protected:
      *  @brief Pure method to open a file.
      *
      *  @param[in] fileName specifies the name of the file
-     *  @param[in] fileMode is either "r" for reading a file, "w" for writing into it, or "a" for append to it
+     *  @param[in] openMode is either "r" for reading a file, "w" for writing into it, or "a" for append to it
      *
      *  This open method must be implemented by each derived FileIO class.
      */
-    virtual void openIt( const std::string& fileName, const char* fileMode ) = 0;
+    virtual void openIt( const std::string& fileName, const char* openMode ) = 0;
 
     /**
      *  @brief Pure method to close the currently open file.
