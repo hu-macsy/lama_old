@@ -393,7 +393,7 @@ IndexType CSRUtils::shiftDiagonalFirst(
     shiftDiagonal.getSupportedContext( loc );
 
     SCAI_LOG_INFO( logger, "shiftDiagonalFirst on CSR data ( " << numRows << " x " << numColumns
-                     << " ), called on " << *loc << ", preferred was " << *prefLoc )
+                     << " ), given diagonal indexes, called on " << *loc << ", preferred was " << *prefLoc )
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -1531,6 +1531,15 @@ void CSRUtils::setColumns(
             HArray<ValueType>&,                            \
             const IndexType,                               \
             const IndexType,                               \
+            const HArray<IndexType>&,                      \
+            ContextPtr );                                  \
+                                                           \
+    template IndexType CSRUtils::shiftDiagonalFirst(       \
+            HArray<IndexType>&,                            \
+            HArray<ValueType>&,                            \
+            const IndexType,                               \
+            const IndexType,                               \
+            const HArray<IndexType>&,                      \
             const HArray<IndexType>&,                      \
             ContextPtr );                                  \
                                                            \
