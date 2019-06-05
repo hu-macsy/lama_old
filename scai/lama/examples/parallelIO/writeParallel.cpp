@@ -34,10 +34,9 @@
 #include <scai/dmemo.hpp>
 
 #include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/GeneralDistribution.hpp>
 
 #include <scai/common/Settings.hpp>
-
-#include "utility.hpp"
 
 #include <memory>
 
@@ -53,34 +52,18 @@ int main( int argc, const char* argv[] )
 
     if ( argc < 3 )
     {
-        cout << "Usage: " << argv[0] << " infile_name outfile_name distfile_name" << endl;
-        cout << "   file format is chosen by suffix, e.g. frm, mtx, txt, psc"  << endl;
-        cout << "   --SCAI_TYPE=<data_type> is data type of input file and used for internal representation" << endl;
-        cout << "   --SCAI_IO_BINARY=0|1 to force formatted or binary output file" << endl;
-        cout << "   --SCAI_IO_TYPE_DATA=<data_type> is data type used for file output" << endl;
+        cout << "Usage: " << argv[0] << " infile_name outfile_name" << endl;
+        cout << "   file format is chosen by suffix, e.g. frm, mtx, txt, psc, lmf"  << endl;
+        cout << "   outfile_name shoud contain %r for partitioned IO"  << endl;
         cout << "   " << endl;
-        cout << "   Supported types: ";
-        vector<common::ScalarType> dataTypes;
-        hmemo::_HArray::getCreateValues( dataTypes );
-
-        for ( size_t i = 0; i < dataTypes.size(); ++i )
-        {
-            cout << dataTypes[i] << " ";
-        }
-
-        cout << endl;
         return -1;
     }
 
-    // take double as default
+    typedef DefaultReal ValueType;
 
-    common::ScalarType type = getType();
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    // oops, no factory for storage, only for matrix
-
-    _MatrixPtr matrixPtr( _Matrix::getMatrix( Format::CSR, type ) );
-
-    _Matrix& matrix = *matrixPtr;
+    CSRSparseMatrix<ValueType> matrix;
 
     std::string inFileName = argv[1];
 
@@ -88,24 +71,80 @@ int main( int argc, const char* argv[] )
 
     matrix.readFromFile( inFileName );
 
-    cout << "read CSR matrix : " << matrix << endl;
+    cout << *comm << ": read CSR matrix : " << matrix << endl;
 
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
-    dmemo::DistributionPtr dist( new dmemo::CyclicDistribution( matrix.getNumRows(), 2, comm ) );
+    auto dist =  dmemo::cyclicDistribution( matrix.getNumRows(), 2, comm );
 
     matrix.redistribute( dist, matrix.getColDistributionPtr() );
 
     std::string outFileName = argv[2];
 
-    matrix.writeToFile( outFileName );
+    bool isPartitioned;
 
-    if ( argc > 3 )
+    PartitionIO::getPartitionFileName( outFileName, isPartitioned, *comm );
+
+    if ( comm->getSize() > 1 && !isPartitioned )
     {
-        std::string distFileName = argv[3];
-
-        PartitionIO::write( matrix.getRowDistribution(), distFileName );
-
-        cout << *comm << "written " << matrix.getRowDistribution() << " to file " << distFileName << endl;
+        std::cout << argv[2] << " is not a partitioned file name" << std::endl;
+        return( -1 );
     }
+   
+    {
+        CSRStorage<ValueType>& localPart = matrix.getLocalStorage();
+
+        auto myGlobalRowIndexes = dist->ownedGlobalIndexes();
+
+        IndexType numSet = localPart.setDiagonalFirst( myGlobalRowIndexes );
+
+        bool okay = numSet == localPart.getNumRows();
+
+        okay = comm->all( okay );
+
+        if ( !okay )
+        {
+            std::cout << *comm << ": there are missing entries on the main diagonal, will stop" << std::endl;
+            return( -1 );
+        }
+
+        std::cout << *comm << ": write to file " << outFileName 
+                  << " my local part: " << localPart << std::endl;
+
+        localPart.writeToFile( outFileName );
+    }
+
+    // now read in the partitioned matrix
+
+    auto myPart = read<CSRStorage<ValueType>>( outFileName );
+
+    // make sure that all processors use the same number of columns 
+
+    myPart.resetNumColumns( comm->max( myPart.getNumColumns() ) );
+
+    // get the owned indexes
+
+    hmemo::HArray<IndexType> myOwnedIndexes = myPart.getIA();
+
+    myOwnedIndexes.resize( myPart.getNumRows() );
+
+    utilskernel::HArrayUtils::gather( myOwnedIndexes, myPart.getJA(), myOwnedIndexes, common::BinaryOp::COPY );
+
+    DistributionPtr newDist;
+
+    try
+    { 
+        newDist = dmemo::generalDistribution( myOwnedIndexes, comm );
+    }
+    catch( common::Exception& e )
+    {
+        std::cout << "Failed to build a general distribution: " << e.what() << std::endl;
+        std::cout << dist->getCommunicator() << ": myOwnedIndexes = " << hmemo::printIt( myOwnedIndexes ) << std::endl;
+        return -1;
+    }
+
+    SCAI_ASSERT_ERROR( utilskernel::HArrayUtils::all( myOwnedIndexes, common::CompareOp::EQ, dist->ownedGlobalIndexes() ), "different owners" );
+
+    CSRSparseMatrix<ValueType> matrixNew( dmemo::generalDistribution( std::move( myOwnedIndexes ) ),
+                                          std::move( myPart ) );
+
+    SCAI_ASSERT_LT_ERROR( matrix.maxDiffNorm( matrixNew ), 1e-6, "read matrix is different" )
 }

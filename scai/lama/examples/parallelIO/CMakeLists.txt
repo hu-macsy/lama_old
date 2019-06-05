@@ -32,7 +32,7 @@ include ( scai_macro/scai_example_makefile )
 include ( scai_macro/scai_run_script )
 
 scai_add_example ( EXECUTABLE writeParallel.exe FILES writeParallel.cpp )
-scai_add_example ( EXECUTABLE readParallel.exe FILES readParallel.cpp )
+# scai_add_example ( EXECUTABLE readParallel.exe FILES readParallel.cpp )
 
 # use the recommended installation directory for this example directory
 scai_example_directory ( INSTALL_EXAMPLE_DIR )
