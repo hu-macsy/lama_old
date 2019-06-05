@@ -122,6 +122,17 @@ std::shared_ptr<const GeneralDistribution> generalDistribution(
 
 /* ---------------------------------------------------------------------- */
 
+std::shared_ptr<const GeneralDistribution> generalDistribution( 
+    HArray<IndexType> myGlobalIndexes,
+    const CommunicatorPtr comm )
+{
+    const bool checkFlag = true;
+    const IndexType globalSize = comm->sum( myGlobalIndexes.size() );
+    return std::make_shared<GeneralDistribution>( globalSize, std::move( myGlobalIndexes ), checkFlag, comm );
+}
+
+/* ---------------------------------------------------------------------- */
+
 std::shared_ptr<const GeneralDistribution> generalDistributionUnchecked( 
     const IndexType globalSize,
     HArray<IndexType> myGlobalIndexes,
