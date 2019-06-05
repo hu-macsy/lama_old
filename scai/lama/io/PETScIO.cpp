@@ -109,27 +109,27 @@ PETScIO::PETScIO()
 
 /* --------------------------------------------------------------------------------- */
 
-void PETScIO::openIt( const std::string& fileName, const char* fileMode )
+void PETScIO::openIt( const std::string& fileName, const char* openMode )
 {
     SCAI_ASSERT( mFileMode != FileMode::FORMATTED, "Formatted output not available for PETScIO" )
 
     std::ios::openmode flags = std::ios::binary;
 
-    if ( strcmp( fileMode, "w" ) == 0 )
+    if ( strcmp( openMode, "w" ) == 0 )
     {
         flags |= std::ios::out | std::ios::trunc;
     }
-    else if ( strcmp( fileMode, "a" ) == 0 )
+    else if ( strcmp( openMode, "a" ) == 0 )
     {
         flags |= std::ios::out | std::ios::app;
     }
-    else if ( strcmp( fileMode, "r" ) == 0 )
+    else if ( strcmp( openMode, "r" ) == 0 )
     {
         flags |= std::ios::in ;
     }
     else
     {
-        COMMON_THROWEXCEPTION( "Unsupported file mode for PETSc file: " << fileMode )
+        COMMON_THROWEXCEPTION( "Unsupported open mode for PETSc file: " << openMode )
     }
 
     mFile.open( fileName, flags, IOStream::BIG );

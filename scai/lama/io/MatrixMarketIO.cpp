@@ -443,21 +443,21 @@ SCAI_LOG_DEF_LOGGER( MatrixMarketIO::logger, "FileIO.MatrixMarketIO" )
 
 /* --------------------------------------------------------------------------------- */
 
-void MatrixMarketIO::openIt( const std::string& fileName, const char* fileMode )
+void MatrixMarketIO::openIt( const std::string& fileName, const char* openMode )
 {
-    if ( strcmp( fileMode, "w" ) == 0 )
+    if ( strcmp( openMode, "w" ) == 0 )
     {
         mFile.open( fileName, std::ios::out | std::ios::trunc );
         SCAI_LOG_INFO( logger, "open MatrixMarket file for (over-)write" )
     }
-    else if ( strcmp( fileMode, "r" ) == 0 )
+    else if ( strcmp( openMode, "r" ) == 0 )
     {
         mFile.open( fileName, std::ios::in );
         SCAI_LOG_INFO( logger, "open MatrixMarket file for read" )
     }
     else
     {
-        COMMON_THROWEXCEPTION( "Unsupported file mode for MatrixMarket file: " << fileMode )
+        COMMON_THROWEXCEPTION( "Unsupported file mode for MatrixMarket file: " << openMode )
     }
 }
 

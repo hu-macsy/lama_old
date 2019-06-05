@@ -150,34 +150,38 @@ SAMGIO::SAMGIO()
             SCAI_LOG_WARN( logger, "SAMG format does not support append mode" )
         }
     }
+
+    SCAI_LOG_INFO( logger, "SAMGIO default object: " << *this )
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void SAMGIO::openIt( const std::string& fileName, const char* fileMode )
+void SAMGIO::openIt( const std::string& fileName, const char* openMode )
 {
+    SCAI_LOG_INFO( logger, "SAMGIO: openIt ( fileName = " << fileName << ", openMode = " << openMode << " ), fileMode = " << mFileMode )
+                           
     std::ios::openmode flags;
 
-    if ( strcmp( fileMode, "w" ) == 0 )
+    if ( strcmp( openMode, "w" ) == 0 )
     {
         flags = std::ios::out | std::ios::trunc;
     }
-    else if ( strcmp( fileMode, "r" ) == 0 )
+    else if ( strcmp( openMode, "r" ) == 0 )
     {
         flags = std::ios::in;
     }
     else
     {
-        COMMON_THROWEXCEPTION( "Unsupported file mode for SAMG file: " << fileMode )
+        COMMON_THROWEXCEPTION( "Unsupported file mode for SAMG file: " << openMode )
     }
 
     mHeaderFile.open( fileName, flags );
 
-    if ( strcmp( fileMode, "w" ) == 0 )
+    if ( strcmp( openMode, "w" ) == 0 )
     {
         mBinary = mFileMode != FileMode::FORMATTED;
     }
-    else if ( strcmp( fileMode, "r" ) == 0 )
+    else if ( strcmp( openMode, "r" ) == 0 )
     {
         readFileMode();
         mHeaderFile.seekg( 0, std::ios::beg );
@@ -416,6 +420,8 @@ void SAMGIO::writeMatrixHeader(
 template<typename ValueType>
 void SAMGIO::writeStorageImpl( const MatrixStorage<ValueType>& storage )
 {
+    SCAI_LOG_INFO( logger, "write storage ( mBinary = " << mBinary << " ): " << storage )
+
     HArray<IndexType> csrIA;
     HArray<IndexType> csrJA;
     HArray<ValueType> csrValues;

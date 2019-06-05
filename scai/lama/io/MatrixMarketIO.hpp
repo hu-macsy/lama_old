@@ -88,7 +88,7 @@ public:
 
     /** Implementation of pure virtual method FileIO::openIt */
 
-    virtual void openIt( const std::string& fileName, const char* fileMode );
+    virtual void openIt( const std::string& fileName, const char* openMode );
 
     /** Implementation of pure virtual method FileIO::close */
 

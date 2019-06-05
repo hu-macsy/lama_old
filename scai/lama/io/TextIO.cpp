@@ -139,20 +139,20 @@ SCAI_LOG_DEF_LOGGER( TextIO::logger, "FileIO.TextIO" )
 
 /* --------------------------------------------------------------------------------- */
 
-void TextIO::openIt( const std::string& fileName, const char* fileMode )
+void TextIO::openIt( const std::string& fileName, const char* openMode )
 {
-    if ( strcmp( fileMode, "w" ) == 0 )
+    if ( strcmp( openMode, "w" ) == 0 )
     {
         SCAI_ASSERT( mFileMode != FileMode::BINARY, "Binary mode not supported for " << *this )
         mFile.open( fileName, std::ios::out | std::ios::trunc );
     }
-    else if ( strcmp( fileMode, "r" ) == 0 )
+    else if ( strcmp( openMode, "r" ) == 0 )
     {
         mFile.open( fileName, std::ios::in );
     }
     else
     {
-        COMMON_THROWEXCEPTION( "Unsupported file mode for Text file: " << fileMode )
+        COMMON_THROWEXCEPTION( "Unsupported open mode for Text file: " << openMode )
     }
 }
 
