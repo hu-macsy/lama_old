@@ -164,9 +164,37 @@ void AMGSetup<ValueType>::initialize( const Matrix<ValueType>& mainSystemMatrix 
 
     createMatrixHierarchy();   // virtual function implemented individually by derived AMGSetup classes
 
+    convertMatrixHierarchy();   // convert, redistribute matrices, upload to context device
+
     createVectorHierarchy();   // create objects for rhs, solution, residual on each level
 
     createSolverHierarchy();   // create smoothers and coarse level solver
+}
+
+/* ========================================================================= */
+/*     Optimize layout of matrices on all AMG Levels                         */
+/* ========================================================================= */
+
+template<typename ValueType>
+void AMGSetup<ValueType>::convertMatrixHierarchy()
+{
+    SCAI_ASSERT_ERROR( mMainGalerkinMatrix, "null pointer for main matrix, setup has not been initialized yet" )
+
+    IndexType numLevels = getNumLevels();
+
+    for ( IndexType level = 1; level < numLevels; level++ )
+    {
+        auto dist0 = getGalerkin( level - 1 ).getRowDistributionPtr();
+
+        Matrix<ValueType>& galerkin = *mGalerkinMatrices[level - 1];
+ 
+        auto dist1 = galerkin.getRowDistributionPtr();
+
+        galerkin.redistribute( dist1, dist1 );
+
+        mInterpolationMatrices[level - 1]->redistribute( dist0, dist1 );
+        mRestrictionMatrices[level - 1]->redistribute( dist1, dist0 );
+    }
 }
 
 /* ========================================================================= */
@@ -176,7 +204,7 @@ void AMGSetup<ValueType>::initialize( const Matrix<ValueType>& mainSystemMatrix 
 template<typename ValueType>
 void AMGSetup<ValueType>::createVectorHierarchy()
 {
-    SCAI_ASSERT_ERROR( mMainGalerkinMatrix, "null pointer for main matrix, setup not not initialized yet" )
+    SCAI_ASSERT_ERROR( mMainGalerkinMatrix, "null pointer for main matrix, setup has not been initialized yet" )
 
     SCAI_REGION( "AMGSetup.createVectorHierarchy" );
 
@@ -237,6 +265,8 @@ IndexType AMGSetup<ValueType>::getNumLevels() const
     }
 }
 
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void AMGSetup<ValueType>::addNextLevel( 
     std::unique_ptr<lama::Matrix<ValueType>> interpolationMatrix,
@@ -280,12 +310,17 @@ void AMGSetup<ValueType>::addNextLevel(
     else
     {
         // compute own galerkin matrix
-        COMMON_THROWEXCEPTION( "compute of restriction matrix not supported yet" )
+        COMMON_THROWEXCEPTION( "compute of galerkin matrix not supported yet" )
     }
 
     mInterpolationMatrices.push_back( std::move( interpolationMatrix ) );
+
+    // Overlapping of conversions, halo computations might be possible 
+    // Only be careful: derived AMG setup class might still use galerkinMatrix to compute next level
 }
 
+/* ========================================================================= */
+/*   Getter methods for Galerkin, Restriciton, Interpolation matrix          */
 /* ========================================================================= */
 
 template<typename ValueType>
@@ -305,6 +340,8 @@ const Matrix<ValueType>& AMGSetup<ValueType>::getGalerkin( const IndexType level
     }
 }
 
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
 const Matrix<ValueType>& AMGSetup<ValueType>::getRestriction( const IndexType level )
 {
@@ -315,12 +352,15 @@ const Matrix<ValueType>& AMGSetup<ValueType>::getRestriction( const IndexType le
     return *mRestrictionMatrices[level];
 }
 
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
 const Matrix<ValueType>& AMGSetup<ValueType>::getInterpolation( const IndexType level )
 {
     IndexType numInterpolationMatrices = mInterpolationMatrices.size();
 
-    SCAI_ASSERT_VALID_INDEX_ERROR( level, numInterpolationMatrices, "illegal level for interpolatin" )
+    SCAI_ASSERT_VALID_INDEX_ERROR( level, numInterpolationMatrices, "illegal level for interpolation" )
+
     return *mInterpolationMatrices[level];
 }
 
@@ -431,7 +471,7 @@ void AMGSetup<ValueType>::createSolverHierarchy()
 
         solver->initialize( getGalerkin( i ) );
 
-        SCAI_LOG_INFO( logger, "\tLevel " << i << *solver )
+        SCAI_LOG_INFO( logger, "\tLevel " << i << ": " << *solver )
 
         mSolverHierarchy.push_back( solver );
     }

@@ -255,6 +255,11 @@ protected:
 private:
 
     /**
+     *  Help routine that converts the matrices (galerkin, restriction, interpolation) on the different levels
+     */
+    void convertMatrixHierarchy();
+
+    /**
      *  Help routine that sets up the vectors used on each level.
      */
     void createVectorHierarchy();
