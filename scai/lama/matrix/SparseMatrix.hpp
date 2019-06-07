@@ -224,9 +224,9 @@ public:
 
     virtual void assign( const _Matrix& other );
 
-    /** Method that assigns a sparse matrix, specialization of assign( const _Matrix& ) */
+    /** Method that assigns a sparse matrix of same type, specialization of assign( const _Matrix& ) */
 
-    void assign( const SparseMatrix<ValueType>& matrix );
+    void assignSparseMatrix( const SparseMatrix<ValueType>& matrix );
 
     /* Implementation of pure method of class _Matrix. */
 

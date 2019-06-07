@@ -184,13 +184,15 @@ void doPartitioning( Matrix<ValueType>& matrix, Vector<ValueType>& rhs, Vector<V
  */
 int main( int argc, const char* argv[] )
 {
-    SCAI_REGION( "Main.lamaSolver" )
-
     common::Settings::parseArgs( argc, argv );
 
     LamaConfig lamaconf;   // must be defined after parseArgs
 
     const Communicator& comm = lamaconf.getCommunicator();
+
+    SCAI_REGION( "Main.lamaSolver" )
+
+    SCAI_TRACE_SCOPE( false )
 
     int myRank   = comm.getRank();
 
@@ -481,6 +483,7 @@ int main( int argc, const char* argv[] )
         double solverTime;   // saves run-time spent in solve
 
         {
+            SCAI_TRACE_SCOPE( true )
             SCAI_REGION( "Main.solveIt" )
             LamaTiming timer( comm, "Solver solve" );
             mySolver->solve( solution, rhs );
