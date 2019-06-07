@@ -226,11 +226,13 @@ const Vector<ValueType>& Solver<ValueType>::getResidual() const
 
     if ( runtime.mSolution.isDirty() )
     {
+        SCAI_LOG_INFO( logger, "getResidual, will be recomputed" )
+
         SCAI_REGION( "Solver.computeResidual" )
 
         const Vector<ValueType>& x = runtime.mSolution.getConstReference();  // solution not modified here
 
-        SCAI_LOG_DEBUG( logger, "calculating residual current solution = " << x )
+        SCAI_LOG_INFO( logger, "calculating residual current solution = " << x )
 
         const Matrix<ValueType>& A = *runtime.mCoefficients;
         const Vector<ValueType>& y = *runtime.mRhs;
@@ -241,6 +243,12 @@ const Vector<ValueType>& Solver<ValueType>::getResidual() const
         mLogger->logTime( "ResidualTimer", LogLevel::completeInformation, "Revaluation of residual took [s]: " );
         mLogger->stopAndResetTimer( "ResidualTimer" );
         runtime.mSolution.setDirty( false );
+
+        SCAI_LOG_INFO( logger, "getResidual, now actualized: " << *runtime.mResidual )
+    }
+    else
+    {
+        SCAI_LOG_INFO( logger, "getResidual, unchanged: " << *runtime.mResidual )
     }
 
     return *runtime.mResidual;
