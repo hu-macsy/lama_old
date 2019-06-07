@@ -738,17 +738,6 @@ private:
 /***************************************************************************************************/
 
 template <typename ValueType>
-void SparseMatrix<ValueType>::setContextPtr( const hmemo::ContextPtr context )
-{
-    SCAI_ASSERT_ERROR( context, "NULL context, cannot be set" )
-
-    mLocalData->setContextPtr( context );
-    mHaloData->setContextPtr( context );
-}
-
-/* Implementation of pure method of class _Matrix. */
-
-template <typename ValueType>
 hmemo::ContextPtr SparseMatrix<ValueType>::getContextPtr() const
 {
     return mLocalData->getContextPtr();
