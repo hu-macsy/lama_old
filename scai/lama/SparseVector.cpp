@@ -170,7 +170,7 @@ template<typename ValueType>
 template<typename OtherValueType>
 void SparseVector<ValueType>::assignSparse( const SparseVector<OtherValueType>& other )
 {
-    SCAI_REGION( "Vector.Sparse.assginSparse" )
+    SCAI_REGION( "Vector.Sparse.assignSparse" )
 
     SCAI_LOG_INFO( logger, "sparseVector<" << common::TypeTraits<ValueType>::id() << "> = "
                         << "sparseVector<" << common::TypeTraits<OtherValueType>::id() )
@@ -473,6 +473,8 @@ void SparseVector<ValueType>::gatherLocalValues(
     const common::BinaryOp op,
     ContextPtr loc ) const
 {
+    SCAI_REGION( "Vector.Sparse.gatherLocal" )
+
     // for operations on sparse vectors with same patterns it is worth to check for same indexes
 
     bool samePattern = mNonZeroIndexes.size() == indexes.size();
@@ -846,7 +848,7 @@ ComplexLongDouble SparseVector<ComplexLongDouble>::max() const
 template<typename ValueType>
 RealType<ValueType> SparseVector<ValueType>::l1Norm() const
 {
-    SCAI_REGION( "Vector.sparse.l1Norm" )
+    SCAI_REGION( "Vector.Sparse.l1Norm" )
 
     auto localL1Norm = HArrayUtils::l1Norm( mNonZeroValues );
 
@@ -885,7 +887,7 @@ ValueType SparseVector<ValueType>::sum() const
 template<typename ValueType>
 RealType<ValueType> SparseVector<ValueType>::l2Norm() const
 {
-    SCAI_REGION( "Vector.sparse.l2Norm" )
+    SCAI_REGION( "Vector.Sparse.l2Norm" )
 
     // Note: we do not call l2Norm here for mNonZeroValues to avoid sqrt
 
@@ -909,7 +911,7 @@ RealType<ValueType> SparseVector<ValueType>::l2Norm() const
 template<>
 IndexType SparseVector<IndexType>::l2Norm() const
 {
-    SCAI_REGION( "Vector.sparse.l2Norm" )
+    SCAI_REGION( "Vector.Sparse.l2Norm" )
 
     // Note: we do not call l2Norm here for mNonZeroValues to avoid sqrt
 
@@ -923,7 +925,7 @@ IndexType SparseVector<IndexType>::l2Norm() const
 template<typename ValueType>
 RealType<ValueType> SparseVector<ValueType>::maxNorm() const
 {
-    SCAI_REGION( "Vector.sparse.maxNorm" )
+    SCAI_REGION( "Vector.Sparse.maxNorm" )
 
     auto localMaxNorm = HArrayUtils::maxNorm( mNonZeroValues );
 

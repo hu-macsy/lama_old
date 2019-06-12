@@ -400,6 +400,8 @@ void HArrayUtils::sparseGather(
     const BinaryOp op,
     const ContextPtr prefLoc )
 {
+    SCAI_REGION( "HArray.sparseGather" )
+
     SCAI_LOG_INFO( logger, "sparseGather<" << TypeTraits<TargetValueType>::id()
                             << ", " << TypeTraits<SourceValueType>::id() << ">" )
 
