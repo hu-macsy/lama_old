@@ -595,7 +595,9 @@ void MatrixStorage<ValueType>::splitHalo(
     localData.check( "local part after split" );
     // halo data is expected to have many empty rows, so enable compressing with row indexes
     haloData.setCompressThreshold( 0.5 );
+    SCAI_LOG_INFO( logger, "haloData with threshold: " << haloData )
     haloData.setCSRData( numRows, haloNumColumns, haloIA, haloJA, haloValues );
+    SCAI_LOG_INFO( logger, "haloData with threshold + set CSR data: " << haloData )
     haloData.check( "halo part after split" );
     SCAI_LOG_INFO( logger,
                    "Result of split: local storage = " << localData << ", halo storage = " << haloData << ", halo = " << halo )

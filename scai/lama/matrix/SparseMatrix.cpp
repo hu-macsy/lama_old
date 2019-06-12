@@ -97,10 +97,11 @@ SparseMatrix<ValueType>::SparseMatrix( shared_ptr<MatrixStorage<ValueType> > sto
 {
     mLocalData = storage;
 
-    // create halo ( nLocalRows x 0 ) with same storage format
+    // create halo ( nLocalRows x 0 ) with same storage format and same context
 
     mHaloData = shared_ptr<MatrixStorage<ValueType> >( storage->newMatrixStorage() );
     mHaloData->allocate( mLocalData->getNumRows(), 0 );
+    mTempSendValues = HArray<ValueType>( storage->getContextPtr() );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -122,6 +123,7 @@ SparseMatrix<ValueType>::SparseMatrix( DistributionPtr rowDist, shared_ptr<Matri
     // create empty halo with same storage format
 
     mHaloData.reset( storage->newMatrixStorage( localNumRows, 0 ) );
+    mTempSendValues = HArray<ValueType>( storage->getContextPtr() );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -131,6 +133,21 @@ SparseMatrix<ValueType>::SparseMatrix() :
 
     Matrix<ValueType>( 0, 0 )
 {
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+template <typename ValueType>
+void SparseMatrix<ValueType>::setContextPtr( const hmemo::ContextPtr context )
+{
+    SCAI_ASSERT_ERROR( context, "NULL context, cannot be set" )
+
+    mLocalData->setContextPtr( context );
+    mHaloData->setContextPtr( context );
+
+    // first touch of context for temporary array to guarantee fast device communiction
+
+    mTempSendValues = HArray<ValueType>( context );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -307,7 +324,7 @@ void SparseMatrix<ValueType>::assign( const _Matrix& matrix )
     if ( sparseMatrix )
     {
         // for a sparse matrix local + halo part can be assigned
-        assign( *sparseMatrix );
+        assignSparseMatrix( *sparseMatrix );
     }
     else
     {
@@ -436,7 +453,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::assign( const SparseMatrix<ValueType>& matrix )
+void SparseMatrix<ValueType>::assignSparseMatrix( const SparseMatrix<ValueType>& matrix )
 {
     if ( this == &matrix )
     {
@@ -452,9 +469,9 @@ void SparseMatrix<ValueType>::assign( const SparseMatrix<ValueType>& matrix )
     SCAI_LOG_DEBUG( logger, "assigned local storage, my local = " << *mLocalData )
     const MatrixStorage<ValueType>&  matrixHaloData = matrix.getHaloStorage();
 
-    if (     ( matrixHaloData.getNumRows() > 0 )
-             || ( matrixHaloData.getNumColumns()  > 0 ) )
+    if ( ( matrixHaloData.getNumRows() > 0 ) || ( matrixHaloData.getNumColumns()  > 0 ) )
     {
+        mHaloData->setCompressThreshold( 0.5 );
         mHaloData->assign( matrixHaloData );
     }
     else

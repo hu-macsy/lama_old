@@ -63,6 +63,8 @@
 
 #include <complex.h>
 
+#define THRUST_DEBUG
+
 namespace scai
 {
 
@@ -81,9 +83,7 @@ ValueType CUDAReduceUtils::reduceSum( const ValueType array[], const IndexType n
     SCAI_REGION( "CUDA.Utils.reduceSum" )
     SCAI_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
     SCAI_CHECK_CUDA_ACCESS
-    thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
-
-    ValueType result = thrust::reduce( thrust::cuda::par, data, data + n, zero, thrust::plus<ValueType>() );
+    ValueType result = thrust::reduce( thrust::device, array, array + n, zero, thrust::plus<ValueType>() );
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     SCAI_LOG_INFO( logger, "sum of " << n << " values = " << result )
     return result;
@@ -97,8 +97,7 @@ ValueType CUDAReduceUtils::reduceMaxVal( const ValueType array[], const IndexTyp
     SCAI_REGION( "CUDA.Utils.reduceMax" )
     SCAI_LOG_INFO( logger, "maxval for " << n << " elements " )
     SCAI_CHECK_CUDA_ACCESS
-    thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
-    ValueType result = thrust::reduce( thrust::cuda::par, data, data + n, zero, thrust::maximum<ValueType>() );
+    ValueType result = thrust::reduce( thrust::device, array, array + n, zero, thrust::maximum<ValueType>() );
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     SCAI_LOG_INFO( logger, "max of " << n << " values = " << result )
     return result;
@@ -112,8 +111,7 @@ ValueType CUDAReduceUtils::reduceMinVal( const ValueType array[], const IndexTyp
     SCAI_REGION( "CUDA.Utils.reduceMin" )
     SCAI_LOG_INFO( logger, "minval for " << n << " elements " )
     SCAI_CHECK_CUDA_ACCESS
-    thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
-    ValueType result = thrust::reduce( thrust::cuda::par, data, data + n, zero, thrust::minimum<ValueType>() );
+    ValueType result = thrust::reduce( thrust::device, array, array + n, zero, thrust::minimum<ValueType>() );
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     SCAI_LOG_INFO( logger, "min of " << n << " values = " << result )
     return result;
@@ -146,8 +144,8 @@ ValueType CUDAReduceUtils::reduceAbsMaxVal( const ValueType array[], const Index
 
     thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
 
-    RealType result = thrust::transform_reduce( thrust::cuda::par,
-                      data, data + n,
+    RealType result = thrust::transform_reduce( thrust::device,
+                      array, array + n,
                       absolute_value<RealType, ValueType>(),
                       RealType( zero ), thrust::maximum<RealType>() );
 

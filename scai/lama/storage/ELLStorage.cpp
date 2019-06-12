@@ -484,6 +484,8 @@ void ELLStorage<ValueType>::setCSRData(
     const HArray<IndexType>& csrJA,
     const _HArray& csrValues )
 {
+    SCAI_LOG_INFO( logger, "setCSRData, threshold = " << mCompressThreshold )
+
     SCAI_REGION( "Storage.ELL.setCSR" )
 
     if ( csrIA.size() == numRows )

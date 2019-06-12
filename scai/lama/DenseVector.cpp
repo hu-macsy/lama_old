@@ -84,7 +84,8 @@ template<typename ValueType>
 DenseVector<ValueType>::DenseVector( ContextPtr context ) :
 
     Vector<ValueType>( 0, context ),
-    mLocalValues()
+    mLocalValues( context ),
+    mHaloValues( context )
 {
 }
 
@@ -92,8 +93,8 @@ template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const IndexType size, const ValueType value, ContextPtr context ) :
 
     Vector<ValueType>( size, context ), 
-    mLocalValues( size, value, context )
-
+    mLocalValues( size, value, context ),
+    mHaloValues( context )
 {
     SCAI_LOG_INFO( logger, "Construct dense vector, size = " << size << ", init =" << value )
 }
@@ -102,7 +103,8 @@ template<typename ValueType>
 DenseVector<ValueType>::DenseVector( DistributionPtr distribution, const ValueType value, ContextPtr context ) :
 
     Vector<ValueType>( distribution, context ), 
-    mLocalValues( distribution->getLocalSize(), value )
+    mLocalValues( distribution->getLocalSize(), value ),
+    mHaloValues( context )
 
 {
     SCAI_LOG_INFO( logger,
