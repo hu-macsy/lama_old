@@ -1118,6 +1118,38 @@ BOOST_AUTO_TEST_CASE( PatternIOTest )
 
 /* ------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( SplitReadTest )
+{
+    typedef DefaultReal ValueType;
+
+    const IndexType M = 23;
+    const IndexType N = 7;
+
+    HArray<ValueType> denseValues;
+    HArrayUtils::setSequence<ValueType>( denseValues, 1, 1, M * N );
+    DenseStorage<ValueType> dense( M, N, denseValues );
+
+    dense.writeToFile( "dense.mtx" );
+
+    DenseStorage<ValueType> storage1;
+    CSRStorage<ValueType> storage2;
+    DenseStorage<ValueType> storage3;
+
+    storage1.readFromFile( "dense.mtx", 0, 10 );
+    storage2.readFromFile( "dense.mtx", 10, 5 );
+    storage3.readFromFile( "dense.mtx", 15 );
+
+    BOOST_CHECK_EQUAL( storage3.getNumRows(), M - 15 );
+
+    auto data1 = storage1.denseValues();
+    HArrayUtils::appendArray( data1, storage2.denseValues() );
+    HArrayUtils::appendArray( data1, storage3.denseValues() );
+
+    BOOST_CHECK( HArrayUtils::all( data1, common::CompareOp::EQ, denseValues ) );
+}
+
+/* ------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();
 
 /* ------------------------------------------------------------------------- */

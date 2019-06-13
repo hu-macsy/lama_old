@@ -443,7 +443,21 @@ public:
 
 private:
 
+    /** Help predicate, checks for same sparse pattern on local part only, no global comm. */
+
+    bool hasSamePattern( const SparseVector<ValueType>& other ) const;
+
+    ValueType dotProductLocalAny( const Vector<ValueType>& other ) const;
+
+    ValueType dotProductLocalSparse( const SparseVector<ValueType>& other ) const;
+
+    ValueType dotProductLocalDense( const DenseVector<ValueType>& other ) const;
+
     /** Help routine for binary operation of two sparse vectors */
+
+    void binaryOpMult0( const SparseVector<ValueType>& x, const Vector<ValueType>& y );
+
+    void binaryOpAny( const Vector<ValueType>& x, const common::BinaryOp op, const Vector<ValueType>& y );
 
     void binaryOpSparse( const SparseVector<ValueType>& x, const common::BinaryOp op, const SparseVector<ValueType>& y );
 

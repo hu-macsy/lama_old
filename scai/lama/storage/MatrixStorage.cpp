@@ -676,6 +676,23 @@ void MatrixStorage<ValueType>::invert( const MatrixStorage<ValueType>& other )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+HArray<ValueType> MatrixStorage<ValueType>::denseValues() const
+{
+    DenseStorage<ValueType> denseStorage;
+    denseStorage.assign( *this );
+
+    IndexType numRows;
+    IndexType numCols;
+    HArray<ValueType> denseValues;
+
+    denseStorage.splitUp( numRows, numCols, denseValues );
+
+    return denseValues;
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void MatrixStorage<ValueType>::reduce(
     hmemo::HArray<ValueType>& array, 
     const IndexType dim, 
