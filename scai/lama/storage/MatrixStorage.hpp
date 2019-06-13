@@ -393,6 +393,14 @@ public:
         hmemo::HArray<IndexType>& cscJA,
         hmemo::HArray<ValueType>& cscValues ) const;
 
+    /**
+     *  This method returns an array with all values of the storage.
+     *
+     *  Note: this function is just a convenience function for small matrices and should not
+     *        be used for large matrices.
+     */
+    hmemo::HArray<ValueType> denseValues() const;
+
     /** Format conversion of matrix storage. A default implementation is provided using CSR data.
      *  Derived clauses might override this method with more efficient solutions.
      */
