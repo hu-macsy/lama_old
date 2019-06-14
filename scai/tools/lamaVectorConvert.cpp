@@ -31,6 +31,7 @@
 #include <scai/lama/io/FileIO.hpp>
 
 #include <scai/lama.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 
 #include <scai/common/Settings.hpp>
 
@@ -96,6 +97,8 @@ int main( int argc, const char* argv[] )
     std::string inFileName = argv[1];
 
     vector.readFromFile( argv[1] );
+
+    vector.redistribute( dmemo::blockDistribution( vector.size() ) );
 
     cout << "read vector : " << vector << endl;
 

@@ -77,6 +77,8 @@
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/zip_iterator.h>
 #include <thrust/reduce.h>
+#include <thrust/device_malloc.h>
+#include <thrust/device_free.h>
 
 #include <functional>
 
@@ -2664,6 +2666,7 @@ void shiftDiagKernel(
     IndexType csrJA[],
     ValueType csrValues[],
     const IndexType csrIA[],
+    const IndexType diagonalIndexes[],
     const IndexType numDiagonals )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
@@ -2671,6 +2674,13 @@ void shiftDiagKernel(
     if ( i >= numDiagonals )
     {
         return;
+    }
+
+    IndexType diagonalIndex = i;
+ 
+    if ( diagonalIndexes != NULL )
+    {
+        diagonalIndex = diagonalIndexes[i];
     }
 
     IndexType start = csrIA[i];
@@ -2682,7 +2692,7 @@ void shiftDiagKernel(
         return;
     }
 
-    if ( csrJA[start] == i )
+    if ( csrJA[start] == diagonalIndex )
     {
         count[i] = 1;  // diagonal element is already first
         return;
@@ -2699,7 +2709,7 @@ void shiftDiagKernel(
     {
         // check if it is the diagonal element, save the diagonal value
 
-        if ( not found && csrJA[end] == i )
+        if ( not found && csrJA[end] == diagonalIndex )
         {
             found = true;
             diagonalValue = csrValues[end];
@@ -2729,7 +2739,8 @@ IndexType CUDACSRUtils::shiftDiagonal(
     IndexType csrJA[],
     ValueType csrValues[],
     const IndexType numDiagonals,
-    const IndexType csrIA[] )
+    const IndexType csrIA[],
+    const IndexType diagonalIndexes[] )
 {
     SCAI_REGION( "CUDA.CSR.shiftDiag" )
 
@@ -2743,7 +2754,7 @@ IndexType CUDACSRUtils::shiftDiagonal(
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numDiagonals, dimBlock.x );
 
-    shiftDiagKernel <<< dimGrid, dimBlock>>>( d_count, csrJA, csrValues, csrIA, numDiagonals );
+    shiftDiagKernel <<< dimGrid, dimBlock>>>( d_count, csrJA, csrValues, csrIA, diagonalIndexes, numDiagonals );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "shiftDiagonal" )
 

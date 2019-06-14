@@ -123,7 +123,9 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 
     comm = Communicator::getCommunicatorPtr();
 
-    GridDistribution bdist( globalGrid, comm );
+    auto procGrid = GridDistribution::getDefaultProcGrid( globalGrid, comm->getSize() );
+
+    GridDistribution bdist( globalGrid, comm, procGrid );
 
     BOOST_CHECK_EQUAL( bdist.getGlobalSize(), globalSize * globalSize );
 
@@ -300,6 +302,58 @@ BOOST_AUTO_TEST_CASE( ownedIndexesTest )
     BOOST_REQUIRE_EQUAL( nLocal, myIndexes2.size() );
 
     BOOST_TEST( hostReadAccess( myIndexes1 ) == hostReadAccess( myIndexes2 ), boost::test_tools::per_element() );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( convertTest )
+{   
+    common::Grid2D grid( 6, 4 );
+    
+    std::vector<DistributionPtr> gridDistributions;
+
+    gridDistributions.push_back( gridDistribution( grid ) );
+    gridDistributions.push_back( gridDistributionReplicated( grid ) );
+    
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    
+    for ( size_t i = 0; i < gridDistributions.size(); ++i )
+    {   
+        DistributionPtr dist = gridDistributions[i];
+        
+        DistributionPtr blockedDist = dist->toBlockDistribution( comm );
+        
+        BOOST_CHECK_EQUAL( blockedDist->getGlobalSize(), dist->getGlobalSize() );
+
+        if ( !blockedDist->isBlockDistributed( comm ) )
+        {   
+            SCAI_LOG_ERROR( logger, "dist = " << *dist << ", blocked = " << *blockedDist )
+        }
+
+        BOOST_CHECK( blockedDist->isBlockDistributed( comm ) );
+        
+        DistributionPtr masterDist = dist->toMasterDistribution( comm );
+        
+        BOOST_CHECK_EQUAL( masterDist->getGlobalSize(), dist->getGlobalSize() );
+        
+        if ( !masterDist->isMasterDistributed( comm ) )
+        {   
+            SCAI_LOG_ERROR( logger, "dist = " << *dist << ", single = " << *masterDist )
+        }
+        
+        BOOST_CHECK( masterDist->isMasterDistributed( comm ) );
+        
+        DistributionPtr repDist = dist->toReplicatedDistribution();
+        
+        BOOST_CHECK_EQUAL( repDist->getGlobalSize(), dist->getGlobalSize() );
+        
+        if ( !repDist->isReplicated() )
+        {   
+            SCAI_LOG_ERROR( logger, "dist = " << *dist << ", rep = " << *repDist )
+        }
+
+        BOOST_CHECK( repDist->isReplicated() );
+    }
 }
 
 /* --------------------------------------------------------------------- */

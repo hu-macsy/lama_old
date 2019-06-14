@@ -29,6 +29,7 @@
 
 // hpp
 #include <scai/dmemo/NoCommunicator.hpp>
+#include <scai/dmemo/NoCollectiveFile.hpp>
 
 // local library
 #include <scai/dmemo/CommunicationPlan.hpp>
@@ -68,6 +69,11 @@ NoCommunicator::~NoCommunicator()
 hmemo::ContextPtr NoCommunicator::getCommunicationContext( const hmemo::_HArray& ) const
 {
     return hmemo::Context::getHostPtr();
+}
+
+std::unique_ptr<CollectiveFile> NoCommunicator::collectiveFile() const
+{
+    return std::unique_ptr<CollectiveFile>( new NoCollectiveFile( shared_from_this() ) );
 }
 
 bool NoCommunicator::isEqual( const Communicator& other ) const

@@ -45,14 +45,14 @@ int main()
     //
     // Create a DenseVector of size 8 with value 1.1 in each position
     //
-    IndexType size = 8;
+    const IndexType size = 8;
 
-    const auto v = fill<DenseVector<ValueType>>( size, 1.1 );
+    const DenseVector<ValueType> v( size, 1.1 );
     //
     // Compute the L1 norm of the vector and print it
     //
-    ValueType s = v.l1Norm();
-    std::cout << "L1 norm of v = " << s << std::endl;
+    auto norm = v.l1Norm();
+    std::cout << "L1 norm of v = " << norm << std::endl;
     //
     //  That's it.
     //

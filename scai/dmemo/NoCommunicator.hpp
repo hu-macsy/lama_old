@@ -154,6 +154,8 @@ public:
 
     virtual hmemo::ContextPtr getCommunicationContext( const hmemo::_HArray& array ) const;
 
+    virtual std::unique_ptr<class CollectiveFile> collectiveFile() const;
+
     /** Implementation of Communicator::sumImpl */
 
     virtual void sumImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const;

@@ -381,6 +381,40 @@ public:
     virtual void getAnyGlobal2Local( hmemo::HArray<IndexType>& offsets, hmemo::HArray<IndexType>& global2Local ) const;
 
     /**
+     *  @returns true if data is distributed onto processors in contiguous sections.
+     *
+     *  If the data is replicated among more than one processor, it returns also false.
+     */
+    virtual bool isBlockDistributed( CommunicatorPtr comm ) const;
+
+    /**
+     *   @brief Create a block distribution from the current one 
+     */
+    virtual DistributionPtr toBlockDistribution( CommunicatorPtr comm ) const;
+
+    /**
+     *  @returns true if data is completely owned by processor 0 
+     *
+     *  Data might also be replicated.
+     */
+    virtual bool isMasterDistributed( CommunicatorPtr comm ) const;
+
+    /**
+     *   @brief Create a single distribution from the current one 
+     *
+     *   The generated distribution must have the same size/shape as the current one.
+     *   Process 0 should be owner of all elements.
+     */
+    virtual DistributionPtr toMasterDistribution( CommunicatorPtr comm ) const;
+
+    /**
+     *   @brief Create a replicaed distribution from the current one 
+     *
+     *   The generated distribution must have the same size/shape as the current one.
+     */
+    virtual DistributionPtr toReplicatedDistribution() const;
+
+    /**
      * Virtual method to check two distributions for equality.
      *
      * @param[in] other distribution used for comparison with this distribution

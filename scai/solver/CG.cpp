@@ -134,13 +134,15 @@ void CG<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 template<typename ValueType>
 void CG<ValueType>::iterate()
 {
+    SCAI_LOG_INFO( logger, "CG.iterate, iter = " << IterativeSolver<ValueType>::getIterationCount() )
+
     SCAI_REGION( "Solver.CG.iterate" )
     CGRuntime& runtime = getRuntime();
 
     ValueType& pScalar    = runtime.mPScalar;   // keep ref for vallue p that is kept between it
     ValueType lastPScalar = pScalar;            // copy of last p 
 
-    if ( this->getIterationCount() == 0 )
+    if ( IterativeSolver<ValueType>::getIterationCount() == 0 )
     {
         this->getResidual();
     }
@@ -174,7 +176,7 @@ void CG<ValueType>::iterate()
     SCAI_LOG_DEBUG( logger, "pScalar = " << pScalar )
     SCAI_LOG_INFO( logger, "Calculating p." )
 
-    if ( this->getIterationCount() == 0 )
+    if ( IterativeSolver<ValueType>::getIterationCount() == 0 )
     {
         p = z;
     }

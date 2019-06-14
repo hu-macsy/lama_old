@@ -82,7 +82,6 @@ AssemblyStorage<ValueType>::AssemblyStorage( const AssemblyStorage<ValueType>& o
     mRows( other.mRows ), 
     mNumValues( other.mNumValues )
 {
-    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -94,7 +93,6 @@ AssemblyStorage<ValueType>::AssemblyStorage( const _MatrixStorage& other ) :
 
 {
     assign( other );
-    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -251,7 +249,6 @@ void AssemblyStorage<ValueType>::clear()
     _MatrixStorage::setDimension( 0, 0 );
     mNumValues = 0;
     mRows.clear();
-    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -262,7 +259,6 @@ void AssemblyStorage<ValueType>::purge()
     _MatrixStorage::setDimension( 0, 0 );
     mNumValues = 0;
     mRows.clear();
-    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -359,35 +355,6 @@ size_t AssemblyStorage<ValueType>::getMemoryUsageImpl() const
     memoryUsage += sizeof( IndexType ) * mNumValues;
     memoryUsage += sizeof( ValueType ) * mNumValues;
     return memoryUsage;
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-bool AssemblyStorage<ValueType>::checkDiagonalProperty() const
-{
-    bool diagonalProperty = true;
-    IndexType n = std::min( getNumRows(), getNumColumns() );
-
-    for ( IndexType i = 0; i < n; ++i )
-    {
-        const Row& row = mRows[i];
-
-        if ( row.ja.size() == 0 )
-        {
-            diagonalProperty = false;
-            break;
-        }
-
-        if ( row.ja[0] != i )
-        {
-            diagonalProperty = false;
-            break;
-        }
-    }
-
-    SCAI_LOG_INFO( logger, *this << ": checkDiagonalProperty -> " << diagonalProperty )
-    return diagonalProperty;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -723,8 +690,6 @@ void AssemblyStorage<ValueType>::setCSRDataImpl(
             ++offset;
         }
     }
-
-    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -795,6 +760,7 @@ void AssemblyStorage<ValueType>::buildCSR(
     auto csrJA = hostWriteOnlyAccess( *ja, mNumValues );
     auto csrValues = hostWriteOnlyAccess( *values, mNumValues );
 
+    #pragma omp parallel for
     for ( IndexType i = 0; i < getNumRows(); ++i )
     {
         IndexType offset = 0;
@@ -1105,7 +1071,15 @@ void AssemblyStorage<ValueType>::matrixTimesVector(
     const HArray<ValueType>& y,
     const common::MatrixOp op ) const
 {
-    SCAI_LOG_ERROR( logger, "matrixTimesVector not supported on an assembly storage, please convert" )
+    static bool warn = true;   
+
+    if ( warn )
+    {
+        SCAI_LOG_WARN( logger, "matrixTimesVector<" << getValueType() 
+                                << "> not supported on an assembly storage, will be converted to CSR" )
+
+        warn = false;  // print warning only once
+    }
 
     CSRStorage<ValueType> csr;
     csr.assign( *this );
@@ -1119,7 +1093,7 @@ void AssemblyStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "AssemblyStorage<" << common::getScalarType<ValueType>() << ">("
            << " size = " << getNumRows() << " x " << getNumColumns()
-           << ", #values = " << mNumValues << ", diag = " << mDiagonalProperty << " )";
+           << ", #values = " << mNumValues << " )";
 }
 
 template<typename ValueType>

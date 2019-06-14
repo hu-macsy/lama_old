@@ -121,7 +121,8 @@ class COMMON_DLL_IMPORTEXPORT Communicator:
     public  _Communicator,
     public  scai::common::Printable,
     public  scai::common::Factory<_Communicator::CommunicatorKind, CommunicatorPtr>,
-    private scai::common::NonCopyable
+    private scai::common::NonCopyable,
+    public  std::enable_shared_from_this<const Communicator>
 {
 
 public:
@@ -175,20 +176,22 @@ public:
 
     /** @brief Find a facotorization of size with two factors
      *
+     *  @param[in] size       total number of processors
      *  @param[in] sizeX      weight for the first dimension
      *  @param[in] sizeY      weight for the second dimension
      *  @param[out] procgrid   array of size 2 with the two factors
      */
-    void factorize2( PartitionId procgrid[2], const double sizeX, const double sizeY ) const;
+    static void factorize2( PartitionId procgrid[2], const PartitionId size, const double sizeX, const double sizeY );
 
     /** @brief Find a factorization of size with three factors
      *
      *  @param[out] procgrid   array of size 3 with the three factors
+     *  @param[in] size       total number of processors
      *  @param[in] sizeX      weight for the first dimension
      *  @param[in] sizeY      weight for the second dimension
      *  @param[in] sizeZ      weight for the third dimension
      */
-    void factorize3( PartitionId procgrid[3], const double sizeX, const double sizeY, const double sizeZ ) const;
+    static void factorize3( PartitionId procgrid[3], const PartitionId size, const double sizeX, const double sizeY, const double sizeZ );
 
     /** @brief Get the position of this processor in a two-dimensional processor grid
      *
@@ -839,6 +842,11 @@ public:
      *       communication it might return a CUDA context if the array has valid data there.
      */
     virtual hmemo::ContextPtr getCommunicationContext( const hmemo::_HArray& array ) const = 0;
+
+    /**
+     *  @brief This routine provides a collective / concurrent file that allows parallel I/O
+     */
+    virtual std::unique_ptr<class CollectiveFile> collectiveFile() const = 0;
 
     /** Read in the environment variable SCAI_NP for user processor array.
      *

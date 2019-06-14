@@ -63,6 +63,11 @@ public:
      */
     typedef const Matrix<ValueType>& ExpressionMemberType;
 
+    /**
+     * @brief Define ObjectValueType so matrix class can be used in certain free functions to deduce ValueType.
+     */
+    typedef ValueType ObjectValueType;
+
     /** Create a new matrix of a certain format but with same value type */
 
     static Matrix<ValueType>* getMatrix( const Format format );

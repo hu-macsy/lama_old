@@ -127,8 +127,8 @@ int main ( int argc, char* argv[] )
 
     std::cout << "Matrix multiplication with original matrix: " << matrix << std::endl;
 
-    auto x  = linearDenseVector( dist, ValueType( 1 ), ValueType( 1.0 ) );
-    auto y1 = eval<DenseVector<ValueType>>( matrix * x );
+    auto x  = denseVectorLinear( dist, ValueType( 1 ), ValueType( 1.0 ) );
+    auto y1 = denseVectorEval( matrix * x );
 
     std::cout << "Initial vector x = " << x << std::endl;
 
@@ -154,7 +154,7 @@ int main ( int argc, char* argv[] )
 
     std::cout << "Matrix-vector multiplication with redistributed matrix: " << matrix << std::endl;
 
-    auto y2 = eval<DenseVector<ValueType>>( matrix * x );
+    auto y2 = denseVectorEval( matrix * x );
 
     y2.writeToFile( "y2.txt" );
 

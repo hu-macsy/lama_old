@@ -28,6 +28,8 @@
  */
 #pragma once
 
+#include <scai/common/TypeTraits.hpp>
+
 namespace scai
 {
 

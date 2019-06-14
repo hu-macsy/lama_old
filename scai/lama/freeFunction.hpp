@@ -100,7 +100,7 @@ ObjectType zero( dmemo::DistributionPtr dist, hmemo::ContextPtr ctx = hmemo::Con
 }
 
 template<typename ObjectType>
-ObjectType undefined( const IndexType size, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+ObjectType undefinedDEP( const IndexType size, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
 {
     // ObjectType must be a vector class
 
@@ -111,7 +111,7 @@ ObjectType undefined( const IndexType size, hmemo::ContextPtr ctx = hmemo::Conte
 }
 
 template<typename ObjectType>
-ObjectType undefined( dmemo::DistributionPtr dist, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+ObjectType undefinedDEP( dmemo::DistributionPtr dist, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
 {
     // ObjectType must be a vector class
 
@@ -276,6 +276,8 @@ ObjectType read( const std::string& fileName,
  *
  *  This template function can be considered as a syntactical help for code abbreviation.
  *  Please keep in mind the function requires the result type as template argument.
+ *
+ *  Note: DEPRECATED function, please use sparseVectorFill or denseVector
  */
 template<typename ObjectType>
 ObjectType fill( const IndexType n, typename ObjectType::ObjectValueType value, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )

@@ -89,9 +89,9 @@ int main( int argc, const char* argv[] )
 
     common::Grid3D grid( N, N, N );
 
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr(); 
+    // take default communicator and default processor array for mapping of the grid
 
-    dmemo::DistributionPtr gridDistribution( new GridDistribution( grid, comm ) );
+    auto gridDistribution = dmemo::gridDistribution( grid );
 
     StencilMatrix<ValueType> distStencilMatrix( gridDistribution, stencil );
     CSRSparseMatrix<ValueType> distCSRMatrix( distStencilMatrix );
@@ -113,8 +113,8 @@ int main( int argc, const char* argv[] )
 
     // replicated and distributed matrix-vector multiplication
 
-    const auto repY  = eval<DenseVector<ValueType>>( repStencilMatrix * repX );
-    const auto distY = eval<DenseVector<ValueType>>( distStencilMatrix * distX );
+    const auto repY  = denseVectorEval( repStencilMatrix * repX );
+    const auto distY = denseVectorEval( distStencilMatrix * distX );
 
     std::cout << "max diff Y = " << repY.maxDiffNorm( distY ) << std::endl;
 }

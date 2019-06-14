@@ -30,6 +30,7 @@
 #pragma once
 
 #include <scai/lama/io/FileIO.hpp>
+#include <scai/lama/io/IOStream.hpp>
 #include <scai/lama/storage/MatrixStorage.hpp>
 
 namespace scai
@@ -57,45 +58,45 @@ public:
 
     SAMGIO();
 
+    /** Implementation of pure virtual method FileIO::openIt */
+
+    virtual void openIt( const std::string& fileName, const char* openMode );
+
+    /** Implementation of pure virtual method FileIO::closeIt */
+
+    virtual void closeIt();
+
     /** Implementation of pure virtual method FileIO::writeStorage */
 
-    void writeStorage( const _MatrixStorage& storage, const std::string& fileName );
+    void writeStorage( const _MatrixStorage& storage );
 
     /** Implementation of pure virtual method FileIO::readStorage  */
 
-    void readStorage(
-        _MatrixStorage& storage,
-        const std::string& fileName,
-        const IndexType offsetRow,
-        const IndexType nRows );
+    void readStorage( _MatrixStorage& storage );
 
     /** Implementation of FileIO::writeArray */
 
-    void writeArray( const hmemo::_HArray& array, const std::string& fileName );
+    void writeArray( const hmemo::_HArray& array );
 
     /** Implementation of pure virtual method FileIO::writeSparse  */
 
     virtual void writeSparse(
         const IndexType size,
+        const void* zero,
         const hmemo::HArray<IndexType>& indexes,
-        const hmemo::_HArray& array,
-        const std::string& fileName );
+        const hmemo::_HArray& array );
 
     /** Implementation of pure virtual method FileIO::readArray using same defaults */
 
-    virtual void readArray(
-        hmemo::_HArray& array,
-        const std::string& fileName,
-        const IndexType offset = 0,
-        const IndexType n = invalidIndex );
+    virtual void readArray( hmemo::_HArray& array );
 
     /** Implementation of pure virtual method FileIO::readSparse */
 
     virtual void readSparse(
         IndexType& size,
+        void* zero,
         hmemo::HArray<IndexType>& indexes,
-        hmemo::_HArray& values,
-        const std::string& fileName );
+        hmemo::_HArray& values );
 
     /** Implementation of FileIO::getMatrixFileSuffix */
 
@@ -125,63 +126,68 @@ public:
 
     virtual int deleteFile( const std::string& fileName );
 
-    /** Implementation of pure methdod FileIO::readStorageInfo */
+    /** Implementation of pure methdod FileIO::getStorageInfo */
 
-    virtual void readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& fileName );
+    virtual void getStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues );
 
-    /** Implementation of pure methdod FileIO::readArrayInfo */
+    /** Implementation of pure methdod FileIO::getArrayInfo */
 
-    virtual void readArrayInfo( IndexType& size, const std::string& fileName );
+    virtual void getArrayInfo( IndexType& size );
 
 public:
 
     /** Typed version of writeStorage called vi IOWrapper::writeStorageImpl  */
 
     template<typename ValueType>
-    void writeStorageImpl( const MatrixStorage<ValueType>& storage, const std::string& fileName );
+    void writeStorageImpl( const MatrixStorage<ValueType>& storage );
 
     /** Typed version of readStorageBlock */
 
     template<typename ValueType>
-    void readStorageImpl( MatrixStorage<ValueType>& storage, const std::string& fileName, const IndexType firstRow, const IndexType nRows );
+    void readStorageImpl( MatrixStorage<ValueType>& storage );
 
     /** Typed version of the writeArray */
 
     template<typename ValueType>
-    void writeArrayImpl( const hmemo::HArray<ValueType>& array, const std::string& fileName );
+    void writeArrayImpl( const hmemo::HArray<ValueType>& array );
 
     /** Typed version of the writeSparse */
 
     template<typename ValueType>
     void writeSparseImpl(
         const IndexType size,
+        const ValueType& zero,
         const hmemo::HArray<IndexType>& indexes,
-        const hmemo::HArray<ValueType>& values,
-        const std::string& fileName );
+        const hmemo::HArray<ValueType>& values );
 
     /** Typed version of readArrayBlock */
 
     template<typename ValueType>
-    void readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& fileName, const IndexType first, const IndexType n );
+    void readArrayImpl( hmemo::HArray<ValueType>& array );
 
     /** Typed version of readSparse */
 
     template<typename ValueType>
     void readSparseImpl(
         IndexType& size,
+        ValueType& zero,
         hmemo::HArray<IndexType>& indexes,
-        hmemo::HArray<ValueType>& values,
-        const std::string& fileName );
+        hmemo::HArray<ValueType>& values );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for IO class
 
     /** Implementation of writing array with grid information */
 
-    void writeGridArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName );
+    void writeGridArray( const hmemo::_HArray& data, const common::Grid& grid );
 
-    void readGridArray( hmemo::_HArray& data, common::Grid& grid, const std::string& outputFileName );
+    void readGridArray( hmemo::_HArray& data, common::Grid& grid );
 
 private:
+
+    class IOStream mHeaderFile;  // used header file
+    class IOStream mDataFile;    // used data file
+
+    bool mBinary;                // true for binary mode, false for formatted mode
 
     /** Guard class for an additional registration with the vector file suffix. */
 
@@ -197,13 +203,15 @@ private:
 
     /** Own routines for read/write of the header file, no template parameters required */
 
-    void readMatrixHeader( IndexType& numRows, IndexType& numValues, bool& binary, const std::string& fileName );
+    void readFileMode();
 
-    void writeMatrixHeader( const IndexType numRows, const IndexType numValues, const bool binary, const std::string& fileName );
+    void readMatrixHeader( IndexType& numRows, IndexType& numValues );
 
-    void readVectorHeader( IndexType& n, IndexType& typeSize, bool& binary, const std::string& fileName );
+    void writeMatrixHeader( const IndexType numRows, const IndexType numValues );
 
-    void writeVectorHeader( const IndexType n, const IndexType typeSize, const bool binary, const std::string& fileName );
+    void readVectorHeader( IndexType& n, IndexType& typeSize );
+
+    void writeVectorHeader( const IndexType n, const IndexType typeSize );
 
 };
 

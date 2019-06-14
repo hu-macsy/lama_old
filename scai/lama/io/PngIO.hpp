@@ -40,7 +40,7 @@ namespace scai
 namespace lama
 {
 
-class COMMON_DLL_IMPORTEXPORT PngIO : 
+class COMMON_DLL_IMPORTEXPORT PngIO :
 
     public FileIO,
     public FileIO::Register<PngIO>    // register at factory
@@ -53,52 +53,29 @@ public:
 
     PngIO();
 
-    /** Implementation of pure methdod FileIO::readStorageInfo */
+    /** Implementation of pure methdod FileIO::getStorageInfo */
 
-    virtual void readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& fileName );
+    virtual void getStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues );
 
-    /** Implementation of pure methdod FileIO::readArrayInfo */
+    /** Implementation of pure methdod FileIO::getArrayInfo */
 
-    virtual void readArrayInfo( IndexType& size, const std::string& fileName );
+    virtual void getArrayInfo( IndexType& size );
 
     /** Implementation of pure virtual method FileIO::writeStorage for all derived classes */
 
-    virtual void writeStorage( const _MatrixStorage& storage, const std::string& fileName );
+    virtual void writeStorage( const _MatrixStorage& storage );
 
     /** Implementation of pure virtual method FileIO::readStorage  */
 
-    virtual void readStorage( _MatrixStorage& storage, const std::string& fileName, const IndexType offsetRow, const IndexType nRows );
+    virtual void readStorage( _MatrixStorage& storage );
 
     /** Implementation of pure virtual method FileIO::writeArray  */
 
-    virtual void writeArray( const hmemo::_HArray& array, const std::string& fileName );
-
-    /** Implementation of pure virtual method FileIO::writeSparse  */
-
-    virtual void writeSparse(
-        const IndexType size,
-        const hmemo::HArray<IndexType>& indexes,
-        const hmemo::_HArray& array,
-        const std::string& fileName );
+    virtual void writeArray( const hmemo::_HArray& array );
 
     /** Implementation of pure virtual method FileIO::readArray using same defaults */
 
-    virtual void readArray(
-        hmemo::_HArray& array,
-        const std::string& fileName,
-        const IndexType offset = 0,
-        const IndexType n = invalidIndex );
-
-    /** Implementation of pure virtual method FileIO::readSparse 
-     *
-     *  This CRTP class calls Derived::readSparseImpl with a typed value array.
-     */
-
-    virtual void readSparse(
-        IndexType& size,
-        hmemo::HArray<IndexType>& indexes,
-        hmemo::_HArray& values,
-        const std::string& fileName );
+    virtual void readArray( hmemo::_HArray& array );
 
     /** Default implementation for query matrix file suffix, is createValue of derived class */
 
@@ -112,19 +89,19 @@ public:
 
     virtual bool isSupportedMode( const FileMode mode ) const;
 
-    void readGridArray( hmemo::_HArray& data, common::Grid& grid, const std::string& outputFileName );
+    void readGridArray( hmemo::_HArray& data, common::Grid& grid );
 
-    void writeGridArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName );
+    void writeGridArray( const hmemo::_HArray& data, const common::Grid& grid );
 
     /** Typed version of BitmapIO::readGridArray */
 
     template<typename ValueType>
-    void readGridImpl( hmemo::HArray<ValueType>& data, common::Grid& grid, const std::string& outputFileName );
+    void readGridImpl( hmemo::HArray<ValueType>& data, common::Grid& grid );
 
     /** Typed version of PngIO::writeGridArray */
 
     template<typename ValueType>
-    void writeGridImpl( const hmemo::HArray<ValueType>& data, const common::Grid& grid, const std::string& outputFileName );
+    void writeGridImpl( const hmemo::HArray<ValueType>& data, const common::Grid& grid );
 
     /** Implementation for Printable.:writeAt */
 
@@ -141,6 +118,20 @@ public:
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
+    /** Implementation of pure virtual method FileIO::open */
+
+    virtual void openIt( const std::string& fileName, const char* fileMode );
+
+    /** Implementation of pure virtual method FileIO::close */
+
+    virtual void closeIt();
+
+private:
+
+    FILE* mFile;             //! Using C file descriptor here
+
+    std::string mFileName;   //!< save explicitly the file name for error messages
 
 };
 

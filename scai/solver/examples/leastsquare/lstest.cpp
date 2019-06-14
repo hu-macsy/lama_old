@@ -78,8 +78,8 @@ int main( int, char** )
     DenseVector<ValueType> b;
     b.setRawData( numRows, rawB );
 
-    auto b1 = eval<DenseVector<ValueType>>( transpose( m ) * b );
-    auto x0 = fill<DenseVector<ValueType>>( numColumns, 0 );
+    auto b1 = denseVectorEval( transpose( m ) * b );
+    auto x0 = denseVector<ValueType>( numColumns, 0 );
 
     DenseVector<ValueType> bestX;
 
@@ -109,8 +109,8 @@ int main( int, char** )
 
     solver.solve( x0, b1 );
 
-    const auto computedRes = eval<DenseVector<ValueType>>( m * x0 - b );
-    const auto expectedRes = eval<DenseVector<ValueType>>( m * bestX - b );
+    const auto computedRes = denseVectorEval( m * x0 - b );
+    const auto expectedRes = denseVectorEval( m * bestX - b );
 
     std::cout << "residual norm of computed x : " << computedRes.l2Norm() << std::endl;
     std::cout << "residual norm of expected x : " << expectedRes.l2Norm() << std::endl;

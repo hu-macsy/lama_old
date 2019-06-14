@@ -62,7 +62,8 @@ class COMMON_DLL_IMPORTEXPORT StencilUtils
 {
 public:
 
-    /** Method to setup heterogeneous arrays that contain all relevant grid and stencil info.
+    /** 
+     *  @brief Method to setup heterogeneous arrays that contain all relevant grid and stencil info.
      *
      *  @param[out] gridInfo contains gridSizes[nDims], gridDistances[nDims], gridBorders[2*nDims], gridStencilWidth[2*nDims]
      *  @param[out] stencilInfo contains stencilPositions[nDims*nPoints], stencilOffsets[nPoints]

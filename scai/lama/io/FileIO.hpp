@@ -34,6 +34,8 @@
 #include <scai/common/Factory.hpp>
 #include <scai/common/Printable.hpp>
 
+#include <scai/dmemo/Communicator.hpp>
+
 #include <scai/logging.hpp>
 
 #include <string>
@@ -43,13 +45,52 @@ namespace scai
 
 namespace common
 {
-    class Grid;
+class Grid;
 }
 
 namespace lama
 {
 
 class _MatrixStorage;
+
+/**
+ *  @brief Enumeration class for different file modes
+ */
+enum class FileMode
+{
+    BINARY,             //!< binary
+    FORMATTED,          //!< formatted text
+    DEFAULT             //!< keep it as it is set by default
+};
+
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const FileMode& value );
+
+/**
+ *  @brief Enumeration class for different modes of distributed I/O
+ */
+enum class DistributedIOMode
+{
+    MASTER,             //!< only master processor reads/writes the file
+    INDEPENDENT,        //!< each processor reads/writes its own data in own file
+    COLLECTIVE,         //!< all processors access the same file
+    DEFAULT             //!< take the default mode of an IO class
+};
+
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const DistributedIOMode& value );
+
+/**
+ *  Enum type for entities that might be stored in a file.
+ */
+enum class IOItem
+{
+    DENSE_DATA,         //!< dense vector
+    GRID_DATA,          //!< grid vector
+    SPARSE_DATA,        //!< sparse vector
+    CSR_MATRIX,         //!< sparse matrix in CSR format
+    COO_MATRIX,         //!< sparse matrix in COO format
+    DENSE_MATRIX,       //!< sparse matrix in dense format
+    UNKNOWN             //!< unknown entry, i.e. any other stuff
+};
 
 /** This abstract base class specifies the methods that have to be
  *  implemented for read/write of matrix storage and vector arrays.
@@ -64,7 +105,6 @@ class _MatrixStorage;
  *        The struct IOWrapper is a helper struct that provides this
  *        funtionality.
  */
-
 class COMMON_DLL_IMPORTEXPORT FileIO :
 
     public common::Factory<std::string, FileIO*>,
@@ -74,18 +114,50 @@ class COMMON_DLL_IMPORTEXPORT FileIO :
 
 public:
 
-    typedef enum
-    {
-        BINARY,             //!< forces the use of binary write
-        FORMATTED,          //!< forces the use of formatted write
-        DEFAULT_MODE        //!< keep it as it is set by default
-    } FileMode;
-
     /** Constructor sets default values for mode */
 
     FileIO();
 
     virtual ~FileIO();
+
+    /**
+     *  @brief Open a file.
+     *
+     *  @param[in] fileName specifies the name of the file
+     *  @param[in] fileMode is either "r" for reading a file, "w" for writing into it, or "a" for append to it
+     *  @param[in] distMode specifies the mode how the file is accessed by multiple processors
+     *
+     *  This method might throw an IOException if the file could not be opened or if a mode is not supported.
+     *
+     *  Distributed I/O mode is set to INDEPENDENT mode if fileName contains the pattern "%r".
+     */
+    void open( const char* fileName, const char* fileMode, const DistributedIOMode distMode = DistributedIOMode::DEFAULT );
+
+    /**
+     *  @brief Virtual method to query if an IO class supports collective I/O.
+     */
+    virtual bool hasCollectiveIO() const;
+
+    /**
+     *  @brief Query the actual distributed IO mode
+     *
+     *  @return the current mode, either MASTER, INDEPENDENT or COLLECTIVE
+     */
+    DistributedIOMode getDistributedIOMode() const;
+
+    /**
+     *  @brief Query the communicator for the processors involved in I/O
+     *
+     *  Note: usually all processors are involved, also in MASTER mode.
+     */
+    dmemo::CommunicatorPtr getCommunicatorPtr() const;
+
+    /**
+     *  @brief Method to close the currently opened file.
+     *
+     *  There is an implicit synchronization for all file processors.
+     */
+    void close();
 
     /** Query if a certain file mode is supported
      *
@@ -98,7 +170,6 @@ public:
     /** Write matrix storage into a file.
      *
      *  @param[in] storage is the (local) matrix data that is written
-     *  @param[in] fileName is the name of the output file
      *
      *  By default all data is written in exactly the same format as it
      *  is used in the storage. So for a storage with double values 8 bytes
@@ -109,143 +180,127 @@ public:
      *  - mScalarTypeData  representation type used for data within file
      */
 
-    virtual void writeStorage( const _MatrixStorage& storage, const std::string& fileName ) = 0;
+    virtual void writeStorage( const _MatrixStorage& storage ) = 0;
 
-    /** Write 'dense' array of arbitrary type into a file.
+    /**
+     *  @brief Write 'dense' array of arbitrary type into the current file.
      *
      *  @param[in] array is the (local) array data that is written
-     *  @param[in] fileName is the name of the output file
      *
      *  - mBinary if true data is written binary
      *  - mDataType output format used for non-zero values
      */
-    virtual void writeArray( const hmemo::_HArray& array, const std::string& fileName ) = 0;
+    virtual void writeArray( const hmemo::_HArray& array ) = 0;
 
     /** Write multi-dimensional array of arbitrary type into a file with the shape
      *
      *  @param[in] array is the (local) array data that is written
      *  @param[in] grid is the shape of the array
-     *  @param[in] fileName is the name of the output file
      *
      *  - mBinary if true data is written binary
      *  - mDataType output format used for non-zero values
      */
-    virtual void writeGridArray( const hmemo::_HArray& array, const common::Grid& grid, const std::string& fileName ) = 0;
+    virtual void writeGridArray( const hmemo::_HArray& array, const common::Grid& grid ) = 0;
 
     /** Write 'sparse' array of arbitrary type into a file.
      *
      *  @param[in] size is the full size of the array
+     *  @param[in] zeroVal pointer to zero Value of sparse array
      *  @param[in] indexes are the positions of the array with non-zero values
      *  @param[in] values are the values for the positions specified by indexes
-     *  @param[in] fileName is the name of the output file
      *
-     *  Note: the ZERO element of a sparse vector cannot be written into a file.
+     *  Here we provide a default implementation that uses a dense array.
      */
-    virtual void writeSparse( 
-        const IndexType size, 
-        const hmemo::HArray<IndexType>& indexes, 
-        const hmemo::_HArray& values, 
-        const std::string& fileName ) = 0;
+    virtual void writeSparse(
+        const IndexType size,
+        const void* zeroVal,
+        const hmemo::HArray<IndexType>& indexes,
+        const hmemo::_HArray& values );
+
+    /** Typed version of the writeSparse */
+
+    template<typename ValueType>
+    void writeSparseImpl(
+        const IndexType size,
+        const ValueType& zero,
+        const hmemo::HArray<IndexType>& indexes,
+        const hmemo::HArray<ValueType>& values );
 
     /** Get info about the storage stored in a file.
      *
      *  @param[out] numRows    number of rows for the storage in the file
      *  @param[out] numColumns number of columns for the storage in the file
      *  @param[out] numValues  number of non-zero values for the storage in the file
-     *  @param[in]  fileName   number of non-zero values for the storage in the file
-     */
-    virtual void readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& fileName ) = 0;
-
-    /** Read (local) matrix storage from a file
      *
-     *   - implicit conversion by reading from formatted file
-     *   - for binary files the type must match the type of storage
      */
+    virtual void getStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues ) = 0;
 
-    /** Read in a matrix from a file but only a contiguous section of rows.
+    /** Read in a matrix storage from the opened file
      *
      *  @param[out] storage  is the submatrix from the full matrix stored in the file
-     *  @param[in]  fileName is the name of the input file containing the matrix.
-     *  @param[in]  offsetRow index of first row to read
-     *  @param[in]  nRows    number of rows to read
-     *
-     *  This routine can be used to read in one matrix from a single file with multiple processors
-     *  where each processor reads in its local part.
-     *
-     *  This routine can also be used by a single processor that reads in the corresponding blocks and
-     *  writes them to separate files.
-     *
-     *  The default implementation of the base class reads in the full storage and extracts the local
-     *  part of it. Derived classes should implement solutions where it is not necessary to allocate memory
-     *  for the full matrix but only for the corresponding block. In case of binary data, direct file access
-     *  might be exploited to extract the needed data from the input file.
      */
-    virtual void readStorage(
-        _MatrixStorage& storage,
-        const std::string& fileName,
-        const IndexType offsetRow = 0,
-        const IndexType nRows = invalidIndex ) = 0;
+    virtual void readStorage( _MatrixStorage& storage ) = 0;
 
     /** Read in the size of an array saved in a file
      *
      *  @param[out] size     number of entries for the array saved in the file
-     *  @param[in]  fileName C++ string containing the name of the file where the array is saved
      *  @throws common::Exception if file cannot be opened or if it does not contain an array
      */
-    virtual void readArrayInfo( IndexType& size, const std::string& fileName ) = 0;
-
-    /** Read in an array from a file in the corresponding format.
-     *
-     *  @param[out] array    container that will keep the array saved in file fileName
-     *  @param[in]  fileName C++ string containing the name of the file where the array is saved
-     *  @throws common::Exception if file cannot be opened or if it does not contain an array
-     *
-     *  If the value type of the array does not match the data stored in the file, an implicit
-     *  type conversion is done.
-     *
-     *  If the file contains binary data, it is assumed that its type is the same as the value
-     *  type of the array argument unless the environment variable ``SCAI_IO_TYPE`` has been set.
-     */
+    virtual void getArrayInfo( IndexType& size ) = 0;
 
     /** Read in a 'dense' array block from a file in the corresponding format.
      *
      *  @param[out] array    will contain the corresponding array values
-     *  @param[in]  fileName name of the input file with array data
-     *  @param[in]  offset   first entry to read
-     *  @param[in]  n        number of entries to read, invalidIndex stands for all remaining entries
-     *
-     *  This method has exactly the same behavior as readArray but with the difference that only
-     *  a part of the array is read.
      */
-    virtual void readArray(
-        hmemo::_HArray& array,
-        const std::string& fileName,
-        const IndexType offset = 0,
-        const IndexType n = invalidIndex ) = 0;
+    virtual void readArray( hmemo::_HArray& array ) = 0;
 
+    /** Read in a grid (i.e. multi-dimensional array) from the file
+     *
+     *  @param[out] array    will contain the corresponding array values
+     *  @param[out] grid    will contain array topology as a grid
+     *
+     *  If the routine succeeds, array.size() will be equal to grid.size(). The
+     *  values in array are stored in row-major order.
+     *
+     *  This routine should return a two-dimensional array if the file contains
+     *  a matrix storage or a one-dimensional array if the file contains an array.
+     */
     virtual void readGridArray(
         hmemo::_HArray& array,
-        common::Grid& grid,
-        const std::string& fileName ) = 0;
+        common::Grid& grid ) = 0;
 
-    /** Read in a 'sparse' array from a file in the corresponding format.
+    /** Typed version of readSparse */
+
+    template<typename ValueType>
+    void readSparseImpl(
+        IndexType& size,
+        ValueType& zero,
+        hmemo::HArray<IndexType>& indexes,
+        hmemo::HArray<ValueType>& values );
+
+    /**
+     *  @brief Read in a 'sparse' array from a file using its file format.
      *
      *  @param[out] size is the size of the array
+     *  @param[out] zeroVal pointer to variable that will be set with the zero value.
      *  @param[out] indexes are the positions with non-zero values
      *  @param[out] values are the values at the corresponding positions.
-     *  @param[in]  fileName of the input file with array data.
      *
-     *  This method must be implemented by each derived class. 
+     *  There is a default implementation that reads a dense array from the file and
+     *  translates it into a sparse array. It takes the value 0 as zero element.
+     *  Derived classes should override this method for more efficient implementations.
      */
-    virtual void readSparse( 
+    virtual void readSparse(
         IndexType& size,
+        void* zeroVal,
         hmemo::HArray<IndexType>& indexes,
-        hmemo::_HArray& values,
-        const std::string& fileName ) = 0;
+        hmemo::_HArray& values );
 
     /** File suffix can be used to decide about choice of FileIO class */
 
     virtual std::string getMatrixFileSuffix() const = 0;
+
+    /** File suffix can be used to decide about choice of FileIO class */
 
     virtual std::string getVectorFileSuffix() const = 0;
 
@@ -256,7 +311,22 @@ public:
      */
     virtual int deleteFile( const std::string& fileName );
 
-    /** Setter for representation type used for indexes in file. */
+    /**
+     *  @brief Setter for representation type used for indexes in file.
+     *
+     *  This method can be used to force that values of IndexType are converted
+     *  into another type. The following example shows how to force that 4-byte
+     *  IndexType values are written as 8-byte long values.
+     *
+     *  \code
+     *      DerivedIO file( ... );
+     *      file.setIndexType( common::TypeTraits<long>::stype );
+     *      HArray<IndexType> indexes = ....;
+     *      file.writeArray( indexes );
+     *  \endcode
+     *
+     *  By default, the value is common::TypeTraits<IndexType>::stype.
+     */
 
     void setIndexType( common::ScalarType type );
 
@@ -300,6 +370,8 @@ public:
      *  @param[in] dataType  specifies the type to be used for representation in output file
      *
      *  If the optional argument dataType is not set, array.getValueType() is used.
+     *
+     *  This routine writes in INDEPENDENT mode, so user must take care of synchronization
      */
     static void write(
         const hmemo::_HArray& array,
@@ -308,49 +380,47 @@ public:
 
     /** Static method to write a sparse array into a file.
      *
-     *  @param[in] size, values, indexes represent the sparse array
+     *  @param[in] size, zero, indexes, values represent the sparse array
      *  @param[in] fileName  is the name of output file, suffix decides about Handler
      *  @param[in] dataType  specifies the type to be used for representation in output file
      *
      *  If the optional argument dataType is not set, array.getValueType() is used.
+     *
+     *  This routine writes in INDEPENDENT mode, so user must take care of synchronization
      */
     static void write(
         const IndexType size,
+        const void* zero,
         const hmemo::HArray<IndexType>& indexes,
         const hmemo::_HArray& values,
         const std::string& fileName,
         const common::ScalarType dataType = common::ScalarType::INTERNAL );
 
-    /** Static method to read an array or a contiguous section of an array from a file.
+    /** Static method to read an array from a file
      *
      *  @param[out] array will contain the array data
      *  @param[in]  fileName is the name of the input file where the array is saved
      *  @param[in]  dataType specifies the type that has been used for the values in the input file
-     *  @param[in]  first index of the first element to read, defaults to 0
-     *  @param[in]  n     number of elements, default is invalidIndex that stands for up to the end
      *
      *  \code
      *      HArray<double> data;
      *      FileIO::read( data, "myData.txt" )           // reads the full array
-     *      FileIO::read( data, "myData.txt", 50 )       // reads array but skips first 50 entries
-     *      FileIO::read( data, "myData.txt", 50, 10 )   // reads for pos 50 next 10 elements
      *  \endcode
      */
     static void read(
         hmemo::_HArray& array,
         const std::string& fileName,
-        const common::ScalarType dataType = common::ScalarType::INTERNAL,
-        const IndexType first = 0,
-        const IndexType n = invalidIndex );
+        const common::ScalarType dataType = common::ScalarType::INTERNAL );
 
     static void read(
         IndexType& size,
+        void* zero,
         hmemo::HArray<IndexType>& indexes,
         hmemo::_HArray& array,
         const std::string& fileName,
         const common::ScalarType dataType = common::ScalarType::INTERNAL );
 
-    /** Stati method to read a multi-dimensional array from a file. */
+    /** Static method to read a multi-dimensional array from a file. */
 
     static void read(
         hmemo::_HArray& array,
@@ -372,6 +442,23 @@ public:
 
 protected:
 
+    /**
+     *  @brief Pure method to open a file.
+     *
+     *  @param[in] fileName specifies the name of the file
+     *  @param[in] openMode is either "r" for reading a file, "w" for writing into it, or "a" for append to it
+     *
+     *  This open method must be implemented by each derived FileIO class.
+     */
+    virtual void openIt( const std::string& fileName, const char* openMode ) = 0;
+
+    /**
+     *  @brief Pure method to close the currently open file.
+     *
+     *  This method might throw an IOEception if no file is open at all.
+     */
+    virtual void closeIt() = 0;
+
     /** write the global settings in the stream, useful for derived classes */
 
     void writeMode( std::ostream& stream ) const;
@@ -383,7 +470,8 @@ protected:
 
     int getDataPrecision( common::ScalarType valueType );
 
-    FileMode mFileMode;                     //!< if true binary mode must be respected
+    FileMode mFileMode;                     //!< can be set to force binary or text I/O
+    DistributedIOMode mDistMode;            //!< actual mode used for distributed I/O
     bool mAppendMode;                       //!< if true output is appended to existing files
 
     common::ScalarType mScalarTypeIndex; //!< representation type of row indexes

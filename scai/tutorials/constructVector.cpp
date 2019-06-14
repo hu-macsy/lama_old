@@ -94,5 +94,5 @@ int main( )
     auto dv2 = eval<DenseVector<ValueType>>( 2 * dv1 );
     auto dv3 = distribute<DenseVector<ValueType>>( globalData, dist );
     auto dv4 = read<DenseVector<ValueType>>( "data.mtx" );
-    auto dv5 = linearDenseVector<ValueType>( ValueType( 1 ) , ValueType( 0.1 ), N );
+    auto dv5 = denseVectorLinear<ValueType>( ValueType( 1 ) , ValueType( 0.1 ), N );
 }

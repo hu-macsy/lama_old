@@ -104,6 +104,10 @@ public:
         return newMatrixStorage( getNumRows(), getNumColumns() );
     }
 
+    /** Implemenation of pure method _MatrixStorage::readFromFile */
+
+    virtual void readFromFile( const std::string& fileName, const IndexType firstRow = 0, const IndexType nRows = invalidIndex );
+
     /** Implementation of pure method. */
 
     virtual common::ScalarType getValueType() const;
@@ -389,6 +393,14 @@ public:
         hmemo::HArray<IndexType>& cscJA,
         hmemo::HArray<ValueType>& cscValues ) const;
 
+    /**
+     *  This method returns an array with all values of the storage.
+     *
+     *  Note: this function is just a convenience function for small matrices and should not
+     *        be used for large matrices.
+     */
+    hmemo::HArray<ValueType> denseValues() const;
+
     /** Format conversion of matrix storage. A default implementation is provided using CSR data.
      *  Derived clauses might override this method with more efficient solutions.
      */
@@ -455,26 +467,6 @@ public:
     MatrixStorage& operator=( const _MatrixStorage& other );
 
     MatrixStorage& operator=( const MatrixStorage<ValueType>& other );
-
-    /** Implementation of pure routine _MatrixStorage::writeToFile */
-
-    virtual void writeToFile(
-        const std::string& fileName,
-        const std::string& fileType = "",
-        const common::ScalarType dataType = common::ScalarType::UNKNOWN,
-        const common::ScalarType indexType = common::ScalarType::UNKNOWN,
-        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
-
-    virtual void writeToFile(
-        const PartitionId size,
-        const PartitionId rank,
-        const std::string& fileName,
-        const std::string& fileType,
-        const common::ScalarType dataType = common::ScalarType::UNKNOWN,
-        const common::ScalarType indexType = common::ScalarType::UNKNOWN,
-        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
-
-    virtual void readFromFile( const std::string& fileName, const IndexType firstRow = 0, const IndexType nRows = invalidIndex );
 
     /******************************************************************
      *   invert                                                        *

@@ -5,7 +5,7 @@ The following code shows a very simple LAMA example program creating a vector of
 
 .. literalinclude:: ../../lama/examples/tutorial/simple.cpp 
    :language: c++
-   :lines: 34-
+   :lines: 29-
 
 You can :download:`download <../../lama/examples/tutorial/simple.cpp>` the source file for the next compilation and installation steps (sorry, the instructions are only for Unix systems).
 

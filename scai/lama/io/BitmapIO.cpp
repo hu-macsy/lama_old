@@ -34,9 +34,9 @@
 
 #include <scai/common/exception/UnsupportedException.hpp>
 
-#include<fstream>
+#include <fstream>
 
-#define MAT_SUFFIX ".bmp" 
+#define MAT_SUFFIX ".bmp"
 
 namespace scai
 {
@@ -68,7 +68,7 @@ bool BitmapIO::isSupportedMode( const FileMode mode ) const
 {
     // binary is not supported
 
-    if ( mode == BINARY )
+    if ( mode == FileMode::FORMATTED )
     {
         return false;
     }
@@ -119,32 +119,56 @@ struct COLORTABLE
     unsigned int* colors;
 };
 
+/* --------------------------------------------------------------------------------- */
+
+void BitmapIO::openIt( const std::string& fileName, const char* fileMode )
+{
+    if ( strcmp( fileMode, "w" ) == 0 )
+    {
+        mFile = fopen( fileName.c_str(), "wb" );
+    }
+    else if ( strcmp( fileMode, "r" ) == 0 )
+    {
+        mFile = fopen( fileName.c_str(), "rb" );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "Unsupported file mode for Bitmap file: " << fileMode )
+    }
+
+    SCAI_ASSERT( mFile, "Could not open bitmap file " << fileName << ", mode = " << fileMode )
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void BitmapIO::closeIt()
+{
+    fclose( mFile );
+}
+
 /* ------------------------------------------------------------------------------------ */
 /*   Read Bitmap File                                                                   */
 /* ------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void BitmapIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid, const std::string& inputFileName )
+void BitmapIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid )
 {
-    FILE* file;
-    file = fopen( inputFileName.c_str(), "rb" );
-    SCAI_ASSERT( file, "Could not open file " << inputFileName )
     BITMAPFILEHEADER fileHeader;
     BITMAPINFOHEADER infoHeader;
     // COLORMASKS colorMasks;
     // COLORTABLE colorTable;
-    size_t nRecords = fread( &fileHeader, sizeof( fileHeader ), 1, file );
+    size_t nRecords = fread( &fileHeader, sizeof( fileHeader ), 1, mFile );
 
     SCAI_ASSERT_EQ_ERROR( 1, nRecords, "failed to read header" )
     SCAI_ASSERT_EQ_ERROR( fileHeader.bfType, 0x4D42, "not bitmap file" )
 
 
     SCAI_LOG_INFO( logger, "fileHeader, bfSize = " << fileHeader.bfSize
-                           << ", bfReserved = " << fileHeader.bfReserved 
-                           << ", bfOffBits = " << fileHeader.bfOffBits )
+                   << ", bfReserved = " << fileHeader.bfReserved
+                   << ", bfOffBits = " << fileHeader.bfOffBits )
 
 
-    nRecords = fread( &infoHeader, sizeof( infoHeader ), 1, file );
+    nRecords = fread( &infoHeader, sizeof( infoHeader ), 1, mFile );
 
     SCAI_LOG_INFO( logger, "infoHeader, biSize = " << infoHeader.biSize )
     SCAI_LOG_INFO( logger, "infoHeader, biWidth = " << infoHeader.biWidth )
@@ -184,7 +208,7 @@ void BitmapIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid, const 
 
         SCAI_ASSERT_GE_ERROR( imageSize, grid.size(), "size mismatch" )
         std::unique_ptr<unsigned char[]> tmp( new unsigned char[ imageSize ] );
-        IndexType nBytes = fread( tmp.get(), 1, imageSize, file );
+        IndexType nBytes = fread( tmp.get(), 1, imageSize, mFile );
         SCAI_ASSERT_EQ_ERROR( imageSize, nBytes, "could not read all expected image pixels" )
 
         // Image lines are always stored as a multiple of 4
@@ -222,12 +246,12 @@ void BitmapIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid, const 
 
         unsigned char ColorMasks [256][4];
 
-        IndexType nBytes = fread( ColorMasks, 1, sizeof( ColorMasks) , file );
-        SCAI_LOG_ERROR( logger, "read color mask, nbytes = " << nBytes )
+        IndexType nBytes = fread( ColorMasks, 1, sizeof( ColorMasks ), mFile );
+        SCAI_LOG_INFO( logger, "read color mask, nbytes = " << nBytes )
         std::unique_ptr<unsigned char[]> tmp( new unsigned char[ width * height ] );
-        nBytes = fread( tmp.get(), 1, width * height, file );
-        SCAI_LOG_ERROR( logger, "read bitmap data, nbytes = " << nBytes )
-        SCAI_LOG_ERROR( logger, "allocate data, size = " << grid.size() )
+        nBytes = fread( tmp.get(), 1, width * height, mFile );
+        SCAI_LOG_INFO( logger, "read bitmap data, nbytes = " << nBytes )
+        SCAI_LOG_INFO( logger, "allocate data, size = " << grid.size() )
 
         WriteOnlyAccess<ValueType> wData( data, grid.size() );
         {
@@ -239,25 +263,23 @@ void BitmapIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid, const 
                     IndexType bmpPos = i * width + j;
                     unsigned char colorIndex = tmp[ bmpPos ];
                     IndexType imgPos = 3 * ( ( height - 1 - i ) * width + j );
-                    wData[ imgPos   ] = static_cast<ValueType>( ColorMasks[colorIndex][2]);
+                    wData[ imgPos   ] = static_cast<ValueType>( ColorMasks[colorIndex][2] );
                     wData[ imgPos + 1 ] = static_cast<ValueType>( ColorMasks[colorIndex][1] );
                     wData[ imgPos + 2 ] = static_cast<ValueType>( ColorMasks[colorIndex][0] );
                 }
             }
         }
-        SCAI_LOG_ERROR( logger, "set full colo values" )
+        SCAI_LOG_INFO( logger, "set full colo values" )
     }
-    else 
+    else
     {
         COMMON_THROWEXCEPTION( "Unsupported biBitCount = " << infoHeader.biBitCount )
     }
 }
 
 template<typename ValueType>
-void BitmapIO::writeGridImpl( const HArray<ValueType>& data, const common::Grid& grid, const std::string& outputFileName )
+void BitmapIO::writeGridImpl( const HArray<ValueType>& data, const common::Grid& grid )
 {
-    FILE* f = fopen( outputFileName.c_str(), "wb" );
-
     SCAI_ASSERT_EQ_ERROR( 3, grid.nDims(), "image data must be 3-dimensional grid data" )
 
     IndexType height  = grid.size( 0 );
@@ -269,7 +291,7 @@ void BitmapIO::writeGridImpl( const HArray<ValueType>& data, const common::Grid&
     IndexType alignSize    = 4;
     IndexType widthAligned = ( ( width * nColor  + alignSize - 1 ) / alignSize ) * alignSize;
 
-    SCAI_LOG_ERROR( logger, "row size = " << width * nColor << ", aligned = " << widthAligned )
+    SCAI_LOG_INFO( logger, "row size = " << width * nColor << ", aligned = " << widthAligned )
 
     BITMAPFILEHEADER fileHeader;
     BITMAPINFOHEADER infoHeader;
@@ -294,8 +316,8 @@ void BitmapIO::writeGridImpl( const HArray<ValueType>& data, const common::Grid&
     infoHeader.biClrUsed = 0;
     infoHeader.biClrImportant = 0;
 
-    fwrite( &fileHeader, 1, sizeof( fileHeader ), f );
-    fwrite( &infoHeader, 1, sizeof( infoHeader ), f );
+    fwrite( &fileHeader, 1, sizeof( fileHeader ), mFile );
+    fwrite( &infoHeader, 1, sizeof( infoHeader ), mFile );
 
     std::unique_ptr<unsigned char[]> tmpData( new unsigned char[ imageBytes ] );
 
@@ -316,50 +338,39 @@ void BitmapIO::writeGridImpl( const HArray<ValueType>& data, const common::Grid&
         }
     }
 
-    IndexType nBytes = fwrite( tmpData.get(), 1, imageBytes, f );
+    IndexType nBytes = fwrite( tmpData.get(), 1, imageBytes, mFile );
 
     SCAI_ASSERT_EQ_ERROR( nBytes, imageBytes, "could not write all image data" )
-
-    fclose( f );
 }
 
 /* ------------------------------------------------------------------------------------ */
 
-void BitmapIO::readGridArray( _HArray& data, common::Grid& grid, const std::string& inputFileName )
+void BitmapIO::readGridArray( _HArray& data, common::Grid& grid )
 {
-    IOWrapper<BitmapIO, SCAI_TYPELIST( float, double )>::readGridImpl( ( BitmapIO& ) *this, data, grid, inputFileName );
+    IOWrapper<BitmapIO, SCAI_TYPELIST( float, double )>::readGrid( *this, data, grid );
 }
 
-void BitmapIO::writeGridArray( const _HArray& data, const common::Grid& grid, const std::string& outputFileName )
+void BitmapIO::writeGridArray( const _HArray& data, const common::Grid& grid )
 {
-    IOWrapper<BitmapIO, SCAI_TYPELIST( float, double )>::writeGridImpl( ( BitmapIO& ) *this, data, grid, outputFileName );
-}
-
-/* --------------------------------------------------------------------------------- */
-
-void BitmapIO::writeStorage( const _MatrixStorage& storage, const std::string& outputFileName )
-{
-    // todo: write dense storage as bitmap, maybe greyscale 
-
-    SCAI_THROWEXCEPTION( common::UnsupportedException, 
-                         "write storage " << storage << " to " << outputFileName )
+    IOWrapper<BitmapIO, SCAI_TYPELIST( float, double )>::writeGrid( *this, data, grid );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void BitmapIO::readStorage(
-    _MatrixStorage& storage,
-    const std::string& inputFileName,
-    const IndexType offsetRow,
-    const IndexType nRows )
+void BitmapIO::writeStorage( const _MatrixStorage& storage )
+{
+    // todo: write dense storage as bitmap, maybe greyscale
+
+    SCAI_THROWEXCEPTION( common::UnsupportedException, "write storage " << storage )
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void BitmapIO::readStorage( _MatrixStorage& storage )
 {
     storage.clear();
 
-    SCAI_ASSERT_EQ_ERROR( 0, offsetRow, "No chunk read for bitmap file" )
-    SCAI_ASSERT_EQ_ERROR( invalidIndex, nRows, "No chunk read for bitmap file" )
-
-    SCAI_THROWEXCEPTION( common::UnsupportedException, 
-                         "Unsupported for bitmap file: read storage from " << inputFileName )
+    SCAI_THROWEXCEPTION( common::UnsupportedException, "Unsupported for bitmap file: read storage" )
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -378,67 +389,65 @@ std::string BitmapIO::getVectorFileSuffix() const
 
 /* --------------------------------------------------------------------------------- */
 
-void BitmapIO::writeArray( const hmemo::_HArray& array, const std::string& outputFileName )
+void BitmapIO::writeArray( const hmemo::_HArray& array )
 {
-    SCAI_THROWEXCEPTION( common::UnsupportedException, 
-                         "Unsupported for bitmap file: write array " << array << " to " << outputFileName )
+    SCAI_THROWEXCEPTION( common::UnsupportedException,
+                         "Unsupported for bitmap file: write array " << array )
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void BitmapIO::writeSparse( 
-    const IndexType n, 
-    const hmemo::HArray<IndexType>& indexes, 
-    const hmemo::_HArray& values, 
-    const std::string& outputFileName )
+void BitmapIO::writeSparse(
+    const IndexType n,
+    const void*,
+    const hmemo::HArray<IndexType>& indexes,
+    const hmemo::_HArray& values )
 {
-    SCAI_THROWEXCEPTION( common::UnsupportedException, 
-                         "Unsupported for bitmap file: write spare array ( n = " << n 
-                         << ", indexes = " << indexes << ", values = " << values << " ) to " << outputFileName )
+    SCAI_THROWEXCEPTION( common::UnsupportedException,
+                         "Unsupported for bitmap file: write spare array ( n = " << n
+                         << ", indexes = " << indexes << ", values = " << values << " )" )
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void BitmapIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& inputFileName )
+void BitmapIO::getStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues )
 {
     numRows    = 0;
     numColumns = 0;
     numValues  = 0;
 
-    COMMON_THROWEXCEPTION( "Unsupported for bitmap file: read storage info from file " << inputFileName )
+    COMMON_THROWEXCEPTION( "Unsupported for bitmap file: read storage info" )
 }
 
-void BitmapIO::readArrayInfo( IndexType& size, const std::string& inputFileName )
+void BitmapIO::getArrayInfo( IndexType& size )
 {
     size = 0;
 
-    SCAI_THROWEXCEPTION( common::UnsupportedException, 
-                         "Unsupported for bitmap file: read array info from file " << inputFileName )
+    SCAI_THROWEXCEPTION( common::UnsupportedException, "Unsupported for bitmap file: read array info" )
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void BitmapIO::readArray( hmemo::_HArray& array, const std::string& inputFileName, const IndexType offset, const IndexType n )
+void BitmapIO::readArray( hmemo::_HArray& array )
 {
     array.clear();
 
-    SCAI_ASSERT_EQ_ERROR( 0, offset, "chunk read not supported" )
-    SCAI_ASSERT_EQ_ERROR( n, invalidIndex, "chunk read not supported" )
-
-    SCAI_THROWEXCEPTION( common::UnsupportedException, 
-                         "Unsupported for bitmap file: read array ( offset = " << offset << ", n = " << " ) from file " << inputFileName )
+    SCAI_THROWEXCEPTION( common::UnsupportedException, "Unsupported for bitmap file: read array" )
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void BitmapIO::readSparse( IndexType& size, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values, const std::string& inputFileName )
+void BitmapIO::readSparse(
+    IndexType& size,
+    void*,
+    hmemo::HArray<IndexType>& indexes,
+    hmemo::_HArray& values )
 {
     size = 0;
     indexes.clear();
     values.clear();
 
-    SCAI_THROWEXCEPTION( common::UnsupportedException, 
-                         "Unsupported for bitmap file: read sparse array from " << inputFileName )
+    SCAI_THROWEXCEPTION( common::UnsupportedException, "Unsupported for bitmap file: read sparse array" )
 }
 
 /* --------------------------------------------------------------------------------- */

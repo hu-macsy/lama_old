@@ -30,6 +30,7 @@
 #pragma once
 
 #include <scai/lama/io/FileIO.hpp>
+#include <scai/lama/io/MATIOStream.hpp>
 
 #include <scai/lama/storage/MatrixStorage.hpp>
 
@@ -71,51 +72,51 @@ namespace lama
 
 class MatlabIO :
 
-    public FileIO,        
+    public FileIO,
     public FileIO::Register<MatlabIO>    // register at factory
 {
 
 public:
 
+    /** Implementation of pure virtual method FileIO::openIt */
+
+    virtual void openIt( const std::string& fileName, const char* fileMode );
+
+    /** Implementation of pure virtual method FileIO::close */
+
+    virtual void closeIt();
+
     /** Implementation of pure virtual method FileIO::writeStorage */
 
-    void writeStorage( const _MatrixStorage& storage, const std::string& fileName );
+    void writeStorage( const _MatrixStorage& storage );
 
     /** Implementation of pure virtual method FileIO::readStorage  */
 
-    void readStorage(
-        _MatrixStorage& storage,
-        const std::string& fileName,
-        const IndexType offsetRow,
-        const IndexType nRows );
+    void readStorage( _MatrixStorage& storage );
 
     /** Implementation of FileIO::writeArray */
 
-    void writeArray( const hmemo::_HArray& array, const std::string& fileName );
+    void writeArray( const hmemo::_HArray& array );
 
     /** Implementation of pure virtual method FileIO::writeSparse  */
 
     virtual void writeSparse(
         const IndexType size,
+        const void* zero,
         const hmemo::HArray<IndexType>& indexes,
-        const hmemo::_HArray& array,
-        const std::string& fileName );
+        const hmemo::_HArray& array );
 
     /** Implementation of pure virtual method FileIO::readArray using same defaults */
 
-    virtual void readArray(
-        hmemo::_HArray& array,
-        const std::string& fileName,
-        const IndexType offset = 0,
-        const IndexType n = invalidIndex );
+    virtual void readArray( hmemo::_HArray& array );
 
     /** Implementation of pure virtual method FileIO::readSparse */
 
     virtual void readSparse(
         IndexType& size,
+        void* zero,
         hmemo::HArray<IndexType>& indexes,
-        hmemo::_HArray& values,
-        const std::string& fileName );
+        hmemo::_HArray& values );
 
     /** Implementation of FileIO::getMatrixFileSuffix */
 
@@ -141,75 +142,77 @@ public:
 
     static std::string createValue();
 
-    /** Implementation of pure methdod FileIO::readStorageInfo */
+    /** Implementation of pure methdod FileIO::getStorageInfo */
 
-    virtual void readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& fileName );
+    virtual void getStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues );
 
-    /** Implementation of pure methdod FileIO::readArrayInfo */
+    /** Implementation of pure methdod FileIO::getArrayInfo */
 
-    virtual void readArrayInfo( IndexType& size, const std::string& fileName );
+    virtual void getArrayInfo( IndexType& size );
 
 public:
 
     /** Typed version of writeStorage */
 
     template<typename ValueType>
-    void writeStorageImpl( const MatrixStorage<ValueType>& storage, const std::string& fileName );
+    void writeStorageImpl( const MatrixStorage<ValueType>& storage );
 
     /** Typed version of readStorage */
 
     template<typename ValueType>
-    void readStorageImpl( MatrixStorage<ValueType>& storage, const std::string& fileName, const IndexType firstRow, const IndexType nRows );
+    void readStorageImpl( MatrixStorage<ValueType>& storage );
 
     /** Typed version of the writeArray */
 
     template<typename ValueType>
-    void writeArrayImpl( const hmemo::HArray<ValueType>& array, const std::string& fileName );
+    void writeArrayImpl( const hmemo::HArray<ValueType>& array );
 
     /** Typed version of the writeSparse */
 
     template<typename ValueType>
     void writeSparseImpl(
         const IndexType size,
+        const ValueType& zero,
         const hmemo::HArray<IndexType>& indexes,
-        const hmemo::HArray<ValueType>& values,
-        const std::string& fileName );
+        const hmemo::HArray<ValueType>& values );
 
     /** Typed version of readArray */
 
     template<typename ValueType>
-    void readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& fileName, const IndexType first, const IndexType n );
+    void readArrayImpl( hmemo::HArray<ValueType>& array );
 
     /** Typed version of readSparse */
 
     template<typename ValueType>
     void readSparseImpl(
         IndexType& size,
+        ValueType& zero,
         hmemo::HArray<IndexType>& indexes,
-        hmemo::HArray<ValueType>& values,
-        const std::string& fileName );
+        hmemo::HArray<ValueType>& values );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for IO class
 
     /** Implementation of pure method FileIO::writeGridArray.
      *
      *  The MATLAB format supports writing the shape information.
-     */  
-    void writeGridArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName );
+     */
+    void writeGridArray( const hmemo::_HArray& data, const common::Grid& grid );
 
     /** Typed version of MatlabIO::writeGridArray */
 
     template<typename ValueType>
-    void writeGridImpl( const hmemo::HArray<ValueType>& data, const common::Grid& grid, const std::string& outputFileName );
+    void writeGridImpl( const hmemo::HArray<ValueType>& data, const common::Grid& grid );
 
-    void readGridArray( hmemo::_HArray& data, common::Grid& grid, const std::string& outputFileName );
+    void readGridArray( hmemo::_HArray& data, common::Grid& grid );
 
     /** Typed version of MatlabIO::readGridArray */
 
     template<typename ValueType>
-    void readGridImpl( hmemo::HArray<ValueType>& data, common::Grid& grid, const std::string& outputFileName );
+    void readGridImpl( hmemo::HArray<ValueType>& data, common::Grid& grid );
 
 private:
+
+    MATIOStream mFile;    // stream file used for I/O operations
 
     template <typename ValueType>
     uint32_t getSparseStorage( MatrixStorage<ValueType>& storage,
@@ -249,15 +252,15 @@ private:
     /** Write a heterogeneous array as MAT format into output file. */
 
     template<typename ValueType>
-    static uint32_t writeArrayData( class MATIOStream& outFile, const hmemo::HArray<ValueType>& array, bool dryRun );
+    uint32_t writeArrayData( const hmemo::HArray<ValueType>& array, bool dryRun );
 
     /** Write dense array or matrix as complete element in a Matlab file. */
 
     template<typename ValueType>
-    void writeDenseArray( class MATIOStream& outFile, const hmemo::HArray<ValueType>& array, IndexType dims[] );
+    void writeDenseArray( const hmemo::HArray<ValueType>& array, IndexType dims[] );
 
     template<typename ValueType>
-    void writeDenseGrid( MATIOStream& outFile, const hmemo::HArray<ValueType>& array, const common::Grid& grid );
+    void writeDenseGrid( const hmemo::HArray<ValueType>& array, const common::Grid& grid );
 
 };
 

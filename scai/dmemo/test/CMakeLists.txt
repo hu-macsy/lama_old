@@ -38,6 +38,8 @@ scai_project (
 
         CommunicationPlanTest
 
+        CollectiveFileTest
+
         DistributedTest
         DistributionTest
 

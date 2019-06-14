@@ -79,7 +79,7 @@ int main( int argc, const char* argv[] )
     //  ATTENTION:   specify height x width  ( conform with nrows x ncols )
     //
 
-    GridVector<ValueType> image( common::Grid3D( height, width, 3 ) );
+    GridVector<ValueType> image( common::Grid3D( height, width, 3 ), 0 );
 
     // Indexing of image is like indexing a matrix + entry for color
     //

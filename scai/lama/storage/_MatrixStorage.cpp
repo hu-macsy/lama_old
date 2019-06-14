@@ -37,6 +37,8 @@
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 
+#include <scai/tracing.hpp>
+
 namespace scai
 {
 
@@ -256,6 +258,42 @@ IndexType _MatrixStorage::getNumValues() const
     IndexType numValues = utilskernel::HArrayUtils::reduce( sizes, BinaryOp::ADD );
 
     return numValues;
+}
+
+/* ========================================================================= */
+/*       File I/O                                                            */
+/* ========================================================================= */
+
+void _MatrixStorage::writeToFile(
+    const std::string& fileName,
+    const FileMode mode,
+    const common::ScalarType dataType,
+    const common::ScalarType indexType ) const
+{
+    SCAI_REGION( "Storage.writeToFile" )
+
+    std::string suffix = FileIO::getSuffix( fileName );
+
+    if ( FileIO::canCreate( suffix ) )
+    {
+        // okay, we can use FileIO class from factory
+
+        std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+
+        fileIO->setDataType( dataType );
+        fileIO->setIndexType( indexType );
+        fileIO->setMode( mode );
+
+        SCAI_LOG_INFO( logger, "write matrix storage to file, FileIO = " << *fileIO << ", storage = " << *this )
+
+        fileIO->open( fileName.c_str(), "w", DistributedIOMode::INDEPENDENT );
+        fileIO->writeStorage( *this );
+        fileIO->close();
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "writeToFile " << fileName << ", unknown file type " << suffix )
+    }
 }
 
 /* ---------------------------------------------------------------------------------- */

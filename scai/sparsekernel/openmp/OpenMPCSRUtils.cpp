@@ -708,7 +708,8 @@ IndexType OpenMPCSRUtils::shiftDiagonal(
     IndexType csrJA[],
     ValueType csrValues[],
     const IndexType numDiagonals,
-    const IndexType csrIA[] )
+    const IndexType csrIA[],
+    const IndexType diagonalIndexes[] )
 {
     IndexType numFoundDiagonals = 0;
 
@@ -720,6 +721,13 @@ IndexType OpenMPCSRUtils::shiftDiagonal(
 
         for ( IndexType i = 0; i < numDiagonals; ++i )
         {
+            IndexType diagonalIndex = i;
+
+            if ( diagonalIndexes != NULL )
+            {
+                diagonalIndex = diagonalIndexes[i];
+            };
+
             bool found = false;
 
             IndexType start = csrIA[i];
@@ -730,7 +738,7 @@ IndexType OpenMPCSRUtils::shiftDiagonal(
                 continue;    // not found
             }
 
-            if ( csrJA[start] == i )
+            if ( csrJA[start] == diagonalIndex )
             {
                 threadNumDiagonals++;   // diagonal element is already first
                 continue;
@@ -744,7 +752,7 @@ IndexType OpenMPCSRUtils::shiftDiagonal(
             {
                 // check if it is the diagonal element, save the diagonal value
 
-                if ( not found && csrJA[end] == i ) 
+                if ( not found && csrJA[end] == diagonalIndex ) 
                 {
                     found = true;
                     diagonalValue = csrValues[end];
@@ -764,7 +772,7 @@ IndexType OpenMPCSRUtils::shiftDiagonal(
             {
                 // now set the first row element as the diagonal element
                 csrValues[start] = diagonalValue;
-                csrJA[start] = i;
+                csrJA[start] = diagonalIndex;
                 threadNumDiagonals++;
             }
         }

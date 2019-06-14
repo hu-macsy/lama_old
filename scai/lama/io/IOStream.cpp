@@ -39,6 +39,10 @@ SCAI_LOG_DEF_LOGGER( IOStream::logger, "FileIO.IOStream" )
 
 IOStream::Endian IOStream::mMachineEndian = IOStream::_determineMachineEndian();
 
+IOStream::IOStream()
+{
+}
+
 IOStream::IOStream( const std::string& filename, ios_base::openmode mode, Endian usedEndian )
 {
     open( filename, mode, usedEndian );

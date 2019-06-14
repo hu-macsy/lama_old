@@ -71,7 +71,7 @@ scai_project (
         Scalar
         GridReadAccess
         GridWriteAccess
-	fft
+        fft
         freeFunction
     )
 

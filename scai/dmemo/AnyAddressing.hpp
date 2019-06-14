@@ -22,20 +22,18 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief GeneralDistribution.hpp
+ * @brief Data structure that can be used for global addressing without any communication
  * @author brandes
- * @date 25.02.2011
+ * @date 14.11.2018
  */
 
 #pragma once
 
-// for dll_import
 #include <scai/common/config.hpp>
 
-// internal scai libraries
-#include <scai/common/SCAITypes.hpp>
 
 #include <scai/hmemo/HArray.hpp>
+#include <scai/common/SCAITypes.hpp>
 
 namespace scai
 {
@@ -54,30 +52,33 @@ struct COMMON_DLL_IMPORTEXPORT AnyAddressing
 
     AnyAddressing( const Distribution& dist );
 
-    IndexType localSize( const PartitionId rank ) const
-    {
-        SCAI_ASSERT_VALID_INDEX_DEBUG( rank, allLocalOffsets.size() - 1, "illegal" )
-        return allLocalOffsets[ rank + 1] - allLocalOffsets[rank];
-    }
+    /** 
+     * @brief Get the local size for a given processor.
+     */
+    inline IndexType localSize( const PartitionId rank ) const;
 
-    PartitionId owner( const IndexType globalIndex ) const
-    {
-        SCAI_ASSERT_VALID_INDEX_DEBUG( globalIndex, allOwners.size(), "illegal" )
-        return allOwners[ globalIndex ];
-    }
+    /** 
+     * @brief Get the owner for a global index.
+     */
+    inline PartitionId owner( const IndexType globalIndex ) const;
 
-    IndexType localIndex( const IndexType globalIndex, const PartitionId owner ) const
-    {
-        SCAI_ASSERT_VALID_INDEX_DEBUG( globalIndex, allOwners.size(), "illegal" )
-        // here the owner is important as local index  requires size offsets
-        return allGlobal2Local[ globalIndex ] - allLocalOffsets[ owner ];
-    }
+    /** 
+     * @brief Get the local index for a global index.
+     *
+     * @param[in] globalIndex is the queried global index
+     * @param[in] owner must be owning processor, i.e. owner( globalIndex )
+     * @returns   the local index on the owner processor
+     */
+    inline IndexType localIndex( const IndexType globalIndex, const PartitionId owner ) const;
 
-    IndexType globalIndex( const IndexType localIndex, const PartitionId owner ) const
-    {
-        SCAI_ASSERT_VALID_INDEX_DEBUG( localIndex, localSize( owner ), "illegal" )
-        return allLocal2Global[ localIndex + allLocalOffsets[ owner ] ];
-    }
+    /** 
+     * @brief Get the global index for a local index on any processor
+     *
+     * @param[in] localIndex is the local index 
+     * @param[in] owner is the processor for which the query is done
+     * @returns   the global index 
+     */
+    inline IndexType globalIndex( const IndexType localIndex, const PartitionId owner ) const;
 
 private:
 
@@ -114,6 +115,35 @@ private:
      */
     hmemo::HArray<IndexType> allGlobal2Local;
 };
+
+/* ------------------------------------------------------------------------ */
+/* Inline methods                                                           */
+/* ------------------------------------------------------------------------ */
+
+IndexType AnyAddressing::localSize( const PartitionId rank ) const
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( rank, allLocalOffsets.size() - 1, "illegal" )
+    return allLocalOffsets[ rank + 1] - allLocalOffsets[rank];
+}
+
+PartitionId AnyAddressing::owner( const IndexType globalIndex ) const
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( globalIndex, allOwners.size(), "illegal" )
+    return allOwners[ globalIndex ];
+}
+
+IndexType AnyAddressing::localIndex( const IndexType globalIndex, const PartitionId owner ) const
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( globalIndex, allOwners.size(), "illegal" )
+    // here the owner is important as local index  requires size offsets
+    return allGlobal2Local[ globalIndex ] - allLocalOffsets[ owner ];
+}
+
+IndexType AnyAddressing::globalIndex( const IndexType localIndex, const PartitionId owner ) const
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( localIndex, localSize( owner ), "illegal" )
+    return allLocal2Global[ localIndex + allLocalOffsets[ owner ] ];
+}
 
 } /* end namespace dmemo */
 

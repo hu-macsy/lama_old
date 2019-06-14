@@ -195,7 +195,7 @@ int main( )
 
     // create an example vector
 
-    DenseVector<ValueType> x = linearDenseVector<ValueType>( gridDistribution, delta, delta );
+    DenseVector<ValueType> x = denseVectorLinear<ValueType>( gridDistribution, delta, delta );
 
     // Note: csrSmoothMatrix.purge() would free all used memory, but we keep it for verification of result
 

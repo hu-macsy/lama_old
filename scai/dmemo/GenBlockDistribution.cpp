@@ -32,12 +32,16 @@
 
 // local library
 #include <scai/dmemo/Distributed.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 
 // std
 #include <fstream>
 #include <memory>
 
+/** 
+ *  common definition for root processor 0
+ */
 #define MASTER 0
 
 namespace scai
@@ -102,6 +106,46 @@ std::shared_ptr<const GenBlockDistribution> genBlockDistributionBySize(
 
 /* ---------------------------------------------------------------------- */
 
+std::shared_ptr<const GenBlockDistribution> genBlockDistributionByOffset(
+    const IndexType N,
+    const IndexType offset,
+    CommunicatorPtr comm )
+{
+    SCAI_ASSERT_DEBUG( comm, "Null pointer for commmunicator" )
+
+    PartitionId size = comm->getSize();
+
+    std::unique_ptr<IndexType[]> offsets( new IndexType[ size + 1 ] );
+
+    comm->gather( offsets.get(), 1, MASTER, &offset );
+    comm->bcast( offsets.get(), size, MASTER );
+
+    offsets[size] = N;
+
+    IndexType curOffset = N; 
+
+    for ( PartitionId p = size; p-- > 0; )
+    {
+        if ( offsets[p] == invalidIndex )
+        {
+            // correct the offsets for invalidIndex (no elements)
+            offsets[p] = curOffset;
+        }
+        else
+        {
+            // check that offset for p is valid 
+            SCAI_ASSERT_LE_ERROR( offsets[p], curOffset, "invalid offset for processor p = " << p )
+            curOffset = offsets[p];
+        }
+    }
+
+    offsets[0] = 0;  
+
+    return std::make_shared<GenBlockDistribution>( std::move( offsets ), comm );
+}
+
+/* ---------------------------------------------------------------------- */
+
 std::shared_ptr<const GenBlockDistribution> genBlockDistributionBySize( 
     const IndexType globalSize,
     const IndexType localSize, 
@@ -154,16 +198,6 @@ std::shared_ptr<const GenBlockDistribution> genBlockDistributionBySizes(
 bool GenBlockDistribution::isLocal( const IndexType globalIndex ) const
 {
     return globalIndex >= mLB && globalIndex < mUB;
-}
-
-/* ---------------------------------------------------------------------- */
-
-void GenBlockDistribution::getLocalRange( IndexType& lb, IndexType& ub ) const
-{
-    // keep in mind that lb == ub implies zero range, ub < lb can never happen
-
-    lb = mLB;
-    ub = mUB;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -320,29 +354,22 @@ IndexType GenBlockDistribution::getAnyGlobalIndex( const IndexType localIndex, c
 
 /* ---------------------------------------------------------------------- */
 
-bool GenBlockDistribution::isEqual( const Distribution& other ) const
+bool GenBlockDistribution::isSameGenBlockDistribution( const GenBlockDistribution& other ) const
 {
-    bool isSame = false;
+    // make at least sure that both distribution have same processor set
 
-    bool proven = proveEquality( isSame, other );
-
-    if ( proven )
-    {
-        return isSame;
-    }
-
-    if ( other.getKind() != getKind() )
+    if ( getCommunicator() != other.getCommunicator() )
     {
         return false;
     }
 
-    const GenBlockDistribution& otherBlock = reinterpret_cast<const GenBlockDistribution&>( other );
+    PartitionId np = getCommunicator().getSize();
 
     bool equal = true;
 
-    for ( PartitionId p = 0; p < mCommunicator->getSize() + 1; ++p )
+    for ( PartitionId p = 0; p < np + 1; ++p )
     {
-        if ( mOffsets[p] != otherBlock.mOffsets[p] )
+        if ( mOffsets[p] != other.mOffsets[p] )
         {
             equal = false;
             break;
@@ -354,10 +381,65 @@ bool GenBlockDistribution::isEqual( const Distribution& other ) const
 
 /* ---------------------------------------------------------------------- */
 
+bool GenBlockDistribution::isBlockDistribution() const
+{
+    const PartitionId np = getCommunicator().getSize();
+    const IndexType   N  = getGlobalSize();
+
+    const IndexType blockSize = ( N + np - 1 ) / np;
+
+    bool equal = true;
+
+    for ( PartitionId p = 0; p < np + 1; ++p )
+    {
+        IndexType otherOffset = std::min( p * blockSize, N );
+
+        if ( mOffsets[p] != otherOffset )
+        {
+            equal = false;
+            break;
+        }
+    }
+
+    return equal;
+}
+
+/* ---------------------------------------------------------------------- */
+
+bool GenBlockDistribution::isEqual( const Distribution& other ) const
+{
+    bool isSame = false;
+
+    bool proven = proveEquality( isSame, other );
+
+    if ( proven )
+    {
+        return isSame;
+    }
+
+    if ( strcmp( other.getKind(), BlockDistribution::getId() ) == 0 )
+    {
+        // other is block distribution, we know already same size and same number of processors
+
+        return isBlockDistribution();
+    }
+
+    if ( strcmp( other.getKind(), GenBlockDistribution::getId() ) == 0 )
+    {
+        return isSameGenBlockDistribution( static_cast<const GenBlockDistribution&>( other ) );
+    }
+
+    return isSame;
+}
+
+/* ---------------------------------------------------------------------- */
+
 void GenBlockDistribution::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
-    stream << "GenBlockDistribution( gsize = " << mGlobalSize << ", local = " << mLB << ":" << mUB << ")";
+
+    stream << "GenBlockDistribution( comm = " << *mCommunicator
+           << ", size = " << mLB << ":" << mUB << " of " << mGlobalSize << " )";
 }
 
 /* ---------------------------------------------------------------------------------*

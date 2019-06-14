@@ -140,8 +140,8 @@ BOOST_AUTO_TEST_CASE( DefaultCriterionTest )
 
     BOOST_REQUIRE_EQUAL( matrix.getRowDistribution(), matrix.getColDistribution() );
 
-    auto rhs = fill<DenseVector<ValueType>>( matrix.getColDistributionPtr(), 1, matrix.getContextPtr() );
-    auto solution = fill<DenseVector<ValueType>>( matrix.getRowDistributionPtr(), 0, matrix.getContextPtr() );
+    auto rhs = denseVector<ValueType>( matrix.getColDistributionPtr(), 1, matrix.getContextPtr() );
+    auto solution = denseVector<ValueType>( matrix.getRowDistributionPtr(), 0, matrix.getContextPtr() );
 
     solution.setContextPtr( matrix.getContextPtr() );
 
@@ -172,9 +172,9 @@ BOOST_AUTO_TEST_CASE( IterationCountStoppingCriterionTest )
 
     const ValueType solutionInitValue = 1.0;
 
-    auto solution      = fill<DenseVector<ValueType>>( matrix.getColDistributionPtr(), solutionInitValue, matrix.getContextPtr() );
-    auto exactSolution = eval<DenseVector<ValueType>>( solution + 1 );
-    auto rhs           = eval<DenseVector<ValueType>>( matrix * exactSolution );
+    auto solution      = denseVector( matrix.getColDistributionPtr(), solutionInitValue, matrix.getContextPtr() );
+    auto exactSolution = denseVectorEval( solution + 1 );
+    auto rhs           = denseVectorEval( matrix * exactSolution );
 
     IndexType numIterations = 300;
     CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( numIterations ) );
@@ -215,9 +215,9 @@ BOOST_AUTO_TEST_CASE( ConservativeTest )
 
     ValueType solutionValue = 1;
 
-    auto exactSolution = fill<DenseVector<ValueType>>( matrix.getColDistributionPtr(), solutionValue, matrix.getContextPtr() );
+    auto exactSolution = denseVector<ValueType>( matrix.getColDistributionPtr(), solutionValue, matrix.getContextPtr() );
     auto solution      = DenseVector<ValueType>( exactSolution );
-    auto rhs           = eval<DenseVector<ValueType>>( matrix * exactSolution );
+    auto rhs           = denseVectorEval( matrix * exactSolution );
 
     IndexType numIterations = 1;
     CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( numIterations ) );
@@ -261,9 +261,9 @@ BOOST_AUTO_TEST_CASE( SolveTest )
     const ValueType solutionInitValue = 1;
 
     auto colDist       = matrix.getColDistributionPtr();
-    auto solution      = fill<DenseVector<ValueType>>( colDist, solutionInitValue, matrix.getContextPtr() );
-    auto exactSolution = fill<DenseVector<ValueType>>( colDist, solutionInitValue + 1, matrix.getContextPtr() );
-    auto rhs           = eval<DenseVector<ValueType>>( matrix * exactSolution );
+    auto solution      = denseVector( colDist, solutionInitValue, matrix.getContextPtr() );
+    auto exactSolution = denseVector<ValueType>( colDist, solutionInitValue + 1, matrix.getContextPtr() );
+    auto rhs           = denseVectorEval( matrix * exactSolution );
 
     IndexType maxExpectedIterations = 3000;
 
@@ -281,7 +281,7 @@ BOOST_AUTO_TEST_CASE( SolveTest )
         iterativeSolver.initialize( matrix );
         solution = solutionInitValue;
         iterativeSolver.solve( solution, rhs );
-        auto diff = eval<DenseVector<ValueType>>( solution - exactSolution );
+        auto diff = denseVectorEval( solution - exactSolution );
         RealType<ValueType> realMaxNorm     = maxNorm( diff );
         RealType<ValueType> expectedMaxNorm = 1E-4;
         SCAI_LOG_INFO( logger, "maxNorm of diff = ( solution - exactSolution ) = " << realMaxNorm );

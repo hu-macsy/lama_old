@@ -141,46 +141,6 @@ void readStorageBlocked( MatrixStorage<ValueType>& storage, const string& inFile
     storage = coo;
 }
 
-/** The following method is a special case where the input file contains the full matrix
- *  and where the matrix should be saved into multiple partions
- *
- *  Important: this algorithm does not require memory for the full matrix
- */
-template<typename ValueType>
-void directPartitioning( const string& inFileName, const string& outFileName, const PartitionId np_out )
-{
-    std::unique_ptr<FileIO>  inputIO ( FileIO::create( FileIO::getSuffix( inFileName ) ) );
-
-    CSRStorage<ValueType> storage;
-
-    IndexType numRows;     // partitioning is done among numbers of rows
-    IndexType numColumns;  // dummy here
-    IndexType numValues;   // dummy here
-
-    inputIO->readStorageInfo( numRows, numColumns, numValues, inFileName );
-
-    for ( PartitionId ip = 0; ip < np_out; ++ip )
-    {
-        string outFileNameBlock = outFileName;
-
-        bool isPartitioned;
-
-        PartitionIO::getPartitionFileName( outFileNameBlock, isPartitioned, ip, np_out );
-
-        IndexType lb;   // lower bound for range on a given partition
-        IndexType ub;   // upper bound of range for a given partition
-
-        dmemo::BlockDistribution::getLocalRange( lb, ub, numRows, ip, np_out );
-
-        cout << "Matrix storage block " << ip << " has range " << lb << " - " << ub
-             << ", write to file " << outFileNameBlock << endl;
-
-        inputIO->readStorage( storage, inFileName, lb, ub - lb );
-
-        storage.writeToFile( outFileNameBlock );
-    }
-}
-
 /** This method saves a matrix into multiple files each file containing a contiguous block of rows.
  *
  *  @param[in] storage is the matrix that is written
@@ -266,22 +226,6 @@ int main( int argc, const char* argv[] )
     SCAI_ASSERT( !input2.fail(), "illegal: np_out=" << argv[4] << " in argument list" )
 
     typedef DefaultReal ValueType;
-
-    if ( np_in < 1 && np_out > 1 )
-    {
-        cout << "Partitioning is done block-wise from input file " << inFileName << endl;
-
-        try
-        {
-            directPartitioning<ValueType>( inFileName, outFileName, np_out );
-            return 0;
-        }
-        catch ( common::Exception& ex )
-        {
-            cout << "Direct partitioning failed, error: " << ex.what() << endl;
-            return -1;
-        }
-    }
 
     CSRStorage<ValueType> fullStorage;
 

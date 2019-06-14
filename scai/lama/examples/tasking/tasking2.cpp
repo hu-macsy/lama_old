@@ -79,7 +79,7 @@ int main( int argc, const char* argv[] )
 
     // (block) distribute the problem space onto the available processors
 
-    auto dist = std::make_shared<dmemo::GridDistribution>( space );
+    auto dist = dmemo::gridDistribution( space );
 
     std::cout << *commWorld << ": distributed grid = " << *dist << std::endl;
 
@@ -125,7 +125,7 @@ int main( int argc, const char* argv[] )
 
         // Note: each problem has a different data set
 
-        auto v = linearDenseVector<double>( distProblem, double(i), double(i) / ( NV1 * NV2 ) );
+        auto v = denseVectorLinear<double>( distProblem, double(i), double(i) / ( NV1 * NV2 ) );
         sum += v.sum();  
     }
  

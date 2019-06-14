@@ -64,7 +64,7 @@ int main()
 
         std::cout << "Solving problem with dimensions " << m << " x " << n << std::endl;
 
-        auto solution = fill<DenseVector<ValueType>>( n, 0.0 );
+        auto solution = denseVector( n, ValueType( 0 ) );
         ConstrainedLeastSquares<ValueType> solver( problem.A );
         solver.setObjectiveTolerance( objTolerance );
         // solver.setInnerSolverType( InnerSolverType::StandardCG );
@@ -80,8 +80,8 @@ int main()
             return 1;
         }
 
-        const auto r_exact  = eval<DenseVector<ValueType>>( problem.A * problem.x - problem.b );
-        const auto r_approx = eval<DenseVector<ValueType>>( problem.A * solution - problem.b );
+        const auto r_exact  = denseVectorEval( problem.A * problem.x - problem.b );
+        const auto r_approx = denseVectorEval( problem.A * solution - problem.b );
 
         const auto r_exact_norm = r_exact.l2Norm();
         const auto r_approx_norm = r_approx.l2Norm();

@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( L1NormVectorTests, ValueType, scai_numeric_test_t
     IndexType n = 4;
     ValueType val = 5.0;
 
-    auto vec = fill<DenseVector<ValueType>>( n, val );
+    auto vec = denseVector<ValueType>( n, val );
 
     L1Norm<ValueType> l1norm;
 

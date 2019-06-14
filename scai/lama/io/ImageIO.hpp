@@ -50,9 +50,9 @@ public:
     template<typename ValueType>
     static void writeSC( const GridVector<ValueType>& arrayData, const std::string& outputFileName );
 
-    /** Write a two-dimensional array as scaled image with given minimal and maximal value 
+    /** Write a two-dimensional array as scaled image with given minimal and maximal value
      *
-     *  @param[in] arrayData must be a two-dimensional grid 
+     *  @param[in] arrayData must be a two-dimensional grid
      *  @param[in] minVal is used as minimal value for color scaling
      *  @param[in] maxVal is used as maximal value for color scaling
      *  @param[in] outputFileName is the name of output file, suffix decides about format

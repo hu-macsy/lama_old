@@ -54,6 +54,7 @@
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/execution_policy.h>
 #include <thrust/reduce.h>
+#include <thrust/inner_product.h>
 #include <thrust/sequence.h>
 #include <thrust/sort.h>
 #include <thrust/transform.h>
@@ -62,11 +63,12 @@
 
 #include <complex.h>
 
-
-using namespace scai::common;
+#define THRUST_DEBUG
 
 namespace scai
 {
+
+using namespace common;
 
 namespace utilskernel
 {
@@ -81,9 +83,7 @@ ValueType CUDAReduceUtils::reduceSum( const ValueType array[], const IndexType n
     SCAI_REGION( "CUDA.Utils.reduceSum" )
     SCAI_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
     SCAI_CHECK_CUDA_ACCESS
-    thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
-
-    ValueType result = thrust::reduce( data, data + n, zero, thrust::plus<ValueType>() );
+    ValueType result = thrust::reduce( thrust::device, array, array + n, zero, thrust::plus<ValueType>() );
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     SCAI_LOG_INFO( logger, "sum of " << n << " values = " << result )
     return result;
@@ -97,8 +97,7 @@ ValueType CUDAReduceUtils::reduceMaxVal( const ValueType array[], const IndexTyp
     SCAI_REGION( "CUDA.Utils.reduceMax" )
     SCAI_LOG_INFO( logger, "maxval for " << n << " elements " )
     SCAI_CHECK_CUDA_ACCESS
-    thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
-    ValueType result = thrust::reduce( data, data + n, zero, thrust::maximum<ValueType>() );
+    ValueType result = thrust::reduce( thrust::device, array, array + n, zero, thrust::maximum<ValueType>() );
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     SCAI_LOG_INFO( logger, "max of " << n << " values = " << result )
     return result;
@@ -112,8 +111,7 @@ ValueType CUDAReduceUtils::reduceMinVal( const ValueType array[], const IndexTyp
     SCAI_REGION( "CUDA.Utils.reduceMin" )
     SCAI_LOG_INFO( logger, "minval for " << n << " elements " )
     SCAI_CHECK_CUDA_ACCESS
-    thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
-    ValueType result = thrust::reduce( data, data + n, zero, thrust::minimum<ValueType>() );
+    ValueType result = thrust::reduce( thrust::device, array, array + n, zero, thrust::minimum<ValueType>() );
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     SCAI_LOG_INFO( logger, "min of " << n << " values = " << result )
     return result;
@@ -121,7 +119,7 @@ ValueType CUDAReduceUtils::reduceMinVal( const ValueType array[], const IndexTyp
 
 /* --------------------------------------------------------------------------- */
 
-// Be careful: template<ResultType, ArgumentType>, but unary_function<ArgumentType, ResultType> 
+// Be careful: template<ResultType, ArgumentType>, but unary_function<ArgumentType, ResultType>
 
 template<typename RealType, typename ValueType>
 struct absolute_value: public thrust::unary_function<ValueType, RealType>
@@ -136,7 +134,7 @@ struct absolute_value: public thrust::unary_function<ValueType, RealType>
 template<typename ValueType>
 ValueType CUDAReduceUtils::reduceAbsMaxVal( const ValueType array[], const IndexType n, const ValueType zero )
 {
-    typedef typename common::TypeTraits<ValueType>::RealType RealType;
+    typedef typename TypeTraits<ValueType>::RealType RealType;
 
     SCAI_REGION( "CUDA.Utils.reduceAbsMax" )
 
@@ -146,12 +144,10 @@ ValueType CUDAReduceUtils::reduceAbsMaxVal( const ValueType array[], const Index
 
     thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
 
-    RealType result = thrust::transform_reduce(
-                           data,
-                           data + n,
-                           absolute_value<RealType, ValueType>(),
-                           RealType( zero ),
-                           thrust::maximum<RealType>() );
+    RealType result = thrust::transform_reduce( thrust::device,
+                      array, array + n,
+                      absolute_value<RealType, ValueType>(),
+                      RealType( zero ), thrust::maximum<RealType>() );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     SCAI_LOG_INFO( logger, "abs max of " << n << " values = " << result )
@@ -167,7 +163,7 @@ ValueType CUDAReduceUtils::reduce( const ValueType array[], const IndexType n, c
 
     ValueType result;
 
-    typedef typename common::TypeTraits<ValueType>::RealType RealType;
+    typedef typename TypeTraits<ValueType>::RealType RealType;
 
     RealType redResult;
     RealType redZero = zero;
@@ -238,8 +234,8 @@ ValueType CUDAReduceUtils::scan( ValueType array[], const IndexType n, ValueType
 
     SCAI_REGION( "CUDA.Utils.scan" )
 
-    SCAI_LOG_INFO( logger, "scan<" << TypeTraits<ValueType>::id() <<  ">, #n = " << n 
-                            << ", first = " << first << ", exclusive = " << exclusive )
+    SCAI_LOG_INFO( logger, "scan<" << TypeTraits<ValueType>::id() <<  ">, #n = " << n
+                   << ", first = " << first << ", exclusive = " << exclusive )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -253,7 +249,7 @@ ValueType CUDAReduceUtils::scan( ValueType array[], const IndexType n, ValueType
         {
             thrust::exclusive_scan( array_ptr, array_ptr + n + 1, array_ptr );
 
-            if ( first != common::Constants::ZERO )
+            if ( first != Constants::ZERO )
             {
                 thrust::for_each( array_ptr, array_ptr + n + 1, _1 += first );
             }
@@ -276,9 +272,9 @@ ValueType CUDAReduceUtils::scan( ValueType array[], const IndexType n, ValueType
         {
             thrust::inclusive_scan( array_ptr, array_ptr + n, array_ptr );
 
-            if ( first != common::Constants::ZERO )
+            if ( first != Constants::ZERO )
             {
-		        SCAI_LOG_INFO( logger, "now add first = " << first << ", n = " << n )
+                SCAI_LOG_INFO( logger, "now add first = " << first << ", n = " << n )
                 thrust::for_each( array_ptr, array_ptr + n, _1 += first );
             }
 
@@ -286,6 +282,89 @@ ValueType CUDAReduceUtils::scan( ValueType array[], const IndexType n, ValueType
             result = numValues[0];
         }
     }
+
+    return result;
+}
+
+/* --------------------------------------------------------------------------- */
+
+/**
+ *  @brief Predicate to compare two values corresponding to the operator.
+ */
+template<typename ValueType>
+struct BinaryCompare
+{
+    const CompareOp mOp;   //!< Operator used for comparison
+
+    BinaryCompare( CompareOp op ) : mOp( op )
+    {}
+
+    __host__ __device__
+    bool operator()( ValueType x, ValueType y ) const
+    {
+        return compare( x, mOp, y );
+    }
+};
+
+template <typename ValueType>
+bool CUDAReduceUtils::allCompare(
+    const ValueType array1[],
+    const ValueType array2[],
+    const IndexType n,
+    const CompareOp op )
+{
+    SCAI_REGION( "CUDA.Utils.allCompare" )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    thrust::device_ptr<ValueType> arrayPtr1( const_cast<ValueType*> ( array1 ) );
+    thrust::device_ptr<ValueType> arrayPtr2( const_cast<ValueType*> ( array2 ) );
+
+    // allcompare is like the inner product, element-wise operation and the reduction
+
+    bool result = thrust::inner_product( thrust::cuda::par,
+                                         arrayPtr1, arrayPtr1 + n, arrayPtr2,
+                                         true, thrust::logical_and<bool>(),
+                                         BinaryCompare<ValueType>( op ) );
+
+    return result;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+struct CompareScalar
+{
+    const ValueType mVal;
+    const CompareOp mOp;
+
+    CompareScalar( ValueType val, CompareOp op ) : mVal( val ), mOp( op )
+    {}
+
+    __host__ __device__
+    bool operator()( ValueType y )
+    {
+        return compare( y, mOp, mVal );
+    }
+};
+
+template <typename ValueType>
+bool CUDAReduceUtils::allCompareScalar(
+    const ValueType array[],
+    const ValueType scalar,
+    const IndexType n,
+    const CompareOp op )
+{
+    SCAI_REGION( "CUDA.Utils.allCompareScalar" )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    thrust::device_ptr<ValueType> arrayPtr( const_cast<ValueType*> ( array ) );
+
+    bool result = thrust::transform_reduce( thrust::cuda::par,
+                                            arrayPtr, arrayPtr + n,
+                                            CompareScalar<ValueType>( scalar, op ),
+                                            true, thrust::logical_and<bool>() );
 
     return result;
 }
@@ -310,7 +389,7 @@ bool CUDAReduceUtils::isSorted( const ValueType array[], const IndexType n, cons
     SCAI_REGION( "CUDA.Utils.isSorted" )
 
     SCAI_LOG_INFO( logger, "isSorted<" << TypeTraits<ValueType>::id() << ">, n = " << n
-                           << ", op = " << op )
+                   << ", op = " << op )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -320,17 +399,22 @@ bool CUDAReduceUtils::isSorted( const ValueType array[], const IndexType n, cons
     }
 
     // create a tempory bool array on device with n-1 entries
-    thrust::device_ptr<bool> resultPtr = thrust::device_malloc<bool>( n - 1 );
-    bool* resultRawPtr = thrust::raw_pointer_cast( resultPtr );
+
+    thrust::device_vector<bool> resultArray( n );
+
     const int blockSize = 256;
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n - 1, dimBlock.x );
 
-    isSortedKernel<ValueType> <<< dimGrid, dimBlock>>> ( resultRawPtr, n - 1, array, op );
+    isSortedKernel<ValueType> <<< dimGrid, dimBlock>>> ( resultArray.data().get(), n - 1, array, op );
 
     cudaStreamSynchronize( 0 );
+
     SCAI_CHECK_CUDA_ERROR
-    return thrust::reduce( resultPtr, resultPtr + n - 1, true, thrust::logical_and<bool>() );
+
+    bool resIsSorted = thrust::reduce( resultArray.data(), resultArray.data() + n - 1, true, thrust::logical_and<bool>() );
+
+    return resIsSorted;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -346,7 +430,7 @@ struct InvalidIndex
     __host__ __device__
     bool operator()( ValueType y )
     {
-        return ! common::Utils::validIndex( y, size );
+        return ! Utils::validIndex( y, size );
     }
 };
 
@@ -409,6 +493,8 @@ void CUDAReduceUtils::RegArrayKernels<ValueType>::registerKernels( kregistry::Ke
     KernelRegistry::set<UtilKernelTrait::reduce2<ValueType> >( reduce2, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scan<ValueType> >( scan, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::allCompare<ValueType> >( allCompare, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::allCompareScalar<ValueType> >( allCompareScalar, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -195,15 +195,14 @@ void CUDAELLUtils::check(
 
     if ( numRows > 0 )
     {
-        thrust::device_ptr<bool> resultPtr = thrust::device_malloc<bool>( numRows );
-        thrust::fill( resultPtr, resultPtr + numRows, false );
-        bool* resultRawPtr = thrust::raw_pointer_cast( resultPtr );
+        thrust::device_vector<bool> result( numRows, false );
+        bool* resultRawPtr = result.data().get();
         const int blockSize = CUDASettings::getBlockSize( numRows );
         dim3 dimBlock( blockSize, 1, 1 );
         dim3 dimGrid = makeGrid( numRows, dimBlock.x );
         checkKernel <<< dimGrid, dimBlock>>>( numRows, numValuesPerRow, numColumns, ia, ja, resultRawPtr );
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "fill result with false failed" )
-        bool integrity = thrust::reduce( resultPtr, resultPtr + numRows, true, thrust::logical_and<bool>() );
+        bool integrity = thrust::reduce( result.data(), result.data() + numRows, true, thrust::logical_and<bool>() );
         SCAI_ASSERT_ERROR( integrity, msg << ": ia to large, or ja out of range" )
     }
 }
@@ -304,19 +303,19 @@ ValueType CUDAELLUtils::getValue(
 
     if ( rowNumColumns > 0 )
     {
-        thrust::device_ptr<ValueType> resultPtr = thrust::device_malloc < ValueType > ( rowNumColumns );
-        thrust::fill( resultPtr, resultPtr + rowNumColumns, static_cast<ValueType>( 0.0 ) );
-        ValueType* resultRawPtr = thrust::raw_pointer_cast( resultPtr );
+        thrust::device_vector<ValueType> result( rowNumColumns, static_cast<ValueType>( 0 ) );
+        ValueType* resultRawPtr = result.data().get();
         const int blockSize = CUDASettings::getBlockSize();
         dim3 dimBlock( blockSize, 1, 1 );
         dim3 dimGrid = makeGrid( rowNumColumns, dimBlock.x );
         getValueKernel <<< dimGrid, dimBlock>>>( i, j, numRows, rowNumColumns, ja, values, resultRawPtr );
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "getValueKernel failed" );
         SCAI_CHECK_CUDA_ERROR
-        return thrust::reduce( resultPtr, resultPtr + rowNumColumns );
+        ValueType val = thrust::reduce( result.data(), result.data() + rowNumColumns );
+        return val;
     }
 
-    return static_cast<ValueType>( 0.0 );
+    return static_cast<ValueType>( 0 );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -846,7 +845,7 @@ void CUDAELLUtils::normalGEMV(
     const ValueType ellValues[],
     const common::MatrixOp op )
 {
-    SCAI_REGION( common::isTranspose( op ) ? "CUDA.ELL.gemv_t" : "CUDA_ELL.gemv_n" )
+    SCAI_REGION( common::isTranspose( op ) ? "CUDA.ELL.gemv_t" : "CUDA.ELL.gemv_n" )
 
     const IndexType nTarget = common::isTranspose( op ) ? numColumns : numRows;
 
@@ -1099,43 +1098,6 @@ void sparse_gemv_kernel(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename T, bool useTexture>
-__global__
-void sparse_gemv_kernel_alpha_one(
-    T* const result_d,
-    const T* const x_d,
-    const T* const ellValues,
-    const IndexType* const ellIA,
-    const IndexType* const ellJA,
-    const IndexType* const rowIndexes,
-    const IndexType numNonZeroRows,
-    IndexType numRows,
-    IndexType numValuesPerRow )
-{
-    // each thread is assigned to one non-zero row
-    const IndexType id = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( id < numNonZeroRows )
-    {
-        const IndexType i = rowIndexes[id];
-        IndexType pos = i;
-        T value = 0.0;
-        const IndexType nonZeros = ellIA[i];
-
-        for ( IndexType kk = 0; kk < nonZeros; ++kk )
-        {
-            const T aValue = ellValues[pos];
-            // compute capability >= 2.0: no benefits to mask with value != 0.0
-            value += aValue * fetchVectorX<T, useTexture>( x_d, ellJA[pos] );
-            pos += numRows;
-        }
-
-        result_d[i] += value;
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
 template<typename ValueType>
 void CUDAELLUtils::sparseGEMV(
     ValueType result[],
@@ -1184,37 +1146,17 @@ void CUDAELLUtils::sparseGEMV(
     {
         vectorBindTexture( x );
 
-        if ( alpha == scai::common::Constants::ONE )
-        {
-            SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel_alpha_one<ValueType, true>, cudaFuncCachePreferL1 ),
-                               "cudaFuncSetCacheConfig failed" )
-            sparse_gemv_kernel_alpha_one<ValueType, true> <<< dimGrid, dimBlock, 0, stream>>>(
-                result, x, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numNonZerosPerRow );
-        }
-        else
-        {
-            SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
-                               "cudaFuncSetCacheConfig failed" )
-            sparse_gemv_kernel<ValueType, true> <<< dimGrid, dimBlock, 0, stream>>>(
-                result, x, alpha, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numNonZerosPerRow );
-        }
+        SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
+                           "cudaFuncSetCacheConfig failed" )
+        sparse_gemv_kernel<ValueType, true> <<< dimGrid, dimBlock, 0, stream>>>(
+            result, x, alpha, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numNonZerosPerRow );
     }
     else
     {
-        if ( alpha == scai::common::Constants::ONE )
-        {
-            SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel_alpha_one<ValueType, false>, cudaFuncCachePreferL1 ),
-                               "cudaFuncSetCacheConfig failed" )
-            sparse_gemv_kernel_alpha_one<ValueType, false> <<< dimGrid, dimBlock, 0, stream>>>(
-                result, x, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numNonZerosPerRow );
-        }
-        else
-        {
-            SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
-                               "cudaFuncSetCacheConfig failed" )
-            sparse_gemv_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream>>>(
-                result, x, alpha, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numNonZerosPerRow );
-        }
+        SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( sparse_gemv_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
+                           "cudaFuncSetCacheConfig failed" )
+        sparse_gemv_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream>>>(
+            result, x, alpha, ellValues, ellSizes, ellJA, rowIndexes, numNonZeroRows, numRows, numNonZerosPerRow );
     }
 
     if ( !syncToken )

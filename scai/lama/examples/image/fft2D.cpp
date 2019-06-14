@@ -68,7 +68,7 @@ int main( int argc, const char* argv[] )
 
     // read in the image file, must be a png file
 
-    GridVector<ValueType> image( inputFileName ); 
+    auto image = read<GridVector<ValueType>>( inputFileName ); 
 
     std::cout << "read image as grid vector : " << image << std::endl;
 
@@ -149,7 +149,7 @@ int main( int argc, const char* argv[] )
     utilskernel::FFTUtils::fft_many( pixels, pixels, nc2, nc1, backward );
     m.transposeImpl();
 
-    GridVector<ValueType> imageOut( common::Grid3D( n1, n2, 3 ) );
+    auto imageOut = gridVectorUndefined<ValueType>( common::Grid3D( n1, n2, 3 ) );
 
     {
         GridWriteAccess<ValueType> wImage( imageOut );

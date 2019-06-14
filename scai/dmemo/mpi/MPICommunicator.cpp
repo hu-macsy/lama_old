@@ -33,6 +33,7 @@
 // local library
 #include <scai/dmemo/mpi/MPISyncToken.hpp>
 #include <scai/dmemo/mpi/MPIUtils.hpp>
+#include <scai/dmemo/mpi/MPICollectiveFile.hpp>
 
 #include <scai/dmemo/CommunicationPlan.hpp>
 
@@ -1076,6 +1077,13 @@ hmemo::ContextPtr MPICommunicator::getCommunicationContext( const hmemo::_HArray
     }
 
     return hmemo::Context::getHostPtr();
+}
+
+/* ---------------------------------------------------------------------------------- */
+
+std::unique_ptr<class CollectiveFile> MPICommunicator::collectiveFile() const
+{
+    return std::unique_ptr<CollectiveFile>( new MPICollectiveFile( shared_from_this() ) );
 }
 
 /* ---------------------------------------------------------------------------------- */

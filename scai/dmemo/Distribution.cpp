@@ -33,6 +33,9 @@
 // local library
 #include <scai/dmemo/Distributed.hpp>
 #include <scai/dmemo/NoCommunicator.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/SingleDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 // internal scai libraries
 #include <scai/hmemo.hpp>
@@ -635,6 +638,50 @@ void Distribution::replicateRagged(
     // verify that all values are available
     SCAI_ASSERT_EQ_DEBUG( countElemValues, getGlobalSize(), "not all elems seen" )
     SCAI_ASSERT_EQ_DEBUG( countDataValues, allOffsets[getGlobalSize()], "not all data seen" )
+}
+
+/* ---------------------------------------------------------------------- */
+
+bool Distribution::isMasterDistributed( CommunicatorPtr comm ) const
+{
+    int fullHost = getLocalSize() == getGlobalSize() ? 1 : 0;
+
+    // relelevant is value on host processor only, so broadcast it
+
+    PartitionId master = 0;
+
+    comm->bcast( &fullHost, 1, master );
+
+    return fullHost == 1;
+}
+
+bool Distribution::isBlockDistributed( CommunicatorPtr comm ) const
+{
+    if ( isReplicated() )
+    {
+        return comm->getSize() == 1;
+    }
+    else 
+    {
+        return getBlockDistributionSize() != invalidIndex;
+    }
+}
+
+DistributionPtr Distribution::toBlockDistribution( CommunicatorPtr comm ) const
+{
+    return blockDistribution( getGlobalSize(), comm );
+}
+
+DistributionPtr Distribution::toMasterDistribution( CommunicatorPtr comm ) const
+{
+    PartitionId master = 0;
+
+    return singleDistribution( getGlobalSize(), comm, master );
+}
+
+DistributionPtr Distribution::toReplicatedDistribution( ) const
+{
+    return noDistribution( getGlobalSize() );
 }
 
 /* ---------------------------------------------------------------------- */

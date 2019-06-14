@@ -268,8 +268,8 @@ int main( int argc, char* argv[] )
     //const IndexType numRows = affinityMatrix.getNumRows();
     const IndexType numCols = affinityMatrix.getNumColumns();
 
-    auto oneVector = fill<DenseVector<ValueType>>( numCols, 1.0 );
-    auto y         = eval<DenseVector<ValueType>>( affinityMatrix * oneVector );  // rowSums
+    auto oneVector = denseVector<ValueType>( numCols, 1.0 );
+    auto y         = denseVectorEval( affinityMatrix * oneVector );  // rowSums
 
     y = 1 / y; 
 

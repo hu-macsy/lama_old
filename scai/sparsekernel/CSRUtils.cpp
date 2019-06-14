@@ -368,9 +368,42 @@ IndexType CSRUtils::shiftDiagonalFirst(
 
     IndexType numDiagonals = common::Math::min( numRows, numColumns );
 
-    return shiftDiagonal[loc]( wJA.get(), wValues.get(), numDiagonals, rIA.get() );
+    return shiftDiagonal[loc]( wJA.get(), wValues.get(), numDiagonals, rIA.get(), NULL );
 }
 
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+IndexType CSRUtils::shiftDiagonalFirst(
+    HArray<IndexType>& ja,
+    HArray<ValueType>& values,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const HArray<IndexType>& ia,
+    const HArray<IndexType>& diagonals,
+    ContextPtr prefLoc )
+{
+    SCAI_REGION( "Sparse.CSR.shiftDiagFirst" )
+
+    SCAI_ASSERT_EQ_ERROR( diagonals.size(), numRows, "one diagonal entry for each row required" )
+
+    static LAMAKernel<CSRKernelTrait::shiftDiagonal<ValueType> > shiftDiagonal;
+
+    ContextPtr loc = prefLoc;
+    shiftDiagonal.getSupportedContext( loc );
+
+    SCAI_LOG_INFO( logger, "shiftDiagonalFirst on CSR data ( " << numRows << " x " << numColumns
+                     << " ), given diagonal indexes, called on " << *loc << ", preferred was " << *prefLoc )
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rIA( ia, loc );
+    ReadAccess<IndexType> rDiagonals( diagonals, loc );
+    WriteAccess<IndexType> wJA( ja, loc );
+    WriteAccess<ValueType> wValues( values, loc );
+
+    return shiftDiagonal[loc]( wJA.get(), wValues.get(), numRows, rIA.get(), rDiagonals.get() );
+}
 
 /* -------------------------------------------------------------------------- */
 
@@ -943,7 +976,7 @@ SyncToken* CSRUtils::gemv0(
         return NULL;   // already done
     }
 
-    SCAI_REGION( "Sparse.csr.gemv0" )
+    SCAI_REGION( "Sparse.CSR.gemv0" )
 
     ContextPtr loc = prefLoc;
 
@@ -1018,7 +1051,7 @@ SyncToken* CSRUtils::gemv(
         return NULL;
     }
 
-    SCAI_REGION( "Sparse.csr.gemv" )
+    SCAI_REGION( "Sparse.CSR.gemv" )
 
     ContextPtr loc = prefLoc;
 
@@ -1083,7 +1116,7 @@ tasking::SyncToken* CSRUtils::gemvSp(
         return NULL;
     }
 
-    SCAI_REGION( "Sparse.csr.gemvSp" )
+    SCAI_REGION( "Sparse.CSR.gemvSp" )
 
     static LAMAKernel<CSRKernelTrait::sparseGEMV<ValueType> > sparseGEMV;
 
@@ -1498,6 +1531,15 @@ void CSRUtils::setColumns(
             HArray<ValueType>&,                            \
             const IndexType,                               \
             const IndexType,                               \
+            const HArray<IndexType>&,                      \
+            ContextPtr );                                  \
+                                                           \
+    template IndexType CSRUtils::shiftDiagonalFirst(       \
+            HArray<IndexType>&,                            \
+            HArray<ValueType>&,                            \
+            const IndexType,                               \
+            const IndexType,                               \
+            const HArray<IndexType>&,                      \
             const HArray<IndexType>&,                      \
             ContextPtr );                                  \
                                                            \

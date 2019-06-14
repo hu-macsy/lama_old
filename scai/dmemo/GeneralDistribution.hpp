@@ -246,6 +246,19 @@ std::shared_ptr<const GeneralDistribution> generalDistribution(
     const CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
 
 /** 
+ *  @brief Constructor of a general distribution here as a function for convenience, checkFlag is true
+ *
+ *  @param[in] myGlobalIndexes contains all indexes of range owned by this processor
+ *  @param[in] comm specifies the set of processors for the distribution
+ *
+ *  The method must be called by all processors of comm at the same time. 
+ *  The missing argument globalSize is computed as comm->sum( myGlobalIndexes.size() )
+ */
+std::shared_ptr<const GeneralDistribution> generalDistribution( 
+    hmemo::HArray<IndexType> myGlobalIndexes,
+    const CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
+
+/** 
  *  @brief Constructor of a general distribution here as a function for convenience, chechFlag is false
  *
  *  Same as generalDistribution but it does not involve any checks and 

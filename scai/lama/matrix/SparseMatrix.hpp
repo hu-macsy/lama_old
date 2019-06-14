@@ -224,9 +224,9 @@ public:
 
     virtual void assign( const _Matrix& other );
 
-    /** Method that assigns a sparse matrix, specialization of assign( const _Matrix& ) */
+    /** Method that assigns a sparse matrix of same type, specialization of assign( const _Matrix& ) */
 
-    void assign( const SparseMatrix<ValueType>& matrix );
+    void assignSparseMatrix( const SparseMatrix<ValueType>& matrix );
 
     /* Implementation of pure method of class _Matrix. */
 
@@ -736,17 +736,6 @@ private:
 /***************************************************************************************************/
 /* Implementation of inline methods                                                                */
 /***************************************************************************************************/
-
-template <typename ValueType>
-void SparseMatrix<ValueType>::setContextPtr( const hmemo::ContextPtr context )
-{
-    SCAI_ASSERT_ERROR( context, "NULL context, cannot be set" )
-
-    mLocalData->setContextPtr( context );
-    mHaloData->setContextPtr( context );
-}
-
-/* Implementation of pure method of class _Matrix. */
 
 template <typename ValueType>
 hmemo::ContextPtr SparseMatrix<ValueType>::getContextPtr() const

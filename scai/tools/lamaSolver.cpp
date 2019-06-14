@@ -46,6 +46,7 @@
 #include <scai/solver/CG.hpp>
 #include <scai/solver/SimpleAMG.hpp>
 #include <scai/solver/GMRES.hpp>
+#include <scai/solver/Jacobi.hpp>
 #include <scai/solver/Kaczmarz.hpp>
 #include <scai/solver/Richardson.hpp>
 #include <scai/solver/BiCGstab.hpp>
@@ -183,13 +184,15 @@ void doPartitioning( Matrix<ValueType>& matrix, Vector<ValueType>& rhs, Vector<V
  */
 int main( int argc, const char* argv[] )
 {
-    SCAI_REGION( "Main.lamaSolver" )
-
     common::Settings::parseArgs( argc, argv );
 
     LamaConfig lamaconf;   // must be defined after parseArgs
 
     const Communicator& comm = lamaconf.getCommunicator();
+
+    SCAI_REGION( "Main.lamaSolver" )
+
+    SCAI_TRACE_SCOPE( false )
 
     int myRank   = comm.getRank();
 
@@ -237,27 +240,9 @@ int main( int argc, const char* argv[] )
 
             // read matrix + rhs from disk
 
-            std::string distFilename = "";
+            HOST_PRINT( myRank, "Read matrix from file " << matrixFilename )
 
-            if ( common::Settings::getEnvironment( distFilename, "SCAI_DISTRIBUTION" ) )
-            {
-                if ( distFilename.size() < 2 )
-                {
-                    distFilename = "";
-                    HOST_PRINT( 0 , "Read matrix from file " << matrixFilename << ", with mapping by cols" )
-                }
-                else
-                {
-                    HOST_PRINT( 0, "Read matrix from file " << matrixFilename << ", with mapping from file " << distFilename )
-                }
-
-                inMatrix.readFromFile( matrixFilename, distFilename );
-            }
-            else
-            {
-                HOST_PRINT( myRank, "Read matrix from file " << matrixFilename )
-                inMatrix.readFromFile( matrixFilename );
-            }
+            inMatrix.readFromFile( matrixFilename );
 
             SCAI_ASSERT_EQUAL( inMatrix.getNumRows(), inMatrix.getNumColumns(), "solver only with square matrices" )
 
@@ -294,7 +279,7 @@ int main( int argc, const char* argv[] )
             {
                 // build default rhs as rhs = A * x with x = 1
 
-                auto x = fill<DenseVector<ValueType>>( inMatrix.getColDistributionPtr(), ValueType( 1 ) );
+                auto x = denseVector<ValueType>( inMatrix.getColDistributionPtr(), ValueType( 1 ) );
 
                 rhs = inMatrix * x;
 
@@ -426,6 +411,13 @@ int main( int argc, const char* argv[] )
             crit.reset( new ResidualThreshold<ValueType>( norm, eps, ResidualCheck::Absolute ) );
         }
 
+        shared_ptr<Solver<ValueType> > myPreconditioner;
+
+        if ( lamaconf.getPreconditionerName().length() > 0 )
+        {
+            myPreconditioner.reset( Solver<ValueType>::getSolver( lamaconf.getPreconditionerName() ) );
+        }
+
         // Stopping criterion can ony be set for an iterative solver
 
         IterativeSolver<ValueType>* itSolver = dynamic_cast<IterativeSolver<ValueType>*>( mySolver.get() );
@@ -433,6 +425,11 @@ int main( int argc, const char* argv[] )
         if ( itSolver != NULL )
         {
             itSolver->setStoppingCriterion( crit );
+
+            if ( myPreconditioner )
+            {
+                itSolver->setPreconditioner( myPreconditioner );
+            }
         }
         else
         {
@@ -486,6 +483,7 @@ int main( int argc, const char* argv[] )
         double solverTime;   // saves run-time spent in solve
 
         {
+            SCAI_TRACE_SCOPE( true )
             SCAI_REGION( "Main.solveIt" )
             LamaTiming timer( comm, "Solver solve" );
             mySolver->solve( solution, rhs );

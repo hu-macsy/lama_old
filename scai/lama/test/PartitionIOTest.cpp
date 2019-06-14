@@ -41,6 +41,7 @@
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 #include <scai/utilskernel.hpp>
+#include <scai/utilskernel/test/TestMacros.hpp>
 
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
@@ -128,12 +129,12 @@ BOOST_AUTO_TEST_CASE( DistributionSingleIO )
 
         CommunicatorPtr comm = dist->getCommunicatorPtr();
         const std::string distFileName = uniquePathSharedAmongNodes(
-                                            GlobalTempDir::getPath(),
-                                            *comm,
-                                            "TestDist"
+                                             GlobalTempDir::getPath(),
+                                             *comm,
+                                             "TestDist"
                                          ) + ".txt";
 
-        BOOST_TEST_MESSAGE("DistributionSingleIO: distFilename = " << distFileName);
+        BOOST_TEST_MESSAGE( "DistributionSingleIO: distFilename = " << distFileName );
 
         SCAI_LOG_INFO( logger, *comm << ": writeDistribution " << *dist )
         PartitionIO::write( *dist, distFileName );
@@ -149,6 +150,9 @@ BOOST_AUTO_TEST_CASE( DistributionSingleIO )
         newDist->getOwnedIndexes( myIndexes2 );
 
         BOOST_TEST( hostReadAccess( myIndexes1 ) == hostReadAccess( myIndexes2 ), per_element() );
+
+        // make sure that file is not deleted before other processors
+        comm->synchronize();
 
 #ifdef DELETE_OUTPUT_FILES
         // only one processor should delete the file
@@ -177,12 +181,12 @@ BOOST_AUTO_TEST_CASE( DistributionMultipleIO )
         CommunicatorPtr comm = dist->getCommunicatorPtr();
 
         const std::string fileName = uniquePathSharedAmongNodes(
-                                        GlobalTempDir::getPath(),
-                                        *comm,
-                                        "TestDist%r"
-                                        ) + ".txt";
+                                         GlobalTempDir::getPath(),
+                                         *comm,
+                                         "TestDist%r"
+                                     ) + ".txt";
 
-        BOOST_TEST_MESSAGE("DistributionMultipleIO: fileName = " << fileName);
+        BOOST_TEST_MESSAGE( "DistributionMultipleIO: fileName = " << fileName );
 
         std::string pFileName = fileName;
         bool isPartitioned;
@@ -242,38 +246,32 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
 
         // now write the distributed vector and its distribution, each to a single file
 
-        vector.writeToFile( vectorFileName, "", common::ScalarType::INTERNAL, FileIO::BINARY );
+        vector.writeToFile( vectorFileName, FileMode::BINARY );
         PartitionIO::write( *dist, distFileName );
 
         DenseVector<ValueType> readVector;
 
         // read vector and reconstruct its old distribution
 
-        readVector.readFromFile( vectorFileName, distFileName );
+        auto distRead = PartitionIO::readDistribution( distFileName );
+        readVector.readFromFile( vectorFileName, distRead );
 
-        SCAI_LOG_DEBUG( logger, "Read vector from file " << vectorFileName << ", dist = " << distFileName 
-                                << ", read vector = " << readVector );
+        SCAI_LOG_DEBUG( logger, "Read vector from file " << vectorFileName << ", dist = " << distFileName
+                        << ", read vector = " << readVector );
 
         // The local parts of the two vectors must be exactly the same
 
-        const hmemo::HArray<ValueType>& local = vector.getLocalValues();
-        const hmemo::HArray<ValueType>& readLocal = readVector.getLocalValues();
-
-        BOOST_REQUIRE_EQUAL( local.size(), readLocal.size() );
-
-        ValueType diff = utilskernel::HArrayUtils::maxDiffNorm( local, readLocal );
-
-        BOOST_CHECK( diff == ValueType( 0 ) );
+        SCAI_CHECK_EQUAL_ARRAY( vector.getLocalValues(), readVector.getLocalValues() );
 
         // remove the files for vector data + distribution
 
-        int rc = PartitionIO::removeFile( vectorFileName, *comm );
-        BOOST_REQUIRE_EQUAL( 0, rc );
-        BOOST_CHECK( !PartitionIO::fileExists( vectorFileName, *comm ) );
+        // int rc = PartitionIO::removeFile( vectorFileName, *comm );
+        // BOOST_REQUIRE_EQUAL( 0, rc );
+        // BOOST_CHECK( !PartitionIO::fileExists( vectorFileName, *comm ) );
 
-        rc = PartitionIO::removeFile( distFileName, *comm );
-        BOOST_REQUIRE_EQUAL( 0, rc );
-        BOOST_CHECK( !PartitionIO::fileExists( distFileName, *comm ) );
+        // rc = PartitionIO::removeFile( distFileName, *comm );
+        // BOOST_REQUIRE_EQUAL( 0, rc );
+        // BOOST_CHECK( !PartitionIO::fileExists( distFileName, *comm ) );
     }
 }
 
@@ -309,13 +307,13 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
 
         SCAI_LOG_INFO( logger, *comm << ": write vector to file " << vectorFileName << ": " << vector )
 
-        vector.writeToFile( vectorFileName, "", common::ScalarType::INTERNAL, FileIO::BINARY );
+        vector.writeToFile( vectorFileName, FileMode::BINARY );
 
         DenseVector<ValueType> readVector;
 
         if ( withDist )
         {
-            readVector.readFromFile( vectorFileName, distFileName );
+            readVector.readFromFile( vectorFileName, PartitionIO::readDistribution( distFileName ) );
 
             SCAI_LOG_INFO( logger, *comm << ": read vector ( " << vectorFileName
                            << " ) with dist ( " << distFileName << " ): " << readVector )
@@ -380,7 +378,7 @@ BOOST_AUTO_TEST_CASE( SparseVectorPartitionIO )
 
         vector.setSparseRandom( dist, 0, fillRate, 1 );
 
-        // find out it we have also to write a distribution file 
+        // find out it we have also to write a distribution file
 
         bool withDist = dist->getBlockDistributionSize() == invalidIndex;
 
@@ -389,13 +387,13 @@ BOOST_AUTO_TEST_CASE( SparseVectorPartitionIO )
             PartitionIO::write( *dist, distFileName );
         }
 
-        vector.writeToFile( vectorFileName, "", common::ScalarType::INTERNAL, FileIO::BINARY );
+        vector.writeToFile( vectorFileName, FileMode::BINARY );
 
         SparseVector<ValueType> readVector;
 
         if ( withDist )
         {
-            readVector.readFromFile( vectorFileName, distFileName );
+            readVector.readFromFile( vectorFileName, PartitionIO::readDistribution( distFileName ) );
 
             SCAI_LOG_INFO( logger, "Read vector ( " << vectorFileName
                            << " ) with dist ( " << distFileName << " ): " << readVector )
@@ -463,7 +461,11 @@ BOOST_AUTO_TEST_CASE( _MatrixSingleIO )
 
         MatrixCreator::fillRandom( matrix, fillRate );
 
-        matrix.writeToFile( matrixFileName, "", common::ScalarType::INTERNAL, common::ScalarType::INTERNAL, FileIO::BINARY );
+        SCAI_LOG_DEBUG( logger, comm << ": write to file " << matrixFileName << " this matrix: " << matrix )
+
+        matrix.writeToFile( matrixFileName, FileMode::BINARY );
+
+        SCAI_LOG_DEBUG( logger, comm << ": write to file " << distFileName << " this distribution: " << matrix )
 
         PartitionIO::write( *rowDist, distFileName );
 
@@ -471,7 +473,10 @@ BOOST_AUTO_TEST_CASE( _MatrixSingleIO )
 
         // read matrix and reconstruct its old distribution
 
-        readMatrix.readFromFile( matrixFileName, distFileName );
+        readMatrix.readFromFile( matrixFileName, PartitionIO::readDistribution( distFileName ) );
+
+        SCAI_LOG_DEBUG( logger, comm << ": read this matrix ( " << matrixFileName << ", dist " << distFileName
+                        << " ) : " << readMatrix )
 
         // The local parts of the two matrices must be exactly the same
 
@@ -521,7 +526,7 @@ BOOST_AUTO_TEST_CASE( _MatrixPartitionIO )
 
         MatrixCreator::fillRandom( matrix, fillRate );
 
-        matrix.writeToFile( matrixFileName, "", common::ScalarType::INTERNAL, common::ScalarType::INTERNAL, FileIO::BINARY );
+        matrix.writeToFile( matrixFileName, FileMode::BINARY );
 
         bool withDist = rowDist->getBlockDistributionSize() == invalidIndex;
 
@@ -536,7 +541,7 @@ BOOST_AUTO_TEST_CASE( _MatrixPartitionIO )
 
         if ( withDist )
         {
-            readMatrix.readFromFile( matrixFileName, distFileName );
+            readMatrix.readFromFile( matrixFileName, PartitionIO::readDistribution( distFileName ) );
 
             SCAI_LOG_INFO( logger, "Read matrix ( " << matrixFileName
                            << " ) with dist ( " << distFileName << " ): " << readMatrix )

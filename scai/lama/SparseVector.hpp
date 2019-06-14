@@ -443,9 +443,31 @@ public:
 
 private:
 
+    /** Help predicate, checks for same sparse pattern on local part only, no global comm. */
+
+    bool hasSamePattern( const SparseVector<ValueType>& other ) const;
+
+    ValueType dotProductLocalAny( const Vector<ValueType>& other ) const;
+
+    ValueType dotProductLocalSparse( const SparseVector<ValueType>& other ) const;
+
+    ValueType dotProductLocalDense( const DenseVector<ValueType>& other ) const;
+
     /** Help routine for binary operation of two sparse vectors */
 
+    void binaryOpMult0( const SparseVector<ValueType>& x, const Vector<ValueType>& y );
+
+    void binaryOpAny( const Vector<ValueType>& x, const common::BinaryOp op, const Vector<ValueType>& y );
+
     void binaryOpSparse( const SparseVector<ValueType>& x, const common::BinaryOp op, const SparseVector<ValueType>& y );
+
+    /** Help routine for binary operation of two sparse vectors with same pattern */
+
+    void binaryOpSparseSamePattern( const SparseVector<ValueType>& x, const common::BinaryOp op, const SparseVector<ValueType>& y );
+
+    /** Help routine for binary operation of two sparse vectors with different pattern */
+
+    void binaryOpSparseNewPattern( const SparseVector<ValueType>& x, const common::BinaryOp op, const SparseVector<ValueType>& y );
 
     hmemo::HArray<IndexType> mNonZeroIndexes;  //!< my local indexes for non-zero values
     hmemo::HArray<ValueType> mNonZeroValues;   //!< my local non-zero values
@@ -458,15 +480,11 @@ private:
 
     /** Implementation of _Vector::writeLocalToFile */
 
-    virtual void writeLocalToFile(
-        const std::string& fileName,
-        const std::string& fileType,
-        const common::ScalarType dataType,
-        const FileIO::FileMode fileMode ) const;
+    virtual void writeLocalToFile( FileIO& file ) const;
 
-    /** Implementation of _Vector::readLocalFromFile */
+    /** Implementation of _Vector::readFromFile */
 
-    virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = invalidIndex );
+    virtual void readFromFile( FileIO& file );
 
     /** Implementation of _Vector::clearValues */
 
@@ -549,6 +567,50 @@ template<typename ValueType>
 ValueType SparseVector<ValueType>::getZero() const
 {
     return mZeroValue;
+}
+
+/** 
+ *  @brief Free function that returns a sparse vector of a given size initialized with zero value.
+ * 
+ *  @tparam    ValueType  is the component type of the vector
+ *  @param[in] n          specifies the size of the vector                             
+ *  @param[in] zero       is the zero element of the sparse vector
+ *  @param[in] ctx        Context that is used for the filling and the generated vector
+ *  @returns              a new sparse vector with the specified size
+ *
+ *  \code
+ *     const auto v = sparseVector<double>( n, 1.0 );
+ *  \endcode
+ */
+template<typename ValueType>
+SparseVector<ValueType> sparseVector(
+    const IndexType n,
+    ValueType zero = 0, 
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    return SparseVector<ValueType>( n, zero, ctx );
+}
+
+/** 
+ *  @brief Free function that returns a sparse vector with a given distributon initialized with zero value.
+ * 
+ *  @tparam    ValueType    is the component type of the vector
+ *  @param[in] distribution specifies size and mapping of the vector
+ *  @param[in] zero         is the zero element of the sparse vector
+ *  @param[in] ctx          Context that is used for the filling and the generated vector
+ *  @returns                a new sparse vector with the specified distributiondistribution.
+ *
+ *  \code
+ *     const auto v = sparseVector<double>( blockDistribution( n ), 1.0 );
+ *  \endcode
+ */
+template<typename ValueType>
+SparseVector<ValueType> sparseVector(
+    dmemo::DistributionPtr distribution,
+    ValueType zero = 0,
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    return SparseVector<ValueType>( distribution, zero, ctx );
 }
 
 } /* end namespace lama */

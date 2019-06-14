@@ -186,12 +186,18 @@ bool BlockDistribution::isEqual( const Distribution& other ) const
         return isSame;
     }
 
-    if ( other.getKind() == getKind() )
+    if ( strcmp( other.getKind(), getKind() ) == 0 )
     {
+        // both BlockDistribution, we know already that global size and communicator are equal
+
         isSame = true;
     }
+    else if ( strcmp( other.getKind(), "GEN_BLOCK" ) == 0 )
+    {
+        // general block distribution can check if it is just a block distribution
 
-    // we know already that global size and communicator are equal
+        isSame = other.isEqual( *this );
+    }
 
     return isSame;
 }

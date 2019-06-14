@@ -80,47 +80,18 @@ public:
 
     /** Default vector to enable just declaration of a grid vector. */
 
-    GridVector() : DenseVector<ValueType>()
+    explicit GridVector( hmemo::ContextPtr context = hmemo::Context::getContextPtr() );
 
-    {
-        // give it a default grid distribution for consistency
-
-        dmemo::CommunicatorPtr comm( new dmemo::NoCommunicator() );
-        dmemo::DistributionPtr dist( new dmemo::GridDistribution( common::Grid(), comm ) );
-        this->allocate( dist );
-    }
-
-    /** Read in a grid from an input file. 
+    /**
+     * @brief Create a replicated GridVector of a certain size initialized with same value for all elements.
      *
-     *  Note: suffix of filename decides about file format. 
+     * @param[in] grid  shape of the grid vector
+     * @param[in] value the value to assign to all elements of the new GridVecto
+     * @param[in] context   specifies optionally the context where grid vector should reside
      */
-    GridVector( const std::string& inputFileName );
+    GridVector( const common::Grid& grid, const ValueType value, hmemo::ContextPtr context = hmemo::Context::getContextPtr() );
 
-    GridVector( const common::Grid& grid ) : DenseVector<ValueType>()
-    {
-        dmemo::CommunicatorPtr comm( new dmemo::NoCommunicator() );
-        dmemo::DistributionPtr dist( new dmemo::GridDistribution( grid, comm ) );
-        this->allocate( dist );
-    }
-
-    GridVector( const common::Grid& grid, const ValueType initVal ) : DenseVector<ValueType>()
-    {
-        dmemo::CommunicatorPtr comm( new dmemo::NoCommunicator() );
-        dmemo::DistributionPtr dist( new dmemo::GridDistribution( grid, comm ) );
-        this->allocate( dist );
-        this->setScalar( initVal );
-    }
-
-    GridVector( dmemo::DistributionPtr dist ) : DenseVector<ValueType>()
-    {
-        this->allocate( dist );
-    }
-
-    GridVector( dmemo::DistributionPtr dist, const ValueType initVal ) : DenseVector<ValueType>()
-    {
-        this->allocate( dist );
-        this->setScalar( initVal );
-    }
+    GridVector( dmemo::DistributionPtr dist, const ValueType value, hmemo::ContextPtr context = hmemo::Context::getContextPtr() );
 
     const common::Grid& globalGrid() const
     {
@@ -161,9 +132,8 @@ public:
 
     void swap( hmemo::HArray<ValueType>& data, const common::Grid& grid )
     {
-        dmemo::CommunicatorPtr comm( new dmemo::NoCommunicator() );
-        dmemo::DistributionPtr dist( new dmemo::GridDistribution( grid, comm ) );
-   
+        auto dist = dmemo::gridDistributionReplicated( grid );
+
         DenseVector<ValueType>::swap( data, dist );
     }
 
@@ -173,6 +143,8 @@ public:
     {
         DenseVector<ValueType>::swap( other );
     }
+
+    virtual void writeAt( std::ostream& stream ) const;
 
     using _Vector::swap;
 
@@ -223,22 +195,58 @@ public:
         return GridSection<ValueType>( *this, r1, r2, r3, r4 );
     }
 
-    /** Override of DenseVector::writeLocalToFile 
-     *
-     *  In contrary to DenseVector this method tries also to save the information about the grid shape
+    /**
+     * Implementation of _Vector::copy with covariant return type.
      */
-    virtual void writeLocalToFile(
-        const std::string& fileName,
-        const std::string& fileType,
-        const common::ScalarType dataType,
-        const FileIO::FileMode fileMode ) const;
+    virtual GridVector* copy() const;
 
-    /** Override of _Vector::readLocalFromFile 
-     *
-     *  This method reads the local part of a grid vector and tries to read also the shape.
-     */
-    virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = invalidIndex );
+    /** Implementation of _Vector::writeLocalToFile */
+
+    virtual void writeLocalToFile( FileIO& file ) const;
+
+    /** Implementation of _Vector::readFromFile */
+
+    virtual void readFromFile( FileIO& file );
+
+    using _Vector::readFromFile;
+
+protected:
+
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
 };
+
+/** 
+ *  @brief free function that returns an uninitialized replicated grid vector
+ *
+ *  In some situations it is not required to initialize a grid vector as its values
+ *  will be set in any case. 
+ *
+ *  @param[in] grid specifies topology of the replicated grid vector
+ *  @param[in] ctx specifies the context of the vector, i.e. device where memory is allocated
+ */
+template<typename ValueType>
+GridVector<ValueType> gridVectorUndefined(
+    const common::Grid& grid,
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    GridVector<ValueType> gridVector( ctx );
+    gridVector.allocate( dmemo::gridDistributionReplicated( grid ) );
+    return gridVector;
+}
+
+/** 
+ *  @brief free function that returns an uninitialized grid vector
+ */
+template<typename ValueType>
+GridVector<ValueType> gridVectorUndefined(
+    dmemo::DistributionPtr distribution,
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    GridVector<ValueType> gridVector( ctx );
+    gridVector.allocate( distribution );
+    return gridVector;
+}
 
 } /* end namespace lama */
 

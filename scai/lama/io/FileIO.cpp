@@ -29,6 +29,8 @@
 
 #include <scai/lama/io/FileIO.hpp>
 
+#include <scai/lama/io/IOWrapper.hpp>
+
 #include <scai/common/Settings.hpp>
 #include <scai/common/exception/IOException.hpp>
 
@@ -46,10 +48,52 @@ namespace scai
 namespace lama
 {
 
+std::ostream& operator<<( std::ostream& stream, const FileMode& value )
+{
+    switch ( value ) 
+    {
+        case FileMode::BINARY: 
+            stream << "BINARY"; 
+            break;
+        case FileMode::FORMATTED: 
+            stream << "FORMATTED"; 
+            break;
+        case FileMode::DEFAULT: 
+            stream << "DEFAULT"; 
+            break;
+        default:
+            stream << "UnknownFileMode";
+    }
+    return stream;
+}
+
+std::ostream& operator<<( std::ostream& stream, const DistributedIOMode& value )
+{
+    switch ( value ) 
+    {
+        case DistributedIOMode::MASTER: 
+            stream << "MASTER"; 
+            break;
+        case DistributedIOMode::INDEPENDENT: 
+            stream << "INDEPENDENT"; 
+            break;
+        case DistributedIOMode::COLLECTIVE: 
+            stream << "COLLECTIVE"; 
+            break;
+        case DistributedIOMode::DEFAULT: 
+            stream << "DEFAULT"; 
+            break;
+        default:
+            stream << "UnknownDistributedIOMode";
+    }
+    return stream;
+}
+
 FileIO::FileIO() :
 
-    mFileMode( DEFAULT_MODE ),                       // no forace of anything
-    mAppendMode( false ),                            // default is to write each output file new
+    mFileMode( FileMode::DEFAULT ),                      // no force of anything
+    mDistMode( DistributedIOMode::DEFAULT ),             // no force of anything
+    mAppendMode( false ),                                // default is to write each output file new
     mScalarTypeIndex( common::ScalarType::INDEX_TYPE ),  // default is as used in LAMA
     mScalarTypeData( common::ScalarType::INTERNAL )      // default is same type as used in output data structure
 {
@@ -59,14 +103,14 @@ FileIO::FileIO() :
     {
         if ( binary )
         {
-            mFileMode = BINARY;
+            mFileMode = FileMode::BINARY;
         }
         else
         {
-            mFileMode = FORMATTED;
+            mFileMode = FileMode::FORMATTED;
         }
 
-        SCAI_LOG_INFO( logger, "File mode set by SCAI_IO_BINARY = " << binary )
+        SCAI_LOG_INFO( logger, "File mode set by SCAI_IO_BINARY = " << binary << " : " << mFileMode )
     }
 
     common::Settings::getEnvironment( mAppendMode, "SCAI_IO_APPEND" );
@@ -108,6 +152,95 @@ SCAI_LOG_DEF_LOGGER( FileIO::logger, "FileIO" )
 
 /* --------------------------------------------------------------------------------- */
 
+bool FileIO::hasCollectiveIO() const
+{
+    // collective I/O is not supported by default
+
+    return false;
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void FileIO::open( const char* fileName, const char* openMode, const DistributedIOMode distMode )
+{
+    SCAI_LOG_INFO( logger, *this << ": open, name = " << fileName << ", open mode = " << openMode )
+
+    mDistMode = distMode;
+
+    auto comm = dmemo::Communicator::getCommunicatorPtr();
+
+    if ( strstr( fileName, "%r" ) != NULL )
+    {
+        mDistMode = DistributedIOMode::INDEPENDENT;
+
+        std::string independentFileName = fileName;
+
+        size_t pos = independentFileName.find( "%r" );
+
+        std::ostringstream rankStr;
+
+        PartitionId size = comm->getSize();
+        PartitionId rank = comm->getRank();
+
+        if ( size > 1 )
+        {
+            rankStr << rank << "." << size;
+        }
+
+        independentFileName.replace( pos, 2, rankStr.str() );
+
+        openIt( independentFileName.c_str(), openMode );
+    }
+    else
+    {
+        if ( mDistMode == DistributedIOMode::DEFAULT )
+        {
+            if ( hasCollectiveIO() )
+            {
+                mDistMode = DistributedIOMode::COLLECTIVE;
+            }
+            else
+            {
+                mDistMode = DistributedIOMode::MASTER;
+            }
+        }
+
+        // in single mode only MASTER processor opens it
+
+        if ( mDistMode != DistributedIOMode::MASTER || comm->getRank() == 0 )
+        {
+            openIt( fileName, openMode );
+        }
+    }
+
+    SCAI_LOG_DEBUG( logger, *this << " is now open" )
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void FileIO::close()
+{
+    auto comm = getCommunicatorPtr();
+
+    // in single mode only MASTER processor closes it
+
+    if ( mDistMode != DistributedIOMode::MASTER || comm->getRank() == 0 )
+    {
+        closeIt();
+    }
+
+    // synchronize at close avoids that file is seen by all processors in same state
+
+    if ( mDistMode == DistributedIOMode::MASTER )
+    {
+        comm->synchronize();
+    }
+
+    mDistMode = DistributedIOMode::DEFAULT;
+}
+
+/* --------------------------------------------------------------------------------- */
+
 void FileIO::writeAt( std::ostream& stream ) const
 {
     stream << "FileIO( ";
@@ -119,21 +252,8 @@ void FileIO::writeAt( std::ostream& stream ) const
 
 void FileIO::writeMode( std::ostream& stream ) const
 {
-    stream << "FileMode = ";
-
-    if ( mFileMode == BINARY )
-    {
-        stream << "binary";
-    }
-    else if ( mFileMode == FORMATTED )
-    {
-        stream << "formatted";
-    }
-    else
-    {
-        stream << "DEFAULT";
-    }
-
+    stream << "FileMode = " << mFileMode;
+    stream << ", DistributedIOMode = " << mDistMode;
     stream << ", append = " << mAppendMode;
     stream << ", data = " << mScalarTypeData;
     stream << ", index = " << mScalarTypeIndex;
@@ -175,7 +295,12 @@ void FileIO::setDataType( common::ScalarType type )
 
 void FileIO::setMode( const FileMode mode )
 {
-    mFileMode = mode;
+    // only a forced file mode overwrites the current file mode
+
+    if ( mode != FileMode::DEFAULT )
+    {
+        mFileMode = mode;
+    }
 }
 
 void FileIO::enableAppendMode( bool flag )
@@ -283,13 +408,16 @@ void FileIO::write(
     std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
-    fileIO->writeArray( array, outFileName );
+    fileIO->open( outFileName.c_str(), "w", DistributedIOMode::INDEPENDENT );
+    fileIO->writeArray( array );
+    fileIO->close();
 }
 
 /* -------------------------------------------------------------------------- */
 
 void FileIO::write(
     const IndexType size,
+    const void* zero,
     const hmemo::HArray<IndexType>& indexes,
     const hmemo::_HArray& values,
     const std::string& outFileName,
@@ -307,7 +435,9 @@ void FileIO::write(
     std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
-    fileIO->writeSparse( size, indexes, values, outFileName );
+    fileIO->open( outFileName.c_str(), "w", DistributedIOMode::INDEPENDENT );
+    fileIO->writeSparse( size, zero, indexes, values );
+    fileIO->close();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -315,9 +445,7 @@ void FileIO::write(
 void FileIO::read(
     hmemo::_HArray& array,
     const std::string& inFileName,
-    const common::ScalarType dataType,
-    const IndexType first,
-    const IndexType n )
+    const common::ScalarType dataType )
 {
     std::string suffix = getSuffix( inFileName );
 
@@ -330,7 +458,9 @@ void FileIO::read(
     std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
-    fileIO->readArray( array, inFileName, first, n );
+    fileIO->open( inFileName.c_str(), "r", DistributedIOMode::INDEPENDENT );
+    fileIO->readArray( array );
+    fileIO->close();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -352,13 +482,16 @@ void FileIO::read(
     std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
-    fileIO->readGridArray( array, grid, inFileName );
+    fileIO->open( inFileName.c_str(), "r", DistributedIOMode::INDEPENDENT );
+    fileIO->readGridArray( array, grid );
+    fileIO->close();
 }
 
 /* -------------------------------------------------------------------------- */
 
 void FileIO::read(
     IndexType& size,
+    void* zero,
     hmemo::HArray<IndexType>& indexes,
     hmemo::_HArray& values,
     const std::string& inFileName,
@@ -375,7 +508,9 @@ void FileIO::read(
     std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
-    fileIO->readSparse( size, indexes, values, inFileName );
+    fileIO->open( inFileName.c_str(), "r", DistributedIOMode::INDEPENDENT );
+    fileIO->readSparse( size, zero, indexes, values );
+    fileIO->close();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -394,7 +529,9 @@ IndexType FileIO::getArraySize( const std::string& inFileName )
 
     IndexType size = invalidIndex;
 
-    fileIO->readArrayInfo( size, inFileName );
+    fileIO->open( inFileName.c_str(), "r", DistributedIOMode::INDEPENDENT );
+    fileIO->getArrayInfo( size );
+    fileIO->close();
 
     return size;
 }
@@ -417,12 +554,82 @@ IndexType FileIO::getStorageSize( const std::string& fileName )
     IndexType numColumns = 0;   // dummy
     IndexType numValues = 0;    // dummy
 
-    fileIO->readStorageInfo( size, numColumns, numValues, fileName );
+    fileIO->open( fileName.c_str(), "r", DistributedIOMode::INDEPENDENT );
+    fileIO->getStorageInfo( size, numColumns, numValues );
+    fileIO->close();
 
     return size;
 }
 
 /* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void FileIO::writeSparseImpl(
+    const IndexType size,
+    const ValueType& zero,
+    const hmemo::HArray<IndexType>& indexes,
+    const hmemo::HArray<ValueType>& values )
+{
+    // sparse unsupported for this file format, write it dense
+
+    hmemo::HArray<ValueType> denseArray;
+    utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes, zero );
+    writeArray( denseArray );
+}
+
+void FileIO::writeSparse( const IndexType n, const void* zero, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<FileIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparse( *this, n, zero, indexes, values );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void FileIO::readSparseImpl(
+    IndexType& size,
+    ValueType& zero,
+    hmemo::HArray<IndexType>& indexes,
+    hmemo::HArray<ValueType>& values )
+{
+    // sparse array not supported for this file format, read a dense array
+
+    SCAI_LOG_WARN( logger, "read sparse array not supported for " << *this << ", reads dense array." )
+
+    hmemo::HArray<ValueType> denseArray;
+
+    readArray( denseArray );
+    size = denseArray.size();
+    zero = 0;
+    utilskernel::HArrayUtils::buildSparseArray( values, indexes, denseArray, zero );
+}
+
+void FileIO::readSparse( IndexType& size, void* zero, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<FileIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparse( *this, size, zero, indexes, values );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+DistributedIOMode FileIO::getDistributedIOMode() const
+{
+    // mDistMode == DEFAULT indicates that no file is open at all
+
+    return mDistMode;
+}
+
+/* --------------------------------------------------------------------------------- */
+
+dmemo::CommunicatorPtr FileIO::getCommunicatorPtr() const
+{
+    return dmemo::Communicator::getCommunicatorPtr();
+}
+
+/* --------------------------------------------------------------------------------- */
+
 
 }  // namespace lama
 

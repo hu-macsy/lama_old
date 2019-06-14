@@ -76,16 +76,22 @@ public:
 
     virtual ~GenBlockDistribution();
 
-    /** Get the local range of the calling partition.
+    /**
+     *  Get the first element owned by this partition.
      *
-     *  @param[out] lb, ub is the local range, i.e all elements i with lb <= i < ub
-     *
-     *  Note: lb == ub stands for zero size, ub < lb can never happen
-     *
-     *  Be careful: older version returned ub with lb <= i <= ub
+     *  \code
+     *      for ( IndexType i = dist->lb(); i < dist->ub(); ++i )
+     *         // do something with element i owned by this processor
+     *  \endcode
      */
+    inline IndexType lb() const;
 
-    void getLocalRange( IndexType& lb, IndexType& ub ) const;
+    /**
+     *  Get the upper bound of local range, first element no more owned by this partition
+     * 
+     *  Note: lb() == ub() stands for zero size, ub() < lb() can never happen
+     */
+    inline IndexType ub() const;
 
     /** Implemenation of pure method Distribution::isLocal */
 
@@ -114,6 +120,14 @@ public:
     virtual IndexType getBlockDistributionSize() const;
 
     virtual bool isEqual( const Distribution& other ) const;
+
+    /** Check if this general block distribution is same as other one */
+
+    bool isSameGenBlockDistribution( const GenBlockDistribution& other ) const;
+
+    /** Check if this general block distribution is the usual block distribution */
+
+    bool isBlockDistribution() const;
 
     virtual void writeAt( std::ostream& stream ) const;
 
@@ -183,6 +197,10 @@ private:
     IndexType mUB;   //!< local range of full size in global values
 };
 
+/* --------------------------------------------------------------------------------- */
+/*   Implementation of inline methods for GenBlockDistribution                       */
+/* --------------------------------------------------------------------------------- */
+
 const char* GenBlockDistribution::getKind() const
 {
     return getId();
@@ -193,6 +211,20 @@ const char* GenBlockDistribution::getId()
     return "GEN_BLOCK";
 }
 
+IndexType GenBlockDistribution::lb() const
+{
+    return mLB;
+}
+
+IndexType GenBlockDistribution::ub() const
+{
+    return mUB;
+}
+
+/* --------------------------------------------------------------------------------- */
+/*   free constructor functions                                                      */
+/* --------------------------------------------------------------------------------- */
+
 /** Construct a general block distribution by individual local sizes
  *
  *  @param[in] localSize is the number of elements owned by this processor
@@ -201,6 +233,19 @@ const char* GenBlockDistribution::getId()
  */
 std::shared_ptr<const GenBlockDistribution> genBlockDistributionBySize( 
     const IndexType localSize,
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
+
+/** Construct a general block distribution by individual offset
+ *
+ *  @param[in] N is the total size, must be same on all processors
+ *  @param[in] offset is the first element owned by this processor
+ *  @param[in] comm specifies the communicator used for this distribution
+ *
+ *  Note: offset can be invalidIndex if this processor has no elements at all
+ */
+std::shared_ptr<const GenBlockDistribution> genBlockDistributionByOffset( 
+    const IndexType N,
+    const IndexType offset,
     CommunicatorPtr comm = Communicator::getCommunicatorPtr() );
 
 /** Construct a general block distribution by individual local sizes

@@ -8,7 +8,8 @@ IMAGES = splitting block_distribution cyclic2_distribution genblock_distribution
          global_addressing_plan \
          global_gather global_scatter global_redistribute \
          redistribution redistribute_plan \
-         halo halo_plan halo_update halo_reduce
+         halo halo_plan halo_update halo_reduce \
+         collective_io independent_io
 
 IMAGES_SVG = $(IMAGES:=.svg)
 IMAGES_PDF = $(IMAGES:=.pdf)

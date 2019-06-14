@@ -68,59 +68,72 @@ GridDistribution::GridDistribution( const Grid& globalGrid, const CommunicatorPt
 GridDistribution::GridDistribution( const Grid& globalGrid, const CommunicatorPtr communicator ) :
 
     Distribution( globalGrid.size(), communicator ),
-
     mGlobalGrid( globalGrid ),
     mLocalGrid( globalGrid ),
-    mProcGrid( globalGrid.nDims() )
+    mProcGrid( getDefaultProcGrid( globalGrid, communicator->getSize() ) )
 {
-    // Build a correct processor grid by the communicator
-    // Note: border type of the processor grid does not matter
+    // assertions for proc grid are no more required hiere
 
-    IndexType nDims = globalGrid.nDims();
+    localize();
+}
+
+/* ---------------------------------------------------------------------- */
+
+/** 
+ *  @brief  Return a n-dimnsion processor array where all processors are assigned to first dim
+ */
+static common::Grid getProcGrid1D( IndexType nDims, const PartitionId np )
+{
+    PartitionId procDims[ SCAI_GRID_MAX_DIMENSION ];
+
+    procDims[0] = np;
+
+    for ( IndexType i = 1; i < nDims; ++i )
+    {
+        procDims[i] = 1;
+    }
+
+    return common::Grid( nDims, procDims );
+}
+
+common::Grid GridDistribution::getDefaultProcGrid( const common::Grid& grid, const PartitionId np )
+{
+    // Note: static method, uses no member variables
+
+    const IndexType nDims = grid.nDims();
+
+    PartitionId procDims[ SCAI_GRID_MAX_DIMENSION ];
 
     if ( nDims == 1 )
     {
-        mProcGrid.setSize( 0, communicator->getSize() );
+        procDims[0] = np;
     }
     else if ( nDims == 2 )
     {
-        PartitionId procGrid[2];
+        double size = static_cast<double>( grid.size( 0 ) + grid.size( 1 ) );
 
-        double size = static_cast<double>( globalGrid.size( 0 ) + globalGrid.size( 1 ) );
+        double w1 = grid.size( 0 ) / size;
+        double w2 = grid.size( 1 ) / size;
 
-        double w1 = globalGrid.size( 0 ) / size;
-        double w2 = globalGrid.size( 1 ) / size;
-
-        communicator->factorize2( procGrid, w1, w2 );
-
-        mProcGrid.setSize( 0, procGrid[0] );
-        mProcGrid.setSize( 1, procGrid[1] );
-    }
+        Communicator::factorize2( procDims, np, w1, w2 );
+    }   
     else
     {
-        PartitionId procGrid[3];
+        double size = static_cast<double>( grid.size( 0 ) + grid.size( 1 ) + grid.size( 2 ) );
 
-        double size = static_cast<double>( globalGrid.size( 0 ) + globalGrid.size( 1 ) + globalGrid.size( 2 ) );
+        double w1 = grid.size( 0 ) / size;
+        double w2 = grid.size( 1 ) / size;
+        double w3 = grid.size( 2 ) / size;
 
-        double w1 = globalGrid.size( 0 ) / size;
-        double w2 = globalGrid.size( 1 ) / size;
-        double w3 = globalGrid.size( 2 ) / size;
-
-        communicator->factorize3( procGrid, w1, w2, w3 );
-
-        mProcGrid.setSize( 0, procGrid[0] );
-        mProcGrid.setSize( 1, procGrid[1] );
-        mProcGrid.setSize( 2, procGrid[2] );
-
-        // set the remaining dimensions to 1
+        Communicator::factorize3( procDims, np, w1, w2, w3 );
 
         for ( IndexType i = 3; i < nDims; ++i )
         {
-            mProcGrid.setSize( i, 1 );
+            procDims[i] = 1;
         }
     }
 
-    localize(); // compute mBlockSize, mLB, mUB, mRank, m
+    return common::Grid( nDims, procDims );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -533,18 +546,45 @@ IndexType GridDistribution::getAnyGlobalIndex( const IndexType localIndex, const
 
 /* ---------------------------------------------------------------------- */
 
+DistributionPtr GridDistribution::toBlockDistribution( CommunicatorPtr comm ) const
+{
+    common::Grid procGrid = getProcGrid1D( mGlobalGrid.nDims(), comm->getSize() );
+
+    return gridDistribution( mGlobalGrid, comm, procGrid );
+}
+
+/* ---------------------------------------------------------------------- */
+
+DistributionPtr GridDistribution::toMasterDistribution( CommunicatorPtr ) const
+{
+    return gridDistributionReplicated( mGlobalGrid );
+}
+
+/* ---------------------------------------------------------------------- */
+
+DistributionPtr GridDistribution::toReplicatedDistribution() const
+{
+    return gridDistributionReplicated( mGlobalGrid );
+}
+
+/* ---------------------------------------------------------------------- */
+
 bool GridDistribution::isEqual( const Distribution& other ) const
 {
+    SCAI_LOG_DEBUG( logger, "check equality: " << *this << ", " << other )
+
     bool isSame = false;
 
     bool proven = proveEquality( isSame, other );
+
+    SCAI_LOG_DEBUG( logger, "proven = " << proven << ", isSame = " << isSame )
 
     if ( proven )
     {
         return isSame;
     }
 
-    if ( other.getKind() == getKind() )
+    if ( strcmp( other.getKind(), getKind() ) == 0 )
     {
         const GridDistribution& gridOther = reinterpret_cast<const GridDistribution&>( other );
 
@@ -610,12 +650,46 @@ DistributionPtr GridDistribution::create( const DistributionArguments arg )
 
     if ( size1 == 1 )
     {
-        return std::make_shared<GridDistribution>( Grid1D( globalSize ), arg.communicator );
+        return gridDistribution( Grid1D( globalSize ), arg.communicator );
     }
     else
     {
-        return std::make_shared<GridDistribution>( Grid2D( size1, size2 ), arg.communicator );
+        return gridDistribution( Grid2D( size1, size2 ), arg.communicator );
     }
+}
+
+std::shared_ptr<const GridDistribution> gridDistributionByLocalGrid( const common::Grid& localGrid, CommunicatorPtr comm )
+{
+    IndexType nDims = localGrid.nDims();
+
+    IndexType gridDims[ SCAI_GRID_MAX_DIMENSION ];
+
+    gridDims[0] = 0;  // just as fallback for 0-dimensional grid
+
+    localGrid.getSizes( gridDims );
+
+    IndexType procDims[ SCAI_GRID_MAX_DIMENSION ];
+
+    gridDims[0] = comm->sum( gridDims[0] );   // global grid by sum up first dimension
+
+    common::Grid globalGrid( nDims, gridDims );
+
+    // make the processor array
+
+    procDims[0] = comm->getSize();
+
+    for ( IndexType dim = 1; dim < nDims; ++dim )
+    { 
+        procDims[dim] = 1;
+    }
+
+    common::Grid procGrid( nDims, procDims );
+
+    auto dist = dmemo::gridDistribution( globalGrid, comm, procGrid );
+
+    SCAI_ASSERT_EQ_ERROR( localGrid, dist->getLocalGrid(), "grid distribution " << *dist << " does not match to local grid" );
+
+    return dist;
 }
 
 } /* end namespace dmemo */

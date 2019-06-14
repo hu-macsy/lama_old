@@ -163,7 +163,7 @@ inline Expression_SVV<ValueType> operator*( const Expression_SV<ValueType>& exp1
 }
 
 /* ------------------------------------------------------------------------- */
-/*   operator+ to generate Expression_SV_S                                   */
+/*   operator+ to generate Expression_S_SV                                   */
 /* ------------------------------------------------------------------------- */
 
 /**
@@ -176,15 +176,15 @@ inline Expression_SVV<ValueType> operator*( const Expression_SV<ValueType>& exp1
  */
 
 template<typename ValueType>
-inline Expression_SV_S<ValueType> operator+( const intern::Scalar& alpha, const Vector<ValueType>& x )
+inline Expression_S_SV<ValueType> operator+( const intern::Scalar& alpha, const Vector<ValueType>& x )
 {
-    return Expression_SV_S<ValueType>( Expression_SV<ValueType>( intern::Scalar( 1 ), x ), alpha );
+    return Expression_S_SV<ValueType>( alpha, Expression_SV<ValueType>( intern::Scalar( 1 ), x ) );
 }
 
 template<typename ValueType>
-inline Expression_SV_S<ValueType> operator-( const intern::Scalar& alpha, const Vector<ValueType>& x )
+inline Expression_S_SV<ValueType> operator-( const intern::Scalar& alpha, const Vector<ValueType>& x )
 {
-    return Expression_SV_S<ValueType>( Expression_SV<ValueType>( intern::Scalar( -1 ), x ), alpha );
+    return Expression_S_SV<ValueType>( alpha, Expression_SV<ValueType>( intern::Scalar( -1 ), x ) );
 }
 
 /**
@@ -197,17 +197,17 @@ inline Expression_SV_S<ValueType> operator-( const intern::Scalar& alpha, const 
  */
 
 template<typename ValueType>
-inline Expression_SV_S<ValueType> operator+( const Vector<ValueType>& x, const intern::Scalar& alpha )
+inline Expression_S_SV<ValueType> operator+( const Vector<ValueType>& x, const intern::Scalar& alpha )
 {
     // return Expression_S_V( alpha, vectorX );
-    return Expression_SV_S<ValueType>( Expression_SV<ValueType>( intern::Scalar( 1 ), x ), alpha );
+    return Expression_S_SV<ValueType>( alpha, Expression_SV<ValueType>( intern::Scalar( 1 ), x ) );
 }
 
 template<typename ValueType>
-inline Expression_SV_S<ValueType> operator-( const Vector<ValueType>& x, const intern::Scalar& alpha )
+inline Expression_S_SV<ValueType> operator-( const Vector<ValueType>& x, const intern::Scalar& alpha )
 {
     // return Expression_S_V( alpha, vectorX );
-    return Expression_SV_S<ValueType>( Expression_SV<ValueType>( intern::Scalar( 1 ), x ), -alpha );
+    return Expression_S_SV<ValueType>( -alpha, Expression_SV<ValueType>( intern::Scalar( 1 ), x ) );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -224,55 +224,55 @@ inline Expression_SV_S<ValueType> operator-( const Vector<ValueType>& x, const i
  */
 
 template<typename ValueType>
-inline Expression_SV_S<ValueType> operator+( const Expression_SV<ValueType>& exp, const intern::Scalar& beta )
+inline Expression_S_SV<ValueType> operator+( const Expression_SV<ValueType>& exp, const intern::Scalar& beta )
 {
-    return Expression_SV_S<ValueType>( exp, beta );
+    return Expression_S_SV<ValueType>( beta, exp );
 }
 
 template<typename ValueType>
-inline Expression_SV_S<ValueType> operator+( const intern::Scalar& beta, const Expression_SV<ValueType>& exp )
+inline Expression_S_SV<ValueType> operator+( const intern::Scalar& beta, const Expression_SV<ValueType>& exp )
 {
-    return Expression_SV_S<ValueType>( exp, beta );
+    return Expression_S_SV<ValueType>( beta, exp );
 }
 
 template<typename ValueType>
-inline Expression_SV_S<ValueType> operator-( const Expression_SV<ValueType>& exp, const intern::Scalar& beta )
+inline Expression_S_SV<ValueType> operator-( const Expression_SV<ValueType>& exp, const intern::Scalar& beta )
 {
-    return Expression_SV_S<ValueType>( exp, -beta );
+    return Expression_S_SV<ValueType>( -beta, exp );
 }
 
 template<typename ValueType>
-inline Expression_SV_S<ValueType> operator-( const intern::Scalar& beta, const Expression_SV<ValueType>& exp )
+inline Expression_S_SV<ValueType> operator-( const intern::Scalar& beta, const Expression_SV<ValueType>& exp )
 {
-    return Expression_SV_S<ValueType>( -exp, beta );
+    return Expression_S_SV<ValueType>( beta, -exp );
 }
 
 /* ------------------------------------------------------------------------- */
-/*   SV_S +- scalar, scalar +- SV_S remains SV_S                             */
+/*   S_SV +- scalar, scalar +- S_SV remains S_SV                             */
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-inline Expression_SV_S<ValueType> operator+( const intern::Scalar& beta, const Expression_SV_S<ValueType>& exp )
+inline Expression_S_SV<ValueType> operator+( const intern::Scalar& beta, const Expression_S_SV<ValueType>& exp )
 {
-    return Expression_SV_S<ValueType>( exp.getArg1(), beta + exp.getArg2() );
+    return Expression_S_SV<ValueType>( beta + exp.getArg1(), exp.getArg2() );
 }
 
 template<typename ValueType>
-inline Expression_SV_S<ValueType> operator+( const Expression_SV_S<ValueType>& exp, const intern::Scalar& beta )
+inline Expression_S_SV<ValueType> operator+( const Expression_S_SV<ValueType>& exp, const intern::Scalar& beta )
 {
-    return Expression_SV_S<ValueType>( exp.getArg1(), beta + exp.getArg2() );
+    return Expression_S_SV<ValueType>( beta + exp.getArg1(), exp.getArg2() );
 }
 
 template<typename ValueType>
-inline Expression_SV_S<ValueType> operator-( const intern::Scalar& beta, const Expression_SV_S<ValueType>& exp )
+inline Expression_S_SV<ValueType> operator-( const intern::Scalar& beta, const Expression_S_SV<ValueType>& exp )
 {
-    return Expression_SV_S<ValueType>( exp.getArg1(), beta - exp.getArg2() );
+    return Expression_S_SV<ValueType>( beta - exp.getArg1(), exp.getArg2() );
 }
 
 template<typename ValueType>
-inline Expression_SV_S<ValueType> operator-( const Expression_SV_S<ValueType>& exp, const intern::Scalar& beta )
+inline Expression_S_SV<ValueType> operator-( const Expression_S_SV<ValueType>& exp, const intern::Scalar& beta )
 {
-    return Expression_SV_S<ValueType>( exp.getArg1(), exp.getArg2() - beta );
+    return Expression_S_SV<ValueType>( exp.getArg1(), exp.getArg2() - beta );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -424,15 +424,15 @@ inline Expression_SVV<ValueType> operator*( const Expression_SVV<ValueType>& exp
 }
 
 template<typename ValueType>
-inline Expression_SV_S<ValueType> operator*( const intern::Scalar& alpha, const Expression_SV_S<ValueType>& exp )
+inline Expression_S_SV<ValueType> operator*( const intern::Scalar& alpha, const Expression_S_SV<ValueType>& exp )
 {
-    return Expression_SV_S<ValueType>( alpha * exp.getArg1(), alpha * exp.getArg2() );
+    return Expression_S_SV<ValueType>( alpha * exp.getArg1(), alpha * exp.getArg2() );
 }
 
 template<typename ValueType>
-inline Expression_SV_S<ValueType> operator*( const Expression_SV_S<ValueType>& exp, const intern::Scalar& alpha )
+inline Expression_S_SV<ValueType> operator*( const Expression_S_SV<ValueType>& exp, const intern::Scalar& alpha )
 {
-    return Expression_SV_S<ValueType>( exp.getArg1() * alpha, exp.getArg2() * alpha );
+    return Expression_S_SV<ValueType>( exp.getArg1() * alpha, exp.getArg2() * alpha );
 }
 
 template<typename ValueType>
@@ -464,9 +464,9 @@ inline Expression_SVV<ValueType> operator/( const Expression_SVV<ValueType>& exp
 }
 
 template<typename ValueType>
-inline Expression_SV_S<ValueType> operator/( const Expression_SV_S<ValueType>& exp, const intern::Scalar& alpha )
+inline Expression_S_SV<ValueType> operator/( const Expression_S_SV<ValueType>& exp, const intern::Scalar& alpha )
 {
-    return Expression_SV_S<ValueType>( exp.getArg1() / alpha, exp.getArg2() / alpha );
+    return Expression_S_SV<ValueType>( exp.getArg1() / alpha, exp.getArg2() / alpha );
 }
 
 template<typename ValueType>
@@ -498,9 +498,9 @@ inline Expression_SVV<ValueType> operator-( const Expression_SVV<ValueType>& exp
 }
 
 template<typename ValueType>
-inline Expression_SV_S<ValueType> operator-( const Expression_SV_S<ValueType>& exp )
+inline Expression_S_SV<ValueType> operator-( const Expression_S_SV<ValueType>& exp )
 {
-    return Expression_SV_S<ValueType>( -exp.getArg1(), -exp.getArg2() );
+    return Expression_S_SV<ValueType>( -exp.getArg1(), -exp.getArg2() );
 }
 
 template<typename ValueType>
@@ -542,9 +542,9 @@ inline Expression<intern::Scalar, Vector<ValueType>, common::BinaryOp::MIN> min(
 }
 
 template<typename ValueType>
-inline Expression<Vector<ValueType>, intern::Scalar, common::BinaryOp::MIN> min( const Vector<ValueType>& x, const intern::Scalar& alpha )
+inline Expression<intern::Scalar, Vector<ValueType>, common::BinaryOp::MIN> min( const Vector<ValueType>& x, const intern::Scalar& alpha )
 {
-    return Expression<Vector<ValueType>, intern::Scalar, common::BinaryOp::MIN>( x, alpha );
+    return Expression<intern::Scalar, Vector<ValueType>, common::BinaryOp::MIN>( alpha, x );
 }
 
 template<typename ValueType>
@@ -563,9 +563,9 @@ inline Expression<intern::Scalar, Vector<ValueType>, common::BinaryOp::MAX> max(
 }
 
 template<typename ValueType>
-inline Expression<Vector<ValueType>, intern::Scalar, common::BinaryOp::MAX> max( const Vector<ValueType>& x, const intern::Scalar& alpha )
+inline Expression<intern::Scalar, Vector<ValueType>, common::BinaryOp::MAX> max( const Vector<ValueType>& x, const intern::Scalar& alpha )
 {
-    return Expression<Vector<ValueType>, intern::Scalar, common::BinaryOp::MAX>( x, alpha );
+    return Expression<intern::Scalar, Vector<ValueType>, common::BinaryOp::MAX>( alpha, x );
 }
 
 template<typename ValueType>
