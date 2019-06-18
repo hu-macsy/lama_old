@@ -35,6 +35,7 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/SingleDistribution.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/partitioning/Partitioning.hpp>
@@ -159,6 +160,10 @@ void doPartitioning( Matrix<ValueType>& matrix, Vector<ValueType>& rhs, Vector<V
         // let it unchanged
  
         dist = matrix.getRowDistributionPtr();
+    }
+    else if ( true )
+    {
+        dist = dmemo::blockDistribution( matrix.getNumRows(), comm );
     }
     else 
     {
@@ -474,7 +479,7 @@ int main( int argc, const char* argv[] )
 
         {
             SCAI_REGION( "Main.solveSetup" )
-            LamaTiming timer( comm, "Solver setup" );
+            LamaTiming timer( comm, "Solver setup (initialize)" );
             mySolver->initialize( matrix );
         }
 
