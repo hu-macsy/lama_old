@@ -352,6 +352,37 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
     }
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( setDiagonalFirstTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+
+    ContextPtr context = Context::getContextPtr();
+
+    const IndexType numRows = 4;
+    const IndexType numColumns = 4;
+
+    HArray<IndexType> csrIA(     { 0,    2,    4,    6,   8 }, context );
+    HArray<IndexType> csrJA(     { 0, 1, 0, 1, 2, 3, 2, 3 }, context );
+    HArray<ValueType> csrValues( { 1, 2, 3, 4, 5, 6, 7, 8 }, context );
+
+    CSRStorage<ValueType> csrStorage( numRows, numColumns, csrIA, csrJA, csrValues, context );
+
+    HArray<IndexType> diagonal( { 1, 0, 3, 2 }, context );
+    IndexType numSet = csrStorage.setDiagonalFirst( diagonal );
+ 
+    BOOST_CHECK_EQUAL( numSet, numRows );
+
+    HArray<IndexType> expJA(     { 1, 0, 0, 1, 3, 2, 2, 3 }, context );
+    HArray<ValueType> expValues( { 2, 1, 3, 4, 6, 5, 7, 8 }, context );
+
+    BOOST_TEST( hostReadAccess( expJA ) == hostReadAccess( csrStorage.getJA() ), boost::test_tools::per_element() );
+    BOOST_TEST( hostReadAccess( expValues ) == hostReadAccess( csrStorage.getValues() ), boost::test_tools::per_element() );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE( CSRCopyTest )
 {
     typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
