@@ -77,8 +77,6 @@
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/zip_iterator.h>
 #include <thrust/reduce.h>
-#include <thrust/device_malloc.h>
-#include <thrust/device_free.h>
 
 #include <functional>
 
@@ -2729,7 +2727,7 @@ void shiftDiagKernel(
     {
         // now set the first row element as the diagonal element
         csrValues[start] = diagonalValue;
-        csrJA[start] = i;
+        csrJA[start] = diagonalIndex;
         count[i] = 1;
     }
 }
@@ -2746,21 +2744,17 @@ IndexType CUDACSRUtils::shiftDiagonal(
 
     SCAI_CHECK_CUDA_ACCESS
 
-    thrust::device_ptr<IndexType> countPtr = thrust::device_malloc<IndexType>( numDiagonals );
-
-    IndexType* d_count = thrust::raw_pointer_cast( countPtr );
+    thrust::device_vector<IndexType> count( numDiagonals );
 
     const int blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numDiagonals, dimBlock.x );
 
-    shiftDiagKernel <<< dimGrid, dimBlock>>>( d_count, csrJA, csrValues, csrIA, diagonalIndexes, numDiagonals );
+    shiftDiagKernel <<< dimGrid, dimBlock>>>( count.data().get(), csrJA, csrValues, csrIA, diagonalIndexes, numDiagonals );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "shiftDiagonal" )
 
-    IndexType numFirstDiagonals = thrust::reduce( countPtr, countPtr + numDiagonals, 0, thrust::plus<IndexType>() );
-
-    thrust::device_free( countPtr );
+    IndexType numFirstDiagonals = thrust::reduce( count.begin(), count.end(), 0, thrust::plus<IndexType>() );
 
     SCAI_LOG_INFO( logger, "shiftDiagonal for CSR data, " << numFirstDiagonals << " of " << numDiagonals << " are now first entry" )
 
