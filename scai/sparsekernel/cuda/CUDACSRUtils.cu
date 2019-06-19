@@ -1246,6 +1246,8 @@ void CUDACSRUtils::jacobi(
     const ValueType omega,
     const IndexType numRows )
 {
+    SCAI_REGION( "CUDA.CSR.jacobi" )
+
     SCAI_LOG_INFO( logger, "jacobi, #rows = " << numRows )
     SCAI_CHECK_CUDA_ACCESS
     cudaStream_t stream = 0;
@@ -1349,6 +1351,8 @@ void CUDACSRUtils::jacobiHalo(
     const ValueType omega,
     const IndexType numNonEmptyRows )
 {
+    SCAI_REGION( "CUDA.CSR.jacobiHalo" )
+
     SCAI_LOG_INFO( logger, "jacobiHalo, #non-empty rows = " << numNonEmptyRows )
     SCAI_CHECK_CUDA_ACCESS
     const int blockSize = CUDASettings::getBlockSize();
