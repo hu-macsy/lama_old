@@ -41,7 +41,7 @@
 
 #include <scai/hmemo/ContextAccess.hpp>
 
-#include <scai/tasking/TaskSyncToken.hpp>
+#include <scai/tasking/NoSyncToken.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -1038,6 +1038,8 @@ void DIAStorage<ValueType>::jacobiIterate(
     const HArray<ValueType>& rhs,
     const ValueType omega ) const
 {
+    SCAI_REGION( "Storage.DIA.jacobiIterate" )
+
     SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local matrix data." )
 
     if ( &solution == &oldSolution )
@@ -1049,8 +1051,36 @@ void DIAStorage<ValueType>::jacobiIterate(
 
     SCAI_ASSERT_EQ_DEBUG( getNumRows(), getNumColumns(), "jacobi iteration step only on square matrix storage" )
 
+    bool async = false;  // no sync token, NULL return can be ignored
+
     DIAUtils::jacobi( solution, omega, oldSolution, rhs, 
-                      getNumRows(), mOffset, mValues, getContextPtr() );
+                      getNumRows(), mOffset, mValues, async, getContextPtr() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SyncToken* DIAStorage<ValueType>::jacobiIterateAsync(
+    HArray<ValueType>& solution,
+    const HArray<ValueType>& oldSolution,
+    const HArray<ValueType>& rhs,
+    const ValueType omega ) const
+{
+    SCAI_REGION( "Storage.DIA.jacobiIterateAsync" )
+
+    bool async = true;  // call will return valid SyncToken
+
+    SyncToken* token = DIAUtils::jacobi( solution, omega, oldSolution, rhs,
+                           getNumRows(), mOffset, mValues, async, getContextPtr() );
+
+    if ( token == NULL )
+    {
+        // there was no asynchronous execution at all
+
+        token = new tasking::NoSyncToken();
+    }
+
+    return token;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1062,6 +1092,8 @@ void DIAStorage<ValueType>::jacobiIterateHalo(
     const HArray<ValueType>& oldSolution,
     const ValueType omega ) const
 {
+    SCAI_REGION( "Storage.DIA.jacobiIterateHalo" )
+
     // matrix must be square
 
     DIAUtils::jacobiHalo( solution, omega, localDiagonal, oldSolution, 

@@ -747,6 +747,13 @@ void CUDADIAUtils::jacobi(
 
     cudaStream_t stream = 0;
 
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
+    {
+        stream = syncToken->getCUDAStream();
+    }
+
     int sharedMemSize = numDiagonals * sizeof( IndexType );
 
     if ( useTexture )
@@ -780,15 +787,34 @@ void CUDADIAUtils::jacobi(
         }
     }
 
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "jacobi for DIA" )
-
-    if ( useTexture )
+    if ( !syncToken )
     {
-        vectorUnbindTexture( oldSolution );
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "jacobi for DIA" )
 
-        if ( !useSharedMem )
+        if ( useTexture )
         {
-            vectorUnbindTexture( diaOffset );
+            vectorUnbindTexture( oldSolution );
+    
+            if ( !useSharedMem )
+            {
+                vectorUnbindTexture( diaOffset );
+            }
+        }
+    }
+    else
+    {
+        // unbind of texture has to be moved after synchronization
+
+        if ( useTexture )
+        {
+            void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
+            syncToken->pushRoutine( std::bind( unbind, oldSolution ) );
+
+            if ( !useSharedMem )
+            {
+                void ( *unbind ) ( const IndexType* ) = &vectorUnbindTexture;
+                syncToken->pushRoutine( std::bind( unbind, diaOffset ) );
+            }
         }
     }
 }

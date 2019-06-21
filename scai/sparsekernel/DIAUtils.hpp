@@ -175,7 +175,7 @@ public:
      *  solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
      */
     template<typename ValueType>
-    static void jacobi(
+    static tasking::SyncToken* jacobi(
         hmemo::HArray<ValueType>& solution,
         const ValueType omega,
         const hmemo::HArray<ValueType>& oldSolution,
@@ -183,6 +183,7 @@ public:
         const IndexType n,
         const hmemo::HArray<OffsetType>& diaOffset,
         const hmemo::HArray<ValueType>& diaValues,
+        bool async,
         hmemo::ContextPtr prefLoc );
 
     /**
