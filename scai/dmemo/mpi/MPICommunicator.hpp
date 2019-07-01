@@ -235,6 +235,11 @@ private:
 
     static    const int defaultTag;
 
+    /**
+     *  Override Communicator::finalize()  
+     */
+    void finalize() const;
+
 protected:
 
     /** Implementation of pure method Communicator::splitIt */
@@ -251,10 +256,6 @@ protected:
 
     virtual std::unique_ptr<class CollectiveFile> collectiveFile() const;
 
-    MPICommKind mKind;    // kind of communicator needed for destructor
-
-    MPI_Comm mComm;
-
 #ifdef SCAI_COMPLEX_SUPPORTED
     static MPI_Op mSumComplexLongDouble;
 
@@ -264,10 +265,6 @@ protected:
     static MPI_Datatype mComplexLongDoubleType;
 
 #endif
-
-    Communicator::ThreadSafetyLevel mThreadSafetyLevel;
-
-    bool isCUDAAware;   // if true data on CUDA context can be communicated
 
 public:
 
@@ -280,6 +277,20 @@ public:
     static CommunicatorKind createValue();
 
 private:
+ 
+    // member variables
+
+    MPI_Comm mComm;
+
+    MPICommKind mKind;  // kind of communicator needed for destructor
+
+    Communicator::ThreadSafetyLevel mThreadSafetyLevel;
+
+    mutable hmemo::ContextPtr mCommContext;  // required in case of CUDA aware MPI
+
+    bool mIsCUDAAware;   // if true data on CUDA context can be communicated
+
+    mutable bool mFinalized;    //!< will be set true when finalize
 
     // Guard class whose destructor takes care of MPI finalize
 

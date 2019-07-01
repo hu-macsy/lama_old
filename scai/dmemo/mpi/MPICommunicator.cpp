@@ -71,19 +71,21 @@ MPI_Op MPICommunicator::mSumComplexLongDouble = 0;
 
 SCAI_LOG_DEF_LOGGER( MPICommunicator::logger, "Communicator.MPICommunicator" )
 
-MPICommunicator::MPICommunicator( int& argc, char** & argv, const CommunicatorKind& type )
-    : Communicator( type ),
-      mMainThread( std::this_thread::get_id() ),
-      mThreadSafetyLevel( Communicator::Funneled )
+MPICommunicator::MPICommunicator( int& argc, char** & argv, const CommunicatorKind& type ) : 
+
+    Communicator( type ),
+    mMainThread( std::this_thread::get_id() ),
+    mThreadSafetyLevel( Communicator::Funneled )
 {
     SCAI_LOG_DEBUG( logger, "Communicator constructed, type = " << type )
     initialize( argc, argv );
 }
 
-MPICommunicator::MPICommunicator()
-    : Communicator( MPI ),
-      mMainThread( std::this_thread::get_id() ),
-      mThreadSafetyLevel( Communicator::Funneled )
+MPICommunicator::MPICommunicator() : 
+
+    Communicator( MPI ),
+    mMainThread( std::this_thread::get_id() ),
+    mThreadSafetyLevel( Communicator::Funneled )
 {
     int argc = 0;
     char** argv = NULL;
@@ -91,10 +93,11 @@ MPICommunicator::MPICommunicator()
     initialize( argc, argv );
 }
 
-MPICommunicator::MPICommunicator( int& argc, char** & argv )
-    : Communicator( MPI ),
-      mMainThread( std::this_thread::get_id() ),
-      mThreadSafetyLevel( Communicator::Funneled )
+MPICommunicator::MPICommunicator( int& argc, char** & argv ) : 
+
+    Communicator( MPI ),
+    mMainThread( std::this_thread::get_id() ),
+    mThreadSafetyLevel( Communicator::Funneled )
 {
     SCAI_TRACE_SCOPE( false ) // switch off tracing in this scope as it might call this constructor again
     initialize( argc, argv );
@@ -103,7 +106,41 @@ MPICommunicator::MPICommunicator( int& argc, char** & argv )
 void MPICommunicator::initialize( int& argc, char** & argv )
 {
     int initialized = 0;
+
+    mFinalized   = false;
+
+    mIsCUDAAware = false;
+
+    bool setCUDA = common::Settings::getEnvironment( mIsCUDAAware, "SCAI_MPI_CUDA" );
+
+    if ( setCUDA )
+    {
+        SCAI_LOG_INFO( logger, "MPI is CUDAAware = " << mIsCUDAAware )
+    }
+
+    int preNodeRank = 0;
+
+    if ( mIsCUDAAware )
+    {
+        // we need the local node rank to select from SCAI_CUDA_DEVICE=0,2,3,6
+
+        common::Settings::getEnvironment( preNodeRank, "MV2_COMM_WORLD_LOCAL_RANK" );
+        common::Settings::getEnvironment( preNodeRank, "OMPI_COMM_WORLD_LOCAL_RANK" );
+    
+        //  enable different values for local rank, e.g. SCAI_DEVICE=0,3,4,5
+
+        common::Settings::setRank( preNodeRank );
+
+        // CUDA aware MPI requires an active CUDA context before Init
+
+        mCommContext = hmemo::Context::getContextPtr();
+
+        SCAI_LOG_INFO( logger, "local node rank (before MPI_Init)  = " << preNodeRank << ": uses " << *mCommContext )
+    }
+
     SCAI_MPICALL( logger, MPI_Initialized( &initialized ), "MPI_Initialized" )
+
+    SCAI_LOG_INFO( logger, "MPI initialized = " << initialized )
 
     if ( initialized )
     {
@@ -138,6 +175,12 @@ void MPICommunicator::initialize( int& argc, char** & argv )
         }
 
         int providedThreadSafety = MPI_THREAD_SINGLE;
+
+        if ( mIsCUDAAware )
+        {
+            mCommContext->enable( "MPICommunicator", 0 );
+        }
+
         SCAI_MPICALL( logger, MPI_Init_thread( &argc, &argv, requiredThreadSafety, &providedThreadSafety ), "MPI_Init" );
 
         switch ( providedThreadSafety )
@@ -166,14 +209,6 @@ void MPICommunicator::initialize( int& argc, char** & argv )
                 MPI_Finalize();
                 COMMON_THROWEXCEPTION( "MPI which supports at leas thread level MPI_THREAD_FUNNELED is required." )
         }
-
-        isCUDAAware = false;
-        bool setCUDA = common::Settings::getEnvironment( isCUDAAware, "SCAI_MPI_CUDA" );
-
-        if ( setCUDA )
-        {
-            SCAI_LOG_INFO( logger, "MPI isCUDAAware = " << isCUDAAware )
-        }
     }
 
 #ifdef SCAI_COMPLEX_SUPPORTED
@@ -195,6 +230,7 @@ void MPICommunicator::initialize( int& argc, char** & argv )
 
     MPI_Comm_dup( MPI_COMM_WORLD, &mComm );
     MPI_Comm_set_errhandler( mComm, MPI_ERRORS_RETURN );
+
     SCAI_LOG_INFO( logger, "MPI_Init" )
 
     {
@@ -221,12 +257,22 @@ void MPICommunicator::initialize( int& argc, char** & argv )
     // tracing of MPI calls for getting node data can already be traced
 
     setNodeData(); // determine mNodeRank, mNodeSize
+
+    if ( mIsCUDAAware )
+    {
+        // verify that the local node rank is the same as determined before
+
+        SCAI_ASSERT_EQ_ERROR( preNodeRank, getNodeRank(), "pre-determined local node rank does not match actual rank" )
+    }
 }
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 
-void MPICommunicator::sum_complex_long_double( void* in, void* out, int* count,
-        MPI_Datatype* SCAI_UNUSED( dtype ) )
+void MPICommunicator::sum_complex_long_double( 
+    void* in, 
+    void* out, 
+    int* count, 
+    MPI_Datatype* SCAI_UNUSED( dtype ) )
 {
     ComplexLongDouble* a = reinterpret_cast<ComplexLongDouble*>( in );
     ComplexLongDouble* b = reinterpret_cast<ComplexLongDouble*>( out );
@@ -264,9 +310,10 @@ size_t MPICommunicator::maxProcessorName() const
 
 /* ---------------------------------------------------------------------------------- */
 
-MPICommunicator::~MPICommunicator()
+void MPICommunicator::finalize() const
 {
-    SCAI_LOG_INFO( logger, *this << ": ~MPICommunicator" )
+    SCAI_LOG_INFO( logger, *this << ": finalize" )
+
     int finalized = 0;
 
     MPI_Finalized( &finalized );
@@ -284,7 +331,14 @@ MPICommunicator::~MPICommunicator()
 
             SCAI_MPICALL_NOTHROW( logger, MPI_Finalize(), "~MPICommunicator" )
 
+            if ( mIsCUDAAware )
+            {
+                mCommContext->disable( "MPICommunicator", 0 );
+            }
+
+            mCommContext.reset();
         }
+
         else if ( mKind == MPICommKind::EXTERNAL )
         {
             SCAI_LOG_INFO( logger, "ATTENTION: no call MPI_Finalize, was externally initialized" )
@@ -293,12 +347,29 @@ MPICommunicator::~MPICommunicator()
         {
             // free the communicator
 
-            SCAI_MPICALL_NOTHROW( logger, MPI_Comm_free( &mComm ), "~MPICommunicator" )
+            SCAI_MPICALL_NOTHROW( logger, MPI_Comm_free( const_cast<MPI_Comm*>( &mComm ) ), "~MPICommunicator" )
         }
     }
     else
     {
         SCAI_LOG_WARN( logger, *this << ": tried to finalize MPI, but MPI has already been finalized." )
+    }
+
+
+    mFinalized = true;
+}
+
+/* ---------------------------------------------------------------------------------- */
+
+MPICommunicator::~MPICommunicator()
+{
+    SCAI_LOG_INFO( logger, *this << ": ~MPICommunicator" )
+
+    // finalize only if it has not been finalized explicitly before
+
+    if ( !mFinalized )
+    {
+        MPICommunicator::finalize();
     }
 }
 
@@ -323,6 +394,8 @@ Communicator::ThreadSafetyLevel MPICommunicator::getThreadSafetyLevel() const
 {
     return mThreadSafetyLevel;
 }
+
+/* ---------------------------------------------------------------------------------- */
 
 MPI_Comm MPICommunicator::getMPIComm() const
 {
@@ -1058,6 +1131,8 @@ void MPICommunicator::swapImpl( void* val, const IndexType n, PartitionId partne
     SCAI_ASSERT_EQ_ERROR( n, nPartner, "size mismatch for swap" )
 }
 
+/* ---------------------------------------------------------------------------------- */
+
 hmemo::ContextPtr MPICommunicator::getCommunicationContext( const hmemo::_HArray& array ) const
 {
     // get a valid context, i.e. a context that contains valid data
@@ -1071,7 +1146,7 @@ hmemo::ContextPtr MPICommunicator::getCommunicationContext( const hmemo::_HArray
 
     // This can only be used for CUDAaware MPI
 
-    if ( isCUDAAware && ( validContext->getType() == common::ContextType::CUDA ) )
+    if ( mIsCUDAAware && ( validContext->getType() == common::ContextType::CUDA ) )
     {
         return validContext;
     }
@@ -1160,6 +1235,8 @@ MPICommunicator::MPIGuard::~MPIGuard()
 // create a guard whose destructor at program exit takes care of MPI exit call
 
 MPICommunicator::MPIGuard MPICommunicator::guard;
+
+/* --------------------------------------------------------------- */
 
 CommunicatorPtr MPICommunicator::create()
 {
