@@ -22,7 +22,8 @@
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  * @endlicense
  *
- * @brief Benchmarking of memory transfers HOST <-> context and different contextes
+ * @brief Benchmarking of memory transfers HOST <-> CUDA devices and
+ *        between the different CUDA devices
  * @author Thomas Brandes
  * @date 14.09.2015
  */
@@ -32,135 +33,177 @@
 #include <scai/hmemo/ReadAccess.hpp>
 #include <scai/hmemo/WriteOnlyAccess.hpp>
 #include <scai/common/Walltime.hpp>
+#include <scai/common/Settings.hpp>
 
 #include <iostream>
 #include <scai/logging.hpp>
 
+using namespace scai;
+using namespace hmemo;
+
 using namespace std;
-using namespace scai::hmemo;
+
 using scai::common::ContextType;
 
-/** number of iterations for the different problem cases */
-static int ITER_VEC[] = { 1000, 1000,  1000,    300,     100,      50,       20,        10 };
-
-/** number of array entries for the different problem cases 
+/**
+ *  Benchmark memory transfer from one context to another context 
  *
- *  Decrease values if they do not fit in memory.
+ *  @param[in] ctx1 source context
+ *  @param[in] ctx2 target context
+ *  @param[in] N    number of (double) array elements to transfer
+ *  @param[in] nIterWarmup  number of transfers before timing is done
+ *  @param[in] nIterBench   number of transfers that are measured
  */
-static int N_VEC[]    = {    1,  100, 10000, 100000, 1000000, 8000000, 16000000, 128000000 };
-
-/**
- *  Benchmark memory transfer between host and device
- */
-void benchHostGPU( ContextPtr host, ContextPtr device )
+void benchContextTransfer( ContextPtr ctx1, ContextPtr ctx2, const IndexType N,
+                           const IndexType nIterWarmup, const IndexType nIterBench)
 {
-    int NCASES = sizeof( ITER_VEC ) / sizeof( int );
+    // first touch on CUDA context to allow fast memory transfer
 
-    for ( int k = 0; k < NCASES; ++k )
+    ContextPtr firstContext = ctx1->getType() == ContextType::Host ? ctx2 : ctx1;
+
+    HArray<double> array( N, firstContext );  // allocate on CUDA / CUDAHost context
+
+    for ( int i = 0; i < nIterWarmup; ++i )
     {
-        int ITER = ITER_VEC[k];
-        int N    = N_VEC[k];
-
-        cout << "Case " << k << ": N = " << N << ", ITER = " << ITER << endl;
-
-        HArray<double> array( N, double( 0 ), device );
-
-        double time = scai::common::Walltime::get();
-
-        for ( int i = 0; i < ITER; ++i )
         {
-            // write only access invalidates all data
-            {
-                WriteOnlyAccess<double> hostWrite( array, host, N );
-            }
-            {
-                ReadAccess<double> devRead( array, device );
-            }
+            // write access on ctx1 invalidates data on ctx2
+            WriteAccess<double> wGPU2( array, ctx1 );
         }
-
-        double t1 = scai::common::Walltime::get() - time;
-
-        time = scai::common::Walltime::get();
-
-        for ( int i = 0; i < ITER; ++i )
         {
-            {
-                WriteOnlyAccess<double> devWrite( array, device, N );
-            }
-            {
-                ReadAccess<double> hostRead( array, host );
-            }
+            // read access implies transfer ctx1 -> ctx2
+            ReadAccess<double> wGPU1( array, ctx2 );
         }
-
-        double t2 = scai::common::Walltime::get() - time;
-        double Bytes = static_cast<double>( N ) * sizeof( double ) * ITER;
-        double GByte = 1024.0 * 1024.0 * 1024.0;
-        double GBytes1 = ( Bytes / GByte ) / t1;
-        double GBytes2 = ( Bytes / GByte ) / t2;
-        cout << "Case " << k << ": N = " << N << ", ITER = " << ITER << ", Bytes = " << Bytes << endl;
-        cout << "Host -> " << *device << " : " << t1 << " s, is " << GBytes1 << " GByte/s" << endl;
-        cout << *device << " -> Host : " << t2 << " s, is " << GBytes2 << " GByte/s" << endl;
-        cout << endl;
     }
-}
 
-/**
- *  Benchmark memory transfer from device gpu1 to device gpu2
- */
-void benchInterGPU( ContextPtr gpu1, ContextPtr gpu2 )
-{
-    int NCASES = sizeof( ITER_VEC ) / sizeof( int );
+    double time = scai::common::Walltime::get();
 
-    for ( int k = 0; k < NCASES; ++k )
+    for ( int i = 0; i < nIterBench; ++i )
     {
-        int ITER = ITER_VEC[k];
-        int N    = N_VEC[k];
-        cout << "Case " << k << ": N = " << N << ", ITER = " << ITER << endl;
-
-        HArray<double> array( N, gpu1 );  // allocate on gpu1
-
         {
-            WriteAccess<double> wGPU2( array, gpu2 );
+            WriteAccess<double> write( array, ctx1 );
         }
+        // read access: transfer data from ctx1 to ctx2 
         {
-            ReadAccess<double> wGPU1( array, gpu1 );
+            ReadAccess<double> read( array, ctx2 );
         }
-
-        double time = scai::common::Walltime::get();
-
-        for ( int i = 0; i < ITER; ++i )
-        {
-            // write access invalidates all data
-            {
-                WriteAccess<double> write( array, gpu1 );
-            }
-            // read access: transfer data from gpu1 to gpu2 
-            {
-                ReadAccess<double> read( array, gpu2 );
-            }
-        }
-
-        time = scai::common::Walltime::get() - time;
-
-        double Bytes = static_cast<double>( N ) * sizeof( double ) * ITER;
-        double GBytes = Bytes / ( 1024.0 * 1024.0 * 1024.0 * time );
-        cout << "Case " << k << ": N = " << N << ", ITER = " << ITER << ", Bytes = " << Bytes << endl;
-        cout << "Transfer " << *gpu1 << " -> " << *gpu2 << ": " << GBytes << " GByte/s" << endl;
-        cout << endl;
     }
+
+    time = scai::common::Walltime::get() - time;
+
+    double msgLength  = static_cast<double>( N ) * sizeof( double );
+    double totalBytes = msgLength * nIterBench;
+    double GByte = 1024.0 * 1024.0 * 1024.0;
+    double GBytes = ( totalBytes / GByte ) / time;
+    cout << "Transfer " << *ctx1 << " -> " << *ctx2 << ": " << GBytes << " GByte/s" << endl;
 }
 
 #define MAX_DEVICES 8
 
-int main()
+/* ----------------------------------------------------------------------------- */
+
+void printHelp( const char* argv[] )
 {
+    std::cout << "Usage: " << argv[0] << " [options]" << std::endl;
+    std::cout << "   -m  <message_size>" << std::endl;
+    std::cout << "   -x  <warmup-iterations>" << std::endl;
+    std::cout << "   -i  <bench-iterations>" << std::endl;
+    std::cout << "   -d  <number-of-devices>, max = " << MAX_DEVICES << std::endl;
+    exit( -1 );
+}
+
+/* ----------------------------------------------------------------------------- */
+
+int main( int argc, const char* argv[] )
+{
+    common::Settings::parseArgs( argc, argv );
+
+    // parse remaining arguments
+
+    int iarg = 1;
+
+    // default: 256 MByte 
+
+    IndexType msgLength = 256 * 1024 * 1024;   //!<  message-size 
+
+    int nIterBench = 100;
+    int nIterWarmup = 2;
+
+    int nTryDevices = MAX_DEVICES;
+
+    while ( iarg < argc )
+    {
+        if ( strcmp( argv[iarg], "-m" ) == 0 )
+        {
+             iarg++;
+
+             if ( iarg  < argc )
+             {
+                 // take lenght in MByte
+
+                 msgLength = atoi( argv[iarg] ) * 1024 * 1024;
+                 iarg++;
+             }
+        }
+        else if ( strcmp( argv[iarg], "-x" ) == 0 )
+        {
+             iarg++;
+
+             if ( iarg  < argc )
+             {
+                 nIterWarmup = atoi( argv[iarg] );
+                 iarg++;
+             }
+        }
+        else if ( strcmp( argv[iarg], "-i" ) == 0 )
+        {
+             iarg++;
+
+             if ( iarg  < argc )
+             {
+                 nIterBench = atoi( argv[iarg] );
+                 iarg++;
+             }
+        }
+        else if ( strcmp( argv[iarg], "-d" ) == 0 )
+        {
+             iarg++;
+
+             if ( iarg  < argc )
+             {
+                 nTryDevices = atoi( argv[iarg] );
+
+                 if ( nTryDevices > MAX_DEVICES )
+                 {
+                     nTryDevices = MAX_DEVICES;
+                 }
+
+                 iarg++;
+             }
+        }
+        else
+        {
+            printHelp( argv );
+        }
+    }
+
+    std::cout << "Benchmark context transfer" << std::endl;
+    std::cout << "==========================" << std::endl;
+
+    std::cout << "msg size = " << ( double( msgLength ) / double( 1024 * 1024 ) ) << " MByte"
+              << ", #iter warmup = " << nIterWarmup
+              << ", #iter bench = " << nIterBench << std::endl;
+
+    std::cout << std::endl;
+
+    IndexType N = msgLength / sizeof( double );
+
     ContextPtr host = Context::getHostPtr();
 
     ContextPtr devices[MAX_DEVICES];
 
     int countDevices = 0;
 
-    for ( int i = 0; i < MAX_DEVICES; ++i )
+    for ( int i = 0; i < nTryDevices; ++i )
     {
         try
         {
@@ -174,12 +217,18 @@ int main()
         }
     }
 
-    std::cout << "Benchmark host - device memory transfer for " << countDevices << " devices." << std::endl;
+    std::cout << "Benchmark host -> device memory transfer for " << countDevices << " devices." << std::endl;
 
     for ( int i = 0; i < countDevices; ++ i )
     {
-        std::cout << "CUDA bench test, context = " << *devices[i] << std::endl;
-        benchHostGPU( host, devices[i] );
+        benchContextTransfer( host, devices[i], N, nIterWarmup, nIterBench );
+    }
+
+    std::cout << "Benchmark device -> host memory transfer for " << countDevices << " devices." << std::endl;
+
+    for ( int i = 0; i < countDevices; ++ i )
+    {
+        benchContextTransfer( devices[i], host, N, nIterWarmup, nIterBench );
     }
 
     std::cout << "Benchmark device - device memory transfer for " << countDevices << " devices." << std::endl;
@@ -193,7 +242,7 @@ int main()
                 continue;
             }
 
-            benchInterGPU( devices[i], devices[j] );
+            benchContextTransfer( devices[i], devices[j], N, nIterWarmup, nIterBench );
         }
     }
 }
