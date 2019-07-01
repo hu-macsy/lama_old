@@ -261,7 +261,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
 
         HArray<ValueType> res( testContext );
 
-        DIAUtils::jacobi( res, omega, oldSolution, rhs, numRows, diaOffsets, diaValues, testContext );
+        bool async = false;
+
+        DIAUtils::jacobi( res, omega, oldSolution, rhs, numRows, diaOffsets, diaValues, async, testContext );
 
         HArray<ValueType> expectedRes( testContext );
 
