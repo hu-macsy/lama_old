@@ -579,7 +579,7 @@ void HArrayUtils::scatter(
     SCAI_ASSERT_EQ_ERROR( indexes.size(), source.size(), "serious mismatch for scatter" )
 
     SCAI_ASSERT_DEBUG( HArrayUtils::validIndexes( indexes, target.size(), prefLoc ),
-                       "illegal scatter index, target has size " << target.size() )
+                      "illegal scatter index, target has size " << target.size() )
 
     static LAMAKernel<UtilKernelTrait::setScatter<TargetValueType, SourceValueType> > setScatter;
     ContextPtr loc = prefLoc;

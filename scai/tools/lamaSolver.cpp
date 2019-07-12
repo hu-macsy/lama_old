@@ -161,7 +161,7 @@ void doPartitioning( Matrix<ValueType>& matrix, Vector<ValueType>& rhs, Vector<V
  
         dist = matrix.getRowDistributionPtr();
     }
-    else if ( true )
+    else if ( parKind == "BLOCK" )
     {
         dist = dmemo::blockDistribution( matrix.getNumRows(), comm );
     }
@@ -514,6 +514,10 @@ int main( int argc, const char* argv[] )
 
                 compSolution.readFromFile( finalSolutionFilename );
                 compSolution.redistribute( solution.getDistributionPtr() );
+                DenseVector<ValueType> res;
+                res = matrix * compSolution - rhs;
+                RealType<ValueType> resNorm = l2Norm( res );
+                HOST_PRINT( myRank, "residual norm (final solution): " << resNorm )
                 compSolution -= solution;
                 RealType<ValueType> maxDiff = compSolution.maxNorm();
                 HOST_PRINT( myRank, "Maximal difference between solution in " << finalSolutionFilename << ": " << maxDiff )
@@ -532,4 +536,6 @@ int main( int argc, const char* argv[] )
     {
         HOST_PRINT( myRank, "Terminate due to error: " << e.what() )
     }
+
+    comm.finalize();
 }

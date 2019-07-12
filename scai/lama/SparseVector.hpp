@@ -453,7 +453,11 @@ private:
 
     ValueType dotProductLocalDense( const DenseVector<ValueType>& other ) const;
 
-    /** Help routine for binary operation of two sparse vectors */
+    /** Help routine that mults a sparse vector ( zero element is 0 ) with a dense vector */
+
+    void binaryOpMult0D( const SparseVector<ValueType>& x, const DenseVector<ValueType>& y );
+
+    /** Help routine that mults a sparse vector ( zero element is 0 ) with a any other vector */
 
     void binaryOpMult0( const SparseVector<ValueType>& x, const Vector<ValueType>& y );
 

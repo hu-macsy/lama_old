@@ -503,17 +503,17 @@ void MPICommunicator::exchangeByPlanImpl(
                    *this << ": exchange for values of type " << stype
                    << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
 
-    PartitionId maxReceives = recvPlan.size();
-    PartitionId noReceives = 0; // will be incremented
+    PartitionId maxRequests = sendPlan.size() + recvPlan.size();
+    PartitionId noRequests = 0; // will be incremented
     void* recvDataForMe = NULL;
     IndexType recvDataForMeSize = 0;
-    unique_ptr<MPI_Request[]> commRequest( new MPI_Request[maxReceives] );
+    unique_ptr<MPI_Request[]> commRequest( new MPI_Request[maxRequests] );
 
     size_t typeSize = common::typeSize( stype );
 
     // setup receives for each entry in receive plan
 
-    for ( PartitionId i = 0; i < maxReceives; ++i )
+    for ( PartitionId i = 0; i < recvPlan.size(); ++i )
     {
         IndexType quantity = recvPlan[i].quantity;
         IndexType offset = recvPlan[i].offset;
@@ -524,8 +524,7 @@ void MPICommunicator::exchangeByPlanImpl(
 
         if ( p != getRank() )
         {
-            commRequest[noReceives] = startrecv( recvDataForI, quantity, p, stype );
-            noReceives++;
+            commRequest[noRequests++] = startrecv( recvDataForI, quantity, p, stype );
         }
         else
         {
@@ -547,7 +546,7 @@ void MPICommunicator::exchangeByPlanImpl(
 
         if ( p != getRank() )
         {
-            send( sendDataForI, quantity, p, stype );
+            commRequest[noRequests++] = startsend( sendDataForI, quantity, p, stype );
         }
         else
         {
@@ -559,9 +558,10 @@ void MPICommunicator::exchangeByPlanImpl(
     }
 
     // wait for completion of receives
-    unique_ptr<MPI_Status[]> statuses( new MPI_Status[noReceives] );
-    SCAI_MPICALL( logger, MPI_Waitall( noReceives, commRequest.get(), statuses.get() ), "MPI_Waitall" )
-    // ToDo: check for correct sizes, was done in earlier version, but is now redundant
+
+    unique_ptr<MPI_Status[]> statuses( new MPI_Status[noRequests] );
+
+    SCAI_MPICALL( logger, MPI_Waitall( noRequests, commRequest.get(), statuses.get() ), "MPI_Waitall" )
 }
 
 /* ---------------------------------------------------------------------------------- */

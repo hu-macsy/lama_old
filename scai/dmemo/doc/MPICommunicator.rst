@@ -12,8 +12,6 @@ the communication routines via MPI.
 
 Note: It is not necessary to call ``MPI_Init`` in your application. It will be
 called implicitly with the first call to get the MPI communicator from the factory.
-``MPI_Free`` will be called implicitly as soon as all shared pointers to this object
-are destructed.
 
 .. code-block:: c++
 
@@ -22,5 +20,32 @@ are destructed.
    // Constructor of distribution uses default communicator; in case of MPI it calls MPI_Init
    DistributonPtr dist( new BlockDistribution>( N ) );
    ...
-   // calls MPI_Free
-   dist = DistributionPtr();   
+
+``MPI_Finalize`` will be called automatically at program exit. 
+Sometimes it might be necessary to call the finalize method of the communicator that will
+call ``MPI_Finalize`` in case of a MPI communicator. By this way it is possible to run explicitly
+some code after MPI has terminated.
+
+.. code-block:: c++
+
+    auto comm = Communicator::getCommunicatorPtr();
+    ...
+    comm->finalize();  // use of MPI is no more possible after this call
+    ...
+
+CUDA-Aware MPI
+==============
+
+Running an MPI application on a node with multiple GPUs can be done as follows:
+
+.. code-block:: c++
+    mpirun -np 2 dmemo/examples/BenchComm --SCAI_CONTEXT=CUDA --SCAI_DEVICE=0,1
+
+If the MPI implementation (e.g. here mvapich) supports 
+
+.. code-block:: c++
+    mpirun -np 2 -env MV2_USE_CUDA 1 -env SCAI_MPI_CUDA dmemo/examples/BenchComm --SCAI_CONTEXT=CUDA --SCAI_DEVICE=0,1
+
+.. code-block:: bash
+    mpirun -np 2 -env MV2_USE_CUDA 1 -env SCAI_MPI_CUDA dmemo/examples/BenchComm --SCAI_CONTEXT=CUDA --SCAI_DEVICE=0,1
+

@@ -227,7 +227,7 @@ CUDAStreamSyncToken* CUDAContext::getTransferSyncToken() const
 /* ----------------------------------------------------------------------------- */
 
 #define SCAI_DEFAULT_DEVICE_NUMBER -1
-#define SCAI_MAX_CUDA_DEVICES 8
+#define SCAI_MAX_CUDA_DEVICES 16
 
 static int getDefaultDeviceNr()
 {

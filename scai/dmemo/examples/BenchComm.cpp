@@ -194,7 +194,8 @@ void benchBiBW( const Communicator& comm, const PartitionId p1, const PartitionI
 void printHelp( const char* argv[] )
 {
     std::cout << "Usage: " << argv[0] << " [options]" << std::endl;
-    std::cout << "   -m  <message_size>" << std::endl;          
+    std::cout << "   -M  <message_size in MByte>" << std::endl;          
+    std::cout << "   -k  <message_size in kByte>" << std::endl;          
     std::cout << "   -x  <warmup-iterations>" << std::endl;
     std::cout << "   -i  <bench-iterations>" << std::endl;
     std::cout << "   -2  # will measure bi-directional bandwidth" << std::endl;
@@ -227,7 +228,7 @@ int main( int argc, const char* argv[] )
             bidirectional = true;
             iarg++;
         }
-        else if ( strcmp( argv[iarg], "-m" ) == 0 )
+        else if ( strcmp( argv[iarg], "-M" ) == 0 )
         {
              iarg++;
 
@@ -236,6 +237,18 @@ int main( int argc, const char* argv[] )
                  // take lenght in MByte
 
                  msgLength = atoi( argv[iarg] ) * 1024 * 1024;
+                 iarg++;
+             }
+        } 
+        else if ( strcmp( argv[iarg], "-k" ) == 0 )
+        {
+             iarg++;
+
+             if ( iarg  < argc )
+             {
+                 // take lenght in MByte
+
+                 msgLength = atoi( argv[iarg] ) * 1024;
                  iarg++;
              }
         } 
@@ -269,7 +282,7 @@ int main( int argc, const char* argv[] )
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    // std::cout << *comm << ": run comm bench with this context: " << *ctx << std::endl;
+    std::cout << *comm << ": run comm bench with this context: " << *ctx << std::endl;
 
     if ( comm->getRank() == 0 )
     {
