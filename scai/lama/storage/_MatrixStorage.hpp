@@ -374,14 +374,16 @@ public:
      *   Query routines                                                *
      ******************************************************************/
 
-    /** Returns the number of bytes needed for the current matrix.
-     *
-     *  Note: This routine does not tell how many memory is really allocated. Storage data
-     *        might be allocated on more than one device. Furthermore, it is possible that
-     *        arrays have more memory reserved than needed for its current size.
+    /** 
+     *  @brief Query the number of bytes only needed in this base class
      */
 
-    size_t getMemoryUsage() const;
+    size_t _getMemoryUsage() const;
+
+    /**
+     *  @brief Pure function to query the memory needed for the matrix storage.
+     */
+    virtual size_t getMemoryUsage() const = 0;
 
     virtual void check( const char* msg ) const = 0;
 
@@ -513,18 +515,6 @@ protected:
     /** This method provides the move semantic for member variables of this base class only. */
 
     void moveImpl( _MatrixStorage&& other );
-
-    /** Returns the number of bytes needed for the current matrix.
-     *
-     *  This pure function must be implemented by each derived class. Relevant for the number
-     *  of bytes is the current size of the used (LAMA) arrays.
-     *
-     *  Note: This routine does not tell how many memory is really allocated. Storage data
-     *        might be allocated on more than one device. Furthermore, it is possible that
-     *        arrays have more memory reserved than needed for its current size.
-     */
-
-    virtual size_t getMemoryUsageImpl() const = 0;
 
 private:
 

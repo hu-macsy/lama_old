@@ -349,11 +349,13 @@ RealType<ValueType> AssemblyStorage<ValueType>::maxNorm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-size_t AssemblyStorage<ValueType>::getMemoryUsageImpl() const
+size_t AssemblyStorage<ValueType>::getMemoryUsage() const
 {
-    size_t memoryUsage = 0;
+    size_t memoryUsage = _MatrixStorage::_getMemoryUsage();
+
     memoryUsage += sizeof( IndexType ) * mNumValues;
     memoryUsage += sizeof( ValueType ) * mNumValues;
+
     return memoryUsage;
 }
 

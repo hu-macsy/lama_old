@@ -335,10 +335,12 @@ void DenseStorage<ValueType>::transposeImpl()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-size_t DenseStorage<ValueType>::getMemoryUsageImpl() const
+size_t DenseStorage<ValueType>::getMemoryUsage() const
 {
-    size_t memoryUsage = 0;
+    size_t memoryUsage = _MatrixStorage::_getMemoryUsage();
+
     memoryUsage += sizeof( ValueType ) * mData.size();
+
     return memoryUsage;
 }
 

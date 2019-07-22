@@ -456,7 +456,7 @@ public:
      */
     void swap( JDSStorage<ValueType>& other );
 
-    virtual size_t getMemoryUsageImpl() const;
+    virtual size_t getMemoryUsage() const;
 
     using _MatrixStorage::prefetch;
     using _MatrixStorage::getContextPtr;

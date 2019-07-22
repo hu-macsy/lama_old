@@ -998,14 +998,17 @@ void ELLStorage<ValueType>::swap( ELLStorage<ValueType>& other )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-size_t ELLStorage<ValueType>::getMemoryUsageImpl() const
+size_t ELLStorage<ValueType>::getMemoryUsage() const
 {
-    SCAI_LOG_INFO( logger, "getMemoryUsageImpl" )
-    size_t memoryUsage = 0;
+    SCAI_LOG_INFO( logger, "getMemoryUsage" )
+
+    size_t memoryUsage = _MatrixStorage::_getMemoryUsage();
+
     memoryUsage += sizeof( IndexType );
     memoryUsage += sizeof( IndexType ) * mIA.size();
     memoryUsage += sizeof( IndexType ) * mJA.size();
     memoryUsage += sizeof( ValueType ) * mValues.size();
+
     return memoryUsage;
 }
 

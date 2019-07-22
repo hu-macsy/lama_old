@@ -640,13 +640,15 @@ RealType<ValueType> COOStorage<ValueType>::maxNorm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-size_t COOStorage<ValueType>::getMemoryUsageImpl() const
+size_t COOStorage<ValueType>::getMemoryUsage() const
 {
-    size_t memoryUsage = 0;
+    size_t memoryUsage = _MatrixStorage::_getMemoryUsage();
+
     memoryUsage += sizeof( IndexType );
     memoryUsage += sizeof( IndexType ) * mIA.size();
     memoryUsage += sizeof( IndexType ) * mJA.size();
     memoryUsage += sizeof( ValueType ) * mValues.size();
+
     return memoryUsage;
 }
 

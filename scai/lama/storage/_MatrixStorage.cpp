@@ -298,15 +298,14 @@ void _MatrixStorage::writeToFile(
 
 /* ---------------------------------------------------------------------------------- */
 
-size_t _MatrixStorage::getMemoryUsage() const
+size_t _MatrixStorage::_getMemoryUsage() const
 {
     size_t memoryUsage = 0;
-    memoryUsage += 2 * sizeof( IndexType );
-    memoryUsage += sizeof( bool );
-    memoryUsage += sizeof( float );
-    memoryUsage += sizeof( IndexType ) * mRowIndexes.size();
-    memoryUsage += getMemoryUsageImpl();
-    SCAI_LOG_DEBUG( logger, *this << ": used memory = " << memoryUsage )
+
+    memoryUsage += 2 * sizeof( IndexType );                  // mNumRows, mNumColumns
+    memoryUsage += sizeof( float );                          // mCompressThreshold
+    memoryUsage += sizeof( IndexType ) * mRowIndexes.size(); // mRowIndexes
+
     return memoryUsage;
 }
 

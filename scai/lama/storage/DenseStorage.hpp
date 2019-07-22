@@ -484,7 +484,7 @@ public:
 
     virtual void conj();
 
-    virtual size_t getMemoryUsageImpl() const;
+    virtual size_t getMemoryUsage() const;
 
     void swap( DenseStorage<ValueType>& other );
 

@@ -556,8 +556,8 @@ public:
     /**
      * @brief Returns the global memory that is allocated to hold this matrix.
      *
-     * getMemoryUsage returns the global memory that is allocated to hold this matrix. For a distributed matrix
-     * all partitions are summed together.
+     * getMemoryUsage returns the amount of memory that is allocated to hold this matrix. For a distributed matrix
+     * memory size of all partitions are summed together.
      *
      * @return the memory consumption of this matrix.
      */

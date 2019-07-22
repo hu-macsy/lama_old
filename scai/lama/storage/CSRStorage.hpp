@@ -490,7 +490,7 @@ public:
 
     /** Implementation for pure method is provided. */
 
-    virtual size_t getMemoryUsageImpl() const;
+    virtual size_t getMemoryUsage() const;
 
     /**
      * @brief override method of MatrixStorage with a more efficient solution.

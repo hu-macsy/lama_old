@@ -323,7 +323,7 @@ public:
 
     /** Implementation for pure method is provided. */
 
-    virtual size_t getMemoryUsageImpl() const;
+    virtual size_t getMemoryUsage() const;
 
     /** Override splitHalo with version that avoids unnecessary conversions.
      *

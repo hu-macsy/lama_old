@@ -2657,8 +2657,16 @@ void SparseMatrix<ValueType>::assignDiagonal( const Vector<ValueType>& diagonal 
 template<typename ValueType>
 size_t SparseMatrix<ValueType>::getMemoryUsage() const
 {
-    size_t memoryUsage = mLocalData->getMemoryUsage() + mHaloData->getMemoryUsage();
-    return getRowDistribution().getCommunicator().sum( memoryUsage );
+    size_t memoryUsageLocal = mLocalData->getMemoryUsage();
+    size_t memoryUsageHalo  = mHaloData->getMemoryUsage();
+    const Communicator& comm = getRowDistribution().getCommunicator();
+    size_t memoryUsageGlobal = comm.sum( memoryUsageLocal + memoryUsageHalo );
+
+    SCAI_LOG_INFO( logger, comm << ": memory usage of this matrix " << *this 
+                           << ": local = " << memoryUsageLocal << ", halo = " << memoryUsageHalo 
+                           << ", total = " << memoryUsageGlobal )
+
+    return memoryUsageGlobal;
 }
 
 /* ------------------------------------------------------------------------- */
