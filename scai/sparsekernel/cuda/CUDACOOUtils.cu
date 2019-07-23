@@ -378,6 +378,81 @@ void CUDACOOUtils::ia2offsets(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType, bool useTexture>
+__global__ void cooJacobiKernel(
+    ValueType result[],
+    ValueType diagonal[],
+    const ValueType x[],
+    const IndexType numValues,
+    const IndexType cooIA[],
+    const IndexType cooJA[],
+    const ValueType cooValues[] )
+{
+    const IndexType k = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( k < numValues )
+    {
+        const IndexType i = cooIA[k];
+        const IndexType j = cooJA[k];
+
+        if ( i == j )
+        {
+            diagonal[i] = cooValues[k];  // save the diagonal
+        }
+        else
+        {
+            const ValueType resultUpdate = cooValues[k] * fetchVectorX<ValueType, useTexture>( x, j );
+            common::CUDAUtils::atomicAdd( &result[i], resultUpdate );
+        }
+    }
+}
+
+/*
+template<typename ValueType>
+void CUDACOOUtils::jacobi(
+    ValueType* solution,
+    const IndexType cooNumValues,
+    const IndexType cooIA[],
+    const IndexType cooJA[],
+    const ValueType cooValues[],
+    const ValueType oldSolution[],
+    const ValueType rhs[],
+    const ValueType omega,
+    const IndexType numRows )
+{
+    SCAI_LOG_INFO( logger,
+                   "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", #values = " << cooNumValues << ", omega = " << omega )
+
+    const int blockSize = CUDASettings::getBlockSize();
+    const dim3 dimBlock( blockSize, 1, 1 );
+    const dim3 dimGrid = makeGrid( cooNumValues, dimBlock.x );
+
+    // set solution = 0
+
+    // kernel for solution += B * oldSolution, save diagonal
+
+    // kernel for solution' = omega * ( rhs + solution ) * dinv + ( 1 - omega ) * oldSolution 
+}
+
+template<typename ValueType>
+void CUDACOOUtils::jacobiHalo(
+    ValueType solution[],
+    const IndexType cooNumValues,
+    const IndexType cooIA[],
+    const IndexType cooJA[],
+    const ValueType cooValues[],
+    const ValueType localDiagonal[],
+    const ValueType oldSolution[],
+    const ValueType omega,
+    const IndexType )
+{
+    SCAI_LOG_INFO( logger,
+                   "jacobiHalo<" << TypeTraits<ValueType>::id() << ">" << ", #values = " << cooNumValues << ", omega = " << omega )
+}
+*/
+
+/* --------------------------------------------------------------------------- */
+
 void CUDACOOUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;

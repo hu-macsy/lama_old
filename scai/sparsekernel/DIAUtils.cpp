@@ -69,6 +69,8 @@ void DIAUtils::convertDIA2CSR(
     const HArray<ValueType>& diaValues,
     ContextPtr prefLoc )
 {
+    SCAI_REGION( "Sparse.DIA.convert2CSR" )
+
     getCSRSizes( csrIA, numRows, numColumns, diaOffset, diaValues, prefLoc );
 
     const IndexType numDiagonals = diaOffset.size();
@@ -209,6 +211,8 @@ void DIAUtils::convertCSR2DIA(
     const HArray<ValueType>& csrValues,
     ContextPtr prefLoc )
 {
+    SCAI_REGION( "Sparse.DIA.convertFromCSR" )
+
     SCAI_LOG_INFO( logger, "convert CSR " << numRows << " x " << numColumns
                      << ", ia = " << csrIA << ", ja = " << csrJA << ", values = " << csrValues )
 
@@ -289,7 +293,7 @@ IndexType DIAUtils::getValuePos(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DIAUtils::jacobi(
+SyncToken* DIAUtils::jacobi(
     hmemo::HArray<ValueType>& solution,
     const ValueType omega,
     const hmemo::HArray<ValueType>& oldSolution,
@@ -297,8 +301,11 @@ void DIAUtils::jacobi(
     const IndexType n,
     const hmemo::HArray<OffsetType>& diaOffset,
     const hmemo::HArray<ValueType>& diaValues,
+    bool async,
     hmemo::ContextPtr prefLoc )
 {
+    SCAI_REGION( "Sparse.DIA.jacobi" )
+
     SCAI_ASSERT_EQ_DEBUG( n, oldSolution.size(), "size mismatch" )
     SCAI_ASSERT_EQ_DEBUG( n, rhs.size(), "size mismatch" )
 
@@ -308,14 +315,38 @@ void DIAUtils::jacobi(
 
     ContextPtr loc = prefLoc;
     jacobi.getSupportedContext( loc );
+
+    std::unique_ptr<SyncToken> syncToken;
+
+    if ( async )
+    {
+        syncToken.reset( loc->getSyncToken() );
+    }
+
+    SCAI_ASYNCHRONOUS( syncToken.get() )
+
     SCAI_CONTEXT_ACCESS( loc )
+
     ReadAccess<IndexType> rOffset( diaOffset, loc );
     ReadAccess<ValueType> rValues( diaValues, loc );
     ReadAccess<ValueType> rOldSolution( oldSolution, loc );
     ReadAccess<ValueType> rRhs( rhs, loc );
+
     WriteOnlyAccess<ValueType> wSolution( solution, loc, n );
+
     jacobi[loc]( wSolution.get(), n, numDiagonals, rOffset.get(), rValues.get(),
                  rOldSolution.get(), rRhs.get(), omega );
+
+    if ( async )
+    {
+        syncToken->pushRoutine( wSolution.releaseDelayed() );
+        syncToken->pushRoutine( rRhs.releaseDelayed() );
+        syncToken->pushRoutine( rOldSolution.releaseDelayed() );
+        syncToken->pushRoutine( rValues.releaseDelayed() );
+        syncToken->pushRoutine( rOffset.releaseDelayed() );
+    }
+
+    return syncToken.release();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -409,6 +440,8 @@ void DIAUtils::jacobiHalo(
     const hmemo::HArray<ValueType>& diaValues,
     hmemo::ContextPtr prefLoc )
 {
+    SCAI_REGION( "Sparse.DIA.jacobiHalo" )
+
     static LAMAKernel<DIAKernelTrait::jacobiHalo<ValueType> > jacobiHalo;
 
     const IndexType numDiagonals = diaOffset.size();
@@ -608,7 +641,7 @@ void DIAUtils::setColumns(
         const HArray<ValueType>&,                    \
         ContextPtr );                                \
                                                      \
-    template void DIAUtils::jacobi(                  \
+    template SyncToken* DIAUtils::jacobi(            \
         HArray<ValueType>&,                          \
         const ValueType,                             \
         const HArray<ValueType>&,                    \
@@ -616,6 +649,7 @@ void DIAUtils::setColumns(
         const IndexType,                             \
         const HArray<OffsetType>&,                   \
         const HArray<ValueType>&,                    \
+        const bool,                                  \
         ContextPtr );                                \
                                                      \
     template void DIAUtils::jacobiHalo(              \

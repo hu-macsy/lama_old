@@ -35,6 +35,7 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/SingleDistribution.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/partitioning/Partitioning.hpp>
@@ -159,6 +160,10 @@ void doPartitioning( Matrix<ValueType>& matrix, Vector<ValueType>& rhs, Vector<V
         // let it unchanged
  
         dist = matrix.getRowDistributionPtr();
+    }
+    else if ( parKind == "BLOCK" )
+    {
+        dist = dmemo::blockDistribution( matrix.getNumRows(), comm );
     }
     else 
     {
@@ -474,7 +479,7 @@ int main( int argc, const char* argv[] )
 
         {
             SCAI_REGION( "Main.solveSetup" )
-            LamaTiming timer( comm, "Solver setup" );
+            LamaTiming timer( comm, "Solver setup (initialize)" );
             mySolver->initialize( matrix );
         }
 
@@ -509,6 +514,10 @@ int main( int argc, const char* argv[] )
 
                 compSolution.readFromFile( finalSolutionFilename );
                 compSolution.redistribute( solution.getDistributionPtr() );
+                DenseVector<ValueType> res;
+                res = matrix * compSolution - rhs;
+                RealType<ValueType> resNorm = l2Norm( res );
+                HOST_PRINT( myRank, "residual norm (final solution): " << resNorm )
                 compSolution -= solution;
                 RealType<ValueType> maxDiff = compSolution.maxNorm();
                 HOST_PRINT( myRank, "Maximal difference between solution in " << finalSolutionFilename << ": " << maxDiff )
@@ -527,4 +536,6 @@ int main( int argc, const char* argv[] )
     {
         HOST_PRINT( myRank, "Terminate due to error: " << e.what() )
     }
+
+    comm.finalize();
 }

@@ -55,6 +55,66 @@ _AMGSetup* _AMGSetup::getAMGSetup( const common::ScalarType scalarType, const st
     return create( AMGSetupCreateKeyType( scalarType, setupType ) );
 }
 
+_AMGSetup::_AMGSetup() :
+
+    mMaxLevels( 25 ),
+    mHostOnlyLevel( std::numeric_limits<IndexType>::max() ), 
+    mMinVarsCoarseLevel( 25 ),
+    mHostOnlyVars( 0 ), 
+    mReplicatedLevel( std::numeric_limits<IndexType>::max() )
+{
+}
+
+void _AMGSetup::setMaxLevels( IndexType maxLevels )
+{
+    mMaxLevels = maxLevels;
+}
+
+IndexType _AMGSetup::getMaxLevels() const
+{
+    return mMaxLevels;
+}
+
+void _AMGSetup::setHostOnlyLevel( IndexType hostOnlyLevel )
+{
+    mHostOnlyLevel = hostOnlyLevel;
+}
+
+IndexType _AMGSetup::getHostOnlyLevel() const
+{
+    return mHostOnlyLevel;
+}
+
+void _AMGSetup::setHostOnlyVars( IndexType hostOnlyVars )
+{
+    mHostOnlyVars = hostOnlyVars;
+}
+
+IndexType _AMGSetup::getHostOnlyVars() const
+{
+    return mHostOnlyVars;
+}
+
+void _AMGSetup::setReplicatedLevel( IndexType replicatedLevel )
+{
+    mReplicatedLevel = replicatedLevel;
+}
+
+IndexType _AMGSetup::getReplicatedLevel() const
+{
+    return mReplicatedLevel;
+}
+
+void _AMGSetup::setMinVarsCoarseLevel( const IndexType vars )
+{
+    mMinVarsCoarseLevel = vars;
+}
+
+IndexType _AMGSetup::getMinVarsCoarseLevel() const
+{
+    return mMinVarsCoarseLevel;
+}
+
 /* ========================================================================= */
 /*    static methods (for AMGSetup<ValueType> - Factory                      */
 /* ========================================================================= */
@@ -95,11 +155,9 @@ AMGSetup<ValueType>* AMGSetup<ValueType>::getAMGSetup( const std::string& setupT
 template<typename ValueType>
 AMGSetup<ValueType>::AMGSetup() : 
 
-    mHostOnlyLevel( std::numeric_limits<IndexType>::max() ), 
-    mHostOnlyVars( 0 ), 
-    mReplicatedLevel( std::numeric_limits<IndexType>::max() ),
     mMainGalerkinMatrix( nullptr )
 {
+    // Note: all runtime data will be set by initialize
 }
 
 template<typename ValueType>
@@ -110,30 +168,6 @@ AMGSetup<ValueType>::~AMGSetup()
 /* ========================================================================= */
 /*    Methods                                                                */
 /* ========================================================================= */
-
-template<typename ValueType>
-void AMGSetup<ValueType>::setHostOnlyLevel( IndexType hostOnlyLevel )
-{
-    mHostOnlyLevel = hostOnlyLevel;
-}
-
-template<typename ValueType>
-void AMGSetup<ValueType>::setHostOnlyVars( IndexType hostOnlyVars )
-{
-    mHostOnlyLevel = hostOnlyVars;
-}
-
-template<typename ValueType>
-void AMGSetup<ValueType>::setReplicatedLevel( IndexType replicatedLevel )
-{
-    mReplicatedLevel = replicatedLevel;
-}
-
-template<typename ValueType>
-void AMGSetup<ValueType>::setMaxLevels( IndexType maxLevels )
-{
-    mMaxLevels = maxLevels;
-}
 
 template<typename ValueType>
 void AMGSetup<ValueType>::writeAt( std::ostream& stream ) const
@@ -149,8 +183,6 @@ template<typename ValueType>
 void AMGSetup<ValueType>::initialize( const Matrix<ValueType>& mainSystemMatrix )
 {
     SCAI_REGION( "AMGSetup.initialize" )
-
-    SCAI_ASSERT_EQ_ERROR( 0, getNumLevels(), "AMGSetup already initialized" )
 
     // pushback main system matrix to storage vector
 
@@ -475,14 +507,6 @@ void AMGSetup<ValueType>::createSolverHierarchy()
 
         mSolverHierarchy.push_back( solver );
     }
-}
-
-/* ========================================================================= */
-
-template<typename ValueType>
-void AMGSetup<ValueType>::setMinVarsCoarseLevel( const IndexType vars )
-{
-    mMinVarsCoarseLevel = vars;
 }
 
 /* ========================================================================= */

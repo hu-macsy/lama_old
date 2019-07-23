@@ -77,8 +77,6 @@
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/zip_iterator.h>
 #include <thrust/reduce.h>
-#include <thrust/device_malloc.h>
-#include <thrust/device_free.h>
 
 #include <functional>
 
@@ -1248,6 +1246,8 @@ void CUDACSRUtils::jacobi(
     const ValueType omega,
     const IndexType numRows )
 {
+    SCAI_REGION( "CUDA.CSR.jacobi" )
+
     SCAI_LOG_INFO( logger, "jacobi, #rows = " << numRows )
     SCAI_CHECK_CUDA_ACCESS
     cudaStream_t stream = 0;
@@ -1351,6 +1351,8 @@ void CUDACSRUtils::jacobiHalo(
     const ValueType omega,
     const IndexType numNonEmptyRows )
 {
+    SCAI_REGION( "CUDA.CSR.jacobiHalo" )
+
     SCAI_LOG_INFO( logger, "jacobiHalo, #non-empty rows = " << numNonEmptyRows )
     SCAI_CHECK_CUDA_ACCESS
     const int blockSize = CUDASettings::getBlockSize();
@@ -2729,7 +2731,7 @@ void shiftDiagKernel(
     {
         // now set the first row element as the diagonal element
         csrValues[start] = diagonalValue;
-        csrJA[start] = i;
+        csrJA[start] = diagonalIndex;
         count[i] = 1;
     }
 }
@@ -2746,21 +2748,17 @@ IndexType CUDACSRUtils::shiftDiagonal(
 
     SCAI_CHECK_CUDA_ACCESS
 
-    thrust::device_ptr<IndexType> countPtr = thrust::device_malloc<IndexType>( numDiagonals );
-
-    IndexType* d_count = thrust::raw_pointer_cast( countPtr );
+    thrust::device_vector<IndexType> count( numDiagonals );
 
     const int blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numDiagonals, dimBlock.x );
 
-    shiftDiagKernel <<< dimGrid, dimBlock>>>( d_count, csrJA, csrValues, csrIA, diagonalIndexes, numDiagonals );
+    shiftDiagKernel <<< dimGrid, dimBlock>>>( count.data().get(), csrJA, csrValues, csrIA, diagonalIndexes, numDiagonals );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "shiftDiagonal" )
 
-    IndexType numFirstDiagonals = thrust::reduce( countPtr, countPtr + numDiagonals, 0, thrust::plus<IndexType>() );
-
-    thrust::device_free( countPtr );
+    IndexType numFirstDiagonals = thrust::reduce( count.begin(), count.end(), 0, thrust::plus<IndexType>() );
 
     SCAI_LOG_INFO( logger, "shiftDiagonal for CSR data, " << numFirstDiagonals << " of " << numDiagonals << " are now first entry" )
 

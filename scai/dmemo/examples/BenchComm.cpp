@@ -36,16 +36,20 @@
 #include <scai/common/Walltime.hpp>
 #include <scai/common/Settings.hpp>
 
+#include <mpi.h>
+
 using namespace scai;
 using namespace dmemo;
 using namespace hmemo;
 
 /* ----------------------------------------------------------------------------- */
 
-void bench( const Communicator& comm, const PartitionId source, const PartitionId target )
+void benchBW( const Communicator& comm, const PartitionId source, const PartitionId target, 
+              IndexType m, int nIter, bool isBench )
 {
-    const IndexType N = 1024 * 1024;
-    const IndexType NITER = 100;
+    IndexType N = m / sizeof( double );
+
+    // std::cout << "Bench comm " << source << " -> " << target << std::endl;
 
     PartitionId rank = comm.getRank();
 
@@ -70,6 +74,7 @@ void bench( const Communicator& comm, const PartitionId source, const PartitionI
     if ( rank == source )
     {
         auto wArray = hostWriteOnlyAccess( sourceArray, N );
+
         for ( IndexType i = 0; i < N; ++i )
         {
             wArray[i] = double( i ) / double( i + 1 );
@@ -82,7 +87,7 @@ void bench( const Communicator& comm, const PartitionId source, const PartitionI
 
     double time = common::Walltime::get();
 
-    for ( IndexType iter = 0; iter < NITER; ++iter )
+    for ( int iter = 0; iter < nIter; ++iter )
     {
         comm.exchangeByPlan( targetArray, recvPlan, sourceArray, sendPlan );
     
@@ -105,26 +110,186 @@ void bench( const Communicator& comm, const PartitionId source, const PartitionI
 
     time = common::Walltime::get() - time;
 
-    double bandwidthMB = 2.0 * double( N ) * sizeof( double ) * double( NITER ) / ( 1024.0 * 1024.0 * time );
-
-    if ( rank == source )
+    if ( rank == source && isBench )
     {
+        double bandwidthGB = 2.0 * double( N ) * sizeof( double ) * double( nIter ) / ( 1024.0 * 1024.0 * 1024.0 * time );
+
         std::cout << "Processor " << source << " -> " << target 
-                  << ": bandwidth = " << bandwidthMB << " MB/s" << std::endl;
+                  << ": bandwidth = " << bandwidthGB << " GB/s" << std::endl;
     }
 }
 
+/* ----------------------------------------------------------------------------- */
+
+void benchBiBW( const Communicator& comm, const PartitionId p1, const PartitionId p2, 
+                IndexType m, int nIter, bool isBench )
+{
+    IndexType N = m / sizeof( double );
+
+    PartitionId rank = comm.getRank();
+
+    // build communication plans for a pair communication between p1 and p2
+
+    CommunicationPlan sendPlan;
+    CommunicationPlan recvPlan;
+
+    if ( rank == p1 )
+    {
+        sendPlan.defineBySingleEntry( N, p2 );
+        recvPlan.defineBySingleEntry( N, p2 );
+    }
+    if ( rank == p2 )
+    {
+        sendPlan.defineBySingleEntry( N, p1 );
+        recvPlan.defineBySingleEntry( N, p1 );
+    }
+
+    ContextPtr ctx = Context::getContextPtr(); // take default context, can be set by SCAI_CONTEXT
+
+    HArray<double> sourceArray( ctx );
+
+    if ( rank == p1 || rank == p2 )
+    {
+        auto wArray = hostWriteOnlyAccess( sourceArray, N );
+
+        for ( IndexType i = 0; i < N; ++i )
+        {
+            wArray[i] = double( i ) / double( i + 1 );
+        }
+    }
+
+    HArray<double> targetArray( ctx );
+    
+    comm.synchronize();
+
+    double time = common::Walltime::get();
+
+    for ( int iter = 0; iter < nIter; ++iter )
+    {
+        comm.exchangeByPlan( targetArray, recvPlan, sourceArray, sendPlan );
+    
+        if ( rank == p1 || rank == p2 )
+        {
+            WriteAccess<double> wA( targetArray, ctx );
+        }
+
+        targetArray.swap( sourceArray );
+    }
+
+    comm.synchronize();
+
+    time = common::Walltime::get() - time;
+
+    if ( rank == p1 && isBench )
+    {
+        double bandwidthGB = 2.0 * double( N ) * sizeof( double ) * double( nIter ) / ( 1024.0 * 1024.0 * 1024.0 * time );
+
+        std::cout << "Processor " << p1 << " <-> " << p2 
+                  << ": bidirectional bandwidth = " << bandwidthGB << " GB/s" << std::endl;
+    }
+}
+
+/* ----------------------------------------------------------------------------- */
+
+void printHelp( const char* argv[] )
+{
+    std::cout << "Usage: " << argv[0] << " [options]" << std::endl;
+    std::cout << "   -M  <message_size in MByte>" << std::endl;          
+    std::cout << "   -k  <message_size in kByte>" << std::endl;          
+    std::cout << "   -x  <warmup-iterations>" << std::endl;
+    std::cout << "   -i  <bench-iterations>" << std::endl;
+    std::cout << "   -2  # will measure bi-directional bandwidth" << std::endl;
+    exit( -1 );
+}
+
+/* ----------------------------------------------------------------------------- */
+
 int main( int argc, const char* argv[] )
 {
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
-    common::Settings::setRank( comm->getNodeRank() );
-
     common::Settings::parseArgs( argc, argv );
+ 
+    // parse remaining arguments
+
+    int iarg = 1;
+
+    // default: 256 MByte 
+
+    IndexType msgLength = sizeof( double ) * 32 * 1024 * 1024;   //!<  message-size 
+
+    int nIterBench = 100;
+    int nIterWarmup = 2;
+
+    bool bidirectional = false;
+
+    while ( iarg < argc )
+    {
+        if ( strcmp( argv[iarg], "-2" ) == 0 )
+        {
+            bidirectional = true;
+            iarg++;
+        }
+        else if ( strcmp( argv[iarg], "-M" ) == 0 )
+        {
+             iarg++;
+
+             if ( iarg  < argc )
+             {
+                 // take lenght in MByte
+
+                 msgLength = atoi( argv[iarg] ) * 1024 * 1024;
+                 iarg++;
+             }
+        } 
+        else if ( strcmp( argv[iarg], "-k" ) == 0 )
+        {
+             iarg++;
+
+             if ( iarg  < argc )
+             {
+                 // take lenght in MByte
+
+                 msgLength = atoi( argv[iarg] ) * 1024;
+                 iarg++;
+             }
+        } 
+        else if ( strcmp( argv[iarg], "-x" ) == 0 )
+        {  
+             iarg++;
+
+             if ( iarg  < argc )
+             {
+                 nIterWarmup = atoi( argv[iarg] );
+                 iarg++;
+             }
+        }
+        else if ( strcmp( argv[iarg], "-i" ) == 0 )
+        {  
+             iarg++;
+
+             if ( iarg  < argc )
+             {
+                 nIterBench = atoi( argv[iarg] );
+                 iarg++;
+             }
+        }
+        else
+        {
+            printHelp( argv );
+        }
+    }
 
     ContextPtr ctx = Context::getContextPtr();
 
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
     std::cout << *comm << ": run comm bench with this context: " << *ctx << std::endl;
+
+    if ( comm->getRank() == 0 )
+    {
+        std::cout << "Bench, msg length = " << ( double( msgLength) / double( 1024 * 1024 ) ) << " MByte"
+                  << ", #iter ( warmup ) = " << nIterWarmup
+                  << ", #iter ( bench ) = " << nIterBench << std::endl;
+    }
 
     PartitionId size = comm->getSize();
 
@@ -134,7 +299,35 @@ int main( int argc, const char* argv[] )
         {
             if ( p1 == p2 ) continue;
 
-            bench( *comm, p1, p2 );
+            benchBW( *comm, p1, p2, msgLength, nIterWarmup, false ); 
         } 
     } 
+
+    if ( comm->getRank() == 0 )
+    {
+        std::cout << "Warmup finished, now start timing." << std::endl;
+    }
+
+    // bench phase 
+
+    for ( PartitionId p1 = 0; p1 < size; p1 ++ )
+    {
+        for ( PartitionId p2 = 0; p2 < size; p2 ++ )
+        {
+            if ( p1 == p2 ) continue;
+
+            if ( bidirectional )
+            {
+                benchBiBW( *comm, p1, p2, msgLength, nIterBench, true );  
+            }
+            else
+            {
+                benchBW( *comm, p1, p2, msgLength, nIterBench, true );  
+            }
+        } 
+    } 
+
+    // MPI Finalize must be called with actual context
+
+    comm->finalize();
 }

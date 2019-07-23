@@ -1291,6 +1291,13 @@ int Communicator::getNodeId() const
 
 /* -------------------------------------------------------------------------- */
 
+void Communicator::finalize() const
+{
+    // default implemementation does nothing
+}
+
+/* -------------------------------------------------------------------------- */
+
 #define SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS( _type )             \
                                                                     \
     template COMMON_DLL_IMPORTEXPORT                                \

@@ -87,6 +87,34 @@ public:
         const ValueType cooValues[],
         const common::MatrixOp op );
 
+    /** Implementation for COOKernelTrait::jacobi  */
+
+    template<typename ValueType>
+    static void jacobi(
+        ValueType solution[],
+        const IndexType cooNumValues,
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const ValueType cooValues[],
+        const ValueType oldSolution[],
+        const ValueType rhs[],
+        const ValueType omega,
+        const IndexType numRows );
+
+    /** Implementation for COOKernelTrait::jacobiHalo  */
+
+    template<typename ValueType>
+    static void jacobiHalo(
+        ValueType solution[],
+        const IndexType cooNumValues,
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const ValueType cooValues[],
+        const ValueType localDiagonal[],
+        const ValueType oldSolution[],
+        const ValueType omega,
+        const IndexType numRows );
+
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

@@ -104,12 +104,7 @@ public:
         SimpleAMGRuntime();
         ~SimpleAMGRuntime();
 
-        std::shared_ptr<AMGSetup<ValueType> > mSetup;
-        IndexType mCurrentLevel;
-        void* mLibHandle;
-        IndexType mHostOnlyLevel;
-        IndexType mHostOnlyVars;
-        IndexType mReplicatedLevel;
+        IndexType mCurrentLevel;  // used for recursive calls in cycle
     };
 
     /**
@@ -141,14 +136,14 @@ public:
 
     static _Solver* create();
 
+    /**
+     *  @brief Getter method to get a const reference to the AMGSetup for queries.
+     */
+    const AMGSetup<ValueType>& getSetup() const;
+
 protected:
 
     SimpleAMGRuntime mSimpleAMGRuntime;
-
-    IndexType mMaxLevels;
-    IndexType mMinVarsCoarseLevel;
-    SolverPtr<ValueType> mCoarseLevelSolver;
-    SolverPtr<ValueType> mSmoother;
 
     using Solver<ValueType>::mLogger;
 
@@ -159,6 +154,8 @@ protected:
 
 private:
 
+    std::unique_ptr<AMGSetup<ValueType> > mSetup;
+
     void logSetupSettings();
     void logSetupInfo();
     void logSolverInfo();
@@ -168,7 +165,12 @@ private:
 
     void cycle();
 
-    void loadSetupLibs();
+    static void loadSetupLibs();
+
+    /** 
+     *   Help function that creates a new setup corresponding to the environment variables
+     */
+    static AMGSetup<ValueType>* newSetup();
 
     double totalSmootherTime;
     double totalTransferTime;

@@ -871,6 +871,14 @@ public:
      */
     int getNodeId() const;
 
+    /**
+     *  @brief This method forces an explicit finalize of the communicator.
+     *
+     *  Reasoning: there are situations where it is necessary to call MPI_finalize explicitly
+     *             as it might be too late when the static destructor is called.
+     */
+    virtual void finalize() const;
+
 protected:
 
     /** Constructor of abstract classes are always protected. */

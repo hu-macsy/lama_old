@@ -125,7 +125,7 @@ public:
 
     template<typename ValueType>
     static void jacobi(
-        ValueType* solution,
+        ValueType solution[],
         const IndexType cooNumValues,
         const IndexType cooIA[],
         const IndexType cooJA[],

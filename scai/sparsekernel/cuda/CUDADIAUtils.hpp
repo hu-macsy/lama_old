@@ -69,6 +69,33 @@ public:
         const ValueType diaValues[],
         const common::MatrixOp op );
 
+    /** Implementation for DIAKernelTrait::jacobi  */
+
+    template<typename ValueType>
+    static void jacobi(
+        ValueType solution[],
+        const IndexType n,
+        const IndexType numDiagonals,
+        const IndexType diaOffset[],
+        const ValueType diaValues[],
+        const ValueType oldSolution[],
+        const ValueType rhs[],
+        const ValueType omega );
+
+    /** Implementation for DIAKernelTrait::jacobiHalo  */
+
+    template<typename ValueType>
+    static void jacobiHalo(
+        ValueType solution[],
+        const ValueType diagonal[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numDiagonals,
+        const IndexType diaOffset[],
+        const ValueType diaValues[],
+        const ValueType oldSolution[],
+        const ValueType omega );
+
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

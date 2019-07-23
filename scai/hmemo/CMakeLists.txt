@@ -54,6 +54,7 @@ scai_project (
          ContextAccess
          Context
          ContextData
+         ContextStack
          ContextDataManager
          _HArray
          HostContext

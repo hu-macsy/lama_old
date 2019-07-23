@@ -655,6 +655,231 @@ void CUDADIAUtils::normalGEMV(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType, bool useTexture, bool useSharedMem>
+__global__
+void jacobi_kernel(
+    ValueType solution[],
+    const IndexType n,
+    const IndexType numDiagonals,
+    const IndexType diaOffset[],
+    const ValueType diaValues[],
+    const ValueType oldSolution[],
+    const ValueType rhs[],
+    const ValueType omega,
+    const ValueType omega1
+)
+{
+    extern __shared__ IndexType smDiaOffset[];
+
+    if ( useSharedMem )
+    {
+        // copy the array diaOffset into the shared memory 
+
+        IndexType k = threadIdx.x;
+
+        while ( k < numDiagonals )
+        {
+            smDiaOffset[k] = diaOffset[k];
+            k += blockDim.x;
+        }
+
+        __syncthreads();
+    }
+
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        ValueType temp = rhs[i];
+        ValueType diag = 0;
+
+        for ( IndexType d = 0; d < numDiagonals; ++d )
+        {
+            IndexType offs =  fetchOffset<false, useSharedMem>( diaOffset, smDiaOffset, d );
+
+            if ( offs == 0 )
+            {
+                // save the diagonal element for division later
+
+                diag = diaValues[ d * n + i ];
+            }
+            else
+            {
+                const IndexType j = i + offs;
+
+                if ( common::Utils::validIndex( j, n ) )
+                {
+                    temp -= diaValues[d * n + i] * fetchVectorX<ValueType, useTexture>( oldSolution, j );
+                }
+            }
+        }
+
+        solution[i] = omega * ( temp / diag ) + omega1 *  oldSolution[i];
+    }
+}
+
+template<typename ValueType>
+void CUDADIAUtils::jacobi(
+    ValueType solution[],
+    const IndexType n,
+    const IndexType numDiagonals,
+    const IndexType diaOffset[],
+    const ValueType diaValues[],
+    const ValueType oldSolution[],
+    const ValueType rhs[],
+    const ValueType omega )
+{
+    SCAI_REGION( "CUDA.DIA.jacobi" )
+
+    bool useSharedMem = CUDASettings::useSharedMem();
+    bool useTexture = CUDASettings::useTexture();
+
+    SCAI_LOG_INFO( logger,
+                   "jacobi<" << TypeTraits<ValueType>::id() << ">" << ", " << n << " x " << n
+                    << ", #diagonals = " << numDiagonals << ", omega = " << omega 
+                    << ", SCAI_CUDA_USE_SHARED_MEM=" << useSharedMem << ", SCAI_CUDA_USE_TEXTURE=" << useTexture )
+
+    const IndexType blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( n, dimBlock.x );
+
+    ValueType omega1 = ValueType( 1 ) - omega;
+
+    cudaStream_t stream = 0;
+
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
+    {
+        stream = syncToken->getCUDAStream();
+    }
+
+    int sharedMemSize = numDiagonals * sizeof( IndexType );
+
+    if ( useTexture )
+    {
+        vectorBindTexture( oldSolution );
+
+        if ( useSharedMem )
+        {
+            jacobi_kernel<ValueType, true, true> <<<dimGrid, dimBlock, sharedMemSize, stream>>>( 
+                solution, n, numDiagonals, diaOffset, diaValues, oldSolution, rhs, omega, omega1 );
+        }
+        else
+        {
+            vectorBindTexture( diaOffset );
+
+            jacobi_kernel<ValueType, true, false> <<<dimGrid, dimBlock, 0, stream>>>( 
+                solution, n, numDiagonals, diaOffset, diaValues, oldSolution, rhs, omega, omega1 );
+        }
+    }
+    else
+    {
+        if ( useSharedMem )
+        {
+            jacobi_kernel<ValueType, false, true> <<<dimGrid, dimBlock, sharedMemSize, stream>>>( 
+                solution, n, numDiagonals, diaOffset, diaValues, oldSolution, rhs, omega, omega1 );
+        }
+        else
+        {
+            jacobi_kernel<ValueType, false, false> <<<dimGrid, dimBlock, 0, stream>>>( 
+                solution, n, numDiagonals, diaOffset, diaValues, oldSolution, rhs, omega, omega1 );
+        }
+    }
+
+    if ( !syncToken )
+    {
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "jacobi for DIA" )
+
+        if ( useTexture )
+        {
+            vectorUnbindTexture( oldSolution );
+    
+            if ( !useSharedMem )
+            {
+                vectorUnbindTexture( diaOffset );
+            }
+        }
+    }
+    else
+    {
+        // unbind of texture has to be moved after synchronization
+
+        if ( useTexture )
+        {
+            void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
+            syncToken->pushRoutine( std::bind( unbind, oldSolution ) );
+
+            if ( !useSharedMem )
+            {
+                void ( *unbind ) ( const IndexType* ) = &vectorUnbindTexture;
+                syncToken->pushRoutine( std::bind( unbind, diaOffset ) );
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+__global__
+void jacobi_halo_kernel(
+    ValueType solution[],
+    const ValueType diagonal[],
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals,
+    const IndexType diaOffset[],
+    const ValueType diaValues[],
+    const ValueType oldSolution[],
+    const ValueType omega
+)
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numRows )
+    {
+        for ( IndexType d = 0; d < numDiagonals; ++d )
+        {
+            const IndexType j = i + diaOffset[d];
+
+            if ( common::Utils::validIndex( j, numColumns ) )
+            {
+                ValueType temp = diaValues[d * numRows + i] * oldSolution[j];
+                solution[i] -= omega * temp / diagonal[i];
+            }
+        }
+    }
+}
+
+template<typename ValueType>
+void CUDADIAUtils::jacobiHalo(
+    ValueType solution[],
+    const ValueType diagonal[],
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals,
+    const IndexType diaOffset[],
+    const ValueType diaValues[],
+    const ValueType oldSolution[],
+    const ValueType omega )
+{
+    SCAI_REGION( "CUDA.DIA.jacobiHalo" )
+
+    SCAI_LOG_INFO( logger,
+                   "jacobiHalo<" << TypeTraits<ValueType>::id() << ">" << ", " << numRows << " x " << numColumns
+                    << ", #diagonals = " << numDiagonals << ", omega = " << omega )
+
+    const IndexType blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+
+    jacobi_halo_kernel<<<dimGrid, dimBlock>>>( solution, diagonal, numRows, numColumns, numDiagonals,
+                                               diaOffset, diaValues, oldSolution, omega );
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void CUDADIAUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
@@ -663,6 +888,8 @@ void CUDADIAUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     const common::ContextType ctx = common::ContextType::CUDA;
     KernelRegistry::set<DIAKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
+    KernelRegistry::set<DIAKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
+    KernelRegistry::set<DIAKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

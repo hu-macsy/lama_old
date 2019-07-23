@@ -118,6 +118,23 @@ public:
         return scai::common::ContextType::UserContext;
     }
 
+    bool isEqual( const Context& other ) const
+    {
+        if ( &other == this )
+        {
+            return true;
+        }
+    
+        if ( other.getType() != scai::common::ContextType::UserContext )
+        {
+            return false;
+        }
+    
+        const MockContext& otherMock = static_cast<const MockContext&>( other );
+
+        return mDeviceNr == otherMock.mDeviceNr;
+    }
+
 private:
 
     // MockContext uses the type UserContext as its type

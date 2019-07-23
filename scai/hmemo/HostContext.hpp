@@ -86,6 +86,10 @@ public:
 
     virtual MemoryPtr getLocalMemoryPtr() const;
 
+    /** Implementation of pure method Context::isEqual */
+
+    bool isEqual( const Context& other ) const;
+
 private:
 
     HostContext();

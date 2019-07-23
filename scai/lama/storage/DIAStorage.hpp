@@ -297,6 +297,14 @@ public:
         const hmemo::HArray<ValueType>& rhs,
         const ValueType omega ) const;
 
+    /** Override default version of MatrixStorage::jacobiIterateAsync for DIA */
+
+    virtual tasking::SyncToken* jacobiIterateAsync(
+        hmemo::HArray<ValueType>& solution,
+        const hmemo::HArray<ValueType>& oldSolution,
+        const hmemo::HArray<ValueType>& rhs,
+        const ValueType omega ) const;
+
     /** Implementation of MatrixStorage::jacobiIterateHalo for DIA */
 
     virtual void jacobiIterateHalo(

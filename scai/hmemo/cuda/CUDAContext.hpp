@@ -135,6 +135,10 @@ public:
         return common::ContextType::CUDA;
     }
 
+    /** Implementation of pure method Context::isEqual */
+
+    bool isEqual( const Context& other ) const;
+
     /** This routine is required for Register in Context Factory. */
 
     static ContextPtr create( int deviceNr );

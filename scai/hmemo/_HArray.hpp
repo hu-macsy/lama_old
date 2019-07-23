@@ -102,9 +102,9 @@ private:
 
     mutable ContextDataManager mContextDataManager;  //!< takes control of accesses and allocations
 
-public:
-
     /** Virtual destructor required. */
+
+public:
 
     virtual ~_HArray()
     {
@@ -133,14 +133,10 @@ public:
      */
     inline void reserve( ContextPtr context, const IndexType capacity );
 
-    void _setRawData( const IndexType size, const void* src )
-    {
-        mSize = size;
-
-        // context manager copies the data to the first touch location
-
-        mContextDataManager.init( src, mValueSize * size );
-    }
+    /**
+     * @brief copy binary CPU data to the first touch location of the array
+     */
+    inline void _setRawData( const IndexType size, const void* src );
 
     /** 
      *  @brief Get one value from the array at a certain pos
@@ -592,6 +588,17 @@ void _HArray::_setValue( const void* data, const IndexType pos )
     size_t offset    = static_cast<size_t>( pos ) * static_cast<size_t>( mValueSize );
 
     mContextDataManager.setData( data, offset, mValueSize, allocSize );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void _HArray::_setRawData( const IndexType size, const void* src )
+{
+    mSize = size;
+
+    // context manager copies the data to the first touch location
+
+    mContextDataManager.init( src, mValueSize * size );
 }
 
 } /* end namespace hmemo */

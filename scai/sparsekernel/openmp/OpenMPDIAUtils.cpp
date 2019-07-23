@@ -409,7 +409,8 @@ void OpenMPDIAUtils::jacobi(
 
     #pragma omp parallel
     {
-        SCAI_REGION( "OpenMP.DIA.Jacobi" )
+        SCAI_REGION( "OpenMP.DIA.jacobi" )
+
         #pragma omp for 
 
         for ( IndexType i = 0; i < n; i++ )
@@ -457,6 +458,8 @@ void OpenMPDIAUtils::jacobiHalo(
     const ValueType oldSolution[],
     const ValueType omega )
 {
+    SCAI_REGION( "OpenMP.DIA.jacobiHalo" )
+
     SCAI_LOG_INFO( logger,
                    "jacobiHalo<" << TypeTraits<ValueType>::id() << ">" << ", " << numRows << " x " << numColumns
                     << ", #diagonals = " << numDiagonals << ", omega = " << omega )
