@@ -55,6 +55,7 @@
 // std
 #include <memory>
 #include <vector>
+#include <string>
 #include <stack>
 
 //#include <cmath>
@@ -857,6 +858,19 @@ public:
 
     void setSeed( int seed ) const;
 
+    /**
+     *  @brief  Function that returns the name of node on which this communicator runs
+     */
+    const char* getNodeName() const;
+
+    /**
+     *  @brief Function that returns a unique color of the node on which this process is runing.
+     *
+     *  The unique color might also be considered as the rank of this node among all other nodes.
+     *  The rank of a node is given by sorting by the ranks of those processors with node rank equal 0.
+     */
+    int getNodeColor() const;
+
 protected:
 
     /** Constructor of abstract classes are always protected. */
@@ -888,6 +902,7 @@ protected:
                       const ValueType oldVals[], const IndexType oldSize ) const;
 
 private:
+
     CommunicatorKind mCommunicatorType; //!< type of this communicator
 
     PartitionId mRank; //!< rank of this processor
@@ -897,6 +912,12 @@ private:
     PartitionId mNodeRank; //!< rank of this processor on its node
 
     PartitionId mNodeSize; //!< number of processors on same node
+
+    PartitionId mIdNode;  //!< unique id of this node
+
+    PartitionId mNumNodes;  //!< total number of nodes used
+
+    std::unique_ptr<char[]> mNodeName;
 
     mutable int mSeed;
 };

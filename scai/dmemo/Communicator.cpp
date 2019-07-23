@@ -1198,13 +1198,13 @@ void Communicator::setNodeData()
 
     int maxNameLength = maxProcessorName();
 
-    std::unique_ptr<char[]> myNodeName( new char[ maxNameLength ] );
+    mNodeName.reset( new char[ maxNameLength ] );
+
+    getProcessorName( mNodeName.get() );
 
     std::unique_ptr<char[]> allNodeNames( new char[ maxNameLength * getSize() ] );
 
-    getProcessorName( myNodeName.get() );
-
-    SCAI_LOG_INFO( logger, "Node name of processor " << mRank << " of " << mSize << ": " << myNodeName.get() )
+    SCAI_LOG_INFO( logger, "Node name of processor " << mRank << " of " << mSize << ": " << mNodeName.get() )
 
     memset( allNodeNames.get(), '\0', maxNameLength * mSize * sizeof( char ) );
 
@@ -1212,7 +1212,7 @@ void Communicator::setNodeData()
 
     const PartitionId root = 0;
 
-    gather( allNodeNames.get(), maxNameLength, root, myNodeName.get() );
+    gather( allNodeNames.get(), maxNameLength, root, mNodeName.get() );
     bcast( allNodeNames.get(), maxNameLength * mSize, root );
 
     mNodeSize = 0;
@@ -1222,7 +1222,7 @@ void Communicator::setNodeData()
 
     for ( PartitionId i = 0; i < mSize; ++i )
     {
-        if ( strcmp( &ptrAllNodeNames[i * maxNameLength], myNodeName.get() ) )
+        if ( strcmp( &ptrAllNodeNames[i * maxNameLength], mNodeName.get() ) )
         {
             continue; // processor i is not on same node
         }
@@ -1237,10 +1237,56 @@ void Communicator::setNodeData()
         ++mNodeSize;
     }
 
+    std::unique_ptr<PartitionId[]> masters( new PartitionId[ getSize() ] );
+
+    // determine the masters of each node
+
+    mNumNodes = 0;
+    mIdNode   = invalidPartition;   
+
+    for ( PartitionId i = 0; i < mSize; ++i )
+    {
+        bool newNode = true;   // will be set false if name was already used before
+
+        for ( PartitionId j = 0; j < mNumNodes; ++j )
+        {        
+            if ( strcmp( &ptrAllNodeNames[i * maxNameLength], &ptrAllNodeNames[masters[j] *  maxNameLength] ) == 0 )
+            {
+                newNode = false;
+                break;              
+            }
+        }
+
+        if ( newNode )
+        {
+            masters[ mNumNodes ] = i;    // master is processor i
+         
+            if ( strcmp( mNodeName.get(), &ptrAllNodeNames[i *  maxNameLength] ) == 0 )
+            {
+                mIdNode = mNumNodes;
+            }
+ 
+            mNumNodes++;
+        }
+    }
+
     SCAI_ASSERT_GT_ERROR( mNodeSize, 0, "Serious problem encountered to get node size" )
     SCAI_ASSERT_LT_ERROR( mNodeRank, mNodeSize, "Serious problem encountered to get node size" )
 
-    SCAI_LOG_INFO( logger, "Processor " << mRank << ": node rank " << mNodeRank << " of " << mNodeSize )
+    SCAI_LOG_INFO( logger, "Processor " << mRank << ": node rank " << mNodeRank << " of " << mNodeSize
+                            << " on node " << mIdNode << " of " << mNumNodes << " nodes" )
+}
+
+/* -------------------------------------------------------------------------- */
+
+const char* Communicator::getNodeName() const
+{
+    return mNodeName.get();
+}
+
+int Communicator::getNodeColor() const
+{
+    return static_cast<int>( mIdNode );
 }
 
 /* -------------------------------------------------------------------------- */
