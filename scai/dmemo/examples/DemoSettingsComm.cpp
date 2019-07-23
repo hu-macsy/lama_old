@@ -48,7 +48,7 @@ int main( int argc, const char* argv[] )
     {
         int n = common::Settings::readSettingsFile( settingsFileName.c_str(), comm->getNodeName(), comm->getNodeRank() );
 
-        std::cout << *comm << ", name = " << comm->getNodeName() << ", color = " << comm->getNodeColor() 
+        std::cout << *comm << ", name = " << comm->getNodeName() << ", id = " << comm->getNodeId() 
                   << ", " << comm->getNodeRank() << " of " << comm->getNodeSize() 
                   << " : have got " << n << " settings from file " << settingsFileName << std::endl;
     }

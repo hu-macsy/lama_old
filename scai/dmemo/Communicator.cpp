@@ -1284,7 +1284,7 @@ const char* Communicator::getNodeName() const
     return mNodeName.get();
 }
 
-int Communicator::getNodeColor() const
+int Communicator::getNodeId() const
 {
     return static_cast<int>( mIdNode );
 }

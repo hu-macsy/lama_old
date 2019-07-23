@@ -864,12 +864,12 @@ public:
     const char* getNodeName() const;
 
     /**
-     *  @brief Function that returns a unique color of the node on which this process is runing.
+     *  @brief Function that returns a unique id of the node on which this process is runing.
      *
-     *  The unique color might also be considered as the rank of this node among all other nodes.
+     *  The unique id cal also be considered as the rank of this node among all other nodes.
      *  The rank of a node is given by sorting by the ranks of those processors with node rank equal 0.
      */
-    int getNodeColor() const;
+    int getNodeId() const;
 
 protected:
 
