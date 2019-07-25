@@ -42,8 +42,8 @@ namespace lama
  *  The above matrix is not built explicitly and only some methods are implemented so
  *  this class can be used in solvers that exploit matrix-free methods.
  *
- *  This class might be very useful to combine a stencil matrix with a COO matrix that
- *  contains the boundary conditions.
+ *  This class might be very useful to combine a stencil matrix with a sparse matrix that
+ *  contains only the boundary conditions.
  */
 template<typename ValueType>
 class HybridMatrix : public OperatorMatrix<ValueType>
@@ -57,6 +57,9 @@ public:
      *
      *  The distributions of A1 and A2 must be the same and are the corresponding
      *  distributions for this matrix.
+     *
+     *  Note: some updates operations like setContextPtr, scale will update the original
+     *        matrices A1, A2 that are only kept as reference.
      */
     HybridMatrix( Matrix<ValueType>& A1, Matrix<ValueType>& A2 ) :
 
@@ -105,6 +108,18 @@ public:
         mA2.scale( alpha );
     }
 
+    /**
+     * @brief Provide implementation for _Matrix::setContextPtr 
+     *
+     * The better approach might be to set the context for the 
+     * original two matrices.
+     */
+    virtual void setContextPtr( const hmemo::ContextPtr context ) 
+    {
+        mA1.setContextPtr( context );
+        mA2.setContextPtr( context );
+    }
+
     virtual void matrixTimesVectorDense(
         DenseVector<ValueType>&,
         const ValueType,
@@ -123,6 +138,11 @@ public:
     virtual hmemo::ContextPtr getContextPtr() const
     {
         return mA1.getContextPtr();
+    }
+
+    virtual size_t getMemoryUsage() const
+    {
+        return mA1.getMemoryUsage() + mA2.getMemoryUsage();
     }
 
     /* Implementation of method writeAt for hybrid matrix. */
