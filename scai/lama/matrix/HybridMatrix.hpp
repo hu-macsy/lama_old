@@ -58,7 +58,7 @@ public:
      *  The distributions of A1 and A2 must be the same and are the corresponding
      *  distributions for this matrix.
      */
-    HybridMatrix( const Matrix<ValueType>& A1, const Matrix<ValueType>& A2 ) :
+    HybridMatrix( Matrix<ValueType>& A1, Matrix<ValueType>& A2 ) :
 
         OperatorMatrix<ValueType>( A1.getRowDistributionPtr(), A1.getColDistributionPtr() ),
         mA1( A1 ),
@@ -94,6 +94,17 @@ public:
         mA1.matrixTimesVector( result, alpha, x, ValueType( 1 ), &tmp, op );
     }
 
+    /**
+     *  @brief Implementation of pure method Matrix<ValueType>::scale 
+     *
+     *  Be careful, this operation has side effects for the both matrices used here.
+     */
+    virtual void scale( const ValueType& alpha )
+    {
+        mA1.scale( alpha );
+        mA2.scale( alpha );
+    }
+
     virtual void matrixTimesVectorDense(
         DenseVector<ValueType>&,
         const ValueType,
@@ -114,6 +125,13 @@ public:
         return mA1.getContextPtr();
     }
 
+    /* Implementation of method writeAt for hybrid matrix. */
+
+    virtual void writeAt( std::ostream& stream ) const
+    {
+        stream << "HybridMatrix[ " << mA1 << " + " << mA2 << " ]";
+    }
+
     /** Just use here the logger of the base class. */
 
     using OperatorMatrix<ValueType>::logger;
@@ -123,8 +141,8 @@ private:
     std::unique_ptr<Vector<ValueType>> tmpTarget;  // temporary vector, will be reused
     std::unique_ptr<Vector<ValueType>> tmpSource;  // temporary vector, will be reused
 
-    const Matrix<ValueType>& mA1;     // This class keeps only a reference
-    const Matrix<ValueType>& mA2;     // This class keeps only a reference
+    Matrix<ValueType>& mA1;     // This class keeps only a reference
+    Matrix<ValueType>& mA2;     // This class keeps only a reference
 };
 
 }
