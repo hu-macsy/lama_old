@@ -84,12 +84,13 @@ common basic build serial gcc 7.3.0 (debug):
     - *before_every_job
     - module purge
     - module load CMake/3.11.4-GCCcore-7.3.0 Python/2.7.15-GCCcore-7.3.0-bare
+    - export BOOST_ROOT=/home/brandes/local/boost_1_65_1_gcc_7_3_0
+    - export LD_LIBRARY_PATH="$BOOST_ROOT/lib:$LD_LIBRARY_PATH"
   variables:
     LAMA_BUILD_TYPE: Debug
     USE_OPENMP: 0
     USE_CUDA: 0
     OMP_NUM_THREADS: 1
-    BOOST_ROOT: /home/brandes/local/boost_1_65_1_gcc_7_3_0
     # Note the SCAI_MODULES definition
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1 -DSCAI_MODULES=common
     RUN_TESTS_ARGS: --tests commonTest
@@ -103,12 +104,13 @@ serial gcc 7.3.0 (debug):
     - *before_every_job
     - module purge
     - module load CMake/3.11.4-GCCcore-7.3.0 Python/2.7.15-GCCcore-7.3.0-bare
+    - export BOOST_ROOT=/home/brandes/local/boost_1_65_1_gcc_7_3_0
+    - export LD_LIBRARY_PATH="$BOOST_ROOT/lib:$LD_LIBRARY_PATH"
   variables:
     LAMA_BUILD_TYPE: Debug
     USE_CUDA: 0
     OMP_NUM_THREADS: 1
     # It seems to be necessary to specifically specify the Boost installation
-    BOOST_ROOT: /home/brandes/local/boost_1_65_1_gcc_7_3_0
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
   tags:
     - draco
@@ -121,13 +123,14 @@ mpi intel 2019.01 (release):
     - module purge
     - module load intel/2019.01
     - module load CMake/3.13.3-GCCcore-8.2.0 Python/2.7.15-GCCcore-8.2.0
+    - export BOOST_ROOT=/home/brandes/local/boost_1_65_1_gcc_7_3_0
+    - export LD_LIBRARY_PATH="$BOOST_ROOT/lib:$LD_LIBRARY_PATH"
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
     USE_MPI: 1
     OMP_NUM_THREADS: 1
     # It seems to be necessary to specifically specify the Boost installation
-    BOOST_ROOT: /home/brandes/local/boost_1_65_1_icc18
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
     RUN_TESTS_ARGS: --intel --mpi --np 1 2 3 5
   tags:
@@ -141,13 +144,14 @@ mpi gcc 7.3.0 (release):
     - module purge
     - module load CMake/3.11.4-GCCcore-7.3.0 Python/2.7.15-GCCcore-7.3.0-bare
     - module load OpenMPI/3.1.1-GCC-7.3.0-2.30
+    - export BOOST_ROOT=/home/brandes/local/boost_1_65_1_gcc_7_3_0
+    - export LD_LIBRARY_PATH="$BOOST_ROOT/lib:$LD_LIBRARY_PATH"
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
     USE_MPI: 1
     OMP_NUM_THREADS: 1
     # It seems to be necessary to specifically specify the Boost installation
-    BOOST_ROOT: /home/brandes/local/boost_1_65_1_gcc_7_3_0
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
     RUN_TESTS_ARGS: --mpi --np 1 2 3 5
   tags:
@@ -160,12 +164,13 @@ parallel gcc 6.3.0 (release):
     - *before_every_job
     - module purge
     - module load CMake/3.11.4-GCCcore-7.3.0 Python/2.7.15-GCCcore-7.3.0-bare
+    - export BOOST_ROOT=/home/brandes/local/boost_1_65_1_gcc_7_3_0
+    - export LD_LIBRARY_PATH="$BOOST_ROOT/lib:$LD_LIBRARY_PATH"
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
     OMP_NUM_THREADS: 4
     # It seems to be necessary to specifically specify the Boost installation
-    BOOST_ROOT: /home/brandes/local/boost_1_65_1_gcc_7_3_0
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
   tags:
     - draco
@@ -178,13 +183,14 @@ int64 (release):
     - module purge
     - module load CMake/3.11.4-GCCcore-7.3.0 Python/2.7.15-GCCcore-7.3.0-bare
     - module load OpenMPI/3.1.1-GCC-7.3.0-2.30
+    - export BOOST_ROOT=/home/brandes/local/boost_1_65_1_gcc_7_3_0
+    - export LD_LIBRARY_PATH="$BOOST_ROOT/lib:$LD_LIBRARY_PATH"
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
     USE_MPI: 1
     OMP_NUM_THREADS: 1
     # It seems to be necessary to specifically specify the Boost installation
-    BOOST_ROOT: /home/brandes/local/boost_1_65_1_gcc_7_3_0
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1 -DSCAI_INDEX_TYPE="unsigned int"
     RUN_TESTS_ARGS: --mpi --np 1 4
   tags:
@@ -198,13 +204,14 @@ double (release):
     - module purge
     - module load CMake/3.11.4-GCCcore-7.3.0 Python/2.7.15-GCCcore-7.3.0-bare
     - module load OpenMPI/3.1.1-GCC-7.3.0-2.30
+    - export BOOST_ROOT=/home/brandes/local/boost_1_65_1_gcc_7_3_0
+    - export LD_LIBRARY_PATH="$BOOST_ROOT/lib:$LD_LIBRARY_PATH"
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
     USE_MPI: 1
     OMP_NUM_THREADS: 1
     # It seems to be necessary to specifically specify the Boost installation
-    BOOST_ROOT: /home/brandes/local/boost_1_65_1_gcc_7_3_0
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1 -DSCAI_HOST_TYPES_LIST="double"
     RUN_TESTS_ARGS: --mpi --np 1 4
   tags:
@@ -222,12 +229,13 @@ serial gcc 4.9.1 (release):
     - module load tools/cmake/3.5.2 tools/python/2.7.14
     - module unload gcc
     - module load gcc/4.9.1
+    - export BOOST_ROOT=/home/brandes/local/boost_1_65_1_gcc_7_3_0
+    - export LD_LIBRARY_PATH="$BOOST_ROOT/lib:$LD_LIBRARY_PATH"
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
     OMP_NUM_THREADS: 1
     # It seems to be necessary to specifically specify the Boost installation
-    BOOST_ROOT: /home/brandes/local/boost_1_65_1_gcc_7_3_0
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
   tags:
     - draco
@@ -242,11 +250,12 @@ parallel gcc 5.4.0 (release):
     - *before_every_job
     - module purge
     - module load CMake/3.11.4-GCCcore-7.3.0 Python/2.7.15-GCCcore-7.3.0-bare
+    - export BOOST_ROOT=/home/brandes/local/boost_1_65_1_gcc_7_3_0
+    - export LD_LIBRARY_PATH="$BOOST_ROOT/lib:$LD_LIBRARY_PATH"
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
     OMP_NUM_THREADS: 4
-    BOOST_ROOT: /home/brandes/local/boost_1_65_1_gcc_7_3_0
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
   tags:
     - draco
@@ -261,11 +270,12 @@ sanitized parallel gcc 7.3.0:
     - *before_every_job
     - module purge
     - module load CMake/3.11.4-GCCcore-7.3.0 Python/2.7.15-GCCcore-7.3.0-bare
+    - export BOOST_ROOT=/home/brandes/local/boost_1_65_1_gcc_7_3_0
+    - export LD_LIBRARY_PATH="$BOOST_ROOT/lib:$LD_LIBRARY_PATH"
   variables:
     LAMA_BUILD_TYPE: Debug
     USE_CUDA: 0
     OMP_NUM_THREADS: 4
-    BOOST_ROOT: /home/brandes/local/boost_1_65_1_gcc_7_3_0
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
     UBSAN_OPTIONS: print_stacktrace=1
     # We currently have some tests which try to allocate too much memory,
