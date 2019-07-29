@@ -245,6 +245,21 @@ SparseVector<ValueType>::SparseVector(
 
 /* ------------------------------------------------------------------------- */
 
+static bool hasSamePatternFlag = false;
+
+SparseVectorSamePatternAssertion::SparseVectorSamePatternAssertion()
+{
+    saveFlag = hasSamePatternFlag;
+    hasSamePatternFlag = true; 
+}
+
+SparseVectorSamePatternAssertion::~SparseVectorSamePatternAssertion()
+{
+    hasSamePatternFlag = saveFlag;
+}
+
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
 bool SparseVector<ValueType>::hasSamePattern( const SparseVector<ValueType>& other ) const
 {
@@ -262,8 +277,19 @@ bool SparseVector<ValueType>::hasSamePattern( const SparseVector<ValueType>& oth
         return false;
     }
 
-    // return HArrayUtils::all( mNonZeroIndexes, common::CompareOp::EQ, other.mNonZeroIndexes, getContextPtr() );
-    return true;
+    if ( hasSamePatternFlag )
+    {
+        // same pattern has been asserted by user but verify in DEBUG mode
+
+        SCAI_ASSERT_DEBUG( HArrayUtils::all( mNonZeroIndexes, common::CompareOp::EQ, other.mNonZeroIndexes, getContextPtr() ),
+                           "incorrect use of SCAI_SPARSE_VECTOR_SAME_PATTERN" )
+
+        return true;
+    }
+    else
+    {
+        return HArrayUtils::all( mNonZeroIndexes, common::CompareOp::EQ, other.mNonZeroIndexes, getContextPtr() );
+    }
 }
 
 /* ------------------------------------------------------------------------- */

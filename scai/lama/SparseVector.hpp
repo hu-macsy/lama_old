@@ -617,6 +617,43 @@ SparseVector<ValueType> sparseVector(
     return SparseVector<ValueType>( distribution, zero, ctx );
 }
 
+/** 
+ *  Help class where the object acts within the current scope to assert same sparse vector patterns.
+ */
+class COMMON_DLL_IMPORTEXPORT SparseVectorSamePatternAssertion
+{
+
+public:
+
+    SparseVectorSamePatternAssertion();
+
+    ~SparseVectorSamePatternAssertion();
+
+    SparseVectorSamePatternAssertion( const SparseVectorSamePatternAssertion& ) = delete;
+
+    SparseVectorSamePatternAssertion& operator= ( const SparseVectorSamePatternAssertion& ) = delete;
+
+private:
+
+    bool saveFlag;
+};
+
 } /* end namespace lama */
 
 } /* end namespace scai */
+
+/** 
+ *  Macro that defines within a scope that sparse vectors with same 'local' size have same patter
+ *
+ *  \code
+ *      SparseVector<ValueType> v1, v2, v3;
+ *      ...
+ *      {
+ *          SCAI_SPARSE_VECTOR_SAME_PATTERN
+ *          v3 = v1 * v2;
+ *      }
+ *  \endcode
+ */
+
+#define SCAI_SPARSE_VECTOR_SAME_PATTERN scai::lama::SparseVectorSamePatternAssertion _SV_SamePatternAssert;
+
