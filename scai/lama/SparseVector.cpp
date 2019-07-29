@@ -219,15 +219,6 @@ SparseVector<ValueType>::SparseVector(
     SCAI_ASSERT_EQ_ERROR( mNonZeroIndexes.size(), mNonZeroValues.size(), 
                           "#indexes and #values must be same for sparse vector" )
 
-    const IndexType size = getDistribution().getLocalSize();
-
-    bool isValid = HArrayUtils::validIndexes( mNonZeroIndexes, size, getContextPtr() );
-
-    if ( !isValid )
-    {
-        COMMON_THROWEXCEPTION( "at least one illegal index, local size = " << size )
-    }
-
     HArrayUtils::sortSparseEntries( mNonZeroIndexes, mNonZeroValues, true, getContextPtr() );
 }
 
@@ -248,13 +239,6 @@ SparseVector<ValueType>::SparseVector(
 {
     SCAI_ASSERT_EQ_ERROR( mNonZeroIndexes.size(), mNonZeroValues.size(), 
                           "#indexes and #values must be same for sparse vector" )
-
-    bool isValid = HArrayUtils::validIndexes( nonZeroIndexes, n, getContextPtr() );
-    
-    if ( !isValid )
-    {   
-        COMMON_THROWEXCEPTION( "at least one illegal index, size = " << n )
-    }
 
     HArrayUtils::sortSparseEntries( mNonZeroIndexes, mNonZeroValues, true, getContextPtr() );
 }
@@ -278,7 +262,8 @@ bool SparseVector<ValueType>::hasSamePattern( const SparseVector<ValueType>& oth
         return false;
     }
 
-    return HArrayUtils::all( mNonZeroIndexes, common::CompareOp::EQ, other.mNonZeroIndexes, getContextPtr() );
+    // return HArrayUtils::all( mNonZeroIndexes, common::CompareOp::EQ, other.mNonZeroIndexes, getContextPtr() );
+    return true;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -555,15 +540,6 @@ void SparseVector<ValueType>::swapSparseValues( HArray<IndexType>& nonZeroIndexe
 {
     SCAI_ASSERT_EQ_ERROR( nonZeroIndexes.size(), nonZeroValues.size(), "size mismatch for arrays with non-zero indexes/values" )
 
-    const IndexType size = getDistribution().getLocalSize();
-
-    bool isValid = HArrayUtils::validIndexes( nonZeroIndexes, size, getContextPtr() );
-
-    if ( !isValid )
-    {
-        COMMON_THROWEXCEPTION( "at least one illegal index, local size = " << size )
-    }
-
     mNonZeroIndexes.swap( nonZeroIndexes );
     mNonZeroValues.swap( nonZeroValues );
 
@@ -586,15 +562,6 @@ void SparseVector<ValueType>::fillSparseData( const HArray<IndexType>& nonZeroIn
         return;
     }
    
-    const IndexType localSize = getDistribution().getLocalSize();
-
-    bool isValid = HArrayUtils::validIndexes( nonZeroIndexes, localSize, getContextPtr() );
-
-    if ( !isValid )
-    {
-        COMMON_THROWEXCEPTION( "at least one illegal index, local size = " << localSize )
-    }
-
     if ( mNonZeroIndexes.size() !=  0 )
     {
         // sort the new sparse entries so merge is more efficient
@@ -1116,8 +1083,30 @@ void SparseVector<ValueType>::unaryOp( const Vector<ValueType>& x, common::Unary
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseVector<ValueType>::binaryOpMult0D( const SparseVector<ValueType>& x, const DenseVector<ValueType>& y )
+{
+    // for a dense vector we can gather the values directly 
+
+    SCAI_REGION( "Vector.Sparse.binOpMultD0" )
+
+    if ( &x != this )
+    {
+        mZeroValue = ValueType( 0 );
+        mNonZeroIndexes = x.getNonZeroIndexes();
+    }
+
+    HArrayUtils::gather( mNonZeroValues, y.getLocalValues(), mNonZeroIndexes, common::BinaryOp::MULT, getContextPtr() );
+}
+
+template<typename ValueType>
 void SparseVector<ValueType>::binaryOpMult0( const SparseVector<ValueType>& x, const Vector<ValueType>& y )
 {
+    if ( y.getVectorKind() == VectorKind::DENSE )
+    {
+        binaryOpMult0D( x, static_cast<const DenseVector<ValueType>&>( y ) );
+        return;
+    }
+    
     SCAI_REGION( "Vector.Sparse.binOpMult0" )
 
     if ( &x != this )
@@ -1818,8 +1807,6 @@ void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
         SCAI_LOG_DEBUG( logger, "Kept locally " << mNonZeroIndexes.size() << " of " << oldSize << " non-zero values" )
 
         setDistributionPtr( distribution );
-
-        SCAI_ASSERT( HArrayUtils::validIndexes( mNonZeroIndexes, distribution->getLocalSize(), getContextPtr() ), "serious" )
     }
     else if ( distribution->isReplicated() )
     {
