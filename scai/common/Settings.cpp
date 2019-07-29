@@ -30,12 +30,15 @@
 // hpp
 #include <scai/common/Settings.hpp>
 
+#include <scai/common/macros/throw.hpp>
+#include <scai/common/exception/IOException.hpp>
+
 // std
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
 #include <sstream>
-#include <iostream>
+#include <fstream>
 
 extern char** environ;
 
@@ -247,6 +250,142 @@ int Settings::sRank = 0;    // default value
 void Settings::setRank( int rank )
 {
     sRank = rank;
+}
+
+/* ----------------------------------------------------------------------------- */
+
+void Settings::setEntry ( const std::string& setting, const char* fileName, int line )
+{
+    // find pos of = in setting "<name>=<value>"
+
+    std::string::size_type pos = setting.find_first_of( "=", 0 );
+
+    if ( pos == std::string::npos )
+    {
+        SCAI_THROWEXCEPTION( common::IOException, "illegal setting " << setting 
+                              << " in file " << fileName << ", line = " << line )
+    }
+
+    std::string varName = setting.substr( 0, pos );
+    std::string value = setting.substr( pos + 1 );
+
+    bool replace = true;
+
+    putEnvironment ( varName.c_str(), value.c_str(), replace );
+}
+
+/* ----------------------------------------------------------------------------- */
+
+static bool matchRank( const std::string& rankSpec, int rank, const char* fileName, int line )
+{
+    if ( rankSpec == "*" )
+    {
+        return true;
+    }
+
+    bool match = false;
+
+    try 
+    {
+        std::string::size_type pos = rankSpec.find_first_of( "-", 0 );
+
+        if ( pos == std::string::npos )
+        {
+            int val = std::stoi( rankSpec );
+            match = val == rank;
+        }
+        else
+        {
+            int first = std::stoi( rankSpec.substr( 0, pos ) );
+            int last  = std::stoi( rankSpec.substr( pos + 1 ) );
+            match = first <= rank && rank <= last;
+        }
+    }
+    catch ( const std::exception& )
+    {
+        SCAI_THROWEXCEPTION( common::IOException, "illegal rank specification " << rankSpec
+                              << " in file " << fileName << ", line = " << line )
+    }
+        
+    return match;
+}
+
+/* ----------------------------------------------------------------------------- */
+
+static bool matchName( const std::string& nameSpec, const char* name )
+{
+    if ( nameSpec == "*" )
+    {
+        return true;
+    }
+
+    return nameSpec == name;
+}
+
+/* ----------------------------------------------------------------------------- */
+
+int Settings::readSettingsFile( const char* fileName, const char* name, int rank )
+{
+    std::ifstream settingsFile;
+
+    settingsFile.open( fileName );
+
+    int noEntries = 0;
+
+    bool found = false;
+
+    if ( settingsFile.is_open() )
+    {
+        std::string line;
+        std::vector<std::string> tokens;
+ 
+        int lineCounter = 0;
+
+        while ( getline( settingsFile, line ) )
+        {
+            lineCounter++;
+
+            tokenize( tokens, line, " " );
+            
+            if ( tokens.size() < 2 )
+            {
+                continue;   // skip empty line
+            }
+
+            if ( tokens[0][0] == '#' )
+            {
+                continue;   // skip comment line
+            }
+
+            bool match = matchName( tokens[0], name ) && matchRank( tokens[1], rank, fileName, lineCounter );
+
+            if ( !match )
+            {
+                continue;
+            }
+
+            found = true;
+
+            for ( size_t i = 2; i < tokens.size(); ++i )
+            {
+                setEntry( tokens[i], fileName, lineCounter );
+                noEntries++;
+            }
+        }
+
+        settingsFile.close();
+
+        if ( !found )
+        {
+            SCAI_THROWEXCEPTION( common::IOException, "No entry for " << name << " " << rank << " in file " << fileName )
+        }
+    }
+    else
+    {
+        SCAI_THROWEXCEPTION( common::IOException, "could not open file " << fileName )
+    }
+
+    return noEntries;
 }
 
 } /* end namespace common */

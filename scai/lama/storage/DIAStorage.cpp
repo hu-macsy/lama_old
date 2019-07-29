@@ -935,12 +935,14 @@ void DIAStorage<ValueType>::swap( DIAStorage<ValueType>& other )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-size_t DIAStorage<ValueType>::getMemoryUsageImpl() const
+size_t DIAStorage<ValueType>::getMemoryUsage() const
 {
-    size_t memoryUsage = 0;
+    size_t memoryUsage = _MatrixStorage::_getMemoryUsage();
+
     memoryUsage += sizeof( IndexType );
     memoryUsage += sizeof( IndexType ) * mOffset.size();
     memoryUsage += sizeof( ValueType ) * mValues.size();
+
     return memoryUsage;
 }
 

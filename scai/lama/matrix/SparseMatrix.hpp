@@ -591,8 +591,9 @@ public:
      */
     void assignTranspose( const _Matrix& matrix );
 
-    /* Implementation of pure method of class _Matrix. */
-
+    /**
+     *   Implementation of pure method _Matrix::getMemoryUsage 
+     */
     virtual size_t getMemoryUsage() const;
 
     /** Override the default assignment operator to guarantee deep copy. */

@@ -116,6 +116,22 @@ public:
 
     static void printEnvironment( std::ostream& out );
 
+    /**
+     *  @brief Read environment variables from an input file.
+     * 
+     *  @param[in] fileName name of the input file
+     *  @param[in] name     string argument to find line in input file with specific settings
+     *  @param[in] rank     additional int argument to find line in input file
+     *  @returns            number of environment variables that have been set, -1 if no entry was found
+     *
+     *  \code
+     *  # Example file with environment variables
+     *  ...
+     *  <name> <rank> DOMAIN=3 SCAI_CONTEXT=Host SCAI_NP=2x2 WEIGHT=4
+     *  ...
+     */
+    static int readSettingsFile( const char* fileName, const char* name, int rank );
+
 private:
 
     Settings();
@@ -132,6 +148,13 @@ private:
     static int sRank;  //<!  specifies pos to take from comma separated values
 
     static const char* RANK_DELIMITER();
+
+    /**
+     *  @brief Function to set environment variable via string like "<var>=<value>"
+     *
+     *  The method throws an exception if the input string does not contain an assignment operator.
+     */
+    static void setEntry ( const std::string& setting, const char* fileName, int line );
 };
 
 /* ----------------------------------------------------------------------------- */

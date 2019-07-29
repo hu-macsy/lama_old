@@ -82,7 +82,13 @@ int main( int argc, const char* argv[] )
 
     common::Grid3D grid( 20, 20, 20 );
 
+    auto dist = dmemo::gridDistribution( grid );
+
     StencilMatrix<ValueType> m( grid, stencilY );
+
+    size_t memUsage = m.getMemoryUsage();
+
+    std::cout << "Memory usage of " << m << " : " << memUsage << std::endl;
 
     StencilMatrix<ValueType> copyM1( m );
 

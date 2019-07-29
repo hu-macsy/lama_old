@@ -207,14 +207,16 @@ void StencilStorage<ValueType>::setIdentity( const common::Grid& grid )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-size_t StencilStorage<ValueType>::getMemoryUsageImpl() const
+size_t StencilStorage<ValueType>::getMemoryUsage() const
 {
     // just take the memory needed for the stencil data
 
-    size_t nBytes1 = sizeof( IndexType ) * mStencil.nDims() * mStencil.nPoints();
-    size_t nBytes2 = sizeof( ValueType ) * mStencil.nPoints();
+    size_t nBytes  = _MatrixStorage::_getMemoryUsage();
 
-    return nBytes1 + nBytes2;
+    nBytes += sizeof( IndexType ) * mStencil.nDims() * mStencil.nPoints();
+    nBytes += sizeof( ValueType ) * mStencil.nPoints();
+
+    return nBytes;
 }
 
 /* --------------------------------------------------------------------------- */

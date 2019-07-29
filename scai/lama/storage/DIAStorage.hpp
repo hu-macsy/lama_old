@@ -422,7 +422,7 @@ public:
      */
     void swap( DIAStorage<ValueType>& other );
 
-    virtual size_t getMemoryUsageImpl() const;
+    virtual size_t getMemoryUsage() const;
 
     /** print matrix on cout, helpful for debug. */
 

@@ -561,7 +561,7 @@ public:
     inline const hmemo::Context& getContext() const;
 
     /**
-     * @brief Returns the global memory that is allocated to hold this vector.
+     * @brief Returns the amount of memory that is allocated to hold this vector.
      * For a distributed vector all partitions are summed together.
      *
      * @return the memory consumption of this vector.

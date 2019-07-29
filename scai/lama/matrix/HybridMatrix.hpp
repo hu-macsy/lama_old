@@ -42,8 +42,8 @@ namespace lama
  *  The above matrix is not built explicitly and only some methods are implemented so
  *  this class can be used in solvers that exploit matrix-free methods.
  *
- *  This class might be very useful to combine a stencil matrix with a COO matrix that
- *  contains the boundary conditions.
+ *  This class might be very useful to combine a stencil matrix with a sparse matrix that
+ *  contains only the boundary conditions.
  */
 template<typename ValueType>
 class HybridMatrix : public OperatorMatrix<ValueType>
@@ -57,8 +57,11 @@ public:
      *
      *  The distributions of A1 and A2 must be the same and are the corresponding
      *  distributions for this matrix.
+     *
+     *  Note: some updates operations like setContextPtr, scale will update the original
+     *        matrices A1, A2 that are only kept as reference.
      */
-    HybridMatrix( const Matrix<ValueType>& A1, const Matrix<ValueType>& A2 ) :
+    HybridMatrix( Matrix<ValueType>& A1, Matrix<ValueType>& A2 ) :
 
         OperatorMatrix<ValueType>( A1.getRowDistributionPtr(), A1.getColDistributionPtr() ),
         mA1( A1 ),
@@ -94,6 +97,29 @@ public:
         mA1.matrixTimesVector( result, alpha, x, ValueType( 1 ), &tmp, op );
     }
 
+    /**
+     *  @brief Implementation of pure method Matrix<ValueType>::scale 
+     *
+     *  Be careful, this operation has side effects for the both matrices used here.
+     */
+    virtual void scale( const ValueType& alpha )
+    {
+        mA1.scale( alpha );
+        mA2.scale( alpha );
+    }
+
+    /**
+     * @brief Provide implementation for _Matrix::setContextPtr 
+     *
+     * The better approach might be to set the context for the 
+     * original two matrices.
+     */
+    virtual void setContextPtr( const hmemo::ContextPtr context ) 
+    {
+        mA1.setContextPtr( context );
+        mA2.setContextPtr( context );
+    }
+
     virtual void matrixTimesVectorDense(
         DenseVector<ValueType>&,
         const ValueType,
@@ -114,6 +140,18 @@ public:
         return mA1.getContextPtr();
     }
 
+    virtual size_t getMemoryUsage() const
+    {
+        return mA1.getMemoryUsage() + mA2.getMemoryUsage();
+    }
+
+    /* Implementation of method writeAt for hybrid matrix. */
+
+    virtual void writeAt( std::ostream& stream ) const
+    {
+        stream << "HybridMatrix[ " << mA1 << " + " << mA2 << " ]";
+    }
+
     /** Just use here the logger of the base class. */
 
     using OperatorMatrix<ValueType>::logger;
@@ -123,8 +161,8 @@ private:
     std::unique_ptr<Vector<ValueType>> tmpTarget;  // temporary vector, will be reused
     std::unique_ptr<Vector<ValueType>> tmpSource;  // temporary vector, will be reused
 
-    const Matrix<ValueType>& mA1;     // This class keeps only a reference
-    const Matrix<ValueType>& mA2;     // This class keeps only a reference
+    Matrix<ValueType>& mA1;     // This class keeps only a reference
+    Matrix<ValueType>& mA2;     // This class keeps only a reference
 };
 
 }
