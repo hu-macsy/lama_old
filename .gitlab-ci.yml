@@ -223,7 +223,7 @@ serial gcc 4.9.1 (release):
     USE_CUDA: 0
     OMP_NUM_THREADS: 1
     # It seems to be necessary to specifically specify the Boost installation
-    BOOST_ROOT: /home/brandes/local/boost_test_1_65_1_gcc_4_9_1
+    BOOST_ROOT: /home/brandes/local/boost_test_1_65_1_gcc_7_3_0
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
   tags:
     - draco
@@ -236,14 +236,13 @@ parallel gcc 5.4.0 (release):
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2 tools/python/2.7.14
-    - module unload gcc
-    - module load gcc/5.4.0
+    - module purge
+    - module load CMake/3.11.4-GCCcore-7.3.0 Python/2.7.15-GCCcore-7.3.0-bare
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
     OMP_NUM_THREADS: 4
-    BOOST_ROOT: /home/brandes/local/boost_test_1_65_1_gcc_5_4_0
+    BOOST_ROOT: /home/brandes/local/boost_test_1_65_1_gcc_7_3_0
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
   tags:
     - draco
@@ -251,19 +250,18 @@ parallel gcc 5.4.0 (release):
     - master
     - develop
 
-sanitized parallel gcc 6.3.0:
+sanitized parallel gcc 7.3.0:
   <<: *build_test_install_template
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2 tools/python/2.7.14
-    - module unload gcc
-    - module load gcc/6.3.0
+    - module purge
+    - module load CMake/3.11.4-GCCcore-7.3.0 Python/2.7.15-GCCcore-7.3.0-bare
   variables:
     LAMA_BUILD_TYPE: Debug
     USE_CUDA: 0
     OMP_NUM_THREADS: 4
-    BOOST_ROOT: /home/brandes/local/boost_test_1_65_1_gcc_6_3_0
+    BOOST_ROOT: /home/brandes/local/boost_test_1_65_1_gcc_7_3_0
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
     UBSAN_OPTIONS: print_stacktrace=1
     # We currently have some tests which try to allocate too much memory,
