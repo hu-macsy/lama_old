@@ -49,6 +49,8 @@ variables:
         "$EXTRA_CMAKE_OPTS"
     - make -j$BUILD_THREADS
     - make -j$BUILD_THREADS examples tests
+    - echo $LD_LIBRARY_PATH
+    - ldd common/test/commonTest
     - ./common/test/commonTest
     - make test
     - eval python run_tests.py --output_dir $BUILD_DIR/testoutput --temp_dir tmp "$RUN_TESTS_ARGS"
@@ -88,6 +90,7 @@ common basic build serial gcc 7.3.0 (debug):
     USE_CUDA: 0
     OMP_NUM_THREADS: 1
     BOOST_ROOT: /home/brandes/local/boost_1_65_1_gcc_7_3_0
+    LD_LIBRARY_PATH: $BOOST_ROOT/lib:$LD_LIBRARY_PATH
     # Note the SCAI_MODULES definition
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1 -DSCAI_MODULES=common
     RUN_TESTS_ARGS: --tests commonTest
