@@ -69,7 +69,7 @@ variables:
 # CONFIGURATIONS INTENDED TO RUN ON EVERY COMMIT TO ANY BRANCH
 ###############################################################
 
-common basic build serial gcc 4.9.1 (debug):
+common basic build serial gcc 7.3.0 (debug):
   # This is the most basic build configuration.
   # It is only intended as a quick and basic sanity check,
   # so that using compute resources for running the full
@@ -78,9 +78,8 @@ common basic build serial gcc 4.9.1 (debug):
   stage: basic build test
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2 tools/python/2.7.14
-    - module unload gcc
-    - module load gcc/4.9.1
+    - module purge
+    - module load CMake/3.11.4-GCCcore-7.3.0 Python/2.7.15-GCCcore-7.3.0-bare
   variables:
     LAMA_BUILD_TYPE: Debug
     USE_OPENMP: 0
@@ -93,14 +92,13 @@ common basic build serial gcc 4.9.1 (debug):
   tags:
     - draco
 
-serial gcc 4.9.1 (debug):
+serial gcc 7.3.0 (debug):
   <<: *build_test_install_template
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2 tools/python/2.7.14
-    - module unload gcc
-    - module load gcc/4.9.1
+    - module purge
+    - module load CMake/3.11.4-GCCcore-7.3.0 Python/2.7.15-GCCcore-7.3.0-bare
   variables:
     LAMA_BUILD_TYPE: Debug
     USE_CUDA: 0
@@ -111,16 +109,14 @@ serial gcc 4.9.1 (debug):
   tags:
     - draco
 
-mpi intel 2018.1 (release):
+mpi intel 2019.01 (release):
   <<: *build_test_install_template
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2 tools/python/2.7.14
-    - module unload gcc
-    - module load intel/studio/2018.1.038
-    - module load gcc/4.8.2
-    - module load intelmpi/intel/5.1.0.079
+    - module purge
+    - module load intel/2019.01
+    - module load CMake/3.13.3-GCCcore-8.2.0 Python/2.7.15-GCCcore-8.2.0
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
@@ -133,15 +129,14 @@ mpi intel 2018.1 (release):
   tags:
     - draco
 
-mpi gcc 5.4.0 (release):
+mpi gcc 7.3.0 (release):
   <<: *build_test_install_template
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2 tools/python/2.7.14
-    - module unload gcc
-    - module load gcc/5.4.0
-    - module load openmpi/gcc/2.1.2
+    - module purge
+    - module load CMake/3.11.4-GCCcore-7.3.0 Python/2.7.15-GCCcore-7.3.0-bare
+    - module load OpenMPI/3.1.1-GCC-7.3.0-2.30
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
@@ -159,9 +154,8 @@ parallel gcc 6.3.0 (release):
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2 tools/python/2.7.14
-    - module unload gcc
-    - module load gcc/6.3.0
+    - module purge
+    - module load CMake/3.11.4-GCCcore-7.3.0 Python/2.7.15-GCCcore-7.3.0-bare
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
@@ -177,10 +171,9 @@ int64 (release):
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2 tools/python/2.7.14
-    - module unload gcc
-    - module load gcc/5.4.0
-    - module load openmpi/gcc/2.1.2
+    - module purge
+    - module load CMake/3.11.4-GCCcore-7.3.0 Python/2.7.15-GCCcore-7.3.0-bare
+    - module load OpenMPI/3.1.1-GCC-7.3.0-2.30
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
@@ -198,10 +191,9 @@ double (release):
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2 tools/python/2.7.14
-    - module unload gcc
-    - module load gcc/5.4.0
-    - module load openmpi/gcc/2.1.2
+    - module purge
+    - module load CMake/3.11.4-GCCcore-7.3.0 Python/2.7.15-GCCcore-7.3.0-bare
+    - module load OpenMPI/3.1.1-GCC-7.3.0-2.30
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
