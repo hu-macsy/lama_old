@@ -125,6 +125,7 @@ mpi intel 2019.01 (release):
     - module load CMake/3.13.3-GCCcore-8.2.0 
     - module load Python/2.7.15-GCCcore-8.2.0
     - module load Boost/1.69.0-intel-2019.01
+    - export FI_PROVIDER=tcp
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
@@ -244,7 +245,7 @@ serial gcc 4.9.1 (release):
     - master
     - develop
 
-parallel gcc 5.4.0 (release):
+parallel gcc 7.3.0 (release):
   <<: *build_test_install_template
   stage: build test install
   before_script:
@@ -276,7 +277,7 @@ sanitized parallel gcc 7.3.0:
   variables:
     LAMA_BUILD_TYPE: Debug
     USE_CUDA: 0
-    OMP_NUM_THREADS: 4
+    OMP_NUM_THREADS: 1
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
     UBSAN_OPTIONS: print_stacktrace=1
     # We currently have some tests which try to allocate too much memory,
@@ -287,5 +288,7 @@ sanitized parallel gcc 7.3.0:
         -DBoost_NO_BOOST_CMAKE=1
         -DADDITIONAL_CXX_FLAGS="-fsanitize=undefined -fno-sanitize-recover=all -fno-omit-frame-pointer"
         -DADDITIONAL_LINKER_FLAGS="-fsanitize=undefined -fno-sanitize-recover=all"
+        -DSCAI_BLAS_LIBRARY=INTERNALBLAS
+        -DUSE_FFTW=0
   tags:
     - draco
