@@ -298,6 +298,26 @@ BOOST_AUTO_TEST_CASE( posNTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( getOffsetPosTest )
+{
+    // { 3, 0, 3 } + { 1, -1, -1 } -> { 0, 3, 2 } with periodic boundaries
+
+    IndexType pos[] = { 3, 0, 3 };
+    IndexType offsets[] = { 1, -1, -1 };
+    IndexType sizes[] = { 4, 4, 4 };
+    Grid::BorderType borders[] = { Grid::BORDER_PERIODIC, Grid::BORDER_PERIODIC, Grid::BORDER_PERIODIC };
+
+    bool legal = Grid::getOffsetPos( pos, offsets, sizes, borders, 3 );
+
+    BOOST_CHECK( legal );
+
+    BOOST_CHECK_EQUAL( pos[0], 0 );
+    BOOST_CHECK_EQUAL( pos[1], 3 );
+    BOOST_CHECK_EQUAL( pos[2], 2 );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( equalTest )
 {
     Grid1D grid1( 5 );

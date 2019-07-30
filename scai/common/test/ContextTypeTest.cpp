@@ -51,6 +51,16 @@ BOOST_AUTO_TEST_CASE( ContextTypeTest )
     }
 }
 
+BOOST_AUTO_TEST_CASE( convertTest )
+{
+    for ( int type = 0; type < static_cast<int>( ContextType::MaxContext ); ++type )
+    {
+        ContextType s1 = ContextType( type );
+        ContextType s2 = str2ContextType( contextType2str( s1 ) );
+        BOOST_CHECK_EQUAL( s1, s2 );
+    }
+}
+
 BOOST_AUTO_TEST_CASE( AccessKindTest )
 {
     for ( int kind = 0; kind <= static_cast<int>( AccessKind::MaxAccessKind ); ++kind )
