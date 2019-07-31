@@ -52,6 +52,15 @@ namespace common
 
 #define SCAI_GRID_MAX_DIMENSION ( (IndexType) 4 )
 
+/** Enumeration BorderType describes for each side of the grid which value is taken
+ *  if the corresponding neighbored pos is not available. 
+ */
+enum class BorderType
+{
+    ABSORBING,    //!   factor 0 if neighbored pos is not available
+    PERIODIC,     //!   take it from other side
+};
+
 /** Data structure for an n-dimensional grid.
  *
  *  A grid stands for a rectangular grid with certain extensions in each dimension.
@@ -61,15 +70,6 @@ namespace common
 class COMMON_DLL_IMPORTEXPORT Grid
 {
 public:
-
-    /** BorderType describes for each side of the grid which value is taken
-     *  if the corresponding neighbored pos is not available. 
-     */
-    typedef enum
-    {
-        BORDER_ABSORBING,    //!   factor 0 if neighbored pos is not available
-        BORDER_PERIODIC,     //!   take it from other side
-    } BorderType;
 
     /** Default constructor provides an empty grid with zero dimensions.
      *
@@ -418,7 +418,7 @@ const IndexType* Grid::sizes() const
     return mSize;
 }
 
-const Grid::BorderType* Grid::borders() const
+const BorderType* Grid::borders() const
 {
     return mBorder[0];
 }

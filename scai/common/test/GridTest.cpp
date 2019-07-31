@@ -41,6 +41,8 @@ using scai::common::Grid2D;
 using scai::common::Grid3D;
 using scai::common::Grid4D;
 
+using scai::common::BorderType;
+
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE( GridTest )
@@ -298,22 +300,53 @@ BOOST_AUTO_TEST_CASE( posNTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( getOffsetPosTest )
+BOOST_AUTO_TEST_CASE( getOffsetPosTest1 )
 {
     // { 3, 0, 3 } + { 1, -1, -1 } -> { 0, 3, 2 } with periodic boundaries
 
-    IndexType pos[] = { 3, 0, 3 };
-    IndexType offsets[] = { 1, -1, -1 };
-    IndexType sizes[] = { 4, 4, 4 };
-    Grid::BorderType borders[] = { Grid::BORDER_PERIODIC, Grid::BORDER_PERIODIC, Grid::BORDER_PERIODIC };
+    IndexType nDims = 4;
 
-    bool legal = Grid::getOffsetPos( pos, offsets, sizes, borders, 3 );
+    IndexType pos[] = { 3, 0, 3, 0 };
+    int offsets[] = { 1, -1, -1, 1 };
+    IndexType sizes[] = { 4, 4, 4, 4 };
+
+    BorderType borders[] = { BorderType::PERIODIC, BorderType::PERIODIC, 
+                             BorderType::PERIODIC, BorderType::PERIODIC,
+                             BorderType::ABSORBING, BorderType::ABSORBING,
+                             BorderType::ABSORBING, BorderType::ABSORBING };
+
+    bool legal = Grid::getOffsetPos( pos, offsets, sizes, borders, nDims );
 
     BOOST_CHECK( legal );
 
-    BOOST_CHECK_EQUAL( pos[0], 0 );
-    BOOST_CHECK_EQUAL( pos[1], 3 );
-    BOOST_CHECK_EQUAL( pos[2], 2 );
+    BOOST_TEST( std::vector<IndexType>( pos, pos + nDims ) == std::vector<IndexType>( { 0, 3, 2, 1 } ), 
+                boost::test_tools::per_element() );
+}
+
+
+BOOST_AUTO_TEST_CASE( getOffsetPosTest2 )
+{
+    Grid3D grid( 4, 4, 4 );
+    
+    IndexType pos1[] = { 2, 1, 2 };
+    IndexType pos2[] = { 2, 1, 2 };
+    IndexType pos3[] = { 2, 1, 2 };
+
+    int offsets1[] = { 1, -1, 1 };
+    int offsets2[] = { 2, -1, 1 };
+    int offsets3[] = { 1, -2, 1 };
+
+    bool legal1 = grid.getOffsetPos( pos1, offsets1 );
+    bool legal2 = grid.getOffsetPos( pos2, offsets2 );
+    bool legal3 = grid.getOffsetPos( pos3, offsets3 );
+
+    BOOST_CHECK( legal1 );
+
+    BOOST_TEST( std::vector<IndexType>( pos1, pos1 + 3 ) == std::vector<IndexType>( { 3, 0, 3 } ), 
+                boost::test_tools::per_element() );
+
+    BOOST_CHECK( !legal2 );
+    BOOST_CHECK( !legal3 );
 }
 
 /* --------------------------------------------------------------------- */
