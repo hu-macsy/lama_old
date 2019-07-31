@@ -58,31 +58,34 @@ namespace detail
  * related tests. For example, all MPI tests which have a certain number of processors
  * should appear clustered when test suite names are sorted.
  */
-std::string adaptTestSuiteNameToEnv(const std::string & name,
-                                    const scai::hmemo::Context & context,
-                                    const scai::dmemo::Communicator & comm)
+std::string adaptTestSuiteNameToEnv( const std::string& name,
+                                     const scai::hmemo::Context& context,
+                                     const scai::dmemo::Communicator& comm )
 {
     // TODO: Context
     std::stringstream newTestName;
-    if (comm.getType() == scai::dmemo::_Communicator::MPI)
+
+    if ( comm.getType() == scai::dmemo::CommunicatorType::MPI )
     {
         newTestName << "~~MPI " << comm.getSize() << ":" << comm.getRank() << " ";
     }
 
-    newTestName << adaptTestSuiteNameToEnv(name, context);
+    newTestName << adaptTestSuiteNameToEnv( name, context );
     return newTestName.str();
 }
 
-std::string suiteNameForFile(const std::string & suiteName,
-                             const scai::hmemo::Context & context,
-                             const scai::dmemo::Communicator & comm)
+std::string suiteNameForFile( const std::string& suiteName,
+                              const scai::hmemo::Context& context,
+                              const scai::dmemo::Communicator& comm )
 {
     std::stringstream filename;
-    filename << suiteNameForFile(suiteName, context);
-    if (comm.getType() == scai::dmemo::_Communicator::MPI)
+    filename << suiteNameForFile( suiteName, context );
+
+    if ( comm.getType() == scai::dmemo::CommunicatorType::MPI )
     {
         filename << "_mpi_" << comm.getSize() << "_" << comm.getRank();
     }
+
     return filename.str();
 }
 
@@ -96,6 +99,7 @@ bool dmemo_test_init()
     }
 
     scai::hmemo::ContextPtr ctx;
+
     try
     {
         ctx = scai::hmemo::Context::getContextPtr();
@@ -107,6 +111,7 @@ bool dmemo_test_init()
     }
 
     scai::dmemo::CommunicatorPtr comm;
+
     try
     {
         comm = scai::dmemo::Communicator::getCommunicatorPtr();
@@ -117,9 +122,9 @@ bool dmemo_test_init()
         return false;
     }
 
-    auto & master_suite = boost::unit_test::framework::master_test_suite();
+    auto& master_suite = boost::unit_test::framework::master_test_suite();
     const auto suiteName = boostTestModuleName();
-    const auto newTestName = adaptTestSuiteNameToEnv(suiteName, *ctx, *comm);
+    const auto newTestName = adaptTestSuiteNameToEnv( suiteName, *ctx, *comm );
     master_suite.p_name.value = newTestName;
 
     return true;
@@ -139,18 +144,19 @@ int dmemoTestMain( int argc, char* argv[] )
 
     const auto ctx = scai::hmemo::Context::getContextPtr();
     const auto comm = scai::dmemo::Communicator::getCommunicatorPtr();
-    const auto boostTestModuleName = std::string(LAMATEST_STRINGIFY(BOOST_TEST_MODULE));
-    const auto testSuiteName = suiteNameForFile(boostTestModuleName, *ctx, *comm);
+    const auto boostTestModuleName = std::string( LAMATEST_STRINGIFY( BOOST_TEST_MODULE ) );
+    const auto testSuiteName = suiteNameForFile( boostTestModuleName, *ctx, *comm );
 
     // Building args as a vector<vector<char>> ensures that lifetime of modified args is bounded by main() call
-    auto parseResult = parseAndRebuildArgs(argc, argv, testSuiteName);
-    std::vector<char *> charPointers;
-    for (auto & arg : parseResult.args)
+    auto parseResult = parseAndRebuildArgs( argc, argv, testSuiteName );
+    std::vector<char*> charPointers;
+
+for ( auto & arg : parseResult.args )
     {
-        charPointers.push_back(arg.data());
+        charPointers.push_back( arg.data() );
     }
 
-    GlobalTempDir::setPathOrDefault(parseResult.tempDir);
+    GlobalTempDir::setPathOrDefault( parseResult.tempDir );
 
     return boost::unit_test::unit_test_main( &dmemo_test_init, charPointers.size(), charPointers.data() );
 }

@@ -54,6 +54,7 @@ namespace detail
 bool hmemo_test_init()
 {
     scai::hmemo::ContextPtr ctx;
+
     try
     {
         ctx = scai::hmemo::Context::getContextPtr();
@@ -65,14 +66,15 @@ bool hmemo_test_init()
     }
 
     int nThreads;
+
     if ( scai::common::Settings::getEnvironment( nThreads, "SCAI_NUM_THREADS" ) )
     {
         omp_set_num_threads( nThreads );
     }
 
-    auto & master_suite = boost::unit_test::framework::master_test_suite();
+    auto& master_suite = boost::unit_test::framework::master_test_suite();
     const auto suiteName = boostTestModuleName();
-    const auto newTestName = adaptTestSuiteNameToEnv(suiteName, *ctx);
+    const auto newTestName = adaptTestSuiteNameToEnv( suiteName, *ctx );
     master_suite.p_name.value = newTestName;
 
     return true;
@@ -92,17 +94,18 @@ int hmemoTestMain( int argc, char* argv[] )
     scai::common::Settings::parseArgs( argc, const_cast<const char**>( argv ) );
 
     const auto ctx = scai::hmemo::Context::getContextPtr();
-    const auto testSuiteName = suiteNameForFile(boostTestModuleName(), *ctx);
+    const auto testSuiteName = suiteNameForFile( boostTestModuleName(), *ctx );
 
     // Building args as a vector<vector<char>> ensures that lifetime of modified args is bounded by main() call
-    auto parseResult = parseAndRebuildArgs(argc, argv, testSuiteName);
-    std::vector<char *> charPointers;
-    for (auto & arg : parseResult.args)
+    auto parseResult = parseAndRebuildArgs( argc, argv, testSuiteName );
+    std::vector<char*> charPointers;
+
+for ( auto & arg : parseResult.args )
     {
-        charPointers.push_back(arg.data());
+        charPointers.push_back( arg.data() );
     }
 
-    GlobalTempDir::setPathOrDefault(parseResult.tempDir);
+    GlobalTempDir::setPathOrDefault( parseResult.tempDir );
 
     return boost::unit_test::unit_test_main( &hmemo_test_init, charPointers.size(), charPointers.data() );
 }

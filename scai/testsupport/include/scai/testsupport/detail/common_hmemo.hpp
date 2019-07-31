@@ -45,10 +45,11 @@ namespace detail
  * the context used. Note that the naming is chosen such that
  * related environments are collected when sorted.
  */
-std::string adaptTestSuiteNameToEnv(const std::string & name, const hmemo::Context & context)
+std::string adaptTestSuiteNameToEnv( const std::string& name, const hmemo::Context& context )
 {
     std::string prefix;
-    switch (context.getType())
+
+    switch ( context.getType() )
     {
         case common::ContextType::Host:
             prefix = "~Host ";
@@ -58,19 +59,19 @@ std::string adaptTestSuiteNameToEnv(const std::string & name, const hmemo::Conte
             break;
         default:
             std::cerr << "Unsupported context type. Can not create appropriate test suite name." << std::endl;
-            throw std::runtime_error("Unsupported context type.");
+            throw std::runtime_error( "Unsupported context type." );
     }
 
     return prefix + name;
 }
 
-std::string suiteNameForFile(const std::string & name, const hmemo::Context & context)
+std::string suiteNameForFile( const std::string& name, const hmemo::Context& context )
 {
     // TODO: Context
     std::stringstream filename;
     filename << name;
 
-    switch (context.getType())
+    switch ( context.getType() )
     {
         case common::ContextType::Host:
             filename << "_host";
@@ -80,7 +81,7 @@ std::string suiteNameForFile(const std::string & name, const hmemo::Context & co
             break;
         default:
             std::cerr << "Unsupported context type. Can not create appropriate test filename." << std::endl;
-            throw std::runtime_error("Unsupported context type.");
+            throw std::runtime_error( "Unsupported context type." );
     }
 
     return filename.str();
