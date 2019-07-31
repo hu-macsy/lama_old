@@ -40,6 +40,9 @@ namespace scai
 using common::Grid;
 using common::Grid1D;
 using common::Grid2D;
+
+using common::BorderType;
+
 using namespace hmemo;
 
 namespace dmemo
@@ -225,8 +228,8 @@ void GridDistribution::localize()
 
                 // only reflecting dimensions are kept at the borders, all other will be ABSORBIC
 
-                Grid::BorderType left  = Grid::BORDER_ABSORBING;
-                Grid::BorderType right = Grid::BORDER_ABSORBING;
+                BorderType left  = BorderType::ABSORBING;
+                BorderType right = BorderType::ABSORBING;
 
                 mLocalGrid.setBorderType ( idim, left, right );
             }

@@ -196,8 +196,8 @@ BOOST_AUTO_TEST_CASE( transposeTest )
 
             // transpose only if boundary conditions are same
 
-            grid.setBorderType( 0, common::Grid::BorderType( b1 ), common::Grid::BorderType( b1 ) );
-            grid.setBorderType( 1, common::Grid::BorderType( b2 ), common::Grid::BorderType( b2 ) );
+            grid.setBorderType( 0, common::BorderType( b1 ), common::BorderType( b1 ) );
+            grid.setBorderType( 1, common::BorderType( b2 ), common::BorderType( b2 ) );
 
             const int stencilData[9] = {  -1, -2, 1,
                                           -1, 4, 5,

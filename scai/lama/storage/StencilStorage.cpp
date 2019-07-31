@@ -664,7 +664,7 @@ void StencilStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>&
 
     mGrid = otherStencilStorage.mGrid;
 
-    const common::Grid::BorderType* borders = mGrid.borders();
+    const common::BorderType* borders = mGrid.borders();
 
     for ( IndexType i = 0; i < mGrid.nDims(); ++i )
     {

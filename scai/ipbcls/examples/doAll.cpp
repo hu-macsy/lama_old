@@ -99,8 +99,8 @@ int main( int argc, const char* argv[] )
 
     common::Grid2D grid( ny, nz );
 
-    grid.setBorderType( 0, common::Grid::BORDER_ABSORBING );
-    grid.setBorderType( 1, common::Grid::BORDER_ABSORBING );
+    grid.setBorderType( 0, common::BorderType::ABSORBING );
+    grid.setBorderType( 1, common::BorderType::ABSORBING );
 
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
  

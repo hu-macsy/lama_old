@@ -49,6 +49,7 @@ using namespace sparsekernel;
 using namespace utilskernel;
 using common::TypeTraits;
 using common::Grid;
+using common::BorderType;
 
 using boost::test_tools::per_element;
 
@@ -80,7 +81,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilLocalTest, ValueType, scai_numeric_test_ty
     IndexType nDims = 1;
     IndexType gridSizes[] = { 100 };
     IndexType gridDistances[] = { 1 };
-    Grid::BorderType gridBorders[] = { Grid::BORDER_ABSORBING, Grid::BORDER_ABSORBING };
+    BorderType gridBorders[] = { BorderType::ABSORBING, BorderType::ABSORBING };
     IndexType nPoints = 3;
     int stencilPositions[] = { -1, 0, 1 };
 
@@ -161,7 +162,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV1Test, ValueType, scai_numeric_test_ty
                     {
                         wY[ i ] -= rX[ i - 1  ];
                     }
-                    else if ( Grid::BorderType( b1 ) == Grid::BORDER_PERIODIC )
+                    else if ( BorderType( b1 ) == BorderType::PERIODIC )
                     {
                         wY[ i ] -= rX[ n1 - 1 ];
                     }
@@ -170,7 +171,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV1Test, ValueType, scai_numeric_test_ty
                     {
                         wY[ i ] -= rX[ i + 1 ];
                     }
-                    else if ( Grid::BorderType( b2 ) == Grid::BORDER_PERIODIC )
+                    else if ( BorderType( b2 ) == BorderType::PERIODIC )
                     {
                         wY[ i ] -= rX[ 0 ];
                     }
@@ -240,7 +241,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV2Test, ValueType, scai_numeric_test_ty
 
     // Each combination of border types should work correctly
 
-    const IndexType GRID_BORDER_ABSORBING = static_cast<IndexType>( Grid::BORDER_ABSORBING );
+    const IndexType GRID_BORDER_ABSORBING = static_cast<IndexType>( BorderType::ABSORBING );
 
     HArray<IndexType> gridBorders( { GRID_BORDER_ABSORBING, GRID_BORDER_ABSORBING,
                                      GRID_BORDER_ABSORBING, GRID_BORDER_ABSORBING } ); 
@@ -276,7 +277,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV2Test, ValueType, scai_numeric_test_ty
                 {
                     wY[ i * n2 + j ] += rX[ ( i - 1 ) * n2 + j ];
                 }
-                else if ( Grid::BorderType( rGridBorders[0] ) == Grid::BORDER_PERIODIC )
+                else if ( BorderType( rGridBorders[0] ) == BorderType::PERIODIC )
                 {
                     wY[ i * n2 + j ] += rX[ ( n1 - 1 ) * n2 + j ];
                 }
@@ -285,7 +286,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV2Test, ValueType, scai_numeric_test_ty
                 {
                     wY[ i * n2 + j ] -= rX[ ( i + 1 ) * n2 + j ];
                 }
-                else if ( Grid::BorderType( rGridBorders[1] ) == Grid::BORDER_PERIODIC )
+                else if ( BorderType( rGridBorders[1] ) == BorderType::PERIODIC )
                 {
                     wY[ i * n2 + j ] -= rX[ ( 0 ) * n2 + j ];
                 }
@@ -368,7 +369,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV3Test, ValueType, scai_numeric_test_ty
     const HArray<IndexType> gridSizes( { n1, n2, n3 } );
     const HArray<IndexType> gridDistances( { n2 * n3, n3, 1 } );
 
-    const IndexType GRID_BORDER_ABSORBING = static_cast<IndexType>( Grid::BORDER_ABSORBING );
+    const IndexType GRID_BORDER_ABSORBING = static_cast<IndexType>( BorderType::ABSORBING );
 
     const HArray<IndexType> gridBorders( { GRID_BORDER_ABSORBING, GRID_BORDER_ABSORBING,
                                            GRID_BORDER_ABSORBING, GRID_BORDER_ABSORBING,
@@ -502,7 +503,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV4Test, ValueType, scai_numeric_test_ty
     const HArray<IndexType> gridSizes( { n1, n2, n3, n4 } );
     const HArray<IndexType> gridDistances( { n2* n3 * n4, n3 * n4, n4, 1 } );
 
-    const IndexType GRID_BORDER_ABSORBING = static_cast<IndexType>( Grid::BORDER_ABSORBING );
+    const IndexType GRID_BORDER_ABSORBING = static_cast<IndexType>( BorderType::ABSORBING );
 
     const HArray<IndexType> gridBorders( { GRID_BORDER_ABSORBING, GRID_BORDER_ABSORBING,
                                            GRID_BORDER_ABSORBING, GRID_BORDER_ABSORBING,
