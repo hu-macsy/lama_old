@@ -188,7 +188,7 @@ public:
 
     // key for factory
 
-    static CommunicatorKind createValue();
+    static CommunicatorType createValue();
 
 protected:
 

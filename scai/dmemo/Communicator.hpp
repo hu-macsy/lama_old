@@ -83,21 +83,16 @@ class CommunicationPlan;
 
 typedef std::shared_ptr<const Communicator> CommunicatorPtr;
 
-/** @brief Own namespace for the enum type CommunicatorKind and its values */
+/** @brief Enum call CommunicatorType and its values */
 
-struct _Communicator
+enum class CommunicatorType
 {
-
-    typedef enum
-    {
-        NO,                  //!< No communicator
-        MPI,                 //!< MPI communicator
-        MAX_COMMUNICATOR     //!< dummy value for number of communicators
-    } CommunicatorKind;
-
+    NO,                  //!< No communicator
+    MPI,                 //!< MPI communicator
+    MAX_COMMUNICATOR     //!< dummy value for number of communicators
 };
 
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const _Communicator::CommunicatorKind& kind );
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const CommunicatorType& kind );
 
 /**
  * @brief Base and interface class for communicators used in LAMA
@@ -119,9 +114,8 @@ COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const _C
  */
 class COMMON_DLL_IMPORTEXPORT Communicator:
 
-    public  _Communicator,
     public  scai::common::Printable,
-    public  scai::common::Factory<_Communicator::CommunicatorKind, CommunicatorPtr>,
+    public  scai::common::Factory<CommunicatorType, CommunicatorPtr>,
     private scai::common::NonCopyable,
     public  std::enable_shared_from_this<const Communicator>
 {
@@ -136,7 +130,7 @@ public:
      *  @throws common::Exception for unsupported type
      */
 
-    static CommunicatorPtr getCommunicatorPtr( const CommunicatorKind& type );
+    static CommunicatorPtr getCommunicatorPtr( const CommunicatorType& type );
 
     /** Get communicator from the factory.
      *
@@ -831,7 +825,7 @@ public:
 
     /** @brief Getter for the type of a communicator. */
 
-    inline CommunicatorKind getType() const;
+    inline CommunicatorType getType() const;
 
     /** This routine provides a context that might be most efficient for
      *  the communication of data.
@@ -875,7 +869,7 @@ protected:
 
     /** Constructor of abstract classes are always protected. */
 
-    Communicator( const CommunicatorKind& type );
+    Communicator( const CommunicatorType& type );
 
     /** This method determines node rank and node size by comparing the names. */
 
@@ -903,7 +897,7 @@ protected:
 
 private:
 
-    CommunicatorKind mCommunicatorType; //!< type of this communicator
+    CommunicatorType mCommunicatorType; //!< type of this communicator
 
     PartitionId mRank; //!< rank of this processor
 
@@ -1121,7 +1115,7 @@ tasking::SyncToken* Communicator::shiftAsync(
 
 /* -------------------------------------------------------------------------- */
 
-Communicator::CommunicatorKind Communicator::getType() const
+CommunicatorType Communicator::getType() const
 {
     return mCommunicatorType;
 }

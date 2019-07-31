@@ -149,7 +149,7 @@ void LamaIO::openIt( const std::string& fileName, const char* openMode )
 
     auto comm = getDistributedIOMode()  == DistributedIOMode::COLLECTIVE
                 ? dmemo::Communicator::getCommunicatorPtr()
-                : dmemo::Communicator::getCommunicatorPtr( dmemo::Communicator::NO );
+                : dmemo::Communicator::getCommunicatorPtr( dmemo::CommunicatorType::NO );
 
     mFile = comm->collectiveFile();
 

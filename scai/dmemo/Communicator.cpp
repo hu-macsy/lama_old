@@ -54,20 +54,20 @@ namespace scai
 namespace dmemo
 {
 
-std::ostream& operator<<( std::ostream& stream, const _Communicator::CommunicatorKind& type )
+std::ostream& operator<<( std::ostream& stream, const CommunicatorType& type )
 {
     switch ( type )
     {
-        case _Communicator::NO :
+        case CommunicatorType::NO :
             stream << "NO";
             break;
 
-        case _Communicator::MPI :
+        case CommunicatorType::MPI :
             stream << "MPI";
             break;
 
         default:
-            stream << "CommunicatorKind_" << ( int ) type;
+            stream << "CommunicatorType(" << static_cast<int>( type ) << ")";
     }
 
     return stream;
@@ -77,7 +77,7 @@ std::ostream& operator<<( std::ostream& stream, const _Communicator::Communicato
 
 SCAI_LOG_DEF_LOGGER( Communicator::logger, "Communicator" )
 
-CommunicatorPtr Communicator::getCommunicatorPtr( const CommunicatorKind& type )
+CommunicatorPtr Communicator::getCommunicatorPtr( const CommunicatorType& type )
 {
     return create( type );
 }
@@ -85,13 +85,13 @@ CommunicatorPtr Communicator::getCommunicatorPtr( const CommunicatorKind& type )
 CommunicatorPtr Communicator::getDefaultCommunicatorPtr()
 {
     // try MPI communicator for default
-    if ( canCreate( MPI ) )
+    if ( canCreate( CommunicatorType::MPI ) )
     {
-        return create( MPI );
+        return create( CommunicatorType::MPI );
     }
 
     // if even NO is not availabe an exception is thrown
-    return create( NO );
+    return create( CommunicatorType::NO );
 }
 
 CommunicatorPtr Communicator::getCommunicatorPtr()
@@ -114,12 +114,12 @@ CommunicatorPtr Communicator::getCommunicatorPtr()
 
         if ( comm == "MPI" )
         {
-            return getCommunicatorPtr( MPI );
+            return getCommunicatorPtr( CommunicatorType::MPI );
         }
 
         if ( comm == "NO" )
         {
-            return getCommunicatorPtr( NO );
+            return getCommunicatorPtr( CommunicatorType::NO );
         }
 
         COMMON_THROWEXCEPTION( "SCAI_COMMUNICATOR=" << comm << ", unknown communicator type" )
@@ -135,7 +135,7 @@ const Communicator& Communicator::getCurrent()
 
 /* -----------------------------------------------------------------------------*/
 
-Communicator::Communicator( const CommunicatorKind& type ) :
+Communicator::Communicator( const CommunicatorType& type ) :
 
     mCommunicatorType( type ),
     mRank( 0 ),

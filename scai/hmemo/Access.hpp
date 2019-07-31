@@ -51,7 +51,6 @@ namespace hmemo
 class COMMON_DLL_IMPORTEXPORT Access:
 
     public  common::Printable,
-    private common::NonCopyable,
     public  tasking::SyncTokenMember
 {
 public:
@@ -62,11 +61,16 @@ public:
 
     virtual void release() = 0;
 
-    virtual void writeAt( std::ostream& stream ) const;
-
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
+private:
+
+    Access( const Access& ) = delete;
+
+    Access& operator=( const Access& ) = delete;
+
 };
 
 } /* end namespace hmemo */

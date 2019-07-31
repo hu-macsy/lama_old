@@ -396,7 +396,7 @@ void Vector<ValueType>::fillFromAssembly( const VectorAssembly<ValueType>& assem
 
          assembly.buildLocalData( nonZeroIndexes, nonZeroValues, getDistribution() );
     }
-    else if ( comm.getType() == dmemo::Communicator::NO )
+    else if ( comm.getType() == dmemo::CommunicatorType::NO )
     {
          // we can build a replicated vector from assembled data 
 
@@ -421,7 +421,7 @@ void Vector<ValueType>::disassemble( VectorAssembly<ValueType>& assembly, const 
     {
         // that is fine, either replicated or distributed
     } 
-    else if ( comm.getType() == dmemo::Communicator::NO )
+    else if ( comm.getType() == dmemo::CommunicatorType::NO )
     {
         // disassemble of replicated matrix will only be done first processor
 

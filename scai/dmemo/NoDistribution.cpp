@@ -50,7 +50,7 @@ SCAI_LOG_DEF_LOGGER( NoDistribution::logger, "Distribution.NoDistribution" )
 
 NoDistribution::NoDistribution( const IndexType globalSize ):
 
-    Distribution( globalSize, Communicator::getCommunicatorPtr( Communicator::NO ) )
+    Distribution( globalSize, Communicator::getCommunicatorPtr( CommunicatorType::NO ) )
 {
 }
 

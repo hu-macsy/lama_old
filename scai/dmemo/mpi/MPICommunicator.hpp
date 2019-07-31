@@ -241,7 +241,7 @@ protected:
 
     virtual MPICommunicator* splitIt( PartitionId color, PartitionId key ) const;
 
-    MPICommunicator( int& argc, char** & argv, const CommunicatorKind& type );
+    MPICommunicator( int& argc, char** & argv, const CommunicatorType& type );
 
     MPICommunicator();
 
@@ -277,7 +277,7 @@ public:
 
     // key for factory
 
-    static CommunicatorKind createValue();
+    static CommunicatorType createValue();
 
 private:
 

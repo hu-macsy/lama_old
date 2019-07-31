@@ -78,7 +78,7 @@ void contextInfo()
 void communicatorInfo()
 {
     using namespace scai::dmemo;
-    vector<Communicator::CommunicatorKind> values;  // string is create type for the factory
+    vector<CommunicatorType> values;  // string is create type for the factory
     Communicator::getCreateValues( values );
     cout << endl;
     cout << "Factory of Communicator: " << values.size() << " entries" << endl;

@@ -56,7 +56,7 @@ namespace dmemo
 
 SCAI_LOG_DEF_LOGGER( NoCommunicator::logger, "Communicator.NoCommunicator" )
 
-NoCommunicator::NoCommunicator() : Communicator( NO )
+NoCommunicator::NoCommunicator() : Communicator( CommunicatorType::NO )
 {
     SCAI_LOG_DEBUG( logger, "NoCommunicator()" )
 }
@@ -369,9 +369,9 @@ CommunicatorPtr NoCommunicator::create()
 
 /* --------------------------------------------------------------- */
 
-Communicator::CommunicatorKind NoCommunicator::createValue()
+CommunicatorType NoCommunicator::createValue()
 {
-    return NO;
+    return CommunicatorType::NO;
 }
 
 } /* end namespace dmemo */
