@@ -611,11 +611,11 @@ void SimpleAMG<ValueType>::logSetupDetails()
         }
     }
 
-    int overheadInterpolation = static_cast<int>( 100 * sizeInterpolation / sizeInterpolationCSR ) - 100;
-    int overheadRestriction = static_cast<int>( 100 * sizeRestriction / sizeRestrictionCSR ) - 100;
-    int overheadGalerkin = static_cast<int>( 100 * sizeGalerkin / sizeGalerkinCSR ) - 100;
-    int overhead = static_cast<int>( 100 * ( sizeInterpolation + sizeRestriction + sizeGalerkin )
-                                     / ( sizeInterpolationCSR + sizeRestrictionCSR + sizeGalerkinCSR ) ) - 100;
+    double overheadInterpolation = 100.0 * static_cast<double>( sizeInterpolation ) / static_cast<double>( sizeInterpolationCSR ) - 100.0;
+    double overheadRestriction = 100.0 * static_cast<double>( sizeRestriction ) / static_cast<double>( sizeRestrictionCSR ) - 100.0;
+    double overheadGalerkin = 100.0 * static_cast<double>( sizeGalerkin ) / static_cast<double>( sizeGalerkinCSR ) - 100.0;
+    double overhead = 100.0 * static_cast<double>( sizeInterpolation + sizeRestriction + sizeGalerkin )
+                           / static_cast<double>( sizeInterpolationCSR + sizeRestrictionCSR + sizeGalerkinCSR ) - 100.0;
     size_t cgSolverValueTypeSize = getRuntime().mSetup->getGalerkin( getRuntime().mSetup->getNumLevels() - 1 ).getValueTypeSize();
     double sizeCGSolver = static_cast<double>( cgSolverValueTypeSize
                           * getRuntime().mSetup->getGalerkin( getRuntime().mSetup->getNumLevels() - 1 ).getNumRows()

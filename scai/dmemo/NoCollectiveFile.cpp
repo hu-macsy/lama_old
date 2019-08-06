@@ -96,8 +96,12 @@ void NoCollectiveFile::writeSingleImpl( const size_t offset, const void* val, co
     SCAI_LOG_INFO( logger, "write " << n << " entries " << stype << " @ offset = " << offset )
     SCAI_ASSERT_ERROR( mFile, "no file open" )
     fseek( mFile, offset, SEEK_SET );
-    size_t writeN = fwrite( val, typeSize( stype ), n, mFile );
-    SCAI_ASSERT_EQ_ERROR( writeN, n, "insufficent write" )
+    // n == 0 : val might be null that would result in sanitize error
+    if ( n > 0 ) 
+    {
+        size_t writeN = fwrite( val, typeSize( stype ), n, mFile );
+        SCAI_ASSERT_EQ_ERROR( writeN, n, "insufficent write" )
+    }
 }
 
 /* ---------------------------------------------------------------------------------- */
