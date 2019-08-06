@@ -63,14 +63,14 @@ public:
      */
     inline static std::string getPath()
     {
-        if (m_tempDirPath)
+        if ( m_tempDirPath )
         {
             return *m_tempDirPath;
         }
         else
         {
-            throw std::logic_error("Attempt to get the global temporary directory path "
-                                   "before it has been initialized.");
+            throw std::logic_error( "Attempt to get the global temporary directory path "
+                                    "before it has been initialized." );
         }
     }
 
@@ -81,16 +81,16 @@ public:
      * If a second attempt to set the path is made, an std::logic_error exception
      * is thrown.
      */
-    inline static void setPath(std::string path)
+    inline static void setPath( std::string path )
     {
-        if (!m_tempDirPath)
+        if ( !m_tempDirPath )
         {
-            m_tempDirPath.reset(new std::string(std::move(path)));
+            m_tempDirPath.reset( new std::string( std::move( path ) ) );
         }
         else
         {
-            throw std::logic_error("Temporary directory path has already been set. "
-                                   "It must only be set exactly once in the test binary initialization.");
+            throw std::logic_error( "Temporary directory path has already been set. "
+                                    "It must only be set exactly once in the test binary initialization." );
         }
     }
 
@@ -100,15 +100,15 @@ public:
      *
      * The same restrictions on usage as setPath() apply to this function.
      */
-    static void setPathOrDefault(std::string path)
+    static void setPathOrDefault( std::string path )
     {
-        if (path.empty())
+        if ( path.empty() )
         {
-            setPath("/tmp");
+            setPath( "/tmp" );
         }
         else
         {
-            setPath(path);
+            setPath( path );
         }
     }
 

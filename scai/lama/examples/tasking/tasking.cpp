@@ -40,6 +40,8 @@ using namespace scai;
 using namespace lama;
 using namespace dmemo;
 
+typedef DefaultReal ValueType;     // double if enabled, otherwise float
+
 int main( int argc, const char* argv[] )
 {
     // start with communicator for all processors (WORLD)
@@ -74,7 +76,7 @@ int main( int argc, const char* argv[] )
 
     // (block) distribute the problem space onto the available processors
 
-    auto dist = std::make_shared<dmemo::GridDistribution>( space );
+    auto dist = dmemo::gridDistribution( space );
 
     std::cout << *commWorld << ": distributed grid = " << *dist << std::endl;
 
@@ -103,9 +105,9 @@ int main( int argc, const char* argv[] )
 
     std::cout << *commWorld << ": is ( " << procGridRank[0] << ", " << procGridRank[1] << " ) in " << procGrid
                        << ", intraProblem = " << *intraProblem << ", interProblem = " << *interProblem << std::endl;
-    double sum = 0;
+    ValueType sum = 0;
 
-    auto result = fill<DenseVector<double>>( blockDistribution( 100, intraProblem ), 0.0 );
+    auto result = denseVector<ValueType>( blockDistribution( 100, intraProblem ), 0 );
 
     // now loop over my assigned problems that is first dimension of distributed grid
 
@@ -116,17 +118,17 @@ int main( int argc, const char* argv[] )
         SCAI_DMEMO_TASK( intraProblem )
 
         auto dist = blockDistribution( NV );  // uses now default communicator intraProblem
-        auto v = linearDenseVector<double>( dist, double(i), double(1) / NV );
+        auto v = denseVectorLinear<ValueType>( dist, ValueType(i), ValueType(1) / NV );
         std::ostringstream out;
         out << "out_" << i << "_.mtx";
         v.writeToFile( out.str() );
-        auto v1 = read<SparseVector<double>>( out.str() );
+        auto v1 = read<SparseVector<ValueType>>( out.str() );
         v1.redistribute( dist );
         sum += v1.sum();  
         result += 1.0;
     }
  
-    double allSum = interProblem->sum( sum );
+    ValueType allSum = interProblem->sum( sum );
     interProblem->sumArray( result.getLocalValues() );
 
     std::cout << *commWorld << ": local sum = " << sum << ", all = " << allSum << std::endl;

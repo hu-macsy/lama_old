@@ -346,8 +346,22 @@ public:
      * 
      *  This operation might be used to optimize the access to the diagonal of the storage.
      *  The methods setDiagonal(V) and getDiagonal might be significantly faster. 
+     * 
+     *  @returns   number of rows where the diagonal has been shifted successfully
      */
-    void setDiagonalFirst();
+    IndexType setDiagonalFirst();
+
+    /** 
+     *  @brief Set the diagonal element as first entry in each row for a local storage in 
+     *         a distributed atrix.
+     * 
+     *  If this storage is part of a 'row' distributed matrix this method should be used
+     *  to pass the global row indexes.
+     *
+     *  @param[in] globalRowIndexes contains the global index of each row
+     *  @returns   number of rows where the diagonal has been shifted successfully
+     */
+    IndexType setDiagonalFirst( const hmemo::HArray<IndexType>& globalRowIndexes );
 
     /******************************************************************/
     /*  set - get  row - column                                       */
@@ -476,7 +490,7 @@ public:
 
     /** Implementation for pure method is provided. */
 
-    virtual size_t getMemoryUsageImpl() const;
+    virtual size_t getMemoryUsage() const;
 
     /**
      * @brief override method of MatrixStorage with a more efficient solution.

@@ -474,7 +474,7 @@ SyncToken* DIAUtils::gemv(
     bool async,
     ContextPtr prefLoc )
 {
-    SCAI_REGION( "Storage.DIA.gemv" )
+    SCAI_REGION( "Sparse.DIA.gemv" )
 
     const IndexType nSource = common::isTranspose( op ) ? numRows : numColumns;
     const IndexType nTarget = common::isTranspose( op ) ? numColumns : numRows;

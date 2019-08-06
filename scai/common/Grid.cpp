@@ -107,8 +107,8 @@ void Grid::init( const IndexType nDims )
     for ( IndexType iDim = 0; iDim < SCAI_GRID_MAX_DIMENSION; iDim++ )
     {
         mSize[iDim] = 1;
-        mBorder[iDim][0] = BORDER_ABSORBING;
-        mBorder[iDim][1] = BORDER_ABSORBING;
+        mBorder[iDim][0] = BorderType::ABSORBING;
+        mBorder[iDim][1] = BorderType::ABSORBING;
     }
 }
 
@@ -167,11 +167,11 @@ bool Grid::operator==( const Grid& other ) const
     return true;
 }
 
-static inline const char* codeBorder( Grid::BorderType border, bool leftFlag )
+static inline const char* codeBorder( BorderType border, bool leftFlag )
 {
     switch ( border )
     {
-        case Grid::BORDER_PERIODIC:
+        case BorderType::PERIODIC:
             if ( leftFlag ) 
                 return "P ";
             else
@@ -183,7 +183,7 @@ static inline const char* codeBorder( Grid::BorderType border, bool leftFlag )
 
 std::ostream& operator<<( std::ostream& stream, const Grid& grid )
 {
-    const Grid::BorderType* borders = grid.borders();
+    const BorderType* borders = grid.borders();
 
     stream << "Grid" << grid.nDims() << "D( "
            << codeBorder( borders[0], true ) 
@@ -213,7 +213,7 @@ std::ostream& operator<<( std::ostream& stream, const Grid& grid )
     return stream;
 }
 
-static bool inline getBorderPosL( IndexType& pos, const IndexType offset, const IndexType size, const Grid::BorderType border )
+static bool inline getBorderPosL( IndexType& pos, const IndexType offset, const IndexType size, const BorderType border )
 {
     bool valid = true;
 
@@ -221,11 +221,11 @@ static bool inline getBorderPosL( IndexType& pos, const IndexType offset, const 
     {
         pos = pos - offset;  // is a valid pos
     }
-    else if ( border == Grid::BORDER_ABSORBING )
+    else if ( border == BorderType::ABSORBING )
     {
         valid = false;
     }
-    else if ( border == Grid::BORDER_PERIODIC )
+    else if ( border == BorderType::PERIODIC )
     {
         pos = ( pos + size ) - offset;
     }
@@ -241,7 +241,7 @@ static bool inline getBorderPosL( IndexType& pos, const IndexType offset, const 
     return valid;
 */
 
-static bool inline getBorderPosR( IndexType& pos, const IndexType offset, const IndexType size, const Grid::BorderType border )
+static bool inline getBorderPosR( IndexType& pos, const IndexType offset, const IndexType size, const BorderType border )
 {
     bool valid = true;
 
@@ -249,11 +249,11 @@ static bool inline getBorderPosR( IndexType& pos, const IndexType offset, const 
     {
         pos += offset;  // is a valid pos
     }
-    else if ( border == Grid::BORDER_ABSORBING )
+    else if ( border == BorderType::ABSORBING )
     {
         valid = false;
     }
-    else if ( border == Grid::BORDER_PERIODIC )
+    else if ( border == BorderType::PERIODIC )
     {
         pos = ( pos + offset ) - size;
     }

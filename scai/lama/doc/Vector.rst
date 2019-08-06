@@ -205,57 +205,6 @@ an element-wise addition in-place in the exisiting vector v1.
      v3.setYYY( ... );
      v1 = v2 + v3;
 
-Vector Assembly
----------------
-
-The template class VectorAssembly allows to assemble vector entries by different processors
-independently. An element is added by its global index and the value at this position.
-
-.. code-block:: c++
-
-    VectorAssembly<ValueType> assembly;
-
-    // each processor might push arbitrary matrix elements
-
-    assembly.push( i1, val1 );
-    ...
-    assembly.push( i2, val2 );
-
-    const IndexType n = ... ; // size of the vector
-
-    auto dist = std::make_shared<BlockDistribution>( n );
-
-    auto sparseV = fill<SparseVector<ValueType>>( dist, 1 );
-    sparseV.fillAssembly( assembly, common::BinaryOp::ADD );
-    auto denseV  = fill<DenseVector<ValueType>>( dist, 0 );
-    denseV.fillAssembly( assembly, common::BianaryOp::COPY );
-
-- Zero elements might be filled explicitly to reserve memory in a sparse vector.
-- Different modes are supported if entries are assembled twice, either by same or by different processors or for existing entries.
-  In the REPLACE mode (default, common::binary::COPY) values will be replaced; different assembled values for the same entry
-  might be undefined. In the SUM mode (common::binary::ADD) assembled values for the same position are added.
-- An assembly can be used several times.
-
-Even if the implementation of the assembling is highly optimized, it might involve a large amount of 
-communication as the assembled data must be communicated to their owners. Therefore it is always recommended
-to due the assembling as locally as possible, i.e. elements should be inserted preferably by their owners.
-
-The assembling might also be done replicated, i.e. each processor runs the whole assembling code. In this case elements
-should only be pushed by the owner. If elements are pushed by all processors, this would not be wrong in the replace mode
-but would cause significant overhead.
-
-.. code-block:: c++
-
-    for ( all entries )
-    {
-        ....
-        if ( dist->isLocal( i ) ) 
-        {
-            assembly.push( i, val )
-        }
-        ....
-    }
-
 Methods
 -------
 

@@ -54,20 +54,20 @@ namespace scai
 namespace dmemo
 {
 
-std::ostream& operator<<( std::ostream& stream, const _Communicator::CommunicatorKind& type )
+std::ostream& operator<<( std::ostream& stream, const CommunicatorType& type )
 {
     switch ( type )
     {
-        case _Communicator::NO :
+        case CommunicatorType::NO :
             stream << "NO";
             break;
 
-        case _Communicator::MPI :
+        case CommunicatorType::MPI :
             stream << "MPI";
             break;
 
         default:
-            stream << "CommunicatorKind_" << ( int ) type;
+            stream << "CommunicatorType(" << static_cast<int>( type ) << ")";
     }
 
     return stream;
@@ -77,7 +77,7 @@ std::ostream& operator<<( std::ostream& stream, const _Communicator::Communicato
 
 SCAI_LOG_DEF_LOGGER( Communicator::logger, "Communicator" )
 
-CommunicatorPtr Communicator::getCommunicatorPtr( const CommunicatorKind& type )
+CommunicatorPtr Communicator::getCommunicatorPtr( const CommunicatorType& type )
 {
     return create( type );
 }
@@ -85,13 +85,13 @@ CommunicatorPtr Communicator::getCommunicatorPtr( const CommunicatorKind& type )
 CommunicatorPtr Communicator::getDefaultCommunicatorPtr()
 {
     // try MPI communicator for default
-    if ( canCreate( MPI ) )
+    if ( canCreate( CommunicatorType::MPI ) )
     {
-        return create( MPI );
+        return create( CommunicatorType::MPI );
     }
 
     // if even NO is not availabe an exception is thrown
-    return create( NO );
+    return create( CommunicatorType::NO );
 }
 
 CommunicatorPtr Communicator::getCommunicatorPtr()
@@ -114,12 +114,12 @@ CommunicatorPtr Communicator::getCommunicatorPtr()
 
         if ( comm == "MPI" )
         {
-            return getCommunicatorPtr( MPI );
+            return getCommunicatorPtr( CommunicatorType::MPI );
         }
 
         if ( comm == "NO" )
         {
-            return getCommunicatorPtr( NO );
+            return getCommunicatorPtr( CommunicatorType::NO );
         }
 
         COMMON_THROWEXCEPTION( "SCAI_COMMUNICATOR=" << comm << ", unknown communicator type" )
@@ -135,7 +135,7 @@ const Communicator& Communicator::getCurrent()
 
 /* -----------------------------------------------------------------------------*/
 
-Communicator::Communicator( const CommunicatorKind& type ) :
+Communicator::Communicator( const CommunicatorType& type ) :
 
     mCommunicatorType( type ),
     mRank( 0 ),
@@ -200,15 +200,15 @@ void Communicator::setSeed( int seed ) const
 
 /* -------------------------------------------------------------------------- */
 
-void Communicator::factorize2( PartitionId procgrid[2], const double sizeX, const double sizeY ) const
+void Communicator::factorize2( PartitionId procgrid[2], const PartitionId size, const double sizeX, const double sizeY )
 {
     PartitionId usergrid[3];
     getUserProcArray( usergrid );
     // assign partitions to 2d grid so as to minimize contact
     double bestline = 2.0 * ( sizeX + sizeY );
     bool found = false;
+
     // try all possible factorizations of size
-    PartitionId size = getSize();
 
     for ( PartitionId ipx = 1; ipx <= size; ipx++ )
     {
@@ -237,7 +237,6 @@ void Communicator::factorize2( PartitionId procgrid[2], const double sizeX, cons
             bestline = line;
             procgrid[0] = ipx;
             procgrid[1] = ipy;
-            ;
         }
     }
 
@@ -255,9 +254,10 @@ void Communicator::factorize2( PartitionId procgrid[2], const double sizeX, cons
 
 void Communicator::factorize3(
     PartitionId procgrid[3],
+    const PartitionId size,
     const double sizeX,
     const double sizeY,
-    const double sizeZ ) const
+    const double sizeZ )
 {
     PartitionId usergrid[3];
     getUserProcArray( usergrid );
@@ -268,7 +268,6 @@ void Communicator::factorize3(
     // try all possible factorizations of size
     // surface = surface area of a proc sub-domain
     // for 2d, insure ipz = 1
-    PartitionId size = getSize();
     bool found = false;
 
     for ( PartitionId ipx = 1; ipx <= size; ipx++ )
@@ -1199,13 +1198,13 @@ void Communicator::setNodeData()
 
     int maxNameLength = maxProcessorName();
 
-    std::unique_ptr<char[]> myNodeName( new char[ maxNameLength ] );
+    mNodeName.reset( new char[ maxNameLength ] );
+
+    getProcessorName( mNodeName.get() );
 
     std::unique_ptr<char[]> allNodeNames( new char[ maxNameLength * getSize() ] );
 
-    getProcessorName( myNodeName.get() );
-
-    SCAI_LOG_INFO( logger, "Node name of processor " << mRank << " of " << mSize << ": " << myNodeName.get() )
+    SCAI_LOG_INFO( logger, "Node name of processor " << mRank << " of " << mSize << ": " << mNodeName.get() )
 
     memset( allNodeNames.get(), '\0', maxNameLength * mSize * sizeof( char ) );
 
@@ -1213,7 +1212,7 @@ void Communicator::setNodeData()
 
     const PartitionId root = 0;
 
-    gather( allNodeNames.get(), maxNameLength, root, myNodeName.get() );
+    gather( allNodeNames.get(), maxNameLength, root, mNodeName.get() );
     bcast( allNodeNames.get(), maxNameLength * mSize, root );
 
     mNodeSize = 0;
@@ -1223,7 +1222,7 @@ void Communicator::setNodeData()
 
     for ( PartitionId i = 0; i < mSize; ++i )
     {
-        if ( strcmp( &ptrAllNodeNames[i * maxNameLength], myNodeName.get() ) )
+        if ( strcmp( &ptrAllNodeNames[i * maxNameLength], mNodeName.get() ) )
         {
             continue; // processor i is not on same node
         }
@@ -1238,10 +1237,56 @@ void Communicator::setNodeData()
         ++mNodeSize;
     }
 
+    std::unique_ptr<PartitionId[]> masters( new PartitionId[ getSize() ] );
+
+    // determine the masters of each node
+
+    mNumNodes = 0;
+    mIdNode   = invalidPartition;   
+
+    for ( PartitionId i = 0; i < mSize; ++i )
+    {
+        bool newNode = true;   // will be set false if name was already used before
+
+        for ( PartitionId j = 0; j < mNumNodes; ++j )
+        {        
+            if ( strcmp( &ptrAllNodeNames[i * maxNameLength], &ptrAllNodeNames[masters[j] *  maxNameLength] ) == 0 )
+            {
+                newNode = false;
+                break;              
+            }
+        }
+
+        if ( newNode )
+        {
+            masters[ mNumNodes ] = i;    // master is processor i
+         
+            if ( strcmp( mNodeName.get(), &ptrAllNodeNames[i *  maxNameLength] ) == 0 )
+            {
+                mIdNode = mNumNodes;
+            }
+ 
+            mNumNodes++;
+        }
+    }
+
     SCAI_ASSERT_GT_ERROR( mNodeSize, 0, "Serious problem encountered to get node size" )
     SCAI_ASSERT_LT_ERROR( mNodeRank, mNodeSize, "Serious problem encountered to get node size" )
 
-    SCAI_LOG_INFO( logger, "Processor " << mRank << ": node rank " << mNodeRank << " of " << mNodeSize )
+    SCAI_LOG_INFO( logger, "Processor " << mRank << ": node rank " << mNodeRank << " of " << mNodeSize
+                            << " on node " << mIdNode << " of " << mNumNodes << " nodes" )
+}
+
+/* -------------------------------------------------------------------------- */
+
+const char* Communicator::getNodeName() const
+{
+    return mNodeName.get();
+}
+
+int Communicator::getNodeId() const
+{
+    return static_cast<int>( mIdNode );
 }
 
 /* -------------------------------------------------------------------------- */

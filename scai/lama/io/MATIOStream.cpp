@@ -49,26 +49,37 @@ common::ScalarType MATIOStream::matlabType2ScalarType( uint32_t dataType )
     {
         case  MAT_INT8   :
             return common::ScalarType::CHAR;          // INT8 same as CHAR
+
         case  MAT_UINT8  :
             return common::ScalarType::UNKNOWN;       // UINT8 not supported yet
+
         case  MAT_INT16  :
             return common::ScalarType::UNKNOWN;       // INT16 not supported yet
+
         case  MAT_UINT16 :
             return common::ScalarType::UNKNOWN;       // UINT16 not supported yet
+
         case  MAT_INT32  :
             return common::ScalarType::INT;           // INT32
+
         case  MAT_UINT32 :
             return common::ScalarType::UNSIGNED_INT;  // UINT32 not supported yet
+
         case  MAT_FLOAT  :
             return common::ScalarType::FLOAT;         // single precision
+
         case  MAT_DOUBLE :
             return common::ScalarType::DOUBLE;        // double precision
+
         case  MAT_LDOUBLE:
             return common::ScalarType::LONG_DOUBLE;   // long double precision
+
         case  MAT_INT64  :
             return common::ScalarType::LONG;          // INT64
+
         case  MAT_UINT64 :
             return common::ScalarType::UNSIGNED_LONG; // UINT64
+
         default          :
             return common::ScalarType::UNKNOWN;       //
     }
@@ -82,24 +93,34 @@ uint32_t MATIOStream::scalarType2MatlabType( common::ScalarType stype )
     {
         case  common::ScalarType::CHAR                :
             return MAT_INT8;
+
         case  common::ScalarType::INT                 :
             return MAT_INT32;
+
         case  common::ScalarType::UNSIGNED_INT        :
             return MAT_UINT32;
+
         case  common::ScalarType::LONG                :
             return MAT_INT64;
+
         case  common::ScalarType::UNSIGNED_LONG       :
             return MAT_UINT64;
+
         case  common::ScalarType::FLOAT               :
             return MAT_FLOAT;
+
         case  common::ScalarType::DOUBLE              :
             return MAT_DOUBLE;
+
         case  common::ScalarType::LONG_DOUBLE         :
             return MAT_LDOUBLE;
+
         case  common::ScalarType::COMPLEX             :
             return MAT_FLOAT;
+
         case  common::ScalarType::DOUBLE_COMPLEX      :
             return MAT_DOUBLE;
+
         case  common::ScalarType::LONG_DOUBLE_COMPLEX :
             return MAT_LDOUBLE;
 
@@ -118,24 +139,34 @@ common::ScalarType MATIOStream::class2ScalarType( uint32_t dataType )
     {
         case  MAT_INT8_CLASS   :
             return common::ScalarType::CHAR;          // INT8 same as CHAR
+
         case  MAT_UINT8_CLASS  :
             return common::ScalarType::UNKNOWN;       // UINT8 not supported yet
+
         case  MAT_INT16_CLASS  :
             return common::ScalarType::UNKNOWN;       // INT16 not supported yet
+
         case  MAT_UINT16_CLASS :
             return common::ScalarType::UNKNOWN;       // UINT16 not supported yet
+
         case  MAT_INT32_CLASS  :
             return common::ScalarType::INT;           // INT32
+
         case  MAT_UINT32_CLASS :
             return common::ScalarType::UNSIGNED_INT;  // UINT32 not supported yet
+
         case  MAT_FLOAT_CLASS  :
             return common::ScalarType::FLOAT;         // single precision
+
         case  MAT_DOUBLE_CLASS :
             return common::ScalarType::DOUBLE;        // double precision
+
         case  MAT_INT64_CLASS  :
             return common::ScalarType::LONG;          // INT64
+
         case  MAT_UINT64_CLASS :
             return common::ScalarType::UNSIGNED_LONG; // UINT64
+
         default                :
             return common::ScalarType::UNKNOWN;       //
     }
@@ -149,24 +180,34 @@ MATIOStream::MATClass MATIOStream::scalarType2Class( common::ScalarType stype )
     {
         case  common::ScalarType::CHAR                :
             return MAT_INT8_CLASS;
+
         case  common::ScalarType::INT                 :
             return MAT_INT32_CLASS;
+
         case  common::ScalarType::UNSIGNED_INT        :
             return MAT_UINT32_CLASS;
+
         case  common::ScalarType::LONG                :
             return MAT_INT64_CLASS;
+
         case  common::ScalarType::UNSIGNED_LONG       :
             return MAT_UINT64_CLASS;
+
         case  common::ScalarType::FLOAT               :
             return MAT_FLOAT_CLASS;
+
         case  common::ScalarType::DOUBLE              :
             return MAT_DOUBLE_CLASS;
+
         case  common::ScalarType::LONG_DOUBLE         :
             return MAT_DOUBLE_CLASS;
+
         case  common::ScalarType::COMPLEX             :
             return MAT_FLOAT_CLASS;
+
         case  common::ScalarType::DOUBLE_COMPLEX      :
             return MAT_DOUBLE_CLASS;
+
         case  common::ScalarType::LONG_DOUBLE_COMPLEX :
             return MAT_DOUBLE_CLASS;
 
@@ -178,6 +219,10 @@ MATIOStream::MATClass MATIOStream::scalarType2Class( common::ScalarType stype )
 }
 
 /* --------------------------------------------------------------------------------- */
+
+MATIOStream::MATIOStream()
+{
+}
 
 MATIOStream::MATIOStream( const std::string& filename, ios_base::openmode mode ) : IOStream( filename, mode )
 {
@@ -512,7 +557,7 @@ uint32_t MATIOStream::getMatrixInfo( MATClass& matClass, IndexType dims[], const
     SCAI_LOG_DEBUG( logger, "header flags = " << ( int ) headerFlags[0] << ", " << ( int ) headerFlags[1] << ", " << ( int ) headerFlags[2] << ", " << ( int ) headerFlags[3] )
 
     elementPtr += getDataN( mdims, nDims, maxDims, elementPtr );
- 
+
     for ( IndexType i = 0; i < nDims; ++i )
     {
         dims[i] = static_cast<IndexType>( mdims[i] );

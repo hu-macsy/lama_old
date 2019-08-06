@@ -35,6 +35,8 @@ scai_project (
 
         Expression
 
+        ExpressionTraits
+
         VectorExpressions
         UnaryVectorExpression
         CastVectorExpression

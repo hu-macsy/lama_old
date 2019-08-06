@@ -48,20 +48,21 @@ int commonTestMain( int argc, char* argv[] )
 
     scai::common::Settings::parseArgs( argc, const_cast<const char**>( argv ) );
 
-    const auto boostTestModuleName = std::string(LAMATEST_STRINGIFY(BOOST_TEST_MODULE));
+    const auto boostTestModuleName = std::string( LAMATEST_STRINGIFY( BOOST_TEST_MODULE ) );
     const auto testSuiteName = boostTestModuleName;
 
     // Building args as a vector<vector<char>> ensures that lifetime of modified args is bounded by main() call
-    auto parseResult = parseAndRebuildArgs(argc, argv, testSuiteName);
-    std::vector<char *> charPointers;
-    for (auto & arg : parseResult.args)
+    auto parseResult = parseAndRebuildArgs( argc, argv, testSuiteName );
+    std::vector<char*> charPointers;
+
+for ( auto & arg : parseResult.args )
     {
-        charPointers.push_back(arg.data());
+        charPointers.push_back( arg.data() );
     }
 
-    GlobalTempDir::setPathOrDefault(parseResult.tempDir);
+    GlobalTempDir::setPathOrDefault( parseResult.tempDir );
 
-    return boost::unit_test::unit_test_main(&init_unit_test, charPointers.size(), charPointers.data());
+    return boost::unit_test::unit_test_main( &init_unit_test, charPointers.size(), charPointers.data() );
 }
 
 } // namespace testsupport

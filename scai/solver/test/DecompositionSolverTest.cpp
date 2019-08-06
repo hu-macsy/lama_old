@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DecompositionTest, ValueType, scai_ext_test_types
 
     DenseVector<ValueType> rhs( HArrayRef<ValueType>( size, rhsValues ) );
     rhs.redistribute( dist );
-    auto solution = fill<DenseVector<ValueType>>( dist, 0 );
+    auto solution = denseVector<ValueType>( dist, 0 );
 
     DecompositionSolver<ValueType> solver( "DecompositionSolver" );
     solver.initialize( matrix );

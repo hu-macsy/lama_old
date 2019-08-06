@@ -1125,9 +1125,10 @@ void JDSStorage<ValueType>::swap( JDSStorage<ValueType>& other )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-size_t JDSStorage<ValueType>::getMemoryUsageImpl() const
+size_t JDSStorage<ValueType>::getMemoryUsage() const
 {
-    size_t memoryUsage = 0;
+    size_t memoryUsage = _MatrixStorage::_getMemoryUsage();
+
     memoryUsage += sizeof( IndexType );
     memoryUsage += sizeof( IndexType );
     memoryUsage += sizeof( IndexType ) * mDlg.size();
@@ -1135,6 +1136,7 @@ size_t JDSStorage<ValueType>::getMemoryUsageImpl() const
     memoryUsage += sizeof( IndexType ) * mPerm.size();
     memoryUsage += sizeof( IndexType ) * mJA.size();
     memoryUsage += sizeof( ValueType ) * mValues.size();
+
     return memoryUsage;
 }
 

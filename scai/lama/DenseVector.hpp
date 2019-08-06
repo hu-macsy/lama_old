@@ -36,6 +36,9 @@
 #include <scai/lama/Vector.hpp>
 
 // internal scai libraries
+
+#include <scai/lama/expression/ExpressionTraits.hpp>
+
 #include <scai/dmemo/Distribution.hpp>
 #include <scai/dmemo/GlobalAddressingPlan.hpp>
 #include <scai/hmemo.hpp>
@@ -524,11 +527,12 @@ public:
      *  @param[in] plan   contains communication pattern built for source array
      *  @param[in] op     specifies how to combine elements with existing ones
      * 
-     *  Note: the target array must have the same distribution as the index array used for building the plan
+     *  Note: the target array must have been allocated before with the same distribution 
+     *        as the index array used for building the plan (also for op == COPY)
      * 
      *  \code
      *      // target = source[ index ]
-     *      target.gather( source, index );
+     *      target.gatherInto( source, index );
      *      source.gatherFrom( target, index );
      *      auto plan = source.globalAddressingPlan( index );
      *      source.gatherByPlan( target, plan );
@@ -593,7 +597,7 @@ public:
 
     virtual void resize( const dmemo::DistributionPtr distribution );
 
-private:
+protected:
 
     using _Vector::setDistributionPtr;
 
@@ -617,15 +621,11 @@ private:
 
     /** Implementation of _Vector::writeLocalToFile */
 
-    virtual void writeLocalToFile(
-        const std::string& fileName,
-        const std::string& fileType,
-        const common::ScalarType dataType,
-        const FileIO::FileMode fileMode ) const;
+    virtual void writeLocalToFile( FileIO& file ) const;
 
-    /** Implementation of _Vector::readLocalFromFile */
+    /** Implementation of _Vector::readFromFile */
 
-    virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = invalidIndex );
+    virtual void readFromFile( FileIO& file );
 
     /** Implementation of _Vector::clearValues */
 
@@ -641,77 +641,6 @@ public:
 
     static VectorCreateKeyType createValue();
 };
-
-/* ------------------------------------------------------------------------- */
-/*  Functions that return a DenseVector                                      */
-/* ------------------------------------------------------------------------- */
-
-/**
- * @brief create a replicated vector and fill it with linear values
- *
- * @param[in] n becomes the size of the vector
- * @param[in] startValue value for the first element, $vector[0] = startValue$
- * @param[in] inc increment between two elements, i.e. $vector[i+1] - vector[i] = inc$
- * @param[in] ctx specifies the context of the vector.
- *
- * Note: if ctx is specified, the vector will be allocated in its memory.
- */
-template<typename ValueType>
-DenseVector<ValueType> linearDenseVector( 
-    const IndexType n,
-    const ValueType startValue, 
-    const ValueType inc, 
-    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
-{
-    DenseVector<ValueType> result( ctx );
-    result.allocate( n );
-    result.fillLinearValues( startValue, inc );
-    return result;
-}
-/**
- * @brief create a distributed vector and fill it with linear values
- *
- * @param[in] distribution determines global/local size of the vector
- * @param[in] startValue value for the first elemen
- * @param[in] inc increment between the element
- * @param[in] ctx context where the vector is allocated
- */
-template<typename ValueType>
-DenseVector<ValueType> linearDenseVector( 
-    dmemo::DistributionPtr distribution, 
-    const ValueType startValue, 
-    const ValueType inc, 
-    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
-{
-    DenseVector<ValueType> result( ctx );
-    result.allocate( distribution );
-    result.fillLinearValues( startValue, inc );
-    return result;
-}
-
-template<typename ValueType>
-DenseVector<ValueType> fillDenseVector(
-    dmemo::DistributionPtr distribution, 
-    ValueType value,
-    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
-{
-    DenseVector<ValueType> result( ctx );
-    result.setSameValue( distribution, value );
-    return result;
-}
-
-template<typename ValueType>
-DenseVector<ValueType> fillDenseVector(
-    dmemo::DistributionPtr distribution, 
-    ValueType ( *fillFunction ) ( IndexType ),
-    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
-{
-    SCAI_ASSERT_ERROR( fillFunction, "NULL function for filling" )
-    DenseVector<ValueType> result( ctx );
-    result.allocate( distribution );
-    result.fillByFunction( fillFunction );
-    return result;
-}
 
 /* ------------------------------------------------------------------------- */
 /*  Implementation of inline methods                                         */
@@ -739,6 +668,210 @@ template<typename ValueType>
 hmemo::HArray<ValueType>& DenseVector<ValueType>::getHaloValues() const
 {
     return mHaloValues;
+}
+
+/* ------------------------------------------------------------------------- */
+/*  Free functions that return a DenseVector                                 */
+/* ------------------------------------------------------------------------- */
+
+/**
+ * @brief create a replicated vector and fill it with linear values
+ *
+ * @param[in] n becomes the size of the vector
+ * @param[in] startValue value for the first element, $vector[0] = startValue$
+ * @param[in] inc increment between two elements, i.e. $vector[i+1] - vector[i] = inc$
+ * @param[in] ctx specifies the context of the vector.
+ *
+ * Note: if ctx is specified, the vector will be allocated in its memory.
+ */
+template<typename ValueType>
+DenseVector<ValueType> denseVectorLinear( 
+    const IndexType n,
+    const ValueType startValue, 
+    const ValueType inc, 
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    DenseVector<ValueType> denseVector( ctx );
+    denseVector.allocate( n );
+    denseVector.fillLinearValues( startValue, inc );
+    return denseVector;
+}
+
+// deprecated old function
+
+template<typename ValueType>
+DenseVector<ValueType> linearDenseVector(
+    const IndexType n,
+    const ValueType startValue,
+    const ValueType inc,
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    DenseVector<ValueType> denseVector( ctx );
+    denseVector.allocate( n );
+    denseVector.fillLinearValues( startValue, inc );
+    return denseVector;
+}
+
+/**
+ * @brief create a distributed vector and fill it with linear values
+ *
+ * @param[in] distribution determines global/local size of the vector
+ * @param[in] startValue value for the first elemen
+ * @param[in] inc increment between the element
+ * @param[in] ctx context where the vector is allocated
+ */
+template<typename ValueType>
+DenseVector<ValueType> denseVectorLinear( 
+    dmemo::DistributionPtr distribution, 
+    const ValueType startValue, 
+    const ValueType inc, 
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    DenseVector<ValueType> denseVector( ctx );
+    denseVector.allocate( distribution );
+    denseVector.fillLinearValues( startValue, inc );
+    return denseVector;
+}
+
+/** 
+ *  @brief Function that returns a dense vector of a given size initialized with the same value.
+ * 
+ *  @tparam    ValueType  is the component type of the dense vector
+ *  @param[in] n          specifies the size of the vector                             
+ *  @param[in] value      is the value assigned to all elements of the vector
+ *  @param[in] ctx        Context that is used for the filling and the generated vector
+ *  @returns              a new dense vector with the specified size
+ *
+ *  \code
+ *     const auto v = denseVector<double>( n, 10 );
+ *  \endcode
+ */
+template<typename ValueType>
+DenseVector<ValueType> denseVector(
+    const IndexType n,
+    const ValueType value,
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    DenseVector<ValueType> denseVector( ctx );
+    denseVector.setSameValue( n, value );
+    return denseVector;
+}
+
+template<typename ValueType>
+DenseVector<ValueType> denseVector(
+    dmemo::DistributionPtr distribution, 
+    const ValueType value,
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    DenseVector<ValueType> denseVector( ctx );
+    denseVector.setSameValue( distribution, value );
+    return denseVector;
+}
+
+template<typename ValueType>
+DenseVector<ValueType> denseVectorZero(
+    const IndexType n,
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    DenseVector<ValueType> denseVector( ctx );
+    denseVector.setSameValue( n, ValueType( 0 ) );
+    return denseVector;
+}
+
+template<typename ValueType>
+DenseVector<ValueType> denseVectorZero(
+    dmemo::DistributionPtr distribution,
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    DenseVector<ValueType> denseVector( ctx );
+    denseVector.setSameValue( distribution, ValueType( 0 ) );
+    return denseVector;
+}
+
+template<typename ValueType>
+DenseVector<ValueType> denseVectorUndefined(
+    const IndexType n,
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    DenseVector<ValueType> denseVector( ctx );
+    denseVector.allocate( n );
+    return denseVector;
+}
+
+template<typename ValueType>
+DenseVector<ValueType> denseVectorUndefined(
+    dmemo::DistributionPtr distribution,
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    DenseVector<ValueType> denseVector( ctx );
+    denseVector.allocate( distribution );
+    return denseVector;
+}
+
+/**
+ * @brief create a distributed vector and fill it by a function 
+ *
+ * @param[in] distribution determines global/local size of the vector
+ * @param[in] fillFunction is a function that returns for a 'global' index the value
+ * @param[in] ctx context where the vector is allocated
+ *
+ * \code
+ *     auto dist = dmemo::blockDistribution( n );
+ *     auto lambda = []( IndexType i ) { return sin( 2.0 * pi * double( i ) / double( n ) ); }
+ *     auto v = denseVectorFill<double>( dist, lambda );
+ * \endcode
+ */
+template<typename ValueType>
+DenseVector<ValueType> denseVectorFill(
+    dmemo::DistributionPtr distribution, 
+    ValueType ( *fillFunction ) ( IndexType ),
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    SCAI_ASSERT_ERROR( fillFunction, "NULL function for filling" )
+    DenseVector<ValueType> denseVector( ctx );
+    denseVector.allocate( distribution );
+    denseVector.fillByFunction( fillFunction );
+    return denseVector;
+}
+
+template<typename ValueType>
+DenseVector<ValueType> denseVectorFill(
+    const IndexType n,
+    ValueType ( *fillFunction ) ( IndexType ),
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    SCAI_ASSERT_ERROR( fillFunction, "NULL function for filling" )
+    DenseVector<ValueType> denseVector( ctx );
+    denseVector.allocate( n );
+    denseVector.fillByFunction( fillFunction );
+    return denseVector;
+}
+
+template<typename ValueType>
+DenseVector<ValueType> denseVectorRead(
+    const char* fileName,
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    DenseVector<ValueType> denseVector( ctx );
+    denseVector.readFromFile( fileName );
+    return denseVector;
+}
+
+/**
+ * @brief Free function to create a new dense vector as result of a vector expression.
+ *
+ * @param[in] exp  is any typed vector expression
+ * @param[in] ctx  specfies the context where expression is evaluated
+ * @returns a new dense vector, value type is deduced from exp
+ *
+ * Note: using ExpressionTraits to deduce the ValueType of an expression
+ */
+template<typename expression>
+DenseVector<typename ExpressionTraits<expression>::ExpType> denseVectorEval( expression exp, hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() )
+{
+    DenseVector<typename ExpressionTraits<expression>::ExpType> vector( ctx );
+    vector = exp;
+    return vector;
 }
 
 /* ------------------------------------------------------------------------- */

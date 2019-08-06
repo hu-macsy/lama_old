@@ -577,6 +577,8 @@ bool OpenMPUtils::allCompare(
     const IndexType n,
     const CompareOp op )
 {
+    SCAI_REGION( "OpenMP.Utils.allCompare" )
+
     bool val = true;
  
     #pragma omp parallel
@@ -2039,6 +2041,8 @@ IndexType OpenMPUtils::countAddSparse(
     const IndexType indexes2[],
     const IndexType n2 )
 {
+    SCAI_REGION( "OpenMP.Utils.countAddSparse" )
+
     SCAI_LOG_DEBUG( logger, "countAddSparse( n1 = " << n1 << ", n2 = " << n2 << ")" )
 
     IndexType n = 0;

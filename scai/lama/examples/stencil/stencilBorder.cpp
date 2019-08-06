@@ -81,7 +81,7 @@ int main( int argc, const char* argv[] )
 
     common::Grid1D grid( N1 );
 
-    grid.setBorderType( 0, common::Grid::BORDER_ABSORBING, common::Grid::BORDER_ABSORBING );
+    grid.setBorderType( 0, common::BorderType::ABSORBING, common::BorderType::ABSORBING );
 
     StencilStorage<ValueType> st( grid, stencilFD8 );
 

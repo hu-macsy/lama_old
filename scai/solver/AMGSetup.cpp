@@ -33,8 +33,13 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
+#include <scai/tracing.hpp>
+
 namespace scai
 {
+
+using lama::Matrix;
+using lama::Vector;
 
 namespace solver
 {
@@ -92,7 +97,8 @@ AMGSetup<ValueType>::AMGSetup() :
 
     mHostOnlyLevel( std::numeric_limits<IndexType>::max() ), 
     mHostOnlyVars( 0 ), 
-    mReplicatedLevel( std::numeric_limits<IndexType>::max() )
+    mReplicatedLevel( std::numeric_limits<IndexType>::max() ),
+    mMainGalerkinMatrix( nullptr )
 {
 }
 
@@ -124,9 +130,359 @@ void AMGSetup<ValueType>::setReplicatedLevel( IndexType replicatedLevel )
 }
 
 template<typename ValueType>
+void AMGSetup<ValueType>::setMaxLevels( IndexType maxLevels )
+{
+    mMaxLevels = maxLevels;
+}
+
+template<typename ValueType>
 void AMGSetup<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "AMGSetup( ... )";
+}
+
+/* ========================================================================= */
+/*     initialize ( common part for all AMG Setup classes )                  */
+/* ========================================================================= */
+
+template<typename ValueType>
+void AMGSetup<ValueType>::initialize( const Matrix<ValueType>& mainSystemMatrix )
+{
+    SCAI_REGION( "AMGSetup.initialize" )
+
+    SCAI_ASSERT_EQ_ERROR( 0, getNumLevels(), "AMGSetup already initialized" )
+
+    // pushback main system matrix to storage vector
+
+    mMainGalerkinMatrix = &mainSystemMatrix;
+
+    // clear the last matrix hierarchy
+
+    mGalerkinMatrices.clear();
+    mInterpolationMatrices.clear();
+    mRestrictionMatrices.clear();
+
+    createMatrixHierarchy();   // virtual function implemented individually by derived AMGSetup classes
+
+    convertMatrixHierarchy();   // convert, redistribute matrices, upload to context device
+
+    createVectorHierarchy();   // create objects for rhs, solution, residual on each level
+
+    createSolverHierarchy();   // create smoothers and coarse level solver
+}
+
+/* ========================================================================= */
+/*     Optimize layout of matrices on all AMG Levels                         */
+/* ========================================================================= */
+
+template<typename ValueType>
+void AMGSetup<ValueType>::convertMatrixHierarchy()
+{
+    SCAI_ASSERT_ERROR( mMainGalerkinMatrix, "null pointer for main matrix, setup has not been initialized yet" )
+
+    IndexType numLevels = getNumLevels();
+
+    for ( IndexType level = 1; level < numLevels; level++ )
+    {
+        auto dist0 = getGalerkin( level - 1 ).getRowDistributionPtr();
+
+        Matrix<ValueType>& galerkin = *mGalerkinMatrices[level - 1];
+ 
+        auto dist1 = galerkin.getRowDistributionPtr();
+
+        galerkin.redistribute( dist1, dist1 );
+
+        mInterpolationMatrices[level - 1]->redistribute( dist0, dist1 );
+        mRestrictionMatrices[level - 1]->redistribute( dist1, dist0 );
+    }
+}
+
+/* ========================================================================= */
+/*      Management of vectors for all AMG levels                             */
+/* ========================================================================= */
+
+template<typename ValueType>
+void AMGSetup<ValueType>::createVectorHierarchy()
+{
+    SCAI_ASSERT_ERROR( mMainGalerkinMatrix, "null pointer for main matrix, setup has not been initialized yet" )
+
+    SCAI_REGION( "AMGSetup.createVectorHierarchy" );
+
+    IndexType numLevels = getNumLevels();
+
+    SCAI_LOG_INFO( logger, "Creating Vectors for hierarchy, #levels = " << numLevels );
+
+    mSolutionHierarchy.resize( numLevels );
+    mRhsHierarchy.resize( numLevels );
+    mTmpResHierarchy.resize( numLevels );
+}
+
+template<typename ValueType>
+Vector<ValueType>& AMGSetup<ValueType>::getSolutionVector( const IndexType level )
+{
+    IndexType numLevels = mSolutionHierarchy.size();
+
+    SCAI_ASSERT_ERROR( level != 0, "SolutionVector on level 0 is not stored in hierarachy." );
+    SCAI_ASSERT_VALID_INDEX_ERROR( level, numLevels, "SolutionVector on Level " << level << " does not exist" );
+
+    return mSolutionHierarchy[level];
+}
+
+template<typename ValueType>
+Vector<ValueType>& AMGSetup<ValueType>::getRhsVector( const IndexType level )
+{
+    IndexType numRhsVectors = mRhsHierarchy.size();
+
+    SCAI_ASSERT_ERROR( level != 0, "RhsVector on level 0 is not stored in hierarachy." );
+    SCAI_ASSERT_VALID_INDEX_ERROR( level, numRhsVectors, "illegal level for rhs vecotr" )
+    return mRhsHierarchy[level];
+}
+
+template<typename ValueType>
+Vector<ValueType>& AMGSetup<ValueType>::getTmpResVector( const IndexType level )
+{
+    IndexType numResVectors = mTmpResHierarchy.size();
+    SCAI_ASSERT_VALID_INDEX_ERROR( level, numResVectors, "TmpResVector on Level " << level << " does not exist" );
+    return mTmpResHierarchy[level];
+}
+
+/* ========================================================================= */
+/*      Management of the matrices on / between all AMG levels               */
+/* ========================================================================= */
+
+template<typename ValueType>
+IndexType AMGSetup<ValueType>::getNumLevels() const
+{
+    // Attention: main matrix counts as an additional level
+
+    if ( mMainGalerkinMatrix == nullptr )
+    {
+        return 0;
+    }
+    else
+    {
+        return static_cast<IndexType>( mGalerkinMatrices.size() + 1 );
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void AMGSetup<ValueType>::addNextLevel( 
+    std::unique_ptr<lama::Matrix<ValueType>> interpolationMatrix,
+    std::unique_ptr<lama::Matrix<ValueType>> galerkinMatrix,
+    std::unique_ptr<lama::Matrix<ValueType>> restrictionMatrix )
+{
+    SCAI_ASSERT_ERROR( interpolationMatrix.get(), "null pointer for interpolation matrix" )
+
+    // check for a correct interpolation matrix, #rows must be same as size of last galerkin matrix
+
+    const Matrix<ValueType>& lastGalerkin = getGalerkin( getNumLevels() - 1 );
+
+    SCAI_ASSERT_EQ_ERROR( interpolationMatrix->getNumRows(), lastGalerkin.getNumRows(), 
+                          "interpolation matrix for level does not match size of last Galerkin matrix." )
+
+    if ( restrictionMatrix.get() )
+    {
+        // check for a correct restriction matrix
+ 
+        SCAI_ASSERT_EQ_ERROR( restrictionMatrix->getNumRows(), interpolationMatrix->getNumColumns(), "serious mismatch" )
+        SCAI_ASSERT_EQ_ERROR( restrictionMatrix->getNumColumns(), interpolationMatrix->getNumRows(), "serious mismatch" )
+
+        mRestrictionMatrices.push_back( std::move( restrictionMatrix ) );
+    }
+    else
+    {
+        std::unique_ptr<Matrix<ValueType>> ownRestrictionMatrix( interpolationMatrix->newMatrix() );
+        ownRestrictionMatrix->assignTranspose( *interpolationMatrix );
+        mRestrictionMatrices.push_back( std::move( ownRestrictionMatrix ) );
+    }
+
+    if ( galerkinMatrix.get() )
+    {
+        // check galerkin matrix
+
+        SCAI_ASSERT_EQ_ERROR( galerkinMatrix->getNumRows(), galerkinMatrix->getNumColumns(), "galerkin matrix not square" )
+        SCAI_ASSERT_EQ_ERROR( galerkinMatrix->getNumRows(), interpolationMatrix->getNumColumns(), "galerkin matrix not square" )
+
+        mGalerkinMatrices.push_back( std::move( galerkinMatrix ) );
+    }
+    else
+    {
+        // compute own galerkin matrix
+        COMMON_THROWEXCEPTION( "compute of galerkin matrix not supported yet" )
+    }
+
+    mInterpolationMatrices.push_back( std::move( interpolationMatrix ) );
+
+    // Overlapping of conversions, halo computations might be possible 
+    // Only be careful: derived AMG setup class might still use galerkinMatrix to compute next level
+}
+
+/* ========================================================================= */
+/*   Getter methods for Galerkin, Restriciton, Interpolation matrix          */
+/* ========================================================================= */
+
+template<typename ValueType>
+const Matrix<ValueType>& AMGSetup<ValueType>::getGalerkin( const IndexType level )
+{
+    IndexType numLevels = getNumLevels();
+
+    SCAI_ASSERT_VALID_INDEX_ERROR( level, numLevels, "Galerkin on Level " << level << " does not exist" );
+
+    if ( level == 0 )
+    {
+        return *mMainGalerkinMatrix;
+    }
+    else
+    {
+        return *mGalerkinMatrices[level-1];
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+const Matrix<ValueType>& AMGSetup<ValueType>::getRestriction( const IndexType level )
+{
+    IndexType numRestrictionMatrices = mRestrictionMatrices.size();   // type conversion to LAMA index type
+
+    SCAI_ASSERT_VALID_INDEX_ERROR( level, numRestrictionMatrices, "illegal get for restriction matrix" )
+
+    return *mRestrictionMatrices[level];
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+const Matrix<ValueType>& AMGSetup<ValueType>::getInterpolation( const IndexType level )
+{
+    IndexType numInterpolationMatrices = mInterpolationMatrices.size();
+
+    SCAI_ASSERT_VALID_INDEX_ERROR( level, numInterpolationMatrices, "illegal level for interpolation" )
+
+    return *mInterpolationMatrices[level];
+}
+
+/* ========================================================================= */
+/*       Managment of Smoothers on all levels                                */
+/* ========================================================================= */
+
+template<typename ValueType>
+void AMGSetup<ValueType>::setCoarseLevelSolver( SolverPtr<ValueType> solver )
+{
+    mCoarseLevelSolver = solver;
+}
+
+template<typename ValueType>
+void AMGSetup<ValueType>::setSmoother( SolverPtr<ValueType> solver )
+{
+    SCAI_LOG_INFO( logger, "Set own smoother" )
+    mSmoother = solver;
+}
+
+template<typename ValueType>
+Solver<ValueType>& AMGSetup<ValueType>::getSmoother( const IndexType level )
+{
+    IndexType numLevels = mSolverHierarchy.size();
+
+    SCAI_ASSERT_EQ_DEBUG( numLevels, getNumLevels(), "serious mismatch at smoother query" )
+
+    SCAI_ASSERT_VALID_INDEX_ERROR( level, numLevels, "Smoother on Level " << level << " does not exist" );
+
+    return *mSolverHierarchy[level];
+}
+
+template<typename ValueType>
+Solver<ValueType>& AMGSetup<ValueType>::getCoarseLevelSolver()
+{
+    IndexType numLevels = mSolverHierarchy.size();
+
+    SCAI_ASSERT_GT_ERROR( numLevels, 0, "no solvers set." )
+
+    return *mSolverHierarchy[numLevels - 1];
+}
+
+template<typename ValueType>
+std::string AMGSetup<ValueType>::getCoarseLevelSolverInfo() const
+{
+    IndexType numLevels = mSolverHierarchy.size();
+
+    if ( numLevels > 0 )
+    {
+        return mSolverHierarchy.back()->getId();
+    }
+    else
+    {
+        return "No Coarse Solver";
+    }
+}
+
+template<typename ValueType>
+std::string AMGSetup<ValueType>::getSmootherInfo() const
+{
+    if ( getNumLevels() <= 1 )
+    {
+        return "No Smoother / 1-Level Approach";
+    }
+    else
+    {
+        return mSolverHierarchy[0]->getId();
+    }
+}
+
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
+
+template<typename ValueType>
+void AMGSetup<ValueType>::createSolverHierarchy()
+{
+    mSolverHierarchy.clear();    // just in case 
+
+    SCAI_REGION( "AMGSetup.createSolverHierarchy" );
+
+    IndexType numLevels = getNumLevels();
+
+    SCAI_ASSERT_GE_ERROR( numLevels, 1, "no levels, cannot create solver" )
+
+    SCAI_LOG_INFO( logger, "Initializing solver-hierarchy, numLevels = " << numLevels );
+
+    for ( IndexType i = 0; i < numLevels; ++i )
+    {
+        bool isCoarseLevel = ( i + 1 ) == numLevels;  
+
+        SolverPtr<ValueType> solver;
+
+        if ( mSmoother && !isCoarseLevel )
+        {
+            solver.reset( mSmoother->copy() );
+        }
+        else if ( isCoarseLevel && mCoarseLevelSolver )
+        {
+            solver.reset( mCoarseLevelSolver->copy() );
+        }
+        else
+        {
+            // get the default solver as provided by the derived AMG setup class
+
+            solver = createSolver( isCoarseLevel );
+        }
+
+        solver->initialize( getGalerkin( i ) );
+
+        SCAI_LOG_INFO( logger, "\tLevel " << i << ": " << *solver )
+
+        mSolverHierarchy.push_back( solver );
+    }
+}
+
+/* ========================================================================= */
+
+template<typename ValueType>
+void AMGSetup<ValueType>::setMinVarsCoarseLevel( const IndexType vars )
+{
+    mMinVarsCoarseLevel = vars;
 }
 
 /* ========================================================================= */

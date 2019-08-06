@@ -190,6 +190,16 @@ public:
         const hmemo::HArray<IndexType>& ia,
         hmemo::ContextPtr prefLoc );
 
+    template<typename ValueType>
+    static IndexType shiftDiagonalFirst(
+        hmemo::HArray<IndexType>& ja,
+        hmemo::HArray<ValueType>& values,
+        const IndexType numRows,   
+        const IndexType numColumns,
+        const hmemo::HArray<IndexType>& ia,
+        const hmemo::HArray<IndexType>& diagonals,
+        hmemo::ContextPtr prefLoc );
+
     /** Conversion routine of compressed sparse row data to compressed sparse column.
      *
      *  This method does not keep diagonalProperty.

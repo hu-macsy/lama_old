@@ -45,6 +45,7 @@
 
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/dmemo/SingleDistribution.hpp>
 #include <scai/dmemo/GlobalAddressingPlan.hpp>
 #include <scai/dmemo/RedistributePlan.hpp>
 #include <scai/hmemo/ContextAccess.hpp>
@@ -83,7 +84,8 @@ template<typename ValueType>
 DenseVector<ValueType>::DenseVector( ContextPtr context ) :
 
     Vector<ValueType>( 0, context ),
-    mLocalValues()
+    mLocalValues( context ),
+    mHaloValues( context )
 {
 }
 
@@ -91,8 +93,8 @@ template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const IndexType size, const ValueType value, ContextPtr context ) :
 
     Vector<ValueType>( size, context ), 
-    mLocalValues( size, value, context )
-
+    mLocalValues( size, value, context ),
+    mHaloValues( context )
 {
     SCAI_LOG_INFO( logger, "Construct dense vector, size = " << size << ", init =" << value )
 }
@@ -101,7 +103,8 @@ template<typename ValueType>
 DenseVector<ValueType>::DenseVector( DistributionPtr distribution, const ValueType value, ContextPtr context ) :
 
     Vector<ValueType>( distribution, context ), 
-    mLocalValues( distribution->getLocalSize(), value )
+    mLocalValues( distribution->getLocalSize(), value ),
+    mHaloValues( context )
 
 {
     SCAI_LOG_INFO( logger,
@@ -1289,6 +1292,8 @@ void DenseVector<ValueType>::gatherInto(
     const DenseVector<IndexType>& index,
     const BinaryOp op )
 {
+    SCAI_REGION( "Vector.Dense.gatherInto" )
+
     if ( op != BinaryOp::COPY )
     {
         SCAI_ASSERT_EQ_ERROR( getDistribution(), index.getDistribution(), "both vectors must have same distribution" )
@@ -1426,6 +1431,8 @@ void DenseVector<ValueType>::gatherByPlan(
     const dmemo::GlobalAddressingPlan& plan,
     const common::BinaryOp op ) const
 {
+    SCAI_REGION( "Vector.Dense.gatherPlan" )
+
     SCAI_ASSERT_EQ_ERROR( plan.sendSize(), target.getDistribution().getLocalSize(), "serious mismatch" )
     plan.gather( target.getLocalValues(), mLocalValues, op );
 }
@@ -1438,6 +1445,8 @@ void DenseVector<ValueType>::scatterByPlan(
     const DenseVector<ValueType>& source,
     const common::BinaryOp op )
 {
+    SCAI_REGION( "Vector.Dense.scatterPlan" )
+
     // plan does not contain any information about remote distribution for which it was built
     // so we have here no checks that plan matches
 
@@ -1553,7 +1562,7 @@ void DenseVector<ValueType>::assign( const _Vector& other )
 {
     // translate virtual call to specific template call via wrapper
 
-    mepr::VectorWrapper<DenseVector, SCAI_NUMERIC_TYPES_HOST_LIST>::assignImpl( this, other );
+    mepr::VectorWrapper<DenseVector, SCAI_ARRAY_TYPES_HOST_LIST>::assignImpl( this, other );
 }
 
 template<typename ValueType>
@@ -1874,58 +1883,49 @@ void DenseVector<ValueType>::redistribute( const RedistributePlan& redistributor
 /* -- IO ------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::writeLocalToFile(
-    const std::string& fileName,
-    const std::string& fileType,
-    const common::ScalarType dataType,
-    const FileIO::FileMode fileMode
-) const
+void DenseVector<ValueType>::writeLocalToFile( FileIO& file ) const
 {
-    std::string suffix = fileType;
+    // in contrary to writeToFile( file ) here data is already redistributed correctly
 
-    if ( suffix == "" )
-    {
-        suffix = FileIO::getSuffix( fileName );
-    }
-
-    if ( FileIO::canCreate( suffix ) )
-    {
-        // okay, we can use FileIO class from factory
-
-        std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
-
-        if ( dataType != common::ScalarType::UNKNOWN )
-        {
-            // overwrite the default settings
-
-            fileIO->setDataType( dataType );
-        }
-
-        if ( fileMode != FileIO::DEFAULT_MODE )
-        {
-            // overwrite the default settings
-
-            fileIO->setMode( fileMode );
-        }
-
-        fileIO->writeArray( mLocalValues, fileName );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "File : " << fileName << ", unknown suffix" )
-    }
+    file.writeArray( mLocalValues );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-IndexType DenseVector<ValueType>::readLocalFromFile( const std::string& fileName, const IndexType first, const IndexType n )
+void DenseVector<ValueType>::readFromFile( FileIO& file ) 
 {
-    SCAI_LOG_INFO( logger, "read local array from file " << fileName )
+    auto comm = file.getCommunicatorPtr();
+    
+    if ( file.getDistributedIOMode() == DistributedIOMode::MASTER )
+    {   
+        const PartitionId MASTER = 0;
+        const PartitionId myRank = comm->getRank();
 
-    FileIO::read( mLocalValues, fileName, common::ScalarType::INTERNAL, first, n );
+        IndexType globalSize;
+        
+        if ( myRank == MASTER )
+        {
+            SCAI_LOG_INFO( logger, *comm << ": read local array from file " << file )
+            file.readArray( mLocalValues );
+            globalSize = mLocalValues.size();
+        }
+        else
+        {
+            mLocalValues.clear();
+        }
+        
+        comm->bcast( &globalSize, 1, MASTER );
+        
+        setDistributionPtr( dmemo::singleDistribution( globalSize, comm, MASTER ) );
+    }
+    else
+    {
+        // INDEPENDENT or COLLECTIVE 
 
-    return mLocalValues.size();
+        file.readArray( mLocalValues );
+        setDistributionPtr( genBlockDistributionBySize( mLocalValues.size(), comm ) );
+    }
 }
 
 /* ---------------------------------------------------------------------------------*/

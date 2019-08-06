@@ -77,6 +77,8 @@
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/zip_iterator.h>
 #include <thrust/reduce.h>
+#include <thrust/device_malloc.h>
+#include <thrust/device_free.h>
 
 #include <functional>
 
@@ -93,6 +95,13 @@
 #define HASH_C0 1
 #define HASH_C1 1
 #define NUM_CHUNKS_PER_WARP 128
+
+#if __CUDACC_VER_MAJOR__ >= 9
+    #define FULL_MASK 0xffffffff
+    #define CUDA_ANY( cond ) __any_sync( FULL_MASK, ( cond ) )
+#else
+    #define CUDA_ANY( cond ) __any( cond )
+#endif
 
 using namespace scai::common;
 using namespace scai::hmemo;
@@ -1426,7 +1435,7 @@ __global__ void matrixAddSizesKernel(
     IndexType numWarpsGlobal = ( blockDim.x * gridDim.x ) / warpSize;
     IndexType rowIt = globalWarpId;
 
-    for ( ; __any( rowIt < numRows ); rowIt += numWarpsGlobal )
+    for ( ; CUDA_ANY( rowIt < numRows ); rowIt += numWarpsGlobal )
     {
         if ( rowIt < numRows )
         {
@@ -1440,7 +1449,7 @@ __global__ void matrixAddSizesKernel(
                 cIa[rowIt] = bColEnd - bColIt;
             }
 
-            for ( IndexType aColItOffset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, aColItOffset += warpSize )
+            for ( IndexType aColItOffset = 0; CUDA_ANY( aColIt < aColEnd ); aColIt += warpSize, aColItOffset += warpSize )
             {
                 IndexType colA = aColIt < aColEnd ? aJa[aColIt] : cudaNIndex;
                 IndexType end = multHlp_getNumActiveThreads( aColIt, aColEnd, aIa, rowIt, aColItOffset );
@@ -1454,7 +1463,7 @@ __global__ void matrixAddSizesKernel(
 
                     sFound[localWarpId] = false;
 
-                    for ( IndexType bColItOffset = 0; !sFound[localWarpId] && __any( ( bColIt + bColItOffset ) < bColEnd );
+                    for ( IndexType bColItOffset = 0; !sFound[localWarpId] &&  CUDA_ANY( ( bColIt + bColItOffset ) < bColEnd );
                             bColItOffset += warpSize )
                     {
                         IndexType colB = ( bColIt + bColItOffset ) < bColEnd ? bJa[bColIt + bColItOffset] : cudaNIndex;
@@ -1881,7 +1890,7 @@ void matrixMultiplySizesKernel(
                                           sChunkList,
                                           sReservedChunks );
 
-                for ( IndexType offset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, offset += warpSize )
+                for ( IndexType offset = 0; CUDA_ANY( aColIt < aColEnd ); aColIt += warpSize, offset += warpSize )
                 {
                     IndexType colA = aColIt < aColEnd ? aJA[aColIt] : cudaNIndex;
                     IndexType end = multHlp_getNumActiveThreads( aColIt, aColEnd, aIA, aRowIt, offset );
@@ -1896,7 +1905,7 @@ void matrixMultiplySizesKernel(
                         IndexType bColIt = bIA[sColA] + laneId;
                         IndexType bColEnd = bIA[sColA + 1];
 
-                        for ( ; __any( bColIt < bColEnd ); bColIt += warpSize )
+                        for ( ; CUDA_ANY( bColIt < bColEnd ); bColIt += warpSize )
                         {
                             colB = bColIt < bColEnd ? bJA[bColIt] : cudaNIndex;
 
@@ -1935,7 +1944,7 @@ void matrixMultiplySizesKernel(
                     }
                 }
 
-                if ( __any( localSystemError ) )
+                if ( CUDA_ANY( localSystemError ) )
                 {
                     *hashError = true;
                     return;
@@ -2111,7 +2120,7 @@ void matrixAddKernel(
     IndexType numWarpsGlobal = ( blockDim.x * gridDim.x ) / warpSize;
     IndexType rowIt = globalWarpId;
 
-    for ( ; __any( rowIt < numRows ); rowIt += numWarpsGlobal )
+    for ( ; CUDA_ANY( rowIt < numRows ); rowIt += numWarpsGlobal )
     {
         if ( rowIt < numRows )
         {
@@ -2123,7 +2132,7 @@ void matrixAddKernel(
 
             // Copy values of b to C
 
-            for ( IndexType bColOffset = 0; __any( ( bColIt + bColOffset ) < bColEnd ); bColOffset += warpSize )
+            for ( IndexType bColOffset = 0; CUDA_ANY( ( bColIt + bColOffset ) < bColEnd ); bColOffset += warpSize )
             {
                 IndexType colB = ( bColIt + bColOffset ) < bColEnd ? bJA[bColIt + bColOffset] : cudaNIndex;
                 ValueType valB = ( bColIt + bColOffset ) < bColEnd ? bValues[bColIt + bColOffset] : static_cast<ValueType>( 0 );
@@ -2139,7 +2148,7 @@ void matrixAddKernel(
             IndexType cColOffset = bIA[rowIt + 1] - bIA[rowIt];
 
             // Add values of a to c
-            for ( IndexType aColItOffset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, aColItOffset += warpSize )
+            for ( IndexType aColItOffset = 0; CUDA_ANY( aColIt < aColEnd ); aColIt += warpSize, aColItOffset += warpSize )
             {
                 IndexType colA = aColIt < aColEnd ? aJA[aColIt] : cudaNIndex;
                 ValueType valA = aColIt < aColEnd ? aValues[aColIt] : static_cast<ValueType>( 0 );
@@ -2154,7 +2163,7 @@ void matrixAddKernel(
                         sFoundJa[localWarpId] = cudaNIndex;
                     }
 
-                    for ( IndexType bColItOffset = 0; ( sFoundJa[localWarpId] == cudaNIndex ) && __any( ( bColIt + bColItOffset ) < bColEnd );
+                    for ( IndexType bColItOffset = 0; ( sFoundJa[localWarpId] == cudaNIndex ) && CUDA_ANY( ( bColIt + bColItOffset ) < bColEnd );
                             bColItOffset += warpSize )
                     {
                         IndexType colB = ( bColIt + bColItOffset ) < bColEnd ? bJA[bColIt + bColItOffset] : cudaNIndex;
@@ -2361,7 +2370,7 @@ void matrixMultiplyKernel(
                 localSystemError = true;
             }
 
-            if ( __any( localSystemError ) )
+            if ( CUDA_ANY( localSystemError ) )
             {
                 *hashError = true;
                 return;
@@ -2379,7 +2388,7 @@ void matrixMultiplyKernel(
                                           sChunkList,
                                           sReservedChunks );
 
-                for ( IndexType offset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, offset += warpSize )
+                for ( IndexType offset = 0; CUDA_ANY( aColIt < aColEnd ); aColIt += warpSize, offset += warpSize )
                 {
                     IndexType colA = aColIt < aColEnd ? aJA[aColIt] : cudaNIndex;
                     ValueType valA = aColIt < aColEnd ? aValues[aColIt] : static_cast<ValueType>( 0 );
@@ -2396,7 +2405,7 @@ void matrixMultiplyKernel(
                         IndexType bColIt = bIA[sColA] + laneId;
                         IndexType bColEnd = bIA[sColA + 1];
 
-                        for ( ; __any( bColIt < bColEnd ); bColIt += warpSize )
+                        for ( ; CUDA_ANY( bColIt < bColEnd ); bColIt += warpSize )
                         {
                             colB = bColIt < bColEnd ? bJA[bColIt] : cudaNIndex;
                             ValueType valB = bColIt < bColEnd ? bValues[bColIt] : static_cast<ValueType>( 0 );
@@ -2446,7 +2455,7 @@ void matrixMultiplyKernel(
                         localSystemError = true;
                     }
 
-                    if ( __any( localSystemError ) )
+                    if ( CUDA_ANY( localSystemError ) )
                     {
                         *hashError = true;
                         return;
@@ -2657,6 +2666,7 @@ void shiftDiagKernel(
     IndexType csrJA[],
     ValueType csrValues[],
     const IndexType csrIA[],
+    const IndexType diagonalIndexes[],
     const IndexType numDiagonals )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
@@ -2664,6 +2674,13 @@ void shiftDiagKernel(
     if ( i >= numDiagonals )
     {
         return;
+    }
+
+    IndexType diagonalIndex = i;
+ 
+    if ( diagonalIndexes != NULL )
+    {
+        diagonalIndex = diagonalIndexes[i];
     }
 
     IndexType start = csrIA[i];
@@ -2675,7 +2692,7 @@ void shiftDiagKernel(
         return;
     }
 
-    if ( csrJA[start] == i )
+    if ( csrJA[start] == diagonalIndex )
     {
         count[i] = 1;  // diagonal element is already first
         return;
@@ -2692,7 +2709,7 @@ void shiftDiagKernel(
     {
         // check if it is the diagonal element, save the diagonal value
 
-        if ( not found && csrJA[end] == i )
+        if ( not found && csrJA[end] == diagonalIndex )
         {
             found = true;
             diagonalValue = csrValues[end];
@@ -2722,7 +2739,8 @@ IndexType CUDACSRUtils::shiftDiagonal(
     IndexType csrJA[],
     ValueType csrValues[],
     const IndexType numDiagonals,
-    const IndexType csrIA[] )
+    const IndexType csrIA[],
+    const IndexType diagonalIndexes[] )
 {
     SCAI_REGION( "CUDA.CSR.shiftDiag" )
 
@@ -2736,7 +2754,7 @@ IndexType CUDACSRUtils::shiftDiagonal(
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numDiagonals, dimBlock.x );
 
-    shiftDiagKernel <<< dimGrid, dimBlock>>>( d_count, csrJA, csrValues, csrIA, numDiagonals );
+    shiftDiagKernel <<< dimGrid, dimBlock>>>( d_count, csrJA, csrValues, csrIA, diagonalIndexes, numDiagonals );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "shiftDiagonal" )
 

@@ -55,6 +55,7 @@
 // std
 #include <memory>
 #include <vector>
+#include <string>
 #include <stack>
 
 //#include <cmath>
@@ -82,21 +83,16 @@ class CommunicationPlan;
 
 typedef std::shared_ptr<const Communicator> CommunicatorPtr;
 
-/** @brief Own namespace for the enum type CommunicatorKind and its values */
+/** @brief Enum call CommunicatorType and its values */
 
-struct _Communicator
+enum class CommunicatorType
 {
-
-    typedef enum
-    {
-        NO,                  //!< No communicator
-        MPI,                 //!< MPI communicator
-        MAX_COMMUNICATOR     //!< dummy value for number of communicators
-    } CommunicatorKind;
-
+    NO,                  //!< No communicator
+    MPI,                 //!< MPI communicator
+    MAX_COMMUNICATOR     //!< dummy value for number of communicators
 };
 
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const _Communicator::CommunicatorKind& kind );
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const CommunicatorType& kind );
 
 /**
  * @brief Base and interface class for communicators used in LAMA
@@ -118,10 +114,10 @@ COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const _C
  */
 class COMMON_DLL_IMPORTEXPORT Communicator:
 
-    public  _Communicator,
     public  scai::common::Printable,
-    public  scai::common::Factory<_Communicator::CommunicatorKind, CommunicatorPtr>,
-    private scai::common::NonCopyable
+    public  scai::common::Factory<CommunicatorType, CommunicatorPtr>,
+    private scai::common::NonCopyable,
+    public  std::enable_shared_from_this<const Communicator>
 {
 
 public:
@@ -134,7 +130,7 @@ public:
      *  @throws common::Exception for unsupported type
      */
 
-    static CommunicatorPtr getCommunicatorPtr( const CommunicatorKind& type );
+    static CommunicatorPtr getCommunicatorPtr( const CommunicatorType& type );
 
     /** Get communicator from the factory.
      *
@@ -175,20 +171,22 @@ public:
 
     /** @brief Find a facotorization of size with two factors
      *
+     *  @param[in] size       total number of processors
      *  @param[in] sizeX      weight for the first dimension
      *  @param[in] sizeY      weight for the second dimension
      *  @param[out] procgrid   array of size 2 with the two factors
      */
-    void factorize2( PartitionId procgrid[2], const double sizeX, const double sizeY ) const;
+    static void factorize2( PartitionId procgrid[2], const PartitionId size, const double sizeX, const double sizeY );
 
     /** @brief Find a factorization of size with three factors
      *
      *  @param[out] procgrid   array of size 3 with the three factors
+     *  @param[in] size       total number of processors
      *  @param[in] sizeX      weight for the first dimension
      *  @param[in] sizeY      weight for the second dimension
      *  @param[in] sizeZ      weight for the third dimension
      */
-    void factorize3( PartitionId procgrid[3], const double sizeX, const double sizeY, const double sizeZ ) const;
+    static void factorize3( PartitionId procgrid[3], const PartitionId size, const double sizeX, const double sizeY, const double sizeZ );
 
     /** @brief Get the position of this processor in a two-dimensional processor grid
      *
@@ -827,7 +825,7 @@ public:
 
     /** @brief Getter for the type of a communicator. */
 
-    inline CommunicatorKind getType() const;
+    inline CommunicatorType getType() const;
 
     /** This routine provides a context that might be most efficient for
      *  the communication of data.
@@ -840,6 +838,11 @@ public:
      */
     virtual hmemo::ContextPtr getCommunicationContext( const hmemo::_HArray& array ) const = 0;
 
+    /**
+     *  @brief This routine provides a collective / concurrent file that allows parallel I/O
+     */
+    virtual std::unique_ptr<class CollectiveFile> collectiveFile() const = 0;
+
     /** Read in the environment variable SCAI_NP for user processor array.
      *
      * @param[out] userProcArray specifies the user processor array.
@@ -849,11 +852,24 @@ public:
 
     void setSeed( int seed ) const;
 
+    /**
+     *  @brief  Function that returns the name of node on which this communicator runs
+     */
+    const char* getNodeName() const;
+
+    /**
+     *  @brief Function that returns a unique id of the node on which this process is runing.
+     *
+     *  The unique id cal also be considered as the rank of this node among all other nodes.
+     *  The rank of a node is given by sorting by the ranks of those processors with node rank equal 0.
+     */
+    int getNodeId() const;
+
 protected:
 
     /** Constructor of abstract classes are always protected. */
 
-    Communicator( const CommunicatorKind& type );
+    Communicator( const CommunicatorType& type );
 
     /** This method determines node rank and node size by comparing the names. */
 
@@ -880,7 +896,8 @@ protected:
                       const ValueType oldVals[], const IndexType oldSize ) const;
 
 private:
-    CommunicatorKind mCommunicatorType; //!< type of this communicator
+
+    CommunicatorType mCommunicatorType; //!< type of this communicator
 
     PartitionId mRank; //!< rank of this processor
 
@@ -889,6 +906,12 @@ private:
     PartitionId mNodeRank; //!< rank of this processor on its node
 
     PartitionId mNodeSize; //!< number of processors on same node
+
+    PartitionId mIdNode;  //!< unique id of this node
+
+    PartitionId mNumNodes;  //!< total number of nodes used
+
+    std::unique_ptr<char[]> mNodeName;
 
     mutable int mSeed;
 };
@@ -1092,7 +1115,7 @@ tasking::SyncToken* Communicator::shiftAsync(
 
 /* -------------------------------------------------------------------------- */
 
-Communicator::CommunicatorKind Communicator::getType() const
+CommunicatorType Communicator::getType() const
 {
     return mCommunicatorType;
 }

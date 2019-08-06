@@ -50,12 +50,6 @@ Access::~Access()
 {
 }
 
-void Access::writeAt( std::ostream& stream ) const
-{
-    // only default method, derived classes are expected to overwrite this method
-    stream << "Access";
-}
-
 } /* end namespace hmemo */
 
 } /* end namespace scai */

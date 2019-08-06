@@ -124,6 +124,10 @@ public:
 
     static _Solver* create();
 
+    // using clauses for more convenient use of methods of base classes
+
+    using IterativeSolver<ValueType>::getIterationCount;
+
 protected:
 
     virtual void iterate();

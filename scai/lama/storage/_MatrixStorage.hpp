@@ -374,14 +374,16 @@ public:
      *   Query routines                                                *
      ******************************************************************/
 
-    /** Returns the number of bytes needed for the current matrix.
-     *
-     *  Note: This routine does not tell how many memory is really allocated. Storage data
-     *        might be allocated on more than one device. Furthermore, it is possible that
-     *        arrays have more memory reserved than needed for its current size.
+    /** 
+     *  @brief Query the number of bytes only needed in this base class
      */
 
-    size_t getMemoryUsage() const;
+    size_t _getMemoryUsage() const;
+
+    /**
+     *  @brief Pure function to query the memory needed for the matrix storage.
+     */
+    virtual size_t getMemoryUsage() const = 0;
 
     virtual void check( const char* msg ) const = 0;
 
@@ -426,13 +428,15 @@ public:
     virtual MatrixStorageCreateKeyType getCreateValue() const = 0;
 
     /**
-     * @brief read the matrix storage from an input file
+     * @brief Pure independent method to read full or a contiguous part of matrix storage from an input file
      *
      * @param[in] fileName is the name of the input file (suffix must be added according to the file type)
      * @param[in] firstRow is the first row to read
      * @param[in] nRows    specifies the number of rows to read, defaults to number of rows of full storage - firstRow
      *
      * Note: default argument for nRows is invalidIndex as the number of rows in full storage might not be known
+     *
+     * This routine is completely independent, i.e. if called by multiple processors, each processor opens the file.
      */
     virtual void readFromFile(
         const std::string& fileName,
@@ -442,23 +446,20 @@ public:
     /**
      * @brief write the matrix storage to an output file
      *
-     * @param[in] fileName  is the name of the output file (suffix must be added according to the file type)
-     * @param[in] type      format of the output file ("frm" for SAMG, "mtx" for _MatrixMarket), default is to decide by suffix
+     * @param[in] fileName  is the name of the output file, suffix determines FileIO class used for writing
+     * @param[in] fileMode  use BINARY or FORMATTED to force a certain mode, otherwise DEFAULT
      * @param[in] dataType  representation type for output values, default is same type as matrix values
      * @param[in] indexType representation type for row/col index values (default is settings of FileIO)
-     * @param[in] fileMode  use BINARY or FORMATTED to force a certain mode, otherwise DEFAULT
      *
      * If one of the arguments dataType, indexType or fileMode is set, it will overwrite
      * any setting specified by the corresponding environment variables SCAI_IO_TYPE_DATA, SCAI_IO_TYPE_INDEX
      * or SCAI_IO_BINARY
      */
-
-    virtual void writeToFile(
+    void writeToFile(
         const std::string& fileName,
-        const std::string& type = "",
-        const common::ScalarType dataType = common::ScalarType::UNKNOWN,
-        const common::ScalarType indexType = common::ScalarType::UNKNOWN,
-        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const = 0;
+        const FileMode fileMode = FileMode::DEFAULT,
+        const common::ScalarType dataType = common::ScalarType::INTERNAL,
+        const common::ScalarType indexType = common::ScalarType::INDEX_TYPE ) const;
 
     virtual bool checkSymmetry() const = 0;
 
@@ -514,18 +515,6 @@ protected:
     /** This method provides the move semantic for member variables of this base class only. */
 
     void moveImpl( _MatrixStorage&& other );
-
-    /** Returns the number of bytes needed for the current matrix.
-     *
-     *  This pure function must be implemented by each derived class. Relevant for the number
-     *  of bytes is the current size of the used (LAMA) arrays.
-     *
-     *  Note: This routine does not tell how many memory is really allocated. Storage data
-     *        might be allocated on more than one device. Furthermore, it is possible that
-     *        arrays have more memory reserved than needed for its current size.
-     */
-
-    virtual size_t getMemoryUsageImpl() const = 0;
 
 private:
 

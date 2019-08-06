@@ -56,6 +56,7 @@ namespace scai
 {
 
 using common::Grid;
+using common::BorderType;
 
 namespace sparsekernel
 {
@@ -100,11 +101,11 @@ bool getBorderPosR( IndexType& pos, const IndexType offset, const IndexType size
     {
         pos += offset;  // is a valid pos
     }
-    else if ( border == Grid::BORDER_ABSORBING )
+    else if ( border == static_cast<IndexType>( BorderType::ABSORBING ) )
     {
         valid = false;
     }
-    else if ( border == Grid::BORDER_PERIODIC )
+    else if ( border == static_cast<IndexType>( BorderType::PERIODIC ) )
     {
         pos = ( pos + offset ) - size; 
     }

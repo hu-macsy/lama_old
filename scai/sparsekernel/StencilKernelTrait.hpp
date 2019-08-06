@@ -58,7 +58,7 @@ struct StencilKernelTrait
             const IndexType nDims,
             const IndexType gridSizes[],
             const IndexType gridDistances[],
-            const common::Grid::BorderType gridBorders[],
+            const common::BorderType gridBorders[],
             const IndexType nPoints,
             const int stencilNodes[] );
 
@@ -94,7 +94,7 @@ struct StencilKernelTrait
             const IndexType nDims,
             const IndexType gridSizes[],
             const IndexType gridDistances[],
-            const common::Grid::BorderType gridBorders[],
+            const common::BorderType gridBorders[],
             const IndexType nPoints,
             const int stencilNodes[],
             const ValueType stencilVal[],
@@ -138,7 +138,7 @@ struct StencilKernelTrait
             const IndexType localLB[],
             const IndexType globalGridSizes[],
             const IndexType globalGridDistances[],
-            const common::Grid::BorderType globalGridBorders[],
+            const common::BorderType globalGridBorders[],
             const IndexType nPoints,
             const int stencilNodes[],
             const ValueType stencilVal[],

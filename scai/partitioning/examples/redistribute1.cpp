@@ -45,7 +45,7 @@ int main( int, char** )
    
     typedef DefaultReal ValueType;
 
-    auto v = linearDenseVector<ValueType>( sourceDistribution, 1, 0.2 );
+    auto v = denseVectorLinear<ValueType>( sourceDistribution, 1, 0.2 );
 
     std::cout << "v = " << v << std::endl;
 

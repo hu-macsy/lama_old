@@ -65,7 +65,13 @@ if    ( NOT SCAI_CMAKE_VERBOSE )
     include ( scai_function/setCMakeQuiet )
 endif ( NOT SCAI_CMAKE_VERBOSE )
 
+### Setting cmake policies to ignore warnings
 
+if ( ${CMAKE_VERSION} VERSION_LESS "3.12" ) 
+else()
+    ## allow <PackageName>_ROOT environment variables
+    cmake_policy ( SET CMP0074 NEW )
+endif()
 
 ### General stuff for all projects
 

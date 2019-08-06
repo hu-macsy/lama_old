@@ -400,6 +400,8 @@ void HArrayUtils::sparseGather(
     const BinaryOp op,
     const ContextPtr prefLoc )
 {
+    SCAI_REGION( "HArray.sparseGather" )
+
     SCAI_LOG_INFO( logger, "sparseGather<" << TypeTraits<TargetValueType>::id()
                             << ", " << TypeTraits<SourceValueType>::id() << ">" )
 
@@ -584,7 +586,7 @@ void HArrayUtils::scatter(
 
     if ( loc == ContextPtr() )
     {
-        loc = source.getValidContext();
+        loc = target.getValidContext();
     }
 
     setScatter.getSupportedContext( loc );
@@ -909,6 +911,10 @@ bool HArrayUtils::all(
     const HArray<ValueType>& array2,
     ContextPtr prefLoc )
 {
+    SCAI_REGION( "HArray.all" )
+
+    SCAI_ASSERT_EQ_ERROR( array1.size(), array2.size(), "all only for arrays with same size" )
+
     const IndexType n = array1.size();
 
     static LAMAKernel<UtilKernelTrait::allCompare<ValueType> > allCompare;
@@ -2077,6 +2083,8 @@ void HArrayUtils::elimDoubles(
         return;
     }
 
+    SCAI_REGION( "HArray.elimDoubles" )
+
     // mergeSparse elims also double values on sorted lists, just set one list empty
 
     static LAMAKernel<SparseKernelTrait::mergeSparse<ValueType> > mergeSparse;
@@ -2377,6 +2385,8 @@ void HArrayUtils::binaryOpSparse(
     const BinaryOp op,
     ContextPtr prefLoc )
 {
+    SCAI_REGION( "HArray.binOpSparse" )
+
     static LAMAKernel<SparseKernelTrait::countAddSparse> countAddSparse;
     static LAMAKernel<SparseKernelTrait::binopSparse<ValueType> > binopSparse;
 
@@ -2483,6 +2493,8 @@ void HArrayUtils::mergeSparse(
     const BinaryOp op,
     ContextPtr prefLoc )
 {
+    SCAI_REGION( "HArray.mergeSparse" )
+
     static LAMAKernel<SparseKernelTrait::countAddSparse> countAddSparse;
     static LAMAKernel<SparseKernelTrait::mergeSparse<ValueType> > mergeSparse;
 

@@ -58,6 +58,9 @@ scai_project (
         Distributed
         CommunicationPlan
 
+        CollectiveFile
+        NoCollectiveFile
+
         GlobalAddressingPlan
         GlobalExchangePlan
 

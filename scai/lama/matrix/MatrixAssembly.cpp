@@ -358,7 +358,7 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildCOO(
     const IndexType numColumns,
     common::BinaryOp op ) const
 {
-    if ( mComm->getType() == dmemo::Communicator::NO )
+    if ( mComm->getType() == dmemo::CommunicatorType::NO )
     {
         // replicated assembly, so just select the owned entries
 
@@ -374,7 +374,7 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildCOO(
 
         return buildLocalCOO( dist, numColumns, op );
     }
-    else if ( dist.getCommunicator().getType() == dmemo::Communicator::NO )
+    else if ( dist.getCommunicator().getType() == dmemo::CommunicatorType::NO )
     {
         // distributed assembly -> replicated matrix 
 

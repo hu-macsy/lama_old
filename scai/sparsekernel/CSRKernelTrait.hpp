@@ -561,12 +561,21 @@ struct CSRKernelTrait
     {
         /** This method sets the diagonal entries of a row as first entry wherever possible.
          *
+         *  @param[in,out] csrJA is array with all column indexes of the CSR format
+         *  @param[in,out] csrValues is array with all non-zero vaues of the CSR format
+         *  @param[in]     numDiagonals number of rows where to set the diagonal element
+         *  @param[in]     csrIA is the offset array of the CSR format
+         *  @param[in]     diagonalIndexes contains the diagonal index of each row
+         *
+         *  The argument diagonalIndexes is optional and defaults to diagonalIndexes[i] == i.
+         *  In case of distributed matrices it will be the owner of row i.
          */
         typedef IndexType ( *FuncType ) (
             IndexType csrJA[], 
             ValueType csrValues[],
             const IndexType numDiagonals,
-            const IndexType csrIA[] );
+            const IndexType csrIA[], 
+            const IndexType diagonalIndexes[] );
 
         static const char* getId()
         {

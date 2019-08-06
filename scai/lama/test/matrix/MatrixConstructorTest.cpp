@@ -46,13 +46,14 @@
 
 #include <scai/common/TypeTraits.hpp>
 
-#include <scai/testsupport/uniquePath.hpp>
+#include <scai/testsupport/uniquePathComm.hpp>
 #include <scai/testsupport/GlobalTempDir.hpp>
 
 using namespace scai;
 using namespace lama;
 
 using scai::testsupport::uniquePath;
+using scai::testsupport::uniquePathSharedAmongNodes;
 using scai::testsupport::GlobalTempDir;
 
 using boost::test_tools::per_element;
@@ -186,7 +187,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( storageConstructorTest, MatrixType, MatrixTypes )
 
     hmemo::HArray<ValueType> denseData( numRows * numCols, ValueType( 0 ) );
 
-    common::Math::srandom( 1317 );  // makes sure that all processors generate same data
+    common::Math::srandom( 1317 );  // makes sure that all processes generate same data
 
     utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
@@ -240,7 +241,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( convertConstructorTest, MatrixType, MatrixTypes )
 
     hmemo::HArray<ValueType> denseData( n * n, ValueType( 0 ), ctx );
 
-    common::Math::srandom( 1317 );  // makes sure that all processors generate same data
+    common::Math::srandom( 1317 );  // makes sure that all processes generate same data
 
     utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
@@ -293,7 +294,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( moveConstructorTest, MatrixType, MatrixTypes )
 
     hmemo::HArray<ValueType> denseData( n * n, ValueType( 0 ), ctx );
 
-    common::Math::srandom( 1317 );  // makes sure that all processors generate same data
+    common::Math::srandom( 1317 );  // makes sure that all processes generate same data
 
     utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
@@ -363,7 +364,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CopyConstructorTest, MatrixType, MatrixTypes )
     float fillRate = 0.2;
 
     hmemo::HArray<ValueType> denseData( numRows * numCols, ValueType( 0 ) );
-    common::Math::srandom( 1317 );  // makes sure that all processors generate same data
+    common::Math::srandom( 1317 );  // makes sure that all processes generate same data
     utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
     auto globalStorage = convert<StorageType>( DenseStorage<ValueType>( numRows, numCols, std::move( denseData ) ) );
@@ -408,7 +409,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentOpTest, MatrixType, MatrixTypes )
     float fillRate = 0.2;
 
     hmemo::HArray<ValueType> denseData( numRows * numCols, ValueType( 0 ) );
-    common::Math::srandom( 1317 );  // makes sure that all processors generate same data
+    common::Math::srandom( 1317 );  // makes sure that all processes generate same data
     utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
     auto globalStorage = convert<StorageType>( DenseStorage<ValueType>( numRows, numCols, std::move( denseData ) ) );
@@ -670,7 +671,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, MatrixType, MatrixTypes )
     const IndexType numRows = 16;
     const IndexType numCols = 16;
 
-    const auto fileName = uniquePath(GlobalTempDir::getPath(), "myMatrix") + ".psc";
+    // as we might have collective read, same file name required for all procs
+
+    const auto fileName = uniquePathSharedAmongNodes( GlobalTempDir::getPath(), *comm, "myMatrix" ) + ".lmf";
+
+    SCAI_LOG_INFO( logger, *comm << ": fileConstructorTest, fileName = " << fileName << ", same on all procs" )
 
     float fillRate = 0.2;
 
@@ -684,17 +689,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, MatrixType, MatrixTypes )
 
     if ( comm->getRank() == 0 )
     {
+        SCAI_LOG_INFO( logger, *comm << ": write storage to file " << fileName << ": " << globalStorage )
         globalStorage.writeToFile( fileName );
     }
 
     comm->synchronize();
 
-    dmemo::DistributionPtr rowDist( new dmemo::NoDistribution( numRows ) );
-    dmemo::DistributionPtr colDist( new dmemo::NoDistribution( numCols ) );
-
-    // comm->synchronize();
+    auto rowDist = dmemo::noDistribution( numRows );
+    auto colDist = dmemo::noDistribution( numCols );
 
     auto matrix1 = read<MatrixType>( fileName );
+
+    SCAI_LOG_INFO( logger, *comm << ": read matrix from file " << fileName << ": " << matrix1 )
 
     BOOST_CHECK( matrix1.isConsistent() );
     BOOST_CHECK_EQUAL( numRows, matrix1.getNumRows() );

@@ -1,0 +1,77 @@
+###
+ # @file code_coverage.sh
+ #
+ # @license
+ # Copyright (c) 2009-2018
+ # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ # for Fraunhofer-Gesellschaft
+ #
+ # This file is part of the SCAI framework LAMA.
+ #
+ # LAMA is free software: you can redistribute it and/or modify it under the
+ # terms of the GNU Lesser General Public License as published by the Free
+ # Software Foundation, either version 3 of the License, or (at your option)
+ # any later version.
+ #
+ # LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ # FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
+ # more details.
+ #
+ # You should have received a copy of the GNU Lesser General Public License
+ # along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ # @endlicense
+ #
+ # @brief This file is a shellscript, which contains all necessary steps to 
+ #        measure code coverage of LAMA follow project solver.
+ # @author Lauretta Schubert
+ # @date 15.08.2012
+###
+
+source scai_code_coverage_functions.sh
+
+# Check requirements for codecoverage
+requirements_coverage
+
+dirname=$(create_dir)
+echo "Create coverage directory: ${dirname}"
+
+prepare_coverage $dirname ../..
+
+# SCAI_LOG=TRACE increases code coverage but is very time consuming
+
+export SCAI_LOG=WARN
+export SCAI_TRACE=time
+	
+# check if installed LAMA version supports MPI communicator
+
+check_feature LAMA_SUPPORTS_MPI ./solverTest --SCAI_COMMUNICATOR=MPI --run_test=VersionTest 
+
+check_feature LAMA_SUPPORTS_CUDA ./solverTest --SCAI_CONTEXT=CUDA --run_test=VersionTest
+
+# Running tests serial
+echo "Running solver tests on Host"
+count_error ./solverTest
+    
+if [ "${LAMA_SUPPORTS_MPI}" -eq 1 ]
+then
+	echo "Running solver tests with 3 mpi-processes"
+	count_error mpirun -np 3 ./lsbctest --SCAI_COMMUNICATOR=MPI --SCAI_NUM_THREADS=1
+fi
+
+if [ "${LAMA_SUPPORTS_CUDA}" -eq 1 ]
+then
+	echo "Running solver tests on CUDA"
+	count_error ./solverTest --SCAI_CONTEXT=CUDA
+fi
+
+exit_on_failure ${error_count}
+
+do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@/@MODULE_NAME@"
+
+exit_on_failure $?
+
+zip -qr ../solver_coverage.zip *
+
+echo "Code coverage run finished, results in directory: ${dirname}"
+

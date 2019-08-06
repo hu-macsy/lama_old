@@ -244,7 +244,7 @@ BOOST_AUTO_TEST_CASE( stencilGEMV4Test )
     const IndexType n4 = 5;
 
     common::Grid4D grid( n1, n2, n3, n4 );
-    grid.setBorderType( 3, common::Grid::BORDER_PERIODIC );
+    grid.setBorderType( 3, common::BorderType::PERIODIC );
 
     const IndexType gridSize = grid.size();   // mult n1 * n2 * n3 only once
 

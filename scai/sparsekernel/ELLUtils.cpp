@@ -393,7 +393,7 @@ void ELLUtils::getColumnPositions(
     const IndexType j,
     const ContextPtr prefLoc )
 {
-    SCAI_REGION( "Storage.ELL.getSparseCol" )
+    SCAI_REGION( "Sparse.ELL.getSparseCol" )
 
     const IndexType numRows = ellIA.size();
 

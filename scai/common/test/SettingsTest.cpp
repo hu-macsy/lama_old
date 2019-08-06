@@ -30,8 +30,11 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/common/Settings.hpp>
+#include <scai/common/exception/Exception.hpp>
+#include <fstream>
 
 using scai::common::Settings;
+using scai::common::Exception;
 
 /* --------------------------------------------------------------------- */
 
@@ -147,6 +150,58 @@ BOOST_AUTO_TEST_CASE( getIntTest )
 
     /* --------------------------------------------------------------------- */
 
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( settingsFileTest )
+{
+     // generate an example file
+
+     std::fstream file;
+     file.open( "test_settings.txt", std::ios::out | std::ios::trunc );
+     file << "dummy0 0 WEIGHT=0.4\n";
+     file << "error1 5 WEIGHT DOMAIN=5\n";
+     file << "error2 X DOMAIN=5\n";
+     file << "dummy1 5 WEIGHT=0.3 DOMAIN=5\n";
+     file << "dummy0 0-2 DOMAIN=4\n";
+     file.close();
+
+     Settings::readSettingsFile( "test_settings.txt", "dummy0", 0 );
+
+     float weight = 0;
+     float expWeight = 0.4f;
+     bool set = Settings::getEnvironment( weight, "WEIGHT" );
+     BOOST_CHECK( set );
+     BOOST_CHECK_EQUAL( weight, expWeight );
+
+     int domain = 0;
+     int expDomain = 4;
+     set = Settings::getEnvironment( domain, "DOMAIN" );
+     BOOST_CHECK( set );
+     BOOST_CHECK_EQUAL( domain, expDomain );
+
+     BOOST_CHECK_THROW( 
+     {
+         Settings::readSettingsFile( "test_settings.txt", "error1", 5 );
+     }, Exception );
+
+     BOOST_CHECK_THROW( 
+     {
+         Settings::readSettingsFile( "test_settings.txt", "error2", 5 );
+     }, Exception );
+
+     BOOST_CHECK_THROW( 
+     {
+         Settings::readSettingsFile( "test_settings.txt", "none", 0 );
+     }, Exception );
+
+     Settings::readSettingsFile( "test_settings.txt", "dummy1", 5 );
+
+     expWeight = 0.3f;
+     set = Settings::getEnvironment( weight, "WEIGHT" );
+     BOOST_CHECK( set );
+     BOOST_CHECK_EQUAL( weight, expWeight );
 }
 
 BOOST_AUTO_TEST_SUITE_END()

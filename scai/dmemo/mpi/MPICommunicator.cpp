@@ -33,6 +33,7 @@
 // local library
 #include <scai/dmemo/mpi/MPISyncToken.hpp>
 #include <scai/dmemo/mpi/MPIUtils.hpp>
+#include <scai/dmemo/mpi/MPICollectiveFile.hpp>
 
 #include <scai/dmemo/CommunicationPlan.hpp>
 
@@ -70,19 +71,21 @@ MPI_Op MPICommunicator::mSumComplexLongDouble = 0;
 
 SCAI_LOG_DEF_LOGGER( MPICommunicator::logger, "Communicator.MPICommunicator" )
 
-MPICommunicator::MPICommunicator( int& argc, char** & argv, const CommunicatorKind& type )
-    : Communicator( type ),
-      mMainThread( std::this_thread::get_id() ),
-      mThreadSafetyLevel( Communicator::Funneled )
+MPICommunicator::MPICommunicator( int& argc, char** & argv, const CommunicatorType& type ) : 
+
+    Communicator( type ),
+    mMainThread( std::this_thread::get_id() ),
+    mThreadSafetyLevel( Communicator::Funneled )
 {
     SCAI_LOG_DEBUG( logger, "Communicator constructed, type = " << type )
     initialize( argc, argv );
 }
 
-MPICommunicator::MPICommunicator()
-    : Communicator( MPI ),
-      mMainThread( std::this_thread::get_id() ),
-      mThreadSafetyLevel( Communicator::Funneled )
+MPICommunicator::MPICommunicator() : 
+
+    Communicator( CommunicatorType::MPI ),
+    mMainThread( std::this_thread::get_id() ),
+    mThreadSafetyLevel( Communicator::Funneled )
 {
     int argc = 0;
     char** argv = NULL;
@@ -90,10 +93,11 @@ MPICommunicator::MPICommunicator()
     initialize( argc, argv );
 }
 
-MPICommunicator::MPICommunicator( int& argc, char** & argv )
-    : Communicator( MPI ),
-      mMainThread( std::this_thread::get_id() ),
-      mThreadSafetyLevel( Communicator::Funneled )
+MPICommunicator::MPICommunicator( int& argc, char** & argv ) : 
+
+    Communicator( CommunicatorType::MPI ),
+    mMainThread( std::this_thread::get_id() ),
+    mThreadSafetyLevel( Communicator::Funneled )
 {
     SCAI_TRACE_SCOPE( false ) // switch off tracing in this scope as it might call this constructor again
     initialize( argc, argv );
@@ -1079,6 +1083,13 @@ hmemo::ContextPtr MPICommunicator::getCommunicationContext( const hmemo::_HArray
 }
 
 /* ---------------------------------------------------------------------------------- */
+
+std::unique_ptr<class CollectiveFile> MPICommunicator::collectiveFile() const
+{
+    return std::unique_ptr<CollectiveFile>( new MPICollectiveFile( shared_from_this() ) );
+}
+
+/* ---------------------------------------------------------------------------------- */
 /*           writeAt                                                                  */
 /* ---------------------------------------------------------------------------------- */
 
@@ -1104,7 +1115,7 @@ void MPICommunicator::writeAt( std::ostream& stream ) const
 
 MPICommunicator::MPICommunicator( const MPICommunicator& comm, PartitionId color, PartitionId key ) :
 
-    Communicator( MPI ),
+    Communicator( CommunicatorType::MPI ),
     mKind( MPICommKind::CREATED ),
     mThreadSafetyLevel( comm.mThreadSafetyLevel )
 
@@ -1167,9 +1178,9 @@ CommunicatorPtr MPICommunicator::create()
 
 /* --------------------------------------------------------------- */
 
-Communicator::CommunicatorKind MPICommunicator::createValue()
+CommunicatorType MPICommunicator::createValue()
 {
-    return MPI;
+    return CommunicatorType::MPI;
 }
 
 /* --------------------------------------------------------------- */

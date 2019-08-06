@@ -51,7 +51,7 @@ namespace testsupport
  *
  * Note: The path manipulation is extremely rudimentary and entirely string-based.
  */
-std::string uniquePath(const std::string & dir, const std::string & namePrefix = "");
+std::string uniquePath( const std::string& dir, const std::string& namePrefix = "" );
 
 } // namespace testsupport
 

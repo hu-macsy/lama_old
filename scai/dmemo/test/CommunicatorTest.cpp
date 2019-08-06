@@ -1056,6 +1056,7 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 BOOST_AUTO_TEST_CASE( procArrayTest )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    PartitionId np = comm->getSize();
 
     PartitionId procArray[3];
     PartitionId posArray[3];
@@ -1088,15 +1089,15 @@ BOOST_AUTO_TEST_CASE( procArrayTest )
 
     common::Settings::putEnvironment( "SCAI_NP", "", replace );
 
-    comm->factorize2( procArray, 16, 1 );
+    Communicator::factorize2( procArray, np, 16, 1 );
 
-    BOOST_CHECK_EQUAL( comm->getSize(), procArray[0] * procArray[1] );
+    BOOST_CHECK_EQUAL( np, procArray[0] * procArray[1] );
 
-    if ( comm->getSize() < 5 )
+    if ( np < 5 )
     {
         // all processors should be dedicated to 1st factor
 
-        BOOST_CHECK_EQUAL( comm->getSize(), procArray[0] );
+        BOOST_CHECK_EQUAL( np, procArray[0] );
     }
 
     posArray[0] = posArray[1] = posArray[2] = invalidPartition;
@@ -1106,15 +1107,15 @@ BOOST_AUTO_TEST_CASE( procArrayTest )
     BOOST_CHECK_EQUAL( comm->getRank(), posArray[1] * procArray[0] + posArray[0] );
     BOOST_CHECK_EQUAL( invalidPartition, posArray[2] );
 
-    comm->factorize3( procArray, 1, 16, 1 );
+    Communicator::factorize3( procArray, np, 1, 16, 1 );
 
-    BOOST_CHECK_EQUAL( comm->getSize(), procArray[0] * procArray[1] * procArray[2] );
+    BOOST_CHECK_EQUAL( np, procArray[0] * procArray[1] * procArray[2] );
 
-    if ( comm->getSize() < 5 )
+    if ( np < 5 )
     {
         // all processors should be dedicated to 2nd factor
 
-        BOOST_CHECK_EQUAL( comm->getSize(), procArray[1] );
+        BOOST_CHECK_EQUAL( np, procArray[1] );
     }
 
     posArray[0] = posArray[1] = posArray[2] = invalidPartition;

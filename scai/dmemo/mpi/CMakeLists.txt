@@ -31,6 +31,7 @@
 
 set ( CLASSES
         MPICommunicator
+        MPICollectiveFile
         MPIException
         MPISyncToken
     )

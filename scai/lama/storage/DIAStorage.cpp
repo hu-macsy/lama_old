@@ -459,7 +459,7 @@ void DIAStorage<ValueType>::setColumn( const HArray<ValueType>& column, const In
 template<typename ValueType>
 void DIAStorage<ValueType>::getDiagonal( HArray<ValueType>& diagonal ) const
 {
-    const IndexType numDiagonalElements = _MatrixStorage::getDiagonalSize();
+    const IndexType numDiagonalElements = this->getDiagonalSize();
 
     if ( numDiagonalElements == 0 )
     {
@@ -492,7 +492,7 @@ void DIAStorage<ValueType>::getDiagonal( HArray<ValueType>& diagonal ) const
 template<typename ValueType>
 void DIAStorage<ValueType>::setDiagonalV( const HArray<ValueType>& diagonal )
 {
-    const IndexType numDiagonalElements = _MatrixStorage::getDiagonalSize();
+    const IndexType numDiagonalElements = this->getDiagonalSize();
 
     SCAI_ASSERT_EQ_ERROR( diagonal.size(), numDiagonalElements, "serious mismtach for diagonal" )
 
@@ -541,7 +541,7 @@ IndexType DIAStorage<ValueType>::getMainIndex() const
 template<typename ValueType>
 void DIAStorage<ValueType>::setDiagonal( const ValueType value )
 {
-    const IndexType numDiagonalElements = _MatrixStorage::getDiagonalSize();
+    const IndexType numDiagonalElements = this->getDiagonalSize();
 
     if ( numDiagonalElements == 0 )
     {
@@ -935,12 +935,14 @@ void DIAStorage<ValueType>::swap( DIAStorage<ValueType>& other )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-size_t DIAStorage<ValueType>::getMemoryUsageImpl() const
+size_t DIAStorage<ValueType>::getMemoryUsage() const
 {
-    size_t memoryUsage = 0;
+    size_t memoryUsage = _MatrixStorage::_getMemoryUsage();
+
     memoryUsage += sizeof( IndexType );
     memoryUsage += sizeof( IndexType ) * mOffset.size();
     memoryUsage += sizeof( ValueType ) * mValues.size();
+
     return memoryUsage;
 }
 

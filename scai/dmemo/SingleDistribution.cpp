@@ -248,6 +248,16 @@ DistributionPtr SingleDistribution::create( const DistributionArguments arg )
     return std::make_shared<SingleDistribution>( arg.globalSize, arg.communicator, 0 );
 }
 
+const char* SingleDistribution::getKind() const
+{
+    return getId();
+}
+
+const char* SingleDistribution::getId()
+{
+    return "SINGLE";
+}
+
 } /* end namespace dmemo */
 
 } /* end namespace scai */

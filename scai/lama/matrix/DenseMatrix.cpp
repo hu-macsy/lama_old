@@ -78,7 +78,7 @@ struct DenseMatrixWrapper<ValueType, common::mepr::NullType>
 {
     static void assign( DenseMatrix<ValueType>&, const _Matrix& other )
     {
-        COMMON_THROWEXCEPTION( "DenseMatrix::assing: type of other matrix not supported --> " << other )
+        COMMON_THROWEXCEPTION( "DenseMatrix::assign: type of other matrix not supported --> " << other )
     }
 };
 

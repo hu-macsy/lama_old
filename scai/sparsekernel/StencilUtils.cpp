@@ -75,7 +75,7 @@ void StencilUtils::setup(
     auto wGridInfo = hostWriteOnlyAccess( gridInfo, 6 * nDims );
    
     const IndexType* pGridSizes = grid.sizes();
-    const Grid::BorderType* pGridBorders = grid.borders();
+    const common::BorderType* pGridBorders = grid.borders();
 
     for ( IndexType i = 0; i < nDims; ++i )
     {

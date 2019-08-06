@@ -49,6 +49,10 @@ variables:
         "$EXTRA_CMAKE_OPTS"
     - make -j$BUILD_THREADS
     - make -j$BUILD_THREADS examples tests
+    - echo $LD_LIBRARY_PATH
+    - ldd common/test/commonTest
+    - ./common/test/commonTest
+    - make test
     - eval python run_tests.py --output_dir $BUILD_DIR/testoutput --temp_dir tmp "$RUN_TESTS_ARGS"
     - make install > $CI_PROJECT_DIR/make_install_output.txt
   after_script:
@@ -69,7 +73,7 @@ variables:
 # CONFIGURATIONS INTENDED TO RUN ON EVERY COMMIT TO ANY BRANCH
 ###############################################################
 
-common basic build serial gcc 4.9.1 (debug):
+common basic build serial gcc 7.3.0 (debug):
   # This is the most basic build configuration.
   # It is only intended as a quick and basic sanity check,
   # so that using compute resources for running the full
@@ -78,96 +82,97 @@ common basic build serial gcc 4.9.1 (debug):
   stage: basic build test
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2 tools/python/2.7.14
-    - module unload gcc
-    - module load gcc/4.9.1
+    - module purge
+    - module load CMake/3.11.4-GCCcore-7.3.0 Python/2.7.15-GCCcore-7.3.0-bare
+    - export BOOST_ROOT=/home/brandes/local/boost_1_65_1_gcc_7_3_0
+    - export LD_LIBRARY_PATH="$BOOST_ROOT/lib:$LD_LIBRARY_PATH"
   variables:
     LAMA_BUILD_TYPE: Debug
     USE_OPENMP: 0
     USE_CUDA: 0
     OMP_NUM_THREADS: 1
-    BOOST_ROOT: /home/brandes/local/boost_test_1_65_1_gcc_4_9_1
     # Note the SCAI_MODULES definition
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1 -DSCAI_MODULES=common
     RUN_TESTS_ARGS: --tests commonTest
   tags:
     - draco
 
-serial gcc 4.9.1 (debug):
+serial gcc 7.3.0 (debug):
   <<: *build_test_install_template
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2 tools/python/2.7.14
-    - module unload gcc
-    - module load gcc/4.9.1
+    - module purge
+    - module load CMake/3.11.4-GCCcore-7.3.0 Python/2.7.15-GCCcore-7.3.0-bare
+    - export BOOST_ROOT=/home/brandes/local/boost_1_65_1_gcc_7_3_0
+    - export LD_LIBRARY_PATH="$BOOST_ROOT/lib:$LD_LIBRARY_PATH"
   variables:
     LAMA_BUILD_TYPE: Debug
     USE_CUDA: 0
     OMP_NUM_THREADS: 1
     # It seems to be necessary to specifically specify the Boost installation
-    BOOST_ROOT: /home/brandes/local/boost_test_1_65_1_gcc_4_9_1
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
   tags:
     - draco
 
-mpi intel 2018.1 (release):
+mpi intel 2019.01 (release):
   <<: *build_test_install_template
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2 tools/python/2.7.14
-    - module unload gcc
-    - module load intel/studio/2018.1.038
-    - module load gcc/4.8.2
-    - module load intelmpi/intel/5.1.0.079
+    - module purge
+    - module load intel/2019.01
+    - module load CMake/3.13.3-GCCcore-8.2.0 
+    - module load Python/2.7.15-GCCcore-8.2.0
+    - module load Boost/1.69.0-intel-2019.01
+    - export FI_PROVIDER=tcp
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
     USE_MPI: 1
     OMP_NUM_THREADS: 1
     # It seems to be necessary to specifically specify the Boost installation
-    BOOST_ROOT: /home/brandes/local/boost_1_65_1_icc18
-    EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
+    EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1 -DCMAKE_CXX_COMPILER=icpc
     RUN_TESTS_ARGS: --intel --mpi --np 1 2 3 5
   tags:
     - draco
 
-mpi gcc 5.4.0 (release):
+mpi gcc 7.3.0 (release):
   <<: *build_test_install_template
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2 tools/python/2.7.14
-    - module unload gcc
-    - module load gcc/5.4.0
-    - module load openmpi/gcc/2.1.2
+    - module purge
+    - module load CMake/3.11.4-GCCcore-7.3.0 Python/2.7.15-GCCcore-7.3.0-bare
+    - module load OpenMPI/3.1.1-GCC-7.3.0-2.30
+    - export BOOST_ROOT=/home/brandes/local/boost_1_65_1_gcc_7_3_0
+    - export LD_LIBRARY_PATH="$BOOST_ROOT/lib:$LD_LIBRARY_PATH"
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
     USE_MPI: 1
     OMP_NUM_THREADS: 1
     # It seems to be necessary to specifically specify the Boost installation
-    BOOST_ROOT: /home/brandes/local/boost_test_1_65_1_gcc_5_4_0
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
     RUN_TESTS_ARGS: --mpi --np 1 2 3 5
   tags:
     - draco
 
-parallel gcc 6.3.0 (release):
+parallel gcc 8.2.0 (release):
   <<: *build_test_install_template
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2 tools/python/2.7.14
-    - module unload gcc
-    - module load gcc/6.3.0
+    - module purge
+    - module load CMake/3.13.3-GCCcore-8.2.0 Python/2.7.15-GCCcore-8.2.0
+    - export BOOST_ROOT=/home/brandes/local/boost_1_65_1_gcc_7_3_0
+    - export LD_LIBRARY_PATH="$BOOST_ROOT/lib:$LD_LIBRARY_PATH"
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
+    USE_MPI: 0
     OMP_NUM_THREADS: 4
     # It seems to be necessary to specifically specify the Boost installation
-    BOOST_ROOT: /home/brandes/local/boost_test_1_65_1_gcc_6_3_0
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
   tags:
     - draco
@@ -177,17 +182,17 @@ int64 (release):
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2 tools/python/2.7.14
-    - module unload gcc
-    - module load gcc/5.4.0
-    - module load openmpi/gcc/2.1.2
+    - module purge
+    - module load CMake/3.11.4-GCCcore-7.3.0 Python/2.7.15-GCCcore-7.3.0-bare
+    - module load OpenMPI/3.1.1-GCC-7.3.0-2.30
+    - export BOOST_ROOT=/home/brandes/local/boost_1_65_1_gcc_7_3_0
+    - export LD_LIBRARY_PATH="$BOOST_ROOT/lib:$LD_LIBRARY_PATH"
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
     USE_MPI: 1
     OMP_NUM_THREADS: 1
     # It seems to be necessary to specifically specify the Boost installation
-    BOOST_ROOT: /home/brandes/local/boost_test_1_65_1_gcc_5_4_0
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1 -DSCAI_INDEX_TYPE="unsigned int"
     RUN_TESTS_ARGS: --mpi --np 1 4
   tags:
@@ -198,17 +203,17 @@ double (release):
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2 tools/python/2.7.14
-    - module unload gcc
-    - module load gcc/5.4.0
-    - module load openmpi/gcc/2.1.2
+    - module purge
+    - module load CMake/3.11.4-GCCcore-7.3.0 Python/2.7.15-GCCcore-7.3.0-bare
+    - module load OpenMPI/3.1.1-GCC-7.3.0-2.30
+    - export BOOST_ROOT=/home/brandes/local/boost_1_65_1_gcc_7_3_0
+    - export LD_LIBRARY_PATH="$BOOST_ROOT/lib:$LD_LIBRARY_PATH"
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
     USE_MPI: 1
     OMP_NUM_THREADS: 1
     # It seems to be necessary to specifically specify the Boost installation
-    BOOST_ROOT: /home/brandes/local/boost_test_1_65_1_gcc_5_4_0
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1 -DSCAI_HOST_TYPES_LIST="double"
     RUN_TESTS_ARGS: --mpi --np 1 4
   tags:
@@ -226,12 +231,13 @@ serial gcc 4.9.1 (release):
     - module load tools/cmake/3.5.2 tools/python/2.7.14
     - module unload gcc
     - module load gcc/4.9.1
+    - export BOOST_ROOT=/home/brandes/local/boost_1_65_1_gcc_7_3_0
+    - export LD_LIBRARY_PATH="$BOOST_ROOT/lib:$LD_LIBRARY_PATH"
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
     OMP_NUM_THREADS: 1
     # It seems to be necessary to specifically specify the Boost installation
-    BOOST_ROOT: /home/brandes/local/boost_test_1_65_1_gcc_4_9_1
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
   tags:
     - draco
@@ -239,19 +245,19 @@ serial gcc 4.9.1 (release):
     - master
     - develop
 
-parallel gcc 5.4.0 (release):
+parallel gcc 7.3.0 (release):
   <<: *build_test_install_template
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2 tools/python/2.7.14
-    - module unload gcc
-    - module load gcc/5.4.0
+    - module purge
+    - module load CMake/3.11.4-GCCcore-7.3.0 Python/2.7.15-GCCcore-7.3.0-bare
+    - export BOOST_ROOT=/home/brandes/local/boost_1_65_1_gcc_7_3_0
+    - export LD_LIBRARY_PATH="$BOOST_ROOT/lib:$LD_LIBRARY_PATH"
   variables:
     LAMA_BUILD_TYPE: Release
     USE_CUDA: 0
     OMP_NUM_THREADS: 4
-    BOOST_ROOT: /home/brandes/local/boost_test_1_65_1_gcc_5_4_0
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
   tags:
     - draco
@@ -259,21 +265,22 @@ parallel gcc 5.4.0 (release):
     - master
     - develop
 
-sanitized parallel gcc 6.3.0:
+sanitized parallel gcc 7.3.0:
   <<: *build_test_install_template
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2 tools/python/2.7.14
-    - module unload gcc
-    - module load gcc/6.3.0
+    - module purge
+    - module load CMake/3.11.4-GCCcore-7.3.0 
+    - module load Python/2.7.15-GCCcore-7.3.0-bare
+    - export BOOST_ROOT=/home/brandes/local/boost_1_65_1_gcc_7_3_0
+    - export LD_LIBRARY_PATH="$BOOST_ROOT/lib:$LD_LIBRARY_PATH"
   variables:
     LAMA_BUILD_TYPE: Debug
     USE_CUDA: 0
-    OMP_NUM_THREADS: 4
-    BOOST_ROOT: /home/brandes/local/boost_test_1_65_1_gcc_6_3_0
+    OMP_NUM_THREADS: 1
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DBoost_NO_SYSTEM_PATHS=1
-    UBSAN_OPTIONS: print_stacktrace=1
+    # UBSAN_OPTIONS: print_stacktrace=1
     # We currently have some tests which try to allocate too much memory,
     # expecting to receive an exception. ASAN will by default not allow returning
     # null from the allocator, so we have to instruct it to ignore it.
@@ -282,8 +289,7 @@ sanitized parallel gcc 6.3.0:
         -DBoost_NO_BOOST_CMAKE=1
         -DADDITIONAL_CXX_FLAGS="-fsanitize=undefined -fno-sanitize-recover=all -fno-omit-frame-pointer"
         -DADDITIONAL_LINKER_FLAGS="-fsanitize=undefined -fno-sanitize-recover=all"
+        -DSCAI_BLAS_LIBRARY=INTERNALBLAS
+        -DUSE_FFTW=0
   tags:
     - draco
-  only:
-    - master
-    - develop

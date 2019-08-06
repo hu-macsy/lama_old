@@ -36,6 +36,7 @@
 
 // base classes
 #include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/NoCommunicator.hpp>
 
 namespace scai
 {
@@ -62,7 +63,7 @@ class COMMON_DLL_IMPORTEXPORT GridDistribution:
 {
 public:
 
-    /** Construct a grid distribution
+    /** Constructor for a grid distribution
      *
      *  @param[in] globalGrid specifies the problem grid to be distributed
      *  @param[in] communicator used for the partitions onto which grid is distributed
@@ -72,7 +73,7 @@ public:
      */
     GridDistribution( const common::Grid& globalGrid, const CommunicatorPtr communicator, const common::Grid& procGrid );
 
-    /** Construct a grid distribution
+    /** Construct a grid distribution by using the default processor array.
      *
      *  @param[in] globalGrid specifies the problem grid to be distributed
      *  @param[in] communicator used for the partitions onto which grid is distributed
@@ -210,6 +211,36 @@ public:
         return mProcGrid;
     }
 
+    /**
+     *   @brief Override Distribution::toBlockDistribution()
+     *
+     *   Create a grid distribution where only first dimension is distributed
+     */
+    virtual DistributionPtr toBlockDistribution( CommunicatorPtr comm ) const;
+
+    /**
+     *   @brief Override Distribution::toMasterDistribution()
+     *
+     *   Create a replicated grid distribution (single not supported here)
+     */
+    virtual DistributionPtr toMasterDistribution( CommunicatorPtr comm ) const;
+
+    /**
+     *   @brief Override Distribution::toReplicatedDistribution()
+     *
+     *   Create a replicated grid distribution
+     */
+    virtual DistributionPtr toReplicatedDistribution() const;
+
+    /**
+     *  @brief (static) method to get the default processor grid
+     *
+     *  @param[in] grid specifies the data grid
+     *  @param[in] np is the total number of processors available
+     *  @returns   a processor grid, same rank as grid and total size is np
+     */
+    static common::Grid getDefaultProcGrid( const common::Grid& grid, const PartitionId np );
+
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
@@ -260,6 +291,57 @@ const char* GridDistribution::getId()
 {
     return "GRID";
 }
+
+/* -----------------------------------------------------------------------------*/
+/*  Inline functions for convenience                                            */
+/* -----------------------------------------------------------------------------*/
+
+inline std::shared_ptr<GridDistribution> gridDistribution(
+    const common::Grid& globalGrid, 
+    const CommunicatorPtr communicator, 
+    const common::Grid& procGrid )
+{
+    return std::make_shared<GridDistribution>( globalGrid, communicator, procGrid );
+}
+
+/** Construct a grid distribution on a default processor array
+ *
+ *  @param[in] globalGrid specifies the problem grid to be distributed
+ *  @param[in] communicator used for the partitions onto which grid is distributed
+ *
+ *  Note: Here the processor grid is determined by a good factorization of the available processors in the communicator.
+ *  The size of the grid can be set by the environment variable SCAI_NP, e.g. SCAI_NP=3x3x3, but the product has to
+ *  be the same as the total number of processors in the communicator.
+ */
+inline std::shared_ptr<const GridDistribution> gridDistribution(
+    const common::Grid& globalGrid, 
+    const CommunicatorPtr communicator = Communicator::getCommunicatorPtr() )
+{
+    const PartitionId np = communicator->getSize();
+
+    return std::make_shared<GridDistribution>( globalGrid, communicator,
+                                               GridDistribution::getDefaultProcGrid( globalGrid, np ) );
+}
+
+inline std::shared_ptr<const GridDistribution> gridDistributionReplicated( const common::Grid& globalGrid )
+{
+    return std::make_shared<GridDistribution>( globalGrid, std::make_shared<NoCommunicator>(), 
+                                               GridDistribution::getDefaultProcGrid( globalGrid, 1 ) );
+}
+
+/* -----------------------------------------------------------------------------*/
+/*  Constructor functions                                                       */
+/* -----------------------------------------------------------------------------*/
+
+/**
+ *  @brief Build a grid distribution by local grids
+ *  
+ *  It is assumed that the processor grid is ( nprocs, 1, 1, ... ), i.e. the global grid
+ *  is block distributed only in the first dimension.
+ */
+std::shared_ptr<const GridDistribution> gridDistributionByLocalGrid( 
+    const common::Grid& localGrid,
+    const CommunicatorPtr communicator );
 
 } /* end namespace dmemo */
 

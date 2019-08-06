@@ -67,7 +67,7 @@ void bench( const common::Grid& grid, const common::Stencil<ValueType>& stencil 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     ContextPtr ctx = Context::getContextPtr();
 
-    dmemo::DistributionPtr gridDistribution( new GridDistribution( grid, comm ) );
+    auto gridDistribution = dmemo::gridDistribution( grid, comm );
 
     std::cout << *comm << ": distribution = " << *gridDistribution << std::endl;
 
@@ -102,10 +102,10 @@ void bench( const common::Grid& grid, const common::Stencil<ValueType>& stencil 
 
     std::cout << "csrStencilMatrix " << csrMatrix << std::endl;
 
-    auto x = fill<DenseVector<ValueType>>( stencilMatrix.getColDistributionPtr(), 1 );
+    auto x = denseVector<ValueType>( stencilMatrix.getColDistributionPtr(), 1 );
 
-    auto y1 = fill<DenseVector<ValueType>>( stencilMatrix.getRowDistributionPtr(), 0 );
-    auto y2 = fill<DenseVector<ValueType>>( csrMatrix.getRowDistributionPtr(), 0 );
+    auto y1 = denseVector<ValueType>( stencilMatrix.getRowDistributionPtr(), 0 );
+    auto y2 = denseVector<ValueType>( csrMatrix.getRowDistributionPtr(), 0 );
 
     double timeStencil;
     double timeCSR;

@@ -19,12 +19,13 @@ Library Reference
 Basic data structures
 ---------------------
 
-For developing your own algorithms with LAMA's mathematical notation, you need to know these three basic data structures:
+For developing your own algorithms with LAMA's mathematical notation, you need to know these data structures:
 
 ======================    ==========================================
 Class                     Description
 ======================    ==========================================
-:doc:`Scalar`             A single value
+:doc:`DenseVector`        A (distributed) dense vector
+:doc:`SparseVector`       A (distributed) sparse vector
 :doc:`Vector`             A (distributed) vector of values (on different target architectures)
 :doc:`Matrix`             A (distributed) matrix of values (on different target architectures)
 ======================    ==========================================
@@ -34,12 +35,14 @@ More informations about the mathematical notation can be found :doc:`here <Expre
 .. toctree::
    :hidden:
    
-   Scalar
+   DenseVector
+   SparseVector
    Vector
    Matrix
    Expressions
+   DistributedIO
    FileIO
-   PartitionIO
+   FileFormat
 
 Usage
 -----
@@ -54,7 +57,8 @@ How to                    Description
 :doc:`SetContext`         How to set a ``Context``
 :doc:`SetDistribution`    How to set a ``Distribution`` with a ``Communicator``
 :doc:`FileIO`             Read and write of local vector/matrix data
-:doc:`PartitionIO`        Read and write of distributed vector/matrix data
+:doc:`DistributedIO`      Read and write of distributed vector/matrix data
+:doc:`FileFormat`         Supported file formats.
 ======================    ==========================================
 
 .. toctree::
@@ -73,37 +77,9 @@ How to                    Description
 Example
 *******
 
-.. code-block:: c++
-
-   #include <scai/lama.hpp>
-   #include <scai/dmemo/BlockDistribution.hpp>
-
-   using namespace scai;
-   using namespace lama;
-
-   int main()
-   {
-      typedef double ValueType;
-
-      IndexType size = 30;
-
-      auto comm = dmemo::Communicator::getCommunicatorPtr();
-
-      auto cudaCtx = hmemo::Context::getContextPtr( common::ContextType::CUDA, 0 );
-
-      auto csrMatrix = read<CSRSparseMatrix<ValueType>>( "gr_30_30.mtx", cudaCtx );
-
-      SCAI_ASSERT_EQ_ERROR( csrMatrix.getNumRows(), csrMatrix.getNumColumns(), "input matrix not square" )
-
-      auto dist = std::make_shared<dmemo::BlockDistribution>( csrMatrix.getNumRows(), comm );
-
-      csrMatrix.redistribute( dist, dist );
-      auto vector = fill<DenseVector<ValueType>>( dist, 1.0, cudaCtx );
-
-      auto result = eval<DenseVector<ValueType>>( csrMatrix * vector );
-
-      result.writeToFile( "result.mtx" );
-   }
+.. literalinclude:: ../../lama/examples/tutorial/example.cpp 
+   :language: c++
+   :lines: 29-
 
 .. *****************
 .. Runtime Variables

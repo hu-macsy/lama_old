@@ -42,6 +42,7 @@
 
 #include <scai/tracing.hpp>
 #include <scai/common/macros/instantiate.hpp>
+#include <scai/common/exception/InvalidArgumentException.hpp>
 
 // std
 #include <cstdlib>
@@ -57,9 +58,6 @@ namespace solver
 
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SimpleAMG<ValueType>::logger, 
                               "Solver.IterativeSolver.SimpleAMG" )
-
-SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SimpleAMG<ValueType>::SimpleAMGRuntime::logger, 
-                              "Solver.IterativeSolver.SimpleAMG.SimpleAMGRuntime" )
 
 using lama::Matrix;
 using lama::Vector;
@@ -127,8 +125,17 @@ SimpleAMG<ValueType>::SimpleAMGRuntime::SimpleAMGRuntime() :
 }
 
 template<typename ValueType>
+SimpleAMG<ValueType>::SimpleAMGRuntime::~SimpleAMGRuntime() 
+{
+    SCAI_LOG_INFO( logger, "~SimpleAMGRuntime, delete setup" )
+    mSetup.reset();
+    SCAI_LOG_INFO( logger, "~SimpleAMGRuntime" )
+}
+
+template<typename ValueType>
 SimpleAMG<ValueType>::~SimpleAMG()
 {
+    SCAI_LOG_INFO( logger, "~SimpleAMG" )
 }
 
 /* ========================================================================= */
@@ -140,14 +147,14 @@ void SimpleAMG<ValueType>::loadSetupLibs()
 {
     std::string amgSetupLibrary;
 
-    if ( common::Settings::getEnvironment( amgSetupLibrary, "SCAI_AMG_SETUP_LIBRARY" ) )
+    if ( common::Settings::getEnvironment( amgSetupLibrary, "SCAI_LIBRARY_PATH" ) )
     {
         SCAI_LOG_INFO( logger, "Load all module libraries in " << amgSetupLibrary  )
         scai::common::LibModule::loadLibsByPath( amgSetupLibrary.c_str() );
     }
     else
     {
-        SCAI_LOG_WARN( logger, "SCAI_AMG_SETUP_LIBRARY not set, take SingleGridSetup" )
+        SCAI_LOG_WARN( logger, "SCAI_LIBRARY_PATH not set, only defaults can be used" )
     }
 }
 
@@ -164,42 +171,44 @@ void SimpleAMG<ValueType>::initialize( const Matrix<ValueType>& coefficients )
         loadSetupLibs();
     }
 
-    // Info about available AMGSetup f
+    std::string amgSetupKey = "SingleGridSetup";    // take this as default
 
-    std::vector<AMGSetupCreateKeyType> values;  // string is create type for the factory
-
-    _AMGSetup::getCreateValues( values );
-
-    SCAI_LOG_INFO( logger, "Factory of AMGSetup: " << values.size() << " entries" )
-
-    for ( size_t i = 0; i < values.size(); ++i )
+    if ( common::Settings::getEnvironment( amgSetupKey, "SCAI_AMG_SETUP" ) )
     {
-        // SCAI_LOG_DEBUG( logger, "   Registered values[" << i << "] = " << values[i] )
-    }
+        // give an error message if key is unknown, printing all possible keys
 
-    if ( runtime.mSetup.get() == NULL )
-    {
-        // no setup defined yet, so we take on from the factory
-        if ( AMGSetup<ValueType>::canCreate( "SAMGPSetup" ) )
+        if ( !AMGSetup<ValueType>::canCreate( amgSetupKey ) )
         {
-            runtime.mSetup.reset( AMGSetup<ValueType>::getAMGSetup( "SAMGPSetup" ) );
-            SCAI_LOG_INFO( logger, "SimpleAMG: take SAMGPSetup as AMGSetup" )
-        }
-        else if ( AMGSetup<ValueType>::canCreate( "SimpleAMGSetup" ) )
-        {
-            runtime.mSetup.reset( AMGSetup<ValueType>::getAMGSetup( "SimpleAMGSetup" ) );
-            SCAI_LOG_INFO( logger, "SimpleAMG: take SimpleAMGSetup as AMGSetup" )
-        }
-        else if ( AMGSetup<ValueType>::canCreate( "SingleGridSetup" ) ) 
-        {
-            runtime.mSetup.reset( AMGSetup<ValueType>::getAMGSetup( "SingleGridSetup" ) );
-            SCAI_LOG_INFO( logger, "SimpleAMG: take SingleGridSetup as AMGSetup" )
+            std::vector<std::string> values;
+
+            AMGSetup<ValueType>::getCreateValues( values );
+
+            std::string valuesStr;
+
+            for ( auto const& v : values )
+            {
+                if ( valuesStr.length() )
+                {
+                    valuesStr += ":";
+                }
+                valuesStr += v;
+            }
+
+            SCAI_THROWEXCEPTION( common::InvalidArgumentException, 
+                                 "SCAI_AMG_SETUP=" << amgSetupKey << ", key not available, only " << valuesStr )
         }
     }
+    else
+    {
+        // ToDo: choose a better setup if available
+        SCAI_LOG_WARN( logger, "Environment variable SCAI_AMG_SETUP not set, take default: " << amgSetupKey )
+    }
+
+    runtime.mSetup.reset( AMGSetup<ValueType>::getAMGSetup( amgSetupKey ) );
 
     if ( !runtime.mSetup )
     {
-        COMMON_THROWEXCEPTION( "No AMGSetup found" )
+        COMMON_THROWEXCEPTION( "No AMGSetup found, key = " << amgSetupKey )
     }
 
     AMGSetup<ValueType>& amgSetup = *runtime.mSetup;
@@ -602,11 +611,11 @@ void SimpleAMG<ValueType>::logSetupDetails()
         }
     }
 
-    int overheadInterpolation = static_cast<int>( 100 * sizeInterpolation / sizeInterpolationCSR ) - 100;
-    int overheadRestriction = static_cast<int>( 100 * sizeRestriction / sizeRestrictionCSR ) - 100;
-    int overheadGalerkin = static_cast<int>( 100 * sizeGalerkin / sizeGalerkinCSR ) - 100;
-    int overhead = static_cast<int>( 100 * ( sizeInterpolation + sizeRestriction + sizeGalerkin )
-                                     / ( sizeInterpolationCSR + sizeRestrictionCSR + sizeGalerkinCSR ) ) - 100;
+    double overheadInterpolation = 100.0 * static_cast<double>( sizeInterpolation ) / static_cast<double>( sizeInterpolationCSR ) - 100.0;
+    double overheadRestriction = 100.0 * static_cast<double>( sizeRestriction ) / static_cast<double>( sizeRestrictionCSR ) - 100.0;
+    double overheadGalerkin = 100.0 * static_cast<double>( sizeGalerkin ) / static_cast<double>( sizeGalerkinCSR ) - 100.0;
+    double overhead = 100.0 * static_cast<double>( sizeInterpolation + sizeRestriction + sizeGalerkin )
+                           / static_cast<double>( sizeInterpolationCSR + sizeRestrictionCSR + sizeGalerkinCSR ) - 100.0;
     size_t cgSolverValueTypeSize = getRuntime().mSetup->getGalerkin( getRuntime().mSetup->getNumLevels() - 1 ).getValueTypeSize();
     double sizeCGSolver = static_cast<double>( cgSolverValueTypeSize
                           * getRuntime().mSetup->getGalerkin( getRuntime().mSetup->getNumLevels() - 1 ).getNumRows()

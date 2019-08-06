@@ -92,18 +92,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
 
             HybridMatrix<ValueType> hybrid2( csr1, csr2 );
 
-            auto x = linearDenseVector<ValueType>( colDist, 1.0, 0.2 );
-            auto y = linearDenseVector<ValueType>( rowDist, 5.0, -0.2 );
+            auto x = denseVectorLinear( colDist, ValueType( 1 ), ValueType( 0.2 ) );
+            auto y = denseVectorLinear( rowDist, ValueType( 5 ), ValueType( -0.2 ) );
 
-            auto y1 = eval<DenseVector<ValueType>>( 2 * hybrid1 * x  + 3 * y );
-            auto y2 = eval<DenseVector<ValueType>>( 2 * hybrid2 * x  + 3 * y );
+            auto y1 = denseVectorEval( 2 * hybrid1 * x  + 3 * y );
+            auto y2 = denseVectorEval( 2 * hybrid2 * x  + 3 * y );
 
             RealType<ValueType> eps = 0.0001;
 
             BOOST_CHECK( y1.maxDiffNorm( y2 ) < eps );
 
-            auto x1 = eval<DenseVector<ValueType>>( 2 * transpose( hybrid1 ) * y  + 3 * x );
-            auto x2 = eval<DenseVector<ValueType>>( 2 * transpose( hybrid2 ) * y  + 3 * x );
+            auto x1 = denseVectorEval( 2 * transpose( hybrid1 ) * y  + 3 * x );
+            auto x2 = denseVectorEval( 2 * transpose( hybrid2 ) * y  + 3 * x );
 
             BOOST_CHECK( x1.maxDiffNorm( x2 ) < eps );
         }

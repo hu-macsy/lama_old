@@ -42,7 +42,7 @@ include ( scai_function/relative_install )
 scai_module (
 
     MODULE_NAME   tools
-    INTERNAL_DEPS common hmemo dmemo lama partitioning solver 
+    INTERNAL_DEPS common logging tracing hmemo dmemo lama partitioning solver 
 ) 
 
 ## Dummy library required to resolve dependencies

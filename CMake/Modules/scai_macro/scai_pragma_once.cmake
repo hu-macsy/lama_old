@@ -39,9 +39,9 @@ macro ( scai_pragma_once )
 
     ## Identify the file where this macro has been called
 
-    get_filename_component ( name ${CMAKE_CURRENT_LIST_FILE} NAME_WE )
+    get_filename_component ( _filename ${CMAKE_CURRENT_LIST_FILE} NAME_WE )
 
-    if ( SCAI_CHECK_DONE_${name} )
+    if ( SCAI_CHECK_DONE_${_filename} )
 
         ## return works for the calling file, not for the macro only
 
@@ -49,14 +49,14 @@ macro ( scai_pragma_once )
 
     else ()
 
-        ## set a variable with a unique name, pass it to the parent scope if available
+        ## set a variable with a unique _filename, pass it to the parent scope if available
 
-        set ( SCAI_CHECK_DONE_${name} True )
+        set ( SCAI_CHECK_DONE_${_filename} True )
 
         get_directory_property ( hasParent PARENT_DIRECTORY )
 
         if ( hasParent )
-            set ( SCAI_CHECK_DONE_${name} True PARENT_SCOPE )
+            set ( SCAI_CHECK_DONE_${_filename} True PARENT_SCOPE )
         endif ()
 
     endif ()

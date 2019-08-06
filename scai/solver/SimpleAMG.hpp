@@ -102,6 +102,7 @@ public:
     struct SimpleAMGRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
         SimpleAMGRuntime();
+        ~SimpleAMGRuntime();
 
         std::shared_ptr<AMGSetup<ValueType> > mSetup;
         IndexType mCurrentLevel;
@@ -109,8 +110,6 @@ public:
         IndexType mHostOnlyLevel;
         IndexType mHostOnlyVars;
         IndexType mReplicatedLevel;
-
-        SCAI_LOG_DECL_STATIC_LOGGER( logger )
     };
 
     /**

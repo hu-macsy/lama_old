@@ -83,8 +83,7 @@ bool PETScIO::isSupportedMode( const FileMode mode ) const
 {
     // only binary is supported
 
-
-    if ( mode == FORMATTED )
+    if ( mode == FileMode::FORMATTED )
     {
         return false;
     }
@@ -110,38 +109,54 @@ PETScIO::PETScIO()
 
 /* --------------------------------------------------------------------------------- */
 
-template<typename ValueType>
-void PETScIO::writeArrayImpl(
-    const hmemo::HArray<ValueType>& array,
-    const std::string& fileName )
+void PETScIO::openIt( const std::string& fileName, const char* openMode )
 {
-    SCAI_ASSERT( mFileMode != FORMATTED, "Formatted output not available for PETScIO" )
+    SCAI_ASSERT( mFileMode != FileMode::FORMATTED, "Formatted output not available for PETScIO" )
 
+    std::ios::openmode flags = std::ios::binary;
+
+    if ( strcmp( openMode, "w" ) == 0 )
+    {
+        flags |= std::ios::out | std::ios::trunc;
+    }
+    else if ( strcmp( openMode, "a" ) == 0 )
+    {
+        flags |= std::ios::out | std::ios::app;
+    }
+    else if ( strcmp( openMode, "r" ) == 0 )
+    {
+        flags |= std::ios::in ;
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "Unsupported open mode for PETSc file: " << openMode )
+    }
+
+    mFile.open( fileName, flags, IOStream::BIG );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void PETScIO::closeIt()
+{
+    mFile.close();
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void PETScIO::writeArrayImpl( const hmemo::HArray<ValueType>& array )
+{
     // int    VEC_FILE_CLASSID
     // int    number of rows
     // type   values
 
     IndexType nrows = array.size();
 
-    std::ios::openmode flags = std::ios::out | std::ios::binary;
-
-    if ( mAppendMode )
-    {
-        flags |= std::ios::app;
-    }
-    else
-    {
-        flags |= std::ios::trunc;
-    }
-
-    IOStream outFile( fileName, flags, IOStream::BIG );
-
-    SCAI_LOG_INFO( logger, "File " << fileName << " now open for binary write, append = " << mAppendMode )
-
     HArray<IndexType> headValues( { VEC_FILE_CLASSID, nrows } );
 
-    outFile.writeBinary( headValues, mScalarTypeIndex );
-    outFile.writeBinary( array, mScalarTypeData );
+    mFile.writeBinary( headValues, mScalarTypeIndex );
+    mFile.writeBinary( array, mScalarTypeData );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -149,37 +164,37 @@ void PETScIO::writeArrayImpl(
 template<typename ValueType>
 void PETScIO::writeSparseImpl(
     const IndexType size,
+    const ValueType& zero,
     const HArray<IndexType>& indexes,
-    const HArray<ValueType>& values,
-    const std::string& fileName )
+    const HArray<ValueType>& values )
 {
     // sparse unsupported for this file format, write it dense
 
     HArray<ValueType> denseArray;
-    ValueType zero = 0;
     utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes, zero );
-    writeArrayImpl( denseArray, fileName );
+    writeArrayImpl( denseArray );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void PETScIO::readArrayInfo( IndexType& size, const std::string& fileName )
+void PETScIO::getArrayInfo( IndexType& size )
 {
-    SCAI_REGION( "IO.PETSc.readArrayInfo" )
+    SCAI_REGION( "IO.PETSc.getArrayInfo" )
 
     // int    VEC_FILE_CLASSID
     // int    number of rows
     // type   values
 
-    std::ios::openmode flags = std::ios::in | std::ios::binary;
-
-    SCAI_LOG_INFO( logger, "Read array info from file " << fileName )
-
-    IOStream inFile( fileName, flags, IOStream::BIG );
+    SCAI_LOG_INFO( logger, "Read array info from file " << mFile.getFileName() )
 
     HArray<IndexType> headerVals;
 
-    inFile.readBinary( headerVals, 2, common::ScalarType::INDEX_TYPE );
+    std::streampos pos = mFile.tellg();
+
+    mFile.readBinary( headerVals, 2, common::ScalarType::INDEX_TYPE );
+
+    mFile.clear();       // important to reset flags
+    mFile.seekg( pos );
 
     IndexType classid = headerVals[0];
 
@@ -191,11 +206,7 @@ void PETScIO::readArrayInfo( IndexType& size, const std::string& fileName )
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void PETScIO::readArrayImpl(
-    hmemo::HArray<ValueType>& array,
-    const std::string& fileName,
-    const IndexType first,
-    const IndexType n )
+void PETScIO::readArrayImpl( hmemo::HArray<ValueType>& array )
 {
     SCAI_REGION( "IO.PETSc.readArray" )
 
@@ -203,16 +214,12 @@ void PETScIO::readArrayImpl(
     // int    number of rows
     // type   values
 
-    std::ios::openmode flags = std::ios::in | std::ios::binary;
-
     SCAI_LOG_INFO( logger, "Read array<" << common::TypeTraits<ValueType>::id()
-                   << "> from file " << fileName << ", type = " << mScalarTypeData )
-
-    IOStream inFile( fileName, flags, IOStream::BIG );
+                   << "> from file " << mFile.getFileName() << ", type = " << mScalarTypeData )
 
     HArray<IndexType> headerVals;
 
-    inFile.readBinary( headerVals, 2, common::ScalarType::INDEX_TYPE );
+    mFile.readBinary( headerVals, 2, common::ScalarType::INDEX_TYPE );
 
     IndexType classid = headerVals[0];
     IndexType size    = headerVals[1];
@@ -221,40 +228,9 @@ void PETScIO::readArrayImpl(
 
     SCAI_ASSERT_EQUAL( VEC_FILE_CLASSID, classid, "illegal VEC_FILE_CLASSID" )
 
-    if ( ! common::Utils::validIndex( first, size ) )
-    {
-        array.clear();
-        return;
-    }
-
-    IndexType nEntries = n;
-
-    if ( n == invalidIndex )
-    {
-        nEntries = size - first;
-    }
-    else
-    {
-        SCAI_ASSERT_LE_ERROR( first + n, size, "array block size " << n << " invalid" )
-    }
-
     // check if the specified data size fits the expected data type
 
-    inFile.readBinary( array, size, mScalarTypeData );
-
-    inFile.close();
-
-    if ( nEntries != array.size() )
-    {
-        hmemo::HArray<ValueType> block( nEntries );
-        hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
-        SCAI_LOG_DEBUG( logger, "read block first = " << first << ", n = " << nEntries << " from array " << array )
-
-        IndexType inc = 1;
-        utilskernel::HArrayUtils::setArraySection( block, 0, inc, array, first, inc, nEntries, common::BinaryOp::COPY, ctx );
-
-        array.swap( block );
-    }
+    mFile.readBinary( array, size, mScalarTypeData );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -262,9 +238,9 @@ void PETScIO::readArrayImpl(
 template<typename ValueType>
 void PETScIO::readSparseImpl(
     IndexType& size,
+    ValueType& zero,
     HArray<IndexType>& indexes,
-    HArray<ValueType>& values,
-    const std::string& fileName )
+    HArray<ValueType>& values )
 {
     SCAI_REGION( "IO.PETSc.readSparse" )
 
@@ -272,22 +248,18 @@ void PETScIO::readSparseImpl(
 
     HArray<ValueType> denseArray;
 
-    readArray( denseArray, fileName, 0, invalidIndex );
+    readArray( denseArray );
     size = denseArray.size();
-    ValueType zero = 0;
+    zero = 0;
     utilskernel::HArrayUtils::buildSparseArray( values, indexes, denseArray, zero );
 }
 
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void PETScIO::writeStorageImpl(
-    const MatrixStorage<ValueType>& storage,
-    const std::string& fileName )
+void PETScIO::writeStorageImpl( const MatrixStorage<ValueType>& storage )
 {
     SCAI_REGION( "IO.PETSc.writeStorage" )
-
-    SCAI_ASSERT( mFileMode != FORMATTED, "Formatted output not available for PETScIO" )
 
     // int    MAT_FILE_CLASSID
     // int    number of rows
@@ -311,21 +283,6 @@ void PETScIO::writeStorageImpl(
 
     utilskernel::HArrayUtils::unscan( csrIA );
 
-    std::ios::openmode flags = std::ios::out | std::ios::binary;
-
-    if ( mAppendMode )
-    {
-        flags |= std::ios::app;
-    }
-    else
-    {
-        flags |= std::ios::trunc;
-    }
-
-    IOStream outFile( fileName, flags, IOStream::BIG );
-
-    SCAI_LOG_INFO( logger, "File " << fileName << " now open for binary write, append = " << mAppendMode )
-
     // Note: PETSc starts indexing with 0
 
     HArray<IndexType> headValues( 4 );
@@ -337,33 +294,34 @@ void PETScIO::writeStorageImpl(
 
     // for binary output we make conversions to mScalarTypeData, mScalarTypeIndex
 
-    outFile.writeBinary( headValues, mScalarTypeIndex );
-    outFile.writeBinary( csrIA, mScalarTypeIndex );
-    outFile.writeBinary( csrJA , mScalarTypeIndex );
+    mFile.writeBinary( headValues, mScalarTypeIndex );
+    mFile.writeBinary( csrIA, mScalarTypeIndex );
+    mFile.writeBinary( csrJA, mScalarTypeIndex );
 
     // output of values is skipped for PATTERN
 
     if ( mScalarTypeData != common::ScalarType::PATTERN )
     {
-        outFile.writeBinary( csrValues, mScalarTypeData );
+        mFile.writeBinary( csrValues, mScalarTypeData );
     }
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void PETScIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& fileName )
+void PETScIO::getStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues )
 {
-    SCAI_REGION( "IO.PETSc.readStorageInfo" )
-
-    std::ios::openmode flags = std::ios::in | std::ios::binary;
-
-    SCAI_LOG_INFO( logger, "Read storage info from file " << fileName )
-
-    IOStream inFile( fileName, flags, IOStream::BIG );
+    SCAI_REGION( "IO.PETSc.getStorageInfo" )
 
     HArray<IndexType> headerVals;
 
-    inFile.readBinary( headerVals, 4, common::TypeTraits<IndexType>::stype );
+    std::streampos pos = mFile.tellg();
+
+    SCAI_LOG_INFO( logger, "get storage info from file " << mFile.getFileName() << ", pos = " << pos )
+
+    mFile.readBinary( headerVals, 4, common::TypeTraits<IndexType>::stype );
+
+    mFile.clear();       // important to reset flags
+    mFile.seekg( pos );
 
     IndexType classid = headerVals[0];
 
@@ -377,11 +335,7 @@ void PETScIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexT
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void PETScIO::readStorageImpl(
-    MatrixStorage<ValueType>& storage,
-    const std::string& fileName,
-    const IndexType firstRow,
-    const IndexType nRows )
+void PETScIO::readStorageImpl( MatrixStorage<ValueType>& storage )
 {
     SCAI_REGION( "IO.PETSc.readStorage" )
 
@@ -392,19 +346,15 @@ void PETScIO::readStorageImpl(
     // int    *number nonzeros in each row
     // int    *column indices of all nonzeros (starting index is zero)
 
-    std::ios::openmode flags = std::ios::in | std::ios::binary;
-
-    SCAI_LOG_INFO( logger, "Read storage<" << common::TypeTraits<ValueType>::id() << "> from file " << fileName )
-
-    IOStream inFile( fileName, flags, IOStream::BIG );
+    SCAI_LOG_INFO( logger, "Read storage<" << common::TypeTraits<ValueType>::id() << "> from file " << mFile.getFileName() )
 
     HArray<IndexType> headerVals;
 
-    inFile.readBinary( headerVals, 4, common::TypeTraits<IndexType>::stype );
+    mFile.readBinary( headerVals, 4, common::TypeTraits<IndexType>::stype );
 
     IndexType classid = headerVals[0];
-    IndexType numRows   = headerVals[1];
-    IndexType numCols   = headerVals[2];
+    IndexType numRows = headerVals[1];
+    IndexType numCols = headerVals[2];
     IndexType nnz     = headerVals[3];
 
     SCAI_LOG_INFO( logger, "Read: id = " << MAT_FILE_CLASSID << ", #rows = " << numRows
@@ -416,101 +366,90 @@ void PETScIO::readStorageImpl(
     HArray<IndexType> csrJA;
     HArray<ValueType> csrValues;
 
-    inFile.readBinary( csrSizes, numRows, mScalarTypeIndex );
-    inFile.readBinary( csrJA, nnz, mScalarTypeIndex );
+    mFile.readBinary( csrSizes, numRows, mScalarTypeIndex );
+    mFile.readBinary( csrJA, nnz, mScalarTypeIndex );
 
     if ( mScalarTypeData != common::ScalarType::PATTERN )
     {
-        inFile.readBinary( csrValues, nnz, mScalarTypeData );
+        mFile.readBinary( csrValues, nnz, mScalarTypeData );
     }
     else
     {
         csrValues.setSameValue( nnz, ValueType( 1 ) );
     }
 
-    if ( firstRow == 0 && nRows == invalidIndex )
-    {
-        storage.setCSRData( numRows, numCols, csrSizes, csrJA, csrValues );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "read block not yet available" )
-    }
+    storage.setCSRData( numRows, numCols, csrSizes, csrJA, csrValues );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void PETScIO::writeGridArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName )
+void PETScIO::writeGridArray( const hmemo::_HArray& data, const common::Grid& grid )
 {
     if ( grid.nDims() > 1 )
     {
         SCAI_LOG_WARN( logger, "Grid shape information is lost for array when writing to file" )
     }
 
-    writeArray( data, outputFileName );
+    writeArray( data );
 }
 
-void PETScIO::readGridArray( hmemo::_HArray& data, common::Grid& grid, const std::string& inputFileName )
+void PETScIO::readGridArray( hmemo::_HArray& data, common::Grid& grid )
 {
-    readArray( data, inputFileName );
+    readArray( data );
     grid = common::Grid1D( data.size() );
     SCAI_LOG_WARN( logger, "PETSc does not support multidimensional array, take default shape " << grid )
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void PETScIO::writeStorage( const _MatrixStorage& storage, const std::string& fileName )
+void PETScIO::writeStorage( const _MatrixStorage& storage )
 {
-    IOWrapper<PETScIO, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorageImpl( ( PETScIO& ) *this, storage, fileName );
+    IOWrapper<PETScIO, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorage( *this, storage );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void PETScIO::readStorage(
-    _MatrixStorage& storage,
-    const std::string& fileName,
-    const IndexType offsetRow,
-    const IndexType nRows )
+void PETScIO::readStorage( _MatrixStorage& storage )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<PETScIO, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorageImpl( ( PETScIO& ) *this, storage, fileName, offsetRow, nRows );
+    IOWrapper<PETScIO, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorage( *this, storage );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void PETScIO::writeArray( const hmemo::_HArray& array, const std::string& fileName )
+void PETScIO::writeArray( const hmemo::_HArray& array )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<PETScIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArrayImpl( ( PETScIO& ) *this, array, fileName );
+    IOWrapper<PETScIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArray( *this, array );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void PETScIO::writeSparse( const IndexType n, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values, const std::string& fileName )
+void PETScIO::writeSparse( const IndexType n, const void* zero, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<PETScIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparseImpl( ( PETScIO& ) *this, n, indexes, values, fileName );
+    IOWrapper<PETScIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparse( *this, n, zero, indexes, values );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void PETScIO::readArray( hmemo::_HArray& array, const std::string& fileName, const IndexType offset, const IndexType n )
+void PETScIO::readArray( hmemo::_HArray& array )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<PETScIO, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( ( PETScIO& ) *this, array, fileName, offset, n );
+    IOWrapper<PETScIO, SCAI_ARRAY_TYPES_HOST_LIST>::readArray( *this, array );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void PETScIO::readSparse( IndexType& size, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values, const std::string& fileName )
+void PETScIO::readSparse( IndexType& size, void* zero, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<PETScIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparseImpl( ( PETScIO& ) *this, size, indexes, values, fileName );
+    IOWrapper<PETScIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparse( *this, size, zero, indexes, values );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -529,50 +468,42 @@ std::string PETScIO::getVectorFileSuffix() const
 /* --------------------------------------------------------------------------------- */
 
 #define SCAI_PETSC_METHOD_INSTANTIATIONS( _type )           \
-                                                            \
+    \
     template COMMON_DLL_IMPORTEXPORT                        \
     void PETScIO::writeArrayImpl(                           \
-        const hmemo::HArray<_type>& array,                  \
-        const std::string& fileName );                      \
-                                                            \
+            const hmemo::HArray<_type>& array );                \
+    \
     template COMMON_DLL_IMPORTEXPORT                        \
     void PETScIO::readArrayImpl(                            \
-        hmemo::HArray<_type>& array,                        \
-        const std::string& arrayFileName,                   \
-        const IndexType ,                                   \
-        const IndexType );                                  \
-                                                            \
+            hmemo::HArray<_type>& array );                      \
+    \
     template COMMON_DLL_IMPORTEXPORT                        \
     void PETScIO::writeSparseImpl(                          \
-        const IndexType size,                               \
-        const HArray<IndexType>& index,                     \
-        const HArray<_type>& values,                        \
-        const std::string& fileName );                      \
-                                                            \
+            const IndexType size,                               \
+            const _type& zero,                                  \
+            const HArray<IndexType>& index,                     \
+            const HArray<_type>& values );                      \
+    \
     template COMMON_DLL_IMPORTEXPORT                        \
     void PETScIO::readSparseImpl(                           \
-        IndexType& size,                                    \
-        HArray<IndexType>& indexes,                         \
-        HArray<_type>& values,                              \
-        const std::string& fileName );         
+            IndexType& size,                                    \
+            _type& zero,                                        \
+            HArray<IndexType>& indexes,                         \
+            HArray<_type>& values );
 
 SCAI_COMMON_LOOP( SCAI_PETSC_METHOD_INSTANTIATIONS, SCAI_ARRAY_TYPES_HOST )
 
 #undef SCAI_PETSC_METHOD_INSTANTIATIONS
 
 #define SCAI_PETSC_METHOD_INSTANTIATIONS( _type )       \
-                                                        \
+    \
     template COMMON_DLL_IMPORTEXPORT                    \
     void PETScIO::writeStorageImpl(                     \
-        const MatrixStorage<_type>& storage,            \
-        const std::string& fileName );                  \
-                                                        \
+            const MatrixStorage<_type>& storage );          \
+    \
     template COMMON_DLL_IMPORTEXPORT                    \
     void PETScIO::readStorageImpl(                      \
-        MatrixStorage<_type>& storage,                  \
-        const std::string& matrixFileName,              \
-        const IndexType firstRow,                       \
-        const IndexType nRows );                     
+            MatrixStorage<_type>& storage );                \
 
 SCAI_COMMON_LOOP( SCAI_PETSC_METHOD_INSTANTIATIONS, SCAI_NUMERIC_TYPES_HOST )
 

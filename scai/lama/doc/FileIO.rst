@@ -1,40 +1,80 @@
-:orphan:
-
 .. _lama_IO:
 
-File I/O
-=========
+FileIO
+======
 
-The LAMA FileIO supports the input and output of one-dimensional arrays and of (local) matrix storages into 
-a file.
+FileIO is an abstract class, all other IO classes derive from it.
 
-Note: For the IO of distributed vectors and matrices, also in mutliple files, the LAMA PartitionIO :ref:`partition_IO`
-is responsible.
+FileIO Class Hierarchy
+----------------------
 
-The FileIO supports different file types (e.g. MatrixMarket, SAMG Format, PETSc Format, usual text files) and
-different file modes (binary or formatted). All value types supported by LAMA are also supported by the FileIO, i.e.
-complex and real types with different precisions (float, double, long double). If the binary mode is used, array and
-storage data can be saved without any loss of precision. In the formatted mode there might be a loss of precision
-even if the number of significant digits can be chosen.
+.. figure:: _images/single_io.*
+    :width: 600px
+    :align: center
+  
+    Single I/O of Distributed Data.
 
-I/O of HArrays
---------------
+Each derived class must implement at least these pure (serial) methods:
 
-Reading and writing of (heterogeneous) arrays is supported by simple read and write routines.
+ * open and close of a file
+ * write an array (dense vector) into the file
+ * read an array (dense vector) from the file
+ * write a coordinate (sparse) matrix into the file
+ * read a coordinate (sparse) matrix into the file
 
 .. code-block:: c++
 
-    #include <scai/lama/io/FileIO.hpp>
+    #include <scai/lama/io/MatrixMarketIO.hpp
 
     using namespace scai;
 
-    hmemo::HArray<ValueType> array;
-    lama::FileIO::read( array, fileName )
-    ...
-    lama::FileIO::write( array, fileName )
+    hmemo::HArray<double> values = ...
+    CSRStorage<double> csr = ...
+    
+    MatrixMarketIO file;
 
-Exceptions are thrown if files cannot be read or written. The file type is chosen by the 
-suffix of the filename (e.g. ".frv", ".psc", ".txt", "mtx" ).
+    // output of values, csr             // input of values, csr
+
+    file.open( "vector.mtx", "w" );      file.open( "vector.mtx", "r" );
+    file.writeArray( values );           file.readArray( values );
+    file.close();                        file.close();
+    file.open( "matrix.mtx", "w" );      file.open( "matrix.mtx", "r" );
+    file.writeStorage( csr );            file.readStorage( csr );
+    file.close();                        file.close();
+
+The above code is exactly the same for all other supported file types.
+
+FileIO Factory
+--------------
+
+As seen before, most I/O operations can be written in such a way that they
+are independent of the underlying code. 
+
+.. code-block:: c++
+
+    FileIO& file;
+
+All I/O classes can register themselves into the FileIO-Factory. This allows to 
+create dynamically a certain FileIO object of the corresponding derived class.
+
+.. code-block:: c++
+
+    suffix = FileIO::getSuffix( fileName );
+    std::unique_ptr<FileIO> file( FileIO::create( suffix );
+    file->open( .. );
+    ...
+
+Distributed I/O Mode
+====================
+
+By default, a file is opened in the single mode. 
+
+.. code-block:: c++
+
+    if ( file->getDistributedIOMode() == DistributedIOMode::SINGLE )
+    { 
+        ...
+    }
 
 Type Conversions
 ----------------
@@ -142,223 +182,26 @@ If not set, the precision is determined by the value of the output data type.
 
 The precision for the aritmetic types is defined by the TypeTraits.
 
-Supported File Types
---------------------
-
-The decision about the file type is taken by the suffix of the file name:
-Currently, the following file types are supported
-
- - MatrixMarket (for description on the format see |MM|), for suffix ".mtx"
-
- - SAMG format (see below), for suffix ".frm" (matrix) or ".frv" (vector)
- 
-   - FORMATTED (ASCII)
-   
-   - BINARY
-
- - PETSC format (binary format), for suffix ".psc"
-
- - Text format (pure ASCII format), for suffix ".txt"
-
- - Level 5 MAT-File format of Matlab, for suffix ".mat" 
-
-.. |MM| raw:: html
-
-   <a href="http://math.nist.gov/MatrixMarket/formats.html" target="_blank"> here </a>
-
-Conversion from one file type to another file type is rather simple, just read the matrix/vector from one file
-and write it with its new extension to another file.
-
-.. code-block:: c++
-
-    _MatrixStorage& m = ...
-    m.readFromFile( "matrix_3D27P_100_100_100.txt" )
-    m.writeToFile( "matrix_3D27P_100_100_100.mtx" )
-
-Here are some remarks:
-
- * The matrix type, e.g. CSR, DIA, ELL, JDS, does not matter when reading or writing matrix data.
-   There is always an implicit conversion when reading or writing the data. Nevertheless the CSR format
-   is preferred as it has usually the minimal overhead.
- * The value type, e.g. float, double, ComplexFloat, ComplexDouble is taken over if the binary mode is used,
-   i.e. there is no loss of precision. In the formatted output, the number of significant digits depends on
-   the value type, but there may be a certain loss of precision. Implicit type conversion is supported but
-   should be used rather carefully.
- * Usually a certain file type supports the formatted or the binary mode. Only the SAMG format supports both modes.
- * Some formats do not store for a matrix storage the number of columns explicitly. Here the number of columns
-   is determined by the maximal column index that appears in the data.
-
-SAMG format
------------
-
-The SAMG format comes from the |SAMG| library of Fraunhofer SCAI and uses two files to describe a matrix or vector - 
-one header file with general information ( mode, size), one for the data. 
-The data can be saved in both modes, either BINARY or FORMATTED.
-
-.. |SAMG| raw:: html
-
-   <a href="https://www.scai.fraunhofer.de/de/geschaeftsfelder/schnelle-loeser/produkte/samg.html" target="_blank"> SAMG </a>
-
-Matrices
-^^^^^^^^
-
-Matrix header: *.frm*
-   first line:  mode (f formatted, b binary) *tab* 4 (SAMG internal version number)
-   second line: *tab tab* number of values (nv) *tab* number of rows (nr) *tab* 22 (SAMG internal: symmetry information) *tab* 1 (SAMG internal: number of unknowns ) *tab* 0 (SAMG internal)   
-
-.. 22: unsymmetric, not equal sums of row
-
-Matrix data: *.amg*
-   one value per line:
-   nr lines with ia data
-   nv lines with ja data
-   nv lines with values
-   
-Vectors
-^^^^^^^
-
-Vector header: *.frv*
-   first line: mode (f formatted, x xdr, b binary)
-   second line: number of values (nv)
-   third line: size of value type (in most cases: 4 for float, 8 for double)
-   
-Vector data: *.vec*
-   nv lines with values (one value per line)
-
-Level 5 MAT-File Format
------------------------
-
-This file format can be used to exchange data between LAMA and MATLAB applications.
-
-The following examples shows a MATLAB code that generates a random matrix that is written to a file.
-
-.. code-block:: c++
-
-   >> mat = sprand( 6, 4, 0.3 )
-
-   mat =
-
-      (2,1)       0.7952
-      (3,1)       0.4898
-      (1,2)       0.3816
-      (5,2)       0.6463
-      (2,3)       0.1869
-      (1,4)       0.7655
-      (4,4)       0.4456
-
-   >> save /home/brandes/MAT/sp6x4.mat mat
-
-This matrix can be read in LAMA as follows:
-
-.. code-block:: c++
-
-   scai::lama::CSRSparseMatrix<double> mat( "/home/brandes/MAT/sp6x4.mat" );
-   mat = 2 * mat;
-   mat.writeToFile( "/home/brandes/MAT/sq6x4.mat" );
-
-.. code-block:: c++
-
-   >> load /home/brandes/MAT/sq6x4.mat
-   >> LAMA
-
-   LAMA =
-
-      (2,1)       1.5904
-      (3,1)       0.9795
-      (1,2)       0.7631
-      (5,2)       1.2926
-      (2,3)       0.3737
-      (4,4)       0.8912
-      (1,4)       1.5310
-
-When using this file format the following issues should be considered:
-
- - LAMA can only read and write one single data element from a MATLAB file.
- - The name of the data element is is ignored when reading the element and 
-   each written element gets the name "LAMA".
- - As the data type is stored for each element in the file, the SCAI_IO_TYPE
-   is ignored, i.e. each array/storage is written exactly in the format it is
-   and there might be an implicit type conversion during the read.
- - Only the SCAI_IO_TYPE=PATTERN will be handled and in this case no sparse matrix
-   values are written, only the row and column indexes
- - The data types LongDouble and ComplexLongDouble are not really supported
-   by the Level 5 MAT-File format but are full supported here by using a reserved
-   value of the MAT-File Data Types.
-
-Text Format
------------
-
-When using the text format a (sparse) matrix is saved in the COO format where
-each line contains the row index, column index and value of the non-zero entry.
-
-.. code-block:: c++
-
-      1 0  1.5904
-      2 0  0.9795
-      0 1  0.7631
-      4 1  1.2926
-      1 2  0.3737
-      3 3  0.8912
-      0 3  1.5310
-
-When using this file format the following issues should be considered:
-
- - The number of non-zero entries is given by the number of lines of the file
- - The number of rows and columns of the matrix is not stored explicitly but is
-   determined by the maximal row and column index when reading the file.
-
-A (dense) vector is saved in a text file by one entry for each value of the vector.
-
-.. code-block:: c++
-
-     0.51 
-     0.43
-     0.31 
-
-Using the text format is not recommended for efficient I/O but might be very useful
-for testing and developping. Furthermore, it might be a convenient way to exchange
-data with other applications. Here is an example of how to use this format to
-exchange data with MATLAB applications.
-
-.. code-block:: matlab
-
- [i,j,val] = find( matrix )          [i,j,val] = find(matrix)
- data_dump = [i, j, val] A           fid = fopen( 'data.txt', 'w' )
- save -ascii data.txt data_dump      fprintf( fid, "%d %d %f\n", [i,j,val] )
-                                     flose( fid )
-
-.. code-block:: matlab
-
-  data_dump = importdata( 'data.txt' )      load data.txt
-  matrix = spconvert( data_dump )           matrix = spconvert( data )
-
 Extension for Other I/O Formats
 -------------------------------
 
 Adding support for any new file format is rather straightforward by writing
-a class that derives from FileIO. Actually it should derive from CRTPFileIO
-that provides already methods for the resolution from the untyped IO routine to the typed
-versions, i.e. the methods with the value type as argument.
+a class that derives from FileIO. 
 
 .. code-block:: c++
 
-    class MyIO : CRTPFileIO<MyIO>, FileIO::Register<MyIO> 
+    class MyIO : public FileIO,
+                        FileIO::Register<MyIO> 
     {
         static std::string createValue();   // registration value for factory
+
         static FileIO* create();            // create routine called for create( createValue() )
 
-        template<typename ValueType>
-        void writeStorageImpl( const MatrixStorage<ValueType>& storage, const std::string& fileName );
+        void writeStorage( const _MatrixStorage& storage );
 
-        template<typename ValueType>
-        void readStorageImpl( MatrixStorage<ValueType>& storage, const std::string& fileName );
+        void readStorage( const _MatrixStorage& storage );
 
-        template<typename ValueType>
-        void writeArrayImpl( const hmemo::HArray<ValueType>& array, const std::string& fileName );
-        __attribute( ( noinline ) );
-
-        template<typename ValueType>
-        void readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& fileName );
+        void readArray( hmemo::HArray<ValueType>& array );
     }
 
 The typical use of such an IO File handler class would be as follows:

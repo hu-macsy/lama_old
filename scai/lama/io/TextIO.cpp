@@ -75,7 +75,7 @@ bool TextIO::isSupportedMode( const FileMode mode ) const
 {
     // binary is not supported
 
-    if ( mode == BINARY )
+    if ( mode == FileMode::BINARY )
     {
         return false;
     }
@@ -102,22 +102,17 @@ void TextIO::writeAt( std::ostream& stream ) const
  *
  *  Note: it might be possible that one line contains less than 'nEntries' entries
  */
-void TextIO::checkTextFile( IndexType& nLines, IndexType& nEntries, const char* fileName )
+void TextIO::checkTextFile( IndexType& nLines, IndexType& nEntries )
 {
+    SCAI_LOG_DEBUG( logger, "checkTextFile " << mFile.getFileName() )
+
     nLines   = 0;
     nEntries = 0;
-
-    std::ifstream infile( fileName, std::ios::in );
-
-    if ( infile.fail() )
-    {
-        COMMON_THROWEXCEPTION( "Could not open file '" << fileName << "'." )
-    }
 
     std::string line;
     std::vector<std::string> tokens;
 
-    while ( std::getline( infile, line ) )
+    while ( std::getline( mFile, line ) )
     {
         ++nLines;
 
@@ -132,7 +127,10 @@ void TextIO::checkTextFile( IndexType& nLines, IndexType& nEntries, const char* 
         }
     }
 
-    SCAI_LOG_INFO( logger, "checkTextFile " << fileName << ": #lines = " << nLines << ", #entries = " << nEntries )
+    SCAI_LOG_INFO( logger, "checkTextFile " << mFile.getFileName() << ": #lines = " << nLines << ", #entries = " << nEntries )
+
+    mFile.clear();
+    mFile.seekg( 0, std::ios::beg );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -141,18 +139,38 @@ SCAI_LOG_DEF_LOGGER( TextIO::logger, "FileIO.TextIO" )
 
 /* --------------------------------------------------------------------------------- */
 
-template<typename ValueType>
-void TextIO::writeArrayImpl(
-    const hmemo::HArray<ValueType>& array,
-    const std::string& fileName )
+void TextIO::openIt( const std::string& fileName, const char* openMode )
 {
-    SCAI_ASSERT( mFileMode != BINARY, "Binary mode not supported for " << *this )
+    if ( strcmp( openMode, "w" ) == 0 )
+    {
+        SCAI_ASSERT( mFileMode != FileMode::BINARY, "Binary mode not supported for " << *this )
+        mFile.open( fileName, std::ios::out | std::ios::trunc );
+    }
+    else if ( strcmp( openMode, "r" ) == 0 )
+    {
+        mFile.open( fileName, std::ios::in );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "Unsupported open mode for Text file: " << openMode )
+    }
+}
 
-    IOStream outFile( fileName, std::ios::out );
+/* --------------------------------------------------------------------------------- */
 
+void TextIO::closeIt()
+{
+    mFile.close();
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void TextIO::writeArrayImpl( const hmemo::HArray<ValueType>& array )
+{
     int precData  = getDataPrecision( common::TypeTraits<ValueType>::stype );
 
-    outFile.writeFormatted( array, precData );
+    mFile.writeFormatted( array, precData );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -160,117 +178,61 @@ void TextIO::writeArrayImpl(
 template<typename ValueType>
 void TextIO::writeSparseImpl(
     const IndexType size,
+    const ValueType& zero,
     const hmemo::HArray<IndexType>& indexes,
-    const hmemo::HArray<ValueType>& values,
-    const std::string& fileName )
+    const hmemo::HArray<ValueType>& values )
 {
     // Note: size is ignored for TextIO of sparse vector
 
-    if ( true )
-    {
-        HArray<ValueType> denseArray;
-        ValueType zero = 0;
-        HArrayUtils::buildDenseArray( denseArray, size, values, indexes, zero );
-        writeArrayImpl( denseArray, fileName );
-    }
-    else
-    {
-        // Better solution to write sparse data, but not unique when reading, no header
+    HArray<ValueType> denseArray;
+    HArrayUtils::buildDenseArray( denseArray, size, values, indexes, zero );
+    writeArrayImpl( denseArray );
 
-        SCAI_ASSERT( mFileMode != BINARY, "Binary mode not supported for " << *this )
-
-        IOStream outFile( fileName, std::ios::out );
-    
-        int precIndexes  = getDataPrecision( indexes.getValueType() );
-        int precData     = getDataPrecision( values.getValueType() );
-
-        outFile.writeFormatted( indexes, precIndexes, values, precData );
-    }
+    // Better solution to write sparse data, but not unique when reading, no header
+    //     mFile.writeFormatted( indexes, precIndexes, values, precData );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void TextIO::readArrayInfo( IndexType& size, const std::string& fileName )
+void TextIO::getArrayInfo( IndexType& size )
 {
     IndexType nEntries;   // dummy variable needed for checkTextFile
 
     // each array entry in one line, so count the number of lines in the file
 
-    checkTextFile( size, nEntries, fileName.c_str() );
+    checkTextFile( size, nEntries );
 }
 
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void TextIO::readArrayImpl(
-    hmemo::HArray<ValueType>& array,
-    const std::string& fileName,
-    const IndexType first,
-    const IndexType n )
+void TextIO::readArrayImpl( hmemo::HArray<ValueType>& array )
 {
     IndexType size;   // number of lines, size of array
     IndexType k;      // number of entries in one line
 
-    checkTextFile( size, k, fileName.c_str() );
+    checkTextFile( size, k );
 
-    SCAI_LOG_INFO( logger, "File : " << fileName << ", #lines = " << size << ", #entries = " << k )
+    SCAI_ASSERT_LE( k, 2, "#entries/row in file " << mFile.getFileName() << " must not excced 2" )
 
-    SCAI_ASSERT_LE( k, 2, "#entries/row in file " << fileName << " must not excced 2" )
-
-    if ( ! common::Utils::validIndex( first, size ) )
-    {
-        array.clear();
-        return;
-    }
-
-    IndexType nEntries = n;
-
-    if ( n == invalidIndex )
-    {
-        nEntries = size - first;
-    }
-    else
-    {
-        // give useful error message as this is a typical error if wrong file is specified
-
-        SCAI_ASSERT_LE_ERROR( first + n, size, "Read array block( offset = " << first << ", n = " << nEntries << ") failed: "
-                              << "size of array in file " << fileName << " is " << size )
-    }
-
-    // use local arrays instead of heteregeneous arrays as we want ops on them
-
-    IOStream inFile( fileName, std::ios::in );
-
-    inFile.readFormatted( array, size );
-
-    if ( nEntries != size )
-    {
-        hmemo::HArray<ValueType> block( nEntries );
-        hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
-        SCAI_LOG_DEBUG( logger, "read block first = " << first << ", n = " << nEntries << " from array " << array )
-
-        IndexType inc = 1;
-        HArrayUtils::setArraySection( block, 0, inc, array, first, inc, nEntries, common::BinaryOp::COPY, ctx );
-
-        array.swap( block );
-    }
+    mFile.readFormatted( array, size );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void TextIO::writeGridArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName )
+void TextIO::writeGridArray( const hmemo::_HArray& data, const common::Grid& grid )
 {
     if ( grid.nDims() > 1 )
     {
         SCAI_LOG_WARN( logger, "Grid shape information is lost for array when writing to file" )
     }
 
-    writeArray( data, outputFileName );
+    writeArray( data );
 }
 
-void TextIO::readGridArray( hmemo::_HArray& data, common::Grid& grid, const std::string& inputFileName )
+void TextIO::readGridArray( hmemo::_HArray& data, common::Grid& grid )
 {
-    readArray( data, inputFileName );
+    readArray( data );
     grid = common::Grid1D( data.size() );
     SCAI_LOG_WARN( logger, "Text does not support multidimensional array, take default shape " << grid )
 }
@@ -280,29 +242,25 @@ void TextIO::readGridArray( hmemo::_HArray& data, common::Grid& grid, const std:
 template<typename ValueType>
 void TextIO::readSparseImpl(
     IndexType& size,
+    ValueType& zero,
     HArray<IndexType>& indexes,
-    HArray<ValueType>& values,
-    const std::string& fileName )
+    HArray<ValueType>& values )
 {
     // sparse array not supported for this file format, uses a temporary dense array of same type
 
     HArray<ValueType> denseArray;
 
-    readArray( denseArray, fileName, 0, invalidIndex );
+    readArray( denseArray );
     size = denseArray.size();
-    ValueType zeroValue = 0;
-    HArrayUtils::buildSparseArray( values, indexes, denseArray, zeroValue );
+    zero = 0;
+    HArrayUtils::buildSparseArray( values, indexes, denseArray, zero );
 }
 
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void TextIO::writeStorageImpl(
-    const MatrixStorage<ValueType>& storage,
-    const std::string& fileName )
+void TextIO::writeStorageImpl( const MatrixStorage<ValueType>& storage )
 {
-    SCAI_ASSERT( mFileMode != BINARY, "Binary mode not supported for " << *this )
-
     auto coo = convert<COOStorage<ValueType>>( storage );
 
     IndexType numRows;
@@ -314,18 +272,16 @@ void TextIO::writeStorageImpl(
 
     coo.splitUp( numRows, numCols, cooIA, cooJA, cooValues );
 
-    IOStream outFile( fileName, std::ios::out );
-
     int precIndex = 0;
     int precData  = getDataPrecision( common::TypeTraits<ValueType>::stype );
 
     if ( mScalarTypeData == common::ScalarType::PATTERN )
     {
-        outFile.writeFormatted( cooIA, precIndex, cooJA, precIndex );
+        mFile.writeFormatted( cooIA, precIndex, cooJA, precIndex );
     }
     else
     {
-        outFile.writeFormatted( cooIA, precIndex, cooJA, precIndex, cooValues, precData );
+        mFile.writeFormatted( cooIA, precIndex, cooJA, precIndex, cooValues, precData );
     }
 }
 
@@ -336,21 +292,18 @@ void TextIO::readData(
     HArray<IndexType>& ia,
     HArray<IndexType>& ja,
     HArray<ValueType>* values,
-    const IndexType nnz,
-    const std::string& fileName )
+    const IndexType nnz )
 {
     HArray<DefaultReal> dIA;
     HArray<DefaultReal> dJA;
 
-    IOStream inFile( fileName, std::ios::in );
-
     if ( values != NULL )
     {
-        inFile.readFormatted( dIA, dJA, *values, nnz );
+        mFile.readFormatted( dIA, dJA, *values, nnz );
     }
     else
     {
-        inFile.readFormatted( dIA, dJA, nnz );
+        mFile.readFormatted( dIA, dJA, nnz );
     }
 
     ContextPtr ctx = Context::getHostPtr();
@@ -373,37 +326,36 @@ void TextIO::readData(
     }
     else
     {
-        COMMON_THROWEXCEPTION( "ERROR reading file " << fileName << ": minimal row index " << minRowIndex << " is illegal" )
+        COMMON_THROWEXCEPTION( "ERROR reading file " << mFile.getFileName() << ": minimal row index " << minRowIndex << " is illegal" )
     }
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void TextIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& fileName )
+void TextIO::getStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues )
 {
     IndexType nEntries;
 
-    checkTextFile( numValues, nEntries, fileName.c_str() );
+    checkTextFile( numValues, nEntries );
 
     // As there is no header, we have to read the full file, at least the index values
 
     HArray<IndexType> ia;
     HArray<IndexType> ja;
 
-    readData<DefaultReal>( ia, ja, NULL, numValues, fileName );
+    readData<DefaultReal>( ia, ja, NULL, numValues );
 
     numRows    = HArrayUtils::max( ia ) + 1;
     numColumns = HArrayUtils::max( ja ) + 1;
+
+    mFile.clear();
+    mFile.seekg( 0, std::ios::beg );
 }
 
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void TextIO::readStorageImpl(
-    MatrixStorage<ValueType>& storage,
-    const std::string& fileName,
-    const IndexType firstRow,
-    const IndexType nRows )
+void TextIO::readStorageImpl( MatrixStorage<ValueType>& storage )
 {
     // binary mode does not matter as we have always formatted output
 
@@ -413,9 +365,9 @@ void TextIO::readStorageImpl(
     IndexType nnz;
     IndexType k;
 
-    checkTextFile( nnz, k, fileName.c_str() );
+    checkTextFile( nnz, k );
 
-    SCAI_LOG_INFO( logger, "File : " << fileName << ", #lines = " << nnz << ", #entries = " << k )
+    SCAI_LOG_INFO( logger, "File : " << mFile.getFileName() << ", #lines = " << nnz << ", #entries = " << k )
 
     if ( nnz == 0 )
     {
@@ -432,7 +384,7 @@ void TextIO::readStorageImpl(
         nEntries = 3;
     }
 
-    SCAI_ASSERT_GE( k, nEntries, "#entries/row in file " << fileName << " must be at least " << nEntries )
+    SCAI_ASSERT_GE( k, nEntries, "#entries/row in file " << mFile.getFileName() << " must be at least " << nEntries )
 
     // use local arrays instead of heteregeneous arrays as we want ops on them
 
@@ -442,12 +394,12 @@ void TextIO::readStorageImpl(
 
     if ( readPattern )
     {
-        readData<ValueType>( ia, ja, NULL, nnz, fileName );
+        readData<ValueType>( ia, ja, NULL, nnz );
         val.setSameValue( nnz, ValueType( 1 ) );
     }
     else
     {
-        readData<ValueType>( ia, ja, &val, nnz, fileName );
+        readData<ValueType>( ia, ja, &val, nnz );
     }
 
     // we shape the matrix by maximal appearing indexes
@@ -457,70 +409,59 @@ void TextIO::readStorageImpl(
 
     COOStorage<ValueType> coo( nrows, ncols, ia, ja, val );
 
-    if ( firstRow == 0 && nRows == invalidIndex )
-    {
-        storage = coo;
-    }
-    else
-    {
-        coo.copyBlockTo( storage, firstRow, nRows );
-    }
+    storage = coo;
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void TextIO::writeStorage( const _MatrixStorage& storage, const std::string& fileName )
+void TextIO::writeStorage( const _MatrixStorage& storage )
 {
-    IOWrapper<TextIO, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorageImpl( ( TextIO& ) *this, storage, fileName );
+    IOWrapper<TextIO, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorage( *this, storage );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void TextIO::readStorage(
-    _MatrixStorage& storage,
-    const std::string& fileName,
-    const IndexType offsetRow,
-    const IndexType nRows )
+void TextIO::readStorage( _MatrixStorage& storage )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<TextIO, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorageImpl( ( TextIO& ) *this, storage, fileName, offsetRow, nRows );
+    IOWrapper<TextIO, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorage( *this, storage );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void TextIO::writeArray( const hmemo::_HArray& array, const std::string& fileName )
+void TextIO::writeArray( const hmemo::_HArray& array )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<TextIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArrayImpl( ( TextIO& ) *this, array, fileName );
+    IOWrapper<TextIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArray( *this, array );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void TextIO::writeSparse( const IndexType n, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values, const std::string& fileName )
+void TextIO::writeSparse( const IndexType n, const void* zero, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<TextIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparseImpl( ( TextIO& ) *this, n, indexes, values, fileName );
+    IOWrapper<TextIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparse( *this, n, zero, indexes, values );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void TextIO::readArray( hmemo::_HArray& array, const std::string& fileName, const IndexType offset, const IndexType n )
+void TextIO::readArray( hmemo::_HArray& array )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<TextIO, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( ( TextIO& ) *this, array, fileName, offset, n );
+    IOWrapper<TextIO, SCAI_ARRAY_TYPES_HOST_LIST>::readArray( *this, array );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void TextIO::readSparse( IndexType& size, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values, const std::string& fileName )
+void TextIO::readSparse( IndexType& size, void* zero, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values )
 {
     // use IOWrapper to called the typed version of this routine
 
-    IOWrapper<TextIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparseImpl( ( TextIO& ) *this, size, indexes, values, fileName );
+    IOWrapper<TextIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparse( *this, size, zero, indexes, values );
 }
 
 /* --------------------------------------------------------------------------------- */

@@ -97,10 +97,11 @@ SparseMatrix<ValueType>::SparseMatrix( shared_ptr<MatrixStorage<ValueType> > sto
 {
     mLocalData = storage;
 
-    // create halo ( nLocalRows x 0 ) with same storage format
+    // create halo ( nLocalRows x 0 ) with same storage format and same context
 
     mHaloData = shared_ptr<MatrixStorage<ValueType> >( storage->newMatrixStorage() );
     mHaloData->allocate( mLocalData->getNumRows(), 0 );
+    mTempSendValues = HArray<ValueType>( storage->getContextPtr() );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -122,6 +123,7 @@ SparseMatrix<ValueType>::SparseMatrix( DistributionPtr rowDist, shared_ptr<Matri
     // create empty halo with same storage format
 
     mHaloData.reset( storage->newMatrixStorage( localNumRows, 0 ) );
+    mTempSendValues = HArray<ValueType>( storage->getContextPtr() );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -131,6 +133,21 @@ SparseMatrix<ValueType>::SparseMatrix() :
 
     Matrix<ValueType>( 0, 0 )
 {
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+template <typename ValueType>
+void SparseMatrix<ValueType>::setContextPtr( const hmemo::ContextPtr context )
+{
+    SCAI_ASSERT_ERROR( context, "NULL context, cannot be set" )
+
+    mLocalData->setContextPtr( context );
+    mHaloData->setContextPtr( context );
+
+    // first touch of context for temporary array to guarantee fast device communiction
+
+    mTempSendValues = HArray<ValueType>( context );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -307,7 +324,7 @@ void SparseMatrix<ValueType>::assign( const _Matrix& matrix )
     if ( sparseMatrix )
     {
         // for a sparse matrix local + halo part can be assigned
-        assign( *sparseMatrix );
+        assignSparseMatrix( *sparseMatrix );
     }
     else
     {
@@ -371,29 +388,31 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
     }
     else
     {
+        const Communicator& comm = getRowDistribution().getCommunicator();
+
         // rows and columns are both distributed
-        SCAI_LOG_INFO( logger, "local transpose of " << matrix.getLocalStorage() )
+        SCAI_LOG_INFO( logger, comm << ": local transpose of " << matrix.getLocalStorage() )
         mLocalData->assignTranspose( matrix.getLocalStorage() );
-        SCAI_LOG_INFO( logger, "local transposed = " << *mLocalData )
-        SCAI_LOG_INFO( logger, "halo transpose of " << matrix.getHaloStorage() )
+        SCAI_LOG_INFO( logger, comm << ": local transposed = " << *mLocalData )
+        SCAI_LOG_INFO( logger, comm << ": halo transpose of " << matrix.getHaloStorage() )
         HArray<IndexType> sendIA;
         HArray<IndexType> sendSizes;
         HArray<IndexType> sendJA;
         HArray<ValueType> sendValues;
         matrix.getHaloStorage().buildCSCData( sendIA, sendJA, sendValues );
-        SCAI_LOG_DEBUG( logger,
-                        matrix.getHaloStorage() << ": CSC data, IA = " << sendIA << ", JA = " << sendJA << ", Values = " << sendValues )
+        SCAI_LOG_INFO( logger,
+                       matrix.getHaloStorage() << ": CSC data, IA = " << sendIA << ", JA = " << sendJA << ", Values = " << sendValues )
         // for initial communication we need the sizes and not the offsets
         CSRUtils::offsets2sizes( sendSizes, sendIA, Context::getHostPtr() );
-        SCAI_LOG_DEBUG( logger, "sendSizes with " << sendSizes.size() << " entries" )
+        SCAI_LOG_INFO( logger, comm << ": sendSizes with " << sendSizes.size() << " entries" )
         HArray<IndexType> recvSizes;
         const HaloExchangePlan& matrixHalo = matrix.getHaloExchangePlan();
         SCAI_ASSERT_EQUAL_DEBUG( sendSizes.size(), matrix.getHaloStorage().getNumColumns() )
         // send all other processors the number of columns
-        const Communicator& comm = getRowDistribution().getCommunicator();
         // Use communication plans of halo in inverse manner to send col sizes
         const CommunicationPlan& sendSizesPlan = matrixHalo.getHaloCommunicationPlan();
         const CommunicationPlan& recvSizesPlan = matrixHalo.getLocalCommunicationPlan();
+        SCAI_LOG_INFO( logger, comm << ": haloExchange, sendPlan = " << sendSizesPlan << ", recvPlan = " << recvSizesPlan )
         comm.exchangeByPlan( recvSizes, recvSizesPlan, sendSizes, sendSizesPlan );
         ContextPtr contextPtr = Context::getHostPtr();
         // Now we know the sizes, we can pack the data
@@ -404,6 +423,8 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 
         auto sendDataPlan = sendSizesPlan.constructRaggedBySizes( sendSizes );
         auto recvDataPlan = recvSizesPlan.constructRaggedBySizes( recvSizes );
+
+        SCAI_LOG_INFO( logger, comm << ": haloExchange data, sendPlan = " << sendDataPlan << ", recvPlan = " << recvDataPlan )
 
         comm.exchangeByPlan( recvJA, recvDataPlan, sendJA, sendDataPlan );
         comm.exchangeByPlan( recvValues, recvDataPlan, sendValues, sendDataPlan );
@@ -432,7 +453,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::assign( const SparseMatrix<ValueType>& matrix )
+void SparseMatrix<ValueType>::assignSparseMatrix( const SparseMatrix<ValueType>& matrix )
 {
     if ( this == &matrix )
     {
@@ -448,9 +469,9 @@ void SparseMatrix<ValueType>::assign( const SparseMatrix<ValueType>& matrix )
     SCAI_LOG_DEBUG( logger, "assigned local storage, my local = " << *mLocalData )
     const MatrixStorage<ValueType>&  matrixHaloData = matrix.getHaloStorage();
 
-    if (     ( matrixHaloData.getNumRows() > 0 )
-             || ( matrixHaloData.getNumColumns()  > 0 ) )
+    if ( ( matrixHaloData.getNumRows() > 0 ) || ( matrixHaloData.getNumColumns()  > 0 ) )
     {
+        mHaloData->setCompressThreshold( 0.5 );
         mHaloData->assign( matrixHaloData );
     }
     else
@@ -1175,10 +1196,8 @@ void SparseMatrix<ValueType>::setLocalColumn( const HArray<ValueType>& column,
 template<typename ValueType>
 void SparseMatrix<ValueType>::getDiagonal( Vector<ValueType>& diagonal ) const
 {
-    if ( getRowDistribution() != getColDistribution() )
-    {
-        COMMON_THROWEXCEPTION( "Diagonal calculation only for square matrices with same row/col distribution" )
-    }
+    SCAI_ASSERT_EQ_ERROR( getRowDistribution(), getColDistribution(), 
+                          "getDiagonal only for square matrices with same row/col distribution" )
 
     if ( diagonal.getVectorKind() != VectorKind::DENSE )
     {
@@ -2638,8 +2657,16 @@ void SparseMatrix<ValueType>::assignDiagonal( const Vector<ValueType>& diagonal 
 template<typename ValueType>
 size_t SparseMatrix<ValueType>::getMemoryUsage() const
 {
-    size_t memoryUsage = mLocalData->getMemoryUsage() + mHaloData->getMemoryUsage();
-    return getRowDistribution().getCommunicator().sum( memoryUsage );
+    size_t memoryUsageLocal = mLocalData->getMemoryUsage();
+    size_t memoryUsageHalo  = mHaloData->getMemoryUsage();
+    const Communicator& comm = getRowDistribution().getCommunicator();
+    size_t memoryUsageGlobal = comm.sum( memoryUsageLocal + memoryUsageHalo );
+
+    SCAI_LOG_INFO( logger, comm << ": memory usage of this matrix " << *this 
+                           << ": local = " << memoryUsageLocal << ", halo = " << memoryUsageHalo 
+                           << ", total = " << memoryUsageGlobal )
+
+    return memoryUsageGlobal;
 }
 
 /* ------------------------------------------------------------------------- */

@@ -298,52 +298,82 @@ public:
     virtual void fillSparseRandom( const float fillRate, const IndexType bound ) = 0;
 
     /**
-     * This method sets a vector by reading its values from one or multiple files.
+     *  @brief Read a vector from an input file.
      *
-     * @param[in] fileName      the filename to read from
-     * @param[in] distribution  optional, if set it is the distribution of the vector
+     *  Note: the file type (i.g. MatrixMarket, SAMG, ... ) is derived by the suffix
+     */
+    void readFromFile( const std::string& fileName );
+
+    /**
+     *  @brief Read a vector from an input file with a certain distribution
      *
-     *   \code
-     *      DenseVector<double> vector;
-     *      vector.readFromFile( "vector.mtx" )                    ! vector only on processor 0
-     *      vector.readFromFile( "vector_%r.mtx" )                 ! general block distributed vector, each processor reads it own file
-     *      vector.readFromFile( "vector.mtx", rowDist )           ! each processor gets its local part of the vector in one file
-     *      vector.readFromFile( "vector_%r.mtx", rowDist )        ! read a partitioned vector with the given distribution
-     *   \endcode
+     *  The global size of the distribution must match the vector size in the file.
      */
     void readFromFile( const std::string& fileName, dmemo::DistributionPtr distribution );
 
-    void readFromFile( const std::string& fileName, dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr() );
-
     /**
-     *  This method sets a vector a reading its values from one or multiple files and also the distribution from a file
+     *  This method sets a vector by reading its values from a file. Its final distribution
+     *  is also read from a file.
      *
-     * @param[in] vectorFileName the single or partitioned filename to read from
-     * @param[in] distributionFileName the single or partitioned filename with the row distribution of the vector
+     *  @param[in] vectorFileName contains the vector data
+     *  @param[in] distributionFileName is name of the file that contains the owner for each element.
      *
      *   \code
-     *      CSRSparseMatrix<double> vector;
+     *      DenseVector<double> vector;
+     *      vector.readFromFile( "vector.mtx", "BLOCK" );
      *      vector.readFromFile( "vector.mtx", "owners.mtx" )
      *      vector.readFromFile( "vector_%r.mtx", "owners.mtx" )
-     *      vector.readFromFile( "vector.mtx", "rows%r.mtx" )
-     *      vector.readFromFile( "vector_%r.mtx", "rows%r.mtx" )
+     *      vector.readFromFile( "vector.mtx", "owners_%r.mtx" )
+     *      vector.readFromFile( "vector_%r.mtx", "owners_%r.mtx" )
      *   \endcode
      */
     void readFromFile( const std::string& vectorFileName, const std::string& distributionFileName );
 
     /**
+     * @brief Pure method to read a vector from an open IOFile.
+     *
+     * - the distributed I/O mode of file decides how the data is read in
+     * - the final vector is either SINGLE (master) distributed or BLOCK distributed
+     */
+    virtual void readFromFile( FileIO& file ) = 0;
+
+    /**
      * @brief write the vector to an output file
      *
-     * @param[in] fileName is the name of the output file (suffix must be added according to the file type)
-     * @param[in] fileType format of the output file ("frv" for SAMG, "mtx" for _MatrixMarket), default is to decide by suffix
-     * @param[in] dataType representation type for output values, if set it overrides IO settings
-     * @param[in] fileMode can be BINARY or FORMATTED, DEFAULT_MODE keeps default/environment settings
+     * @param[in] fileName is the name of the output file, suffix decides about used FileIO class
+     * @param[in] fileMode can be BINARY or FORMATTED, DEFAULT keeps default/environment settings
+     * @param[in] dataType representation type for data values, default is same as value type of entries
+     * @param[in] indexType representation type for values of type IndexType.
      */
     void writeToFile(
         const std::string& fileName,
-        const std::string& fileType = "",
-        const common::ScalarType dataType = common::ScalarType::UNKNOWN,
-        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
+        const FileMode fileMode = FileMode::DEFAULT,
+        const common::ScalarType dataType = common::ScalarType::INTERNAL,
+        const common::ScalarType indexType = common::ScalarType::INDEX_TYPE ) const;
+
+    /**
+     *   @brief write the vector to an output file.
+     *
+     *   @param[in,out] outFile must be an open FileIO object.
+     */
+    void writeToFile( FileIO& outFile ) const;
+
+    /**
+     *   @brief write the vector to an output file in SINGLE mode
+     *
+     *   In MASTER mode only the master processor writes all data to the file
+     */
+    void writeToFileMaster( FileIO& outFile ) const;
+
+    /**
+     *   @brief write the vector to an output file in COLLECTIVE/INDEPNDENT mode
+     *
+     *   Each processor writes its local part, either in an independent file or in one
+     *   collective file.
+     *
+     *   This works only if the file is block distributed onto the 'file' processors.
+     */
+    void writeToFileBlocked( FileIO& outFile ) const;
 
     /**
      * @brief Queries the value type of the vector elements, e.g. DOUBLE or FLOAT.
@@ -531,7 +561,7 @@ public:
     inline const hmemo::Context& getContext() const;
 
     /**
-     * @brief Returns the global memory that is allocated to hold this vector.
+     * @brief Returns the amount of memory that is allocated to hold this vector.
      * For a distributed vector all partitions are summed together.
      *
      * @return the memory consumption of this vector.
@@ -620,79 +650,12 @@ private:
 
     hmemo::ContextPtr mContext; //!< decides about location of vector operations
 
-    /** write only the local data to a file, no communication here */
-
-    virtual void writeLocalToFile(
-        const std::string& fileName,
-        const std::string& fileType,
-        const common::ScalarType dataType,
-        const FileIO::FileMode fileMode ) const = 0;
-
-    /** write the whole vector into a single file, can imply redistribution */
-
-    void writeToSingleFile(
-        const std::string& fileName,
-        const std::string& fileType,
-        const common::ScalarType dataType,
-        const FileIO::FileMode fileMode ) const;
-
-    /** same as writeLocalToFile but also communication for error handling */
-
-    void writeToPartitionedFile(
-        const std::string& fileName,
-        const std::string& fileType,
-        const common::ScalarType dataType,
-        const FileIO::FileMode fileMode ) const;
-
-    /** Read a vector from a single file, only first processor reads it. The distribution of the
-     *  vector is a SingleDistribution.
+    /** 
+     *  @brief Write only the local data to a file.
      *
-     *  @param[in] fileName is the name of the input file containing the full vector data
-     *  @param[in] comm     specifies the tartet communicator for the single distribution
+     *  This method is called after a possible redistribution that fits the distributed I/O mode.
      */
-    void readFromSingleFile( const std::string& fileName, 
-                             dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr() );
-
-    /** Read only the local part from a file, no communication here.
-     *
-     *  This routine is implemented individually by sparse and dense vectors.
-     *
-     *  @param[in] fileName is the name of the input file containing the local vector data
-     *  @param[in] first is index of first element to read
-     *  @param[in] size number of elements to read, if invalidIndex read up to maximal size
-     *  @return    the size of the local vector read in
-     *
-     *  This routine is private as it allows a temporary inconsistency between the size of 
-     *  the local vector data and the distribution.
-     */
-    virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = invalidIndex ) = 0;
-
-    /** Read a vector with a certain distribution from a single file.
-     *
-     *  @param[in] fileName is the name of the input file containing the full vector data
-     *  @param[in] dist     will be the final distribution of the vector
-     *
-     *  Note: As the size of the vector in the file must match the global size of the vector, 
-     *        it might be necessary to read in the size of the vector from the file before.
-     *
-     *  If the format of the input file supports parallel reading, i.e. multiple processors
-     *  read individual parts of the vector, this method should take advantage of it. As fallback
-     *  the master process reads the whole file and sends afterwards the data to the owners.
-     */     
-    void readFromSingleFile( const std::string& fileName, dmemo::DistributionPtr dist );
-
-    /** Read a vector with a certain distribution from multiple files. Each processor reads
-     *  its corresponding part (specified by its rank) from one file. The file read by a processor
-     *  must contain exactly the owned data. 
-     */
-    void readFromPartitionedFile( const std::string& myPartitionFileName, dmemo::DistributionPtr dist );
-
-    /** Read a block 'partitioned' vector from multiple files. Each processor reads
-     *  its corresponding part (specified by its rank) from one file. The vector gets
-     *  a corresponding general block distribution.
-     */
-    void readFromPartitionedFile( const std::string& myPartitionFileName, 
-                                  dmemo::CommunicatorPtr comm = dmemo::CommunicatorPtr() );
+    virtual void writeLocalToFile( FileIO& file ) const = 0;
 };
 
 /* ========================================================================= */

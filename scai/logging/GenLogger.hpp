@@ -89,7 +89,7 @@ public:
 
     /** Output routine as global variable so it might be reset for other purposes. */
 
-    static void ( *myPrintf ) ( const char* format, ... );
+    static int ( *myPrintf ) ( const char* format, ... );
 
 private:
 

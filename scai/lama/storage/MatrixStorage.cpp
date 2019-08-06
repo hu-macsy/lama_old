@@ -121,6 +121,58 @@ common::ScalarType MatrixStorage<ValueType>::getValueType() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void MatrixStorage<ValueType>::readFromFile( const std::string& fileName, const IndexType firstRow, IndexType nRows )
+{
+    SCAI_LOG_INFO( logger, "MatrixStorage<" << getValueType() << ">::readFromFile( " << fileName 
+                           << " ), first = " << firstRow << ", n = " << nRows )
+
+    SCAI_REGION( "Storage.readFromFile" )
+
+    std::string suffix = FileIO::getSuffix( fileName );
+
+    // Note: reading does not care about binary argument, just read as it is
+
+    if ( !FileIO::canCreate( suffix ) )
+    {
+        COMMON_THROWEXCEPTION( "readFromFile " << fileName << ", illegal suffix " << suffix )
+    }
+
+    // okay, we can use FileIO class from factory
+
+    std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+
+    fileIO->open( fileName.c_str(), "r", DistributedIOMode::INDEPENDENT );
+
+    if ( firstRow == 0 && nRows == invalidIndex )
+    {
+        fileIO->readStorage( *this );
+    }
+    else
+    {
+        // section not yet supported here, so read the complete storage and restrict it to the selected range
+
+        CSRStorage<ValueType> allStorage;
+
+        fileIO->readStorage( allStorage );
+
+        IndexType nRowsUsed = nRows;
+
+        if ( nRows == invalidIndex )
+        {
+            nRowsUsed = allStorage.getNumRows() - firstRow;
+        }
+
+        allStorage.copyBlockTo( *this, firstRow, nRowsUsed );
+    }
+
+    fileIO->close();
+
+    check( "read matrix" );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void MatrixStorage<ValueType>::buildCSCData(
     HArray<IndexType>& colIA,
     HArray<IndexType>& colJA,
@@ -543,7 +595,9 @@ void MatrixStorage<ValueType>::splitHalo(
     localData.check( "local part after split" );
     // halo data is expected to have many empty rows, so enable compressing with row indexes
     haloData.setCompressThreshold( 0.5 );
+    SCAI_LOG_INFO( logger, "haloData with threshold: " << haloData )
     haloData.setCSRData( numRows, haloNumColumns, haloIA, haloJA, haloValues );
+    SCAI_LOG_INFO( logger, "haloData with threshold + set CSR data: " << haloData )
     haloData.check( "halo part after split" );
     SCAI_LOG_INFO( logger,
                    "Result of split: local storage = " << localData << ", halo storage = " << haloData << ", halo = " << halo )
@@ -617,6 +671,23 @@ void MatrixStorage<ValueType>::invert( const MatrixStorage<ValueType>& other )
     auto otherDense = convert<DenseStorage<ValueType>>( other );
     otherDense.invert( otherDense );
     this->assign( otherDense );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+HArray<ValueType> MatrixStorage<ValueType>::denseValues() const
+{
+    DenseStorage<ValueType> denseStorage;
+    denseStorage.assign( *this );
+
+    IndexType numRows;
+    IndexType numCols;
+    HArray<ValueType> denseValues;
+
+    denseStorage.splitUp( numRows, numCols, denseValues );
+
+    return denseValues;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1011,104 +1082,6 @@ void MatrixStorage<ValueType>::setRawDenseData(
     assign( denseStorage ); // will internally use the value epsilon
 
     SCAI_LOG_INFO( logger, *this << ": have set dense data " << numRows << " x " << numColumns )
-}
-
-/* ========================================================================= */
-/*       File I/O                                                            */
-/* ========================================================================= */
-
-template<typename ValueType>
-void MatrixStorage<ValueType>::writeToFile(
-    const std::string& fileName,
-    const std::string& fileType,
-    const common::ScalarType valuesType,
-    const common::ScalarType indexType,
-    const FileIO::FileMode mode ) const
-{
-    writeToFile( 1, 0, fileName, fileType, valuesType, indexType, mode );
-}
-
-template<typename ValueType>
-void MatrixStorage<ValueType>::writeToFile(
-    const PartitionId /* size */,
-    const PartitionId /* rank */,
-    const std::string& fileName,
-    const std::string& fileType,
-    const common::ScalarType dataType,
-    const common::ScalarType indexType,
-    const FileIO::FileMode mode ) const
-{
-    std::string suffix = fileType;
-
-    if ( suffix == "" )
-    {
-        suffix = FileIO::getSuffix( fileName );
-    }
-
-    if ( FileIO::canCreate( suffix ) )
-    {
-        // okay, we can use FileIO class from factory
-
-        std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
-
-        if ( dataType != common::ScalarType::UNKNOWN )
-        {
-            fileIO->setDataType( dataType );
-        }
-
-        if ( indexType != common::ScalarType::UNKNOWN )
-        {
-            fileIO->setIndexType( indexType );
-        }
-
-        if ( mode != FileIO::DEFAULT_MODE )
-        {
-            fileIO->setMode( mode );
-        }
-
-        SCAI_LOG_INFO( logger, "write matrix storage to file, FileIO = " << *fileIO << ", storage = " << *this )
-
-        // Note. SCAI_IO_TYPE_DATA allows that data is converted
-
-        fileIO->writeStorage( *this, fileName );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "writeToFile " << fileName << ", unknown file type " << suffix )
-    }
-}
-
-/*****************************************************************************/
-
-template<typename ValueType>
-void MatrixStorage<ValueType>::readFromFile( const std::string& fileName, const IndexType firstRow, IndexType nRows )
-{
-    SCAI_LOG_INFO( logger, "MatrixStorage<" << getValueType() << ">::readFromFile( " << fileName << ")" )
-    SCAI_REGION( "Storage.readFromFile" )
-
-    std::string suffix = FileIO::getSuffix( fileName );
-
-    // Note: reading does not care about binary argument, just read as it is
-
-    if ( FileIO::canCreate( suffix ) )
-    {
-        // okay, we can use FileIO class from factory
-
-        std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
-
-        // We do not set data type, take it from environment variable SCAI_IO_TYPE_DATA
-        // fileIO->setDataType( common::ScalarType::INTERNAL );
-
-        SCAI_LOG_INFO( logger, "Got from factory: " << *fileIO )
-
-        fileIO->readStorage( *this, fileName, firstRow, nRows );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "readFromFile " << fileName << ", illegal suffix " << suffix )
-    }
-
-    check( "read matrix" );
 }
 
 /*****************************************************************************/

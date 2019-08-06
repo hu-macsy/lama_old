@@ -63,11 +63,11 @@ int main( int argc, char* argv[] )
     auto matrix = read<CSRSparseMatrix<ValueType>>( argv[1] );
     std::cout << "Read matrix : " << matrix << std::endl;
     IndexType size = matrix.getNumRows();
-    auto rhs = linearDenseVector<ValueType>( size, 1, 1 );
+    auto rhs = denseVectorLinear<ValueType>( size, 1, 1 );
     std::cout << "Vector rhs : " << rhs << std::endl;
-    auto solution = fill<DenseVector<ValueType>>( size, 0 );
+    auto solution = denseVector<ValueType>( size, 0 );
 
-    auto r = eval<DenseVector<ValueType>>( rhs - matrix * solution );
+    auto r = denseVectorEval( rhs - matrix * solution );
     DenseVector<ValueType> d( r );
 
     ValueType rOld = r.dotProduct( r );

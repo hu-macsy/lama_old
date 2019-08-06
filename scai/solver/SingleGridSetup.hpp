@@ -44,6 +44,12 @@ namespace scai
 namespace solver
 {
 
+/** 
+ *  @brief Trivial implementation for an AMG setup.
+ *
+ *  This AMG setup has only 1 level that contains the system matrix itself.
+ *  As default, it takes a Jacobi solver (10 iterations steps) for smoothing
+ */
 template<typename ValueType>
 class SingleGridSetup:
 
@@ -57,51 +63,11 @@ public:
 
     virtual ~SingleGridSetup();
 
-    virtual void initialize( const lama::Matrix<ValueType>& coefficients );
-
-    virtual Solver<ValueType>& getCoarseLevelSolver();
-
-    virtual IndexType getNumLevels();
-
-    virtual Solver<ValueType>& getSmoother( const IndexType level );
-
-    virtual const lama::Matrix<ValueType>& getGalerkin( const IndexType level );
-
-    virtual const lama::Matrix<ValueType>& getRestriction( const IndexType level );
-
-    virtual const lama::Matrix<ValueType>& getInterpolation( const IndexType level );
-
-    virtual lama::Vector<ValueType>& getSolutionVector( const IndexType level );
-
-    virtual lama::Vector<ValueType>& getRhsVector( const IndexType level );
-
-    virtual lama::Vector<ValueType>& getTmpResVector( const IndexType level );
-
     virtual std::string getCouplingPredicateInfo() const;
 
     virtual std::string getColoringInfo() const;
 
     virtual std::string getInterpolationInfo() const;
-
-    virtual std::string getSmootherInfo() const;
-
-    virtual std::string getCoarseLevelSolverInfo() const;
-
-    virtual void setCoarseLevelSolver( SolverPtr<ValueType> solver );
-
-    /**
-     * @brief Usually sets smoother for all level, for this case overwrites the coarse level solver
-     */
-    virtual void setSmoother( SolverPtr<ValueType> solver );
-
-    // just a dummy function
-    virtual void setMaxLevels( const IndexType )
-    {
-    }
-    // just a dummy function
-    virtual void setMinVarsCoarseLevel( const IndexType )
-    {
-    }
 
     // Get the key used for registration in factory
 
@@ -114,19 +80,21 @@ public:
 private:
 
     /**
+     *   Implementation of pure method AMGSetup::createMatrixHieararchy()
+     */
+    virtual void createMatrixHierarchy();
+
+    /**
+     *   @brief Implementation of pure method AMGSetup::createSolver
+     */
+    virtual SolverPtr<ValueType> createSolver( bool isCoarseLevel );
+
+    /**
      *  @brief own implementation of Printable::writeAt
      */
     virtual void writeAt( std::ostream& stream ) const;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
-    SolverPtr<ValueType>   mSolver;
-
-    std::unique_ptr<lama::Matrix<ValueType>> mIdentity;
-
-    std::unique_ptr<lama::Vector<ValueType> > mSolutionVector;
-    std::unique_ptr<lama::Vector<ValueType> > mRhsVector;
-    std::unique_ptr<lama::Vector<ValueType> > mTmpResVector;
 };
 
 } /* end namespace solver */

@@ -147,6 +147,30 @@ BOOST_AUTO_TEST_CASE( genBlockByWeightTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( constructByOffsetTest )
+{
+    const IndexType N = comm->getSize();
+    const IndexType R = comm->getRank();
+
+    const IndexType offset = R;
+    auto dist = genBlockDistributionByOffset( N, offset, comm );
+   
+    BOOST_CHECK_EQUAL( dist->getLocalSize(), IndexType( 1 ) );
+    BOOST_CHECK_EQUAL( dist->lb(), offset );
+
+    const IndexType offset1 = R % 2 == 0 ? invalidIndex : R;
+    auto dist1 = genBlockDistributionByOffset( N, offset1, comm );
+ 
+    BOOST_CHECK_EQUAL( comm->sum( dist1->getLocalSize() ), N );
+
+    BOOST_CHECK_THROW(
+    {
+        auto dist2 = genBlockDistributionByOffset( N, N + 1, comm );
+    }, common::Exception );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( genBlockSizeTest )
 {
     // setup vector of sizes
@@ -168,10 +192,10 @@ BOOST_AUTO_TEST_CASE( genBlockSizeTest )
     BOOST_CHECK_EQUAL( dist1->getLocalSize(), static_cast<IndexType>( 2 * ( rank + 1 ) ) );
     BOOST_CHECK_EQUAL( dist1->getLocalSize(), dist2->getLocalSize() );
 
-    IndexType lb1, ub1;
-    dist1->getLocalRange( lb1, ub1 );
-    IndexType lb2, ub2;
-    dist2->getLocalRange( lb2, ub2 );
+    IndexType lb1 = dist1->lb();
+    IndexType ub1 = dist1->ub();
+    IndexType lb2 = dist2->lb();
+    IndexType ub2 = dist2->ub();
     BOOST_CHECK_EQUAL( lb1, lb2 );
     BOOST_CHECK_EQUAL( ub1, ub2 );
 }
@@ -189,6 +213,21 @@ BOOST_AUTO_TEST_CASE( isEqualTest )
     BOOST_CHECK( ( *genblockdist1 ).isEqual( *genblockdist2 ) );
     BOOST_CHECK( ( *genblockdist1 ).isEqual( *genblockdist3 ) );
     BOOST_CHECK( !( *genblockdist1 ).isEqual( *genblockdist4 ) );
+
+    BOOST_CHECK( genblockdist1->isSameGenBlockDistribution( *genblockdist3 ) );
+    BOOST_CHECK( genblockdist1->isBlockDistribution() );
+    BOOST_CHECK( genblockdist4->isBlockDistribution() );
+
+    const IndexType N = 1000 * comm->getSize();
+    auto genblockdist5 = genBlockDistributionByWeight( N, 1.0f );
+    BOOST_CHECK( genblockdist5->isBlockDistribution() );
+    auto genblockdist6 = genBlockDistributionByWeight( N, float( comm->getRank() + 1 ) );
+    if ( comm->getSize() > 1 )
+    {
+        BOOST_CHECK( !genblockdist6->isBlockDistribution() );
+    }
+    auto genblockdist7 = genBlockDistributionByWeight( N, 2.0f );
+    BOOST_CHECK( genblockdist7->isSameGenBlockDistribution( *genblockdist5 ) );
 }
 
 /* --------------------------------------------------------------------- */

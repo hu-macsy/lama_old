@@ -417,7 +417,7 @@ bool CSRStorage<ValueType>::hasSortedRows()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CSRStorage<ValueType>::setDiagonalFirst()
+IndexType CSRStorage<ValueType>::setDiagonalFirst()
 {
     IndexType numDiagonals = this->getDiagonalSize();
 
@@ -427,6 +427,28 @@ void CSRStorage<ValueType>::setDiagonalFirst()
     {
         SCAI_LOG_WARN( logger, "Only set " << numFirstDiagonals << " of " << numDiagonals << " diagonal entries as first entry." )
     }
+
+    return numFirstDiagonals;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+IndexType CSRStorage<ValueType>::setDiagonalFirst( const HArray<IndexType>& globalRowIndexes )
+{
+    SCAI_ASSERT_EQ_ERROR( globalRowIndexes.size(), getNumRows(), "serious mismatch" )
+
+    IndexType numDiagonals = getNumRows();
+
+    IndexType numFirstDiagonals = CSRUtils::shiftDiagonalFirst( mJA, mValues, numDiagonals, getNumColumns(), 
+                                                                mIA, globalRowIndexes, getContextPtr() );
+
+    if ( numDiagonals != numFirstDiagonals )
+    {
+        SCAI_LOG_WARN( logger, "Only set " << numFirstDiagonals << " of " << numDiagonals << " diagonal entries as first entry." )
+    }
+
+    return numFirstDiagonals;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -616,13 +638,15 @@ void CSRStorage<ValueType>::swap( HArray<IndexType>& ia, HArray<IndexType>& ja, 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-size_t CSRStorage<ValueType>::getMemoryUsageImpl() const
+size_t CSRStorage<ValueType>::getMemoryUsage() const
 {
-    size_t memoryUsage = 0;
+    size_t memoryUsage = _MatrixStorage::_getMemoryUsage();
+
     memoryUsage += sizeof( IndexType );
     memoryUsage += sizeof( IndexType ) * mIA.size();
     memoryUsage += sizeof( IndexType ) * mJA.size();
     memoryUsage += sizeof( ValueType ) * mValues.size();
+
     return memoryUsage;
 }
 

@@ -23,10 +23,9 @@
  * @endlicense
  *
  * @brief AMGSetup.hpp
- * @author Jiri Kraus
+ * @author Thomas Brandes, Jiri Kraus
  * @date 28.10.2011
  */
-
 #pragma once
 
 // for dll_import
@@ -36,7 +35,6 @@
 #include <scai/solver/Solver.hpp>
 
 // internal scai libraries
-#include <scai/lama/matrix/Matrix.hpp>
 #include <scai/common/Factory.hpp>
 
 namespace scai
@@ -45,9 +43,12 @@ namespace scai
 namespace solver
 {
 
+/** 
+ *  @brief Untyped base class for all typed AMG classes
+ *
+ *  This common base class provides a common factory and a common logger.
+ */
 class _AMGSetup;
-
-// typedef std::shared_ptr<class AMGSetup> AMGSetupPtr;
 
 typedef std::pair<common::ScalarType, std::string> AMGSetupCreateKeyType;
 
@@ -106,25 +107,66 @@ public:
      */
     static void getCreateValues( std::vector<std::string>& values );
 
-    virtual void initialize( const lama::Matrix<ValueType>& coefficients ) = 0;
+    /**
+     *  Initalization of the AMG setup by the 'square' input matrix.
+     *
+     *  @param[in] mainSystemMatrix is the input matrix used for the AMG setup
+     *
+     *  Note: row and column distribution of the matrix should be equal.
+     *
+     *  The context and format of the input matrix is inherited to all galerkin
+     *  and interpolation/restriction matrices.
+     */
+    void initialize( const lama::Matrix<ValueType>& mainSystemMatrix );
 
-    virtual Solver<ValueType>& getCoarseLevelSolver() = 0;
+    /**
+     *  @brief Get the number of levels
+     *
+     *  Note: this method returns 0 if not initialized, 1 if there is only the main matrix used.
+     */
+    IndexType getNumLevels() const;
 
-    virtual IndexType getNumLevels() = 0;
+    /**
+     *  @brief Getter for the galerkin matrix on a certain level
+     * 
+     *  @param[in] level must be valid index, $0 \le level \lt getNumLevels()$
+     * 
+     *  The matrix on level 0 is the matrix that has been used for initialization. The
+     *  higher the level, the less entries the matrix has.
+     */
+    const lama::Matrix<ValueType>& getGalerkin( const IndexType level );
 
-    virtual Solver<ValueType>& getSmoother( const IndexType level ) = 0;
+    /**
+     *  @brief Getter for the restriction matrix to restrict form one level to the 
+     */
+    const lama::Matrix<ValueType>& getRestriction( const IndexType level );
 
-    virtual const lama::Matrix<ValueType>& getGalerkin( const IndexType level ) = 0;
+    /**
+     *  @brief Getter for the interpolation matrix to interpolate a matrix at a level from the next higher level.
+     */
+    const lama::Matrix<ValueType>& getInterpolation( const IndexType level );
 
-    virtual const lama::Matrix<ValueType>& getRestriction( const IndexType level ) = 0;
+    lama::Vector<ValueType>& getSolutionVector( const IndexType level );
 
-    virtual const lama::Matrix<ValueType>& getInterpolation( const IndexType level ) = 0;
+    lama::Vector<ValueType>& getRhsVector( const IndexType level );
 
-    virtual lama::Vector<ValueType>& getSolutionVector( const IndexType level ) = 0;
+    lama::Vector<ValueType>& getTmpResVector( const IndexType level );
 
-    virtual lama::Vector<ValueType>& getRhsVector( const IndexType level ) = 0;
+    /** 
+     *  @brief Creation of interpolation, galerkin and interpolation matrices must
+     *         be provided by each derived class.
+     *
+     *  Note: Derived classes should add the matrices for the next level by calling 
+     *        the protected method AMGSetup::addNextLevel.
+     */ 
+    virtual void createMatrixHierarchy() = 0;
 
-    virtual lama::Vector<ValueType>& getTmpResVector( const IndexType level ) = 0;
+    /**
+     *  @brief Get a solver to be used as a smoother.
+     *
+     *  This method must be implemented by all derived classes.
+     */
+    virtual SolverPtr<ValueType> createSolver( bool isCoarseLevel ) = 0;
 
     virtual std::string getCouplingPredicateInfo() const = 0;
 
@@ -132,39 +174,147 @@ public:
 
     virtual std::string getInterpolationInfo() const = 0;
 
-    virtual std::string getSmootherInfo() const = 0;
-
-    virtual std::string getCoarseLevelSolverInfo() const = 0;
-
-    virtual void setMaxLevels( const IndexType level ) = 0;
-
-    virtual void setMinVarsCoarseLevel( const IndexType vars ) = 0;
-
-    virtual void setHostOnlyLevel( IndexType hostOnlyLevel );
-
-    virtual void setHostOnlyVars( IndexType hostOnlyVars );
-
-    virtual void setReplicatedLevel( IndexType replicatedLevel );
-
-    virtual void setCoarseLevelSolver( SolverPtr<ValueType> solver ) = 0;
+    /**
+     *  @brief Set the maximal number of levels
+     *
+     *  By default, there is no restriction for the maximal number of levels.
+     */
+    void setMaxLevels( const IndexType level );
 
     /**
-     * @brief Sets smoother for all level
+     *  @brief Set the minimal size for a matrix that it should have on the coarsest level
+     *
+     *  This size is used as stopping criterion for creation of a next level.
      */
-    virtual void setSmoother( SolverPtr<ValueType> solver ) = 0;
+    void setMinVarsCoarseLevel( const IndexType vars );
+
+    void setHostOnlyLevel( IndexType hostOnlyLevel );
+
+    void setHostOnlyVars( IndexType hostOnlyVars );
+
+    void setReplicatedLevel( IndexType replicatedLevel );
+
+    /**
+     * @brief Sets default smoother that is used on each level
+     *
+     * Note: this method should be called before initialize.
+     */
+    void setSmoother( SolverPtr<ValueType> solver );
+
+    /**
+     * @brief Sets default solver to be used on the coarsest level
+     *
+     * Note: this method should be called before initialize.
+     */
+    void setCoarseLevelSolver( SolverPtr<ValueType> solver );
+
+    /**
+     * @brief Getter routine for the solver on a level.
+     */
+    Solver<ValueType>& getSmoother( const IndexType level );
+
+    /**
+     * @brief Getter routine for the solver on the coarsest level.
+     */
+    Solver<ValueType>& getCoarseLevelSolver();
+
+    std::string getSmootherInfo() const;
+
+    std::string getCoarseLevelSolverInfo() const;
 
 protected:
 
-    IndexType mHostOnlyLevel;
+    IndexType mHostOnlyLevel;   //<! determines how many of the coarsest grids are kept on Host
 
-    IndexType mHostOnlyVars;
+    IndexType mHostOnlyVars;    //<! matrices with a size less or equal have always host context
 
-    IndexType mReplicatedLevel;
+    IndexType mReplicatedLevel;  //<! determines how many of the coarses levels will be replicated
+
+    IndexType mMinVarsCoarseLevel;  //!< no further level if matrix has less equal variables
+
+    IndexType mMaxLevels;           //!< maximal number of matrices in the hiearchy 
 
     /**
      *  @brief own implementation of Printable::writeAt
      */
     virtual void writeAt( std::ostream& stream ) const;
+
+    /** 
+     *  This method shoud be called by the derived AMG setup class to set the matrices for the next level.
+     *
+     *  @param[in] interpolationMatrix is the 
+     *
+     *  This call takes over the ownership of all matrices. The matrices will not be changed, i.e.
+     *  the calling method might use e.g. a reference of the galerkin matrix to compute the next level.
+     */
+    void addNextLevel( 
+        std::unique_ptr<lama::Matrix<ValueType>> interpolationMatrix,
+        std::unique_ptr<lama::Matrix<ValueType>> galerkinMatrix = std::unique_ptr<lama::Matrix<ValueType>>(),
+        std::unique_ptr<lama::Matrix<ValueType>> restrictionMatrix = std::unique_ptr<lama::Matrix<ValueType>>() );
+
+private:
+
+    /**
+     *  Help routine that converts the matrices (galerkin, restriction, interpolation) on the different levels
+     */
+    void convertMatrixHierarchy();
+
+    /**
+     *  Help routine that sets up the vectors used on each level.
+     */
+    void createVectorHierarchy();
+
+    /**
+     *  Help routine that sets up the solvers/smoothers used on each level.
+     */
+    void createSolverHierarchy();
+
+    /** @brief pointer reference to the main coefficient matrix
+     *
+     *  It is assumed that the matrix is not modified during the whole lifetime of the setup.
+     */
+    const lama::Matrix<ValueType>* mMainGalerkinMatrix;   
+
+    /** 
+     *  @brief Data structure that keeps the galerkin matrices on all levels, except the main one.
+     *
+     *  The main system matrix is not managed here as we do not have the ownership.
+     */
+    std::vector<std::unique_ptr<lama::Matrix<ValueType>>> mGalerkinMatrices;
+
+    /** 
+     *  @brief Data structure that keeps the interpolation matrices between all levels 
+     */
+    std::vector<std::unique_ptr<lama::Matrix<ValueType>>> mInterpolationMatrices;
+
+    /** 
+     *  @brief Data structure that keeps the restriction matrices between all levels 
+     *
+     *  Note: the restriction matrix is the tranpose of the interpolation matrix.
+     */
+    std::vector<std::unique_ptr<lama::Matrix<ValueType>>> mRestrictionMatrices;
+
+    /**
+     *  @brief Setup keeps the allocated data for the solution, rhs, residual vectors
+     */
+    std::vector<lama::DenseVector<ValueType>> mSolutionHierarchy;
+    std::vector<lama::DenseVector<ValueType>> mRhsHierarchy;
+    std::vector<lama::DenseVector<ValueType>> mTmpResHierarchy;
+
+    /**
+     *  @brief Data structure that keeps the solver on each level 
+     */
+    std::vector<SolverPtr<ValueType> > mSolverHierarchy;
+
+    /**
+     *  @brief Default solver that should be used on the coarsest level.
+     */
+    SolverPtr<ValueType> mCoarseLevelSolver;
+
+    /**
+     *  @brief Default solver to be used for smoothing on each level.
+     */
+    SolverPtr<ValueType> mSmoother; 
 };
 
 } /* end namespace solver */

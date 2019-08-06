@@ -108,7 +108,7 @@ void job( HArray<double>* X )
 
         SCAI_LOG_INFO( logger, "job, r = " << r << ", kind = " << kind << ", finished" )
     }
-    catch ( scai::common::Exception ex )
+    catch ( scai::common::Exception& ex )
     {
         SCAI_LOG_ERROR( logger, "job, r = " << r << ", kind = " << kind << ", caught exception: " << ex.what() )
     }

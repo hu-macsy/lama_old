@@ -58,8 +58,8 @@ int main()
 
     auto fillSource = []( IndexType k ) { return ValueType( k ) / ValueType( N ); };
 
-    auto indexes = linearDenseVector<IndexType>( targetDist, 2, 1 );
-    auto source  = fillDenseVector<ValueType>( sourceDist, fillSource );
+    auto indexes = denseVectorLinear<IndexType>( targetDist, 2, 1 );
+    auto source  = denseVectorFill<ValueType>( sourceDist, fillSource );
     
     DenseVector<ValueType> target( targetDist, ValueType( 0 ) );
     source.gatherFrom( target, indexes, common::BinaryOp::COPY );
@@ -86,7 +86,7 @@ int main()
     std::cout << "maxDiff = " << maxDiff << std::endl;
 
     auto plan = source.globalAddressingPlan( indexes );
-    auto target2 = fillDenseVector<ValueType>( targetDist, ValueType( 0 ) );
+    auto target2 = denseVector<ValueType>( targetDist, ValueType( 0 ) );
     source.gatherByPlan( target2, plan, common::BinaryOp::COPY );
 
     auto maxDiff2 = target.maxDiffNorm( target2 );

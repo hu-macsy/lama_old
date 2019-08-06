@@ -19,7 +19,6 @@
 # ``SCAI_VERSION``
 #   the version of the SCAI library found.
 
-
 set ( SCAI_DEFINITIONS  "-DSCAI_ASSERT_LEVEL_@SCAI_ASSERT_LEVEL@" 
                         "-DSCAI_LOG_LEVEL_@SCAI_LOG_LEVEL@" 
                         "-DSCAI_TRACE_@SCAI_TRACE@"  )
@@ -34,17 +33,35 @@ set ( SCAI_MODULES @SCAI_DEFINED_MODULES@ )
 
 set ( SCAI_VERSION @SCAI_VERSION@ )
 
-set ( SCAI_LIBRARIES "" )
-
 set ( SCAI_FOUND true )
+
+#  track change of SCAI_ROOT to reset libraries
+
+if ( "${SCAI_ROOT}" STREQUAL "${SCAI_ROOT_LAST}" )
+    set ( SCAI_ROOT_CHANGED "OFF" )
+else ()
+    set ( SCAI_ROOT_CHANGED "ON" )
+endif ()
+
+set (SCAI_ROOT_LAST "${SCAI_ROOT}")
+
+# search/set libraries of each LAMA module
+
+set ( SCAI_LIBRARIES "" )
 
 foreach ( module ${SCAI_MODULES} )
 
-     find_library ( SCAI_LIBRARY_${module} 
-                    NAMES scai_${module}
-                    PATHS ${SCAI_ROOT}/lib )
+    if ( SCAI_ROOT_CHANGED )
+        set ( SCAI_LIBRARY_${module} "SCAI_LIBRARY_${module}-NOTFOUND")
+    endif ()
 
-     set ( SCAI_LIBRARIES ${SCAI_LIBRARY_${module}} ${SCAI_LIBRARIES} )
+    find_library ( SCAI_LIBRARY_${module} 
+                   NAMES scai_${module}
+                   PATHS ${SCAI_ROOT}/lib )
+
+    mark_as_advanced ( SCAI_LIBRARY_${module} )
+
+    set ( SCAI_LIBRARIES ${SCAI_LIBRARY_${module}} ${SCAI_LIBRARIES} )
 
 endforeach ()
 

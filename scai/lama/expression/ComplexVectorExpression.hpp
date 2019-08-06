@@ -28,6 +28,8 @@
  */
 #pragma once
 
+#include <scai/common/TypeTraits.hpp>
+
 namespace scai
 {
 
@@ -78,8 +80,19 @@ ComplexPartVectorExpression<ValueType, common::ComplexPart::IMAG> imag( const Ve
     return ComplexPartVectorExpression<ValueType, common::ComplexPart::IMAG>( v );
 }
 
-/** A complex vector expression is very close to a binary expression that stands for x + y * i.
+/** 
+ *  @brief Expression class that builds a complex vector from two real vectors.
+ *
+ *  A complex vector expression is very close to a binary expression that stands for x + y * i.
  *  In contrary to other binary operations we have a new result type so it is handled here on its own
+ *
+ *  @tparam ValueType must be float, double or LongDouble 
+ *
+ *  \code
+ *      DenseVector<double> x, y;
+ *      DenseVector<ComplexDouble> z;
+ *      z = complex( x, y );
+ *  \endcode
  */
 template<typename ValueType>
 class ComplexBuildVectorExpression

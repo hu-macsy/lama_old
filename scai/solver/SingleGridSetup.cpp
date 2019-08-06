@@ -80,99 +80,34 @@ SingleGridSetup<ValueType>::SingleGridSetup()
 template<typename ValueType>
 SingleGridSetup<ValueType>::~SingleGridSetup()
 {
+    SCAI_LOG_DEBUG( logger, "~SingleGridSetup" )
 }
 
 /* ========================================================================= */
-/*    Initialization                                                         */
+/*    createSolver()                                                         */
 /* ========================================================================= */
 
 template<typename ValueType>
-void SingleGridSetup<ValueType>::initialize( const Matrix<ValueType>& coefficients )
+SolverPtr<ValueType> SingleGridSetup<ValueType>::createSolver( bool )
 {
-    SCAI_REGION( "initialize_SingleGridSetup" )
-    SCAI_LOG_DEBUG( logger, "SingleGridSetup::initialize" )
+    // Note: we do not have a coarse level at all here, so isCoarseLevel does not matter
 
-    // set default solver
+    auto jacobiSolver = std::make_shared<Jacobi<ValueType>>( "10x SingleGridSetup Jacobi Solver" );
 
-    if ( !mSolver )
-    {
-        SCAI_LOG_DEBUG( logger, "new Jacobi" )
-        Jacobi<ValueType>* jacobiSolver = new Jacobi<ValueType>( "10x SingleGridSetup Jacobi Solver" );
-        CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( 10 ) );
-        jacobiSolver->setStoppingCriterion( criterion );
-        mSolver.reset( jacobiSolver );
-    }
+    auto criterion = std::make_shared<IterationCount<ValueType>>( 10 );
 
-    SCAI_LOG_DEBUG( logger, "mSolver->initialize" )
-    mSolver->initialize( coefficients );
-    SCAI_LOG_DEBUG( logger, "mIdentity.reset" )
-    mIdentity.reset( coefficients.newMatrix() );
-    SCAI_LOG_DEBUG( logger, "before identity" )
-    mIdentity->setIdentity( coefficients.getRowDistributionPtr() );
-    SCAI_LOG_DEBUG( logger, "after identity" )
-    SCAI_LOG_DEBUG( logger, "Identity matrix = " << *mIdentity )
+    jacobiSolver->setStoppingCriterion( criterion );
 
-    mSolutionVector.reset( coefficients.newTargetVector() );
-    mRhsVector.reset( coefficients.newTargetVector() );
-    mTmpResVector.reset( coefficients.newTargetVector() );
+    return jacobiSolver;
 }
 
 /* ========================================================================= */
-/*    Getter methods                                                         */
+/*    createMatrixHierarchy()                                                */
 /* ========================================================================= */
 
 template<typename ValueType>
-Solver<ValueType>& SingleGridSetup<ValueType>::getCoarseLevelSolver()
+void SingleGridSetup<ValueType>::createMatrixHierarchy()
 {
-    return *mSolver;
-}
-
-template<typename ValueType>
-IndexType SingleGridSetup<ValueType>::getNumLevels()
-{
-    return 2;
-}
-
-template<typename ValueType>
-Solver<ValueType>& SingleGridSetup<ValueType>::getSmoother( const IndexType )
-{
-    return *mSolver;
-}
-
-template<typename ValueType>
-const Matrix<ValueType>& SingleGridSetup<ValueType>::getGalerkin( const IndexType )
-{
-    return mSolver->getCoefficients();
-}
-
-template<typename ValueType>
-const Matrix<ValueType>& SingleGridSetup<ValueType>::getRestriction( const IndexType )
-{
-    return *mIdentity;
-}
-
-template<typename ValueType>
-const Matrix<ValueType>& SingleGridSetup<ValueType>::getInterpolation( const IndexType )
-{
-    return *mIdentity;
-}
-
-template<typename ValueType>
-Vector<ValueType>& SingleGridSetup<ValueType>::getSolutionVector( const IndexType )
-{
-    return *mSolutionVector;
-}
-
-template<typename ValueType>
-Vector<ValueType>& SingleGridSetup<ValueType>::getRhsVector( const IndexType )
-{
-    return *mRhsVector;
-}
-
-template<typename ValueType>
-Vector<ValueType>& SingleGridSetup<ValueType>::getTmpResVector( const IndexType )
-{
-    return *mTmpResVector;
 }
 
 template<typename ValueType>
@@ -194,33 +129,9 @@ std::string SingleGridSetup<ValueType>::getInterpolationInfo() const
 }
 
 template<typename ValueType>
-std::string SingleGridSetup<ValueType>::getSmootherInfo() const
-{
-    return mSolver->getId();
-}
-
-template<typename ValueType>
-std::string SingleGridSetup<ValueType>::getCoarseLevelSolverInfo() const
-{
-    return mSolver->getId();
-}
-
-template<typename ValueType>
-void SingleGridSetup<ValueType>::setCoarseLevelSolver( SolverPtr<ValueType> solver )
-{
-    mSolver = solver;
-}
-
-template<typename ValueType>
-void SingleGridSetup<ValueType>::setSmoother( SolverPtr<ValueType> solver )
-{
-    mSolver = solver;
-}
-
-template<typename ValueType>
 void SingleGridSetup<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "SingleGridSetup";
+    stream << "SingleGridSetup( #levels = " << this->getNumLevels() << " )";
 }
 
 /* ========================================================================= */

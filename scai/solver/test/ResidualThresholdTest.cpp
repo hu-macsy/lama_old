@@ -189,7 +189,7 @@ void testIsSatisfied( ResidualCheck checkMode )
     const CSRSparseMatrix<ValueType> coefficients( system.coefficients );
     const DenseVector<ValueType> rhs( system.rhs );
 
-    auto solution = fill<DenseVector<ValueType>>( n, 0 );
+    auto solution = denseVector<ValueType>( n, 0 );
 
     auto l2Norm = std::make_shared<L2Norm<ValueType>>();
 
@@ -201,7 +201,7 @@ void testIsSatisfied( ResidualCheck checkMode )
 
     BOOST_CHECK( residualThreshold->isSatisfied( solver ) );
 
-    const auto residual = eval<DenseVector<ValueType>>( coefficients * solution - rhs );
+    const auto residual = denseVectorEval( coefficients * solution - rhs );
 
     RealType<ValueType> error = ( *l2Norm )( residual );
 

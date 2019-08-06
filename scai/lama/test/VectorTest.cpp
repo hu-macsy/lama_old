@@ -195,20 +195,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConversionTest, ValueType, scai_numeric_test_type
 
     // define some vector used for operations later
 
-    const IndexType raw_indexes[] = { 1, 7, 11 };
-    const OtherValueType raw_values[] = { 5, 7, 9 };
+    hmemo::HArray<IndexType> indexes( { 1, 7, 11 } );
+    hmemo::HArray<OtherValueType> values( { 5, 7, 9 } );
 
-    hmemo::HArray<IndexType> indexes( 3, raw_indexes );
-    hmemo::HArray<OtherValueType> values( 3, raw_values );
+    OtherValueType zero = 1;
 
-    SparseVector<OtherValueType> sparseVector;
-    sparseVector.setSparseData( n, indexes, values, OtherValueType( 1 ) );
+    SparseVector<OtherValueType> sparseVector( n, indexes, values, zero );
 
     auto denseVector = convert<DenseVector<OtherValueType>>( sparseVector );
 
     TestVectors<ValueType> vectors;
 
-    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
+    dmemo::DistributionPtr dist = dmemo::blockDistribution( n, comm );
 
     RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
@@ -398,8 +396,8 @@ BOOST_AUTO_TEST_CASE( BinaryOpTest )
 
     const IndexType N = 3;
 
-    auto v1 = fill<SparseVector<ValueType>>( N, 3 );
-    auto v2 = fill<SparseVector<ValueType>>( N, 5 );
+    auto v1 = sparseVector<ValueType>( N, 3 );
+    auto v2 = sparseVector<ValueType>( N, 5 );
 
     v1.binaryOp( v1, common::BinaryOp::MULT, v2 );
 
@@ -434,7 +432,7 @@ BOOST_AUTO_TEST_CASE( BinaryOpExpTest )
 
     const IndexType N = 20;
 
-    auto v = linearDenseVector<ValueType>( N, -5, 1 );
+    auto v = denseVectorLinear<ValueType>( N, -5, 1 );
 
     v = min( 0, v );
     v = max( v, 5 );
@@ -583,6 +581,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( PowTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( ComplexTest, ValueType, scai_numeric_test_types )
 {
     // skip this test if ValueType is not complex as imag would return 0
@@ -593,33 +593,34 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ComplexTest, ValueType, scai_numeric_test_types )
     }
 
     typedef RealType<ValueType> Real;
+    typedef common::Complex<Real> Complex;
 
     dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
 
     const IndexType n = 100;
 
-    TestVectors<ValueType> vectors;
+    TestVectors<Complex> vectors;
 
     dmemo::DistributionPtr vectorDist( new dmemo::BlockDistribution( n, comm ) );
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        Vector<ValueType>& complexVector = *vectors[i];
+        Vector<Complex>& complexVector = *vectors[i];
 
         float fillRate = 0.1f;
 
-        ValueType zero = 0;
+        Complex zero = 0;
 
         IndexType bound = 2;
 
         complexVector.setSparseRandom( vectorDist, zero, fillRate, bound );
 
-        auto x = eval<DenseVector<Real>>( real ( complexVector ) );
+        auto x = denseVectorEval( real ( complexVector ) );
 
         DenseVector<Real> y;
         y = imag( complexVector );
 
-        auto z = eval<DenseVector<ValueType>>( complex( x, y ) );
+        auto z = denseVectorEval( complex( x, y ) );
 
         Real diff = complexVector.maxDiffNorm( z );
 
@@ -632,6 +633,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ComplexTest, ValueType, scai_numeric_test_types )
         BOOST_CHECK_EQUAL( diff, 0 );
     }
 }
+
+#endif
 
 /* --------------------------------------------------------------------- */
 

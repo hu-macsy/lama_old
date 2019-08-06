@@ -41,6 +41,8 @@
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
 
+#include <scai/utilskernel/test/TestMacros.hpp>
+
 #include <scai/testsupport/uniquePath.hpp>
 #include <scai/testsupport/GlobalTempDir.hpp>
 
@@ -243,7 +245,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
 
         unique_ptr<FileIO> fileIO( FileIO::create( fileSuffix ) );
 
-        if ( !fileIO->isSupportedMode( FileIO::FORMATTED ) )
+        if ( !fileIO->isSupportedMode( FileMode::FORMATTED ) )
         {
             SCAI_LOG_INFO( logger, *fileIO << " skipped, does not support FORMATTED mode" )
             continue;
@@ -266,7 +268,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
 
         try
         {
-            csrStorage.writeToFile( fileName, "", ScalarType::INTERNAL, ScalarType::INDEX_TYPE, FileIO::FORMATTED );
+            csrStorage.writeToFile( fileName, FileMode::FORMATTED );
         } 
         catch( common::UnsupportedException& )
         {
@@ -277,57 +279,43 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
 
         BOOST_CHECK( FileIO::fileExists( fileName ) );
 
+        for ( bool infoTest : { false, true } )
         {
-            IndexType numRows;
-            IndexType numCols;
-            IndexType numValues;
+            CSRStorage<ValueType> readStorage;
 
-            fileIO->readStorageInfo( numRows, numCols, numValues, fileName );
-
-            SCAI_LOG_DEBUG( logger, "read storage info for file " << fileName 
-                                    << " m = " << numRows << " n = " << numCols << ", nnz = " << numValues )
-
-            BOOST_REQUIRE_EQUAL( numRows, csrStorage.getNumRows() );
-        }
-
-        BOOST_REQUIRE_EQUAL( csrStorage.getNumRows(), FileIO::getStorageSize( fileName ) );
-
-        CSRStorage<ValueType> readStorage;
-        readStorage.readFromFile( fileName );
-
-        BOOST_REQUIRE_EQUAL( readStorage.getNumRows(), csrStorage.getNumRows() );
-        BOOST_REQUIRE_EQUAL( readStorage.getNumColumns(), csrStorage.getNumColumns() );
-
-        RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
-
-        // due to formatted output we might have lost some precision
-
-        for ( IndexType i = 0; i < csrStorage.getNumRows(); ++i )
-        {
-            for ( IndexType j = 0; j < csrStorage.getNumColumns(); ++j )
+            fileIO->open( fileName.c_str(), "r" );
+           
+            if ( infoTest )
             {
-                BOOST_CHECK( common::Math::abs( csrStorage.getValue( i, j ) - readStorage.getValue( i, j ) ) < eps );
+                IndexType numRows;
+                IndexType numCols;
+                IndexType numValues;
+
+                fileIO->getStorageInfo( numRows, numCols, numValues );
+                
+                BOOST_CHECK_EQUAL( numRows, csrStorage.getNumRows() );
+                BOOST_CHECK_EQUAL( numCols, csrStorage.getNumColumns() );
             }
-        }
 
-        {
-            // read just a contiguous block, without first and last row
+            fileIO->readStorage( readStorage );
+            fileIO->close();
 
-            const IndexType n = csrStorage.getNumRows() - 2;
+            BOOST_REQUIRE_EQUAL( readStorage.getNumRows(), csrStorage.getNumRows() );
+            BOOST_REQUIRE_EQUAL( readStorage.getNumColumns(), csrStorage.getNumColumns() );
+    
+            RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
-            CSRStorage<ValueType> csrBlock;
-
-            fileIO->readStorage( csrBlock, fileName, 1, n );
-
-            for ( IndexType i = 1; i < csrStorage.getNumRows() - 1; ++i )
+            // due to formatted output we might have lost some precision
+    
+            for ( IndexType i = 0; i < csrStorage.getNumRows(); ++i )
             {
                 for ( IndexType j = 0; j < csrStorage.getNumColumns(); ++j )
                 {
-                    BOOST_CHECK( common::Math::abs( csrStorage.getValue( i, j ) - csrBlock.getValue( i - 1, j ) ) < eps );
+                    BOOST_CHECK( common::Math::abs( csrStorage.getValue( i, j ) - readStorage.getValue( i, j ) ) < eps );
                 }
             }
         }
-
+    
 #ifdef DELETE_OUTPUT_FILES
         int rc = FileIO::removeFile( fileName );
 
@@ -354,7 +342,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryStorage, ValueType, scai_numeric_test_types
 
         unique_ptr<FileIO> fileIO( FileIO::create( fileSuffix ) );
 
-        if ( !fileIO->isSupportedMode( FileIO::BINARY ) )
+        if ( !fileIO->isSupportedMode( FileMode::BINARY ) )
         {
             SCAI_LOG_INFO( logger, *fileIO << " skipped, does not support BINARY mode" )
             continue;
@@ -377,9 +365,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryStorage, ValueType, scai_numeric_test_types
 
         try
         {
-            csrStorage.writeToFile( fileName, "", ScalarType::INTERNAL, ScalarType::INDEX_TYPE, FileIO::BINARY );
+            csrStorage.writeToFile( fileName, FileMode::BINARY );
         } 
-        catch( common::UnsupportedException& )
+        catch ( common::UnsupportedException& )
         {
             // if storage is unssupported just skip this test here
 
@@ -388,19 +376,38 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryStorage, ValueType, scai_numeric_test_types
 
         BOOST_CHECK( FileIO::fileExists( fileName ) );
 
-        CSRStorage<ValueType> readStorage;
-        readStorage.readFromFile( fileName );
-
-        BOOST_REQUIRE_EQUAL( readStorage.getNumRows(), csrStorage.getNumRows() );
-        BOOST_REQUIRE_EQUAL( readStorage.getNumColumns(), csrStorage.getNumColumns() );
-
-        // due to binary output and using same data type there should be no loss
-
-        for ( IndexType i = 0; i < csrStorage.getNumRows(); ++i )
+        for ( bool infoTest : { false, true } )
         {
-            for ( IndexType j = 0; j < csrStorage.getNumColumns(); ++j )
+            CSRStorage<ValueType> readStorage;
+
+            fileIO->open( fileName.c_str(), "r" );
+
+            if ( infoTest )
             {
-                BOOST_CHECK_EQUAL( csrStorage.getValue( i, j ), readStorage.getValue( i, j ) );
+                IndexType numRows;
+                IndexType numCols;
+                IndexType numValues;
+
+                fileIO->getStorageInfo( numRows, numCols, numValues );
+                
+                BOOST_CHECK_EQUAL( numRows, csrStorage.getNumRows() );
+                BOOST_CHECK_EQUAL( numCols, csrStorage.getNumColumns() );
+            }
+
+            fileIO->readStorage( readStorage );
+            fileIO->close();
+
+            BOOST_REQUIRE_EQUAL( readStorage.getNumRows(), csrStorage.getNumRows() );
+            BOOST_REQUIRE_EQUAL( readStorage.getNumColumns(), csrStorage.getNumColumns() );
+ 
+            // due to binary output and using same data type there should be no loss
+
+            for ( IndexType i = 0; i < csrStorage.getNumRows(); ++i )
+            {
+                for ( IndexType j = 0; j < csrStorage.getNumColumns(); ++j )
+                {
+                    BOOST_CHECK_EQUAL( csrStorage.getValue( i, j ), readStorage.getValue( i, j ) );
+                }
             }
         }
 
@@ -608,8 +615,9 @@ BOOST_AUTO_TEST_CASE( EmptyStorage )
             try
             {
                 m.writeToFile( fileName );
+                SCAI_LOG_DEBUG( logger, "written empty storage " << m << " to file " << fileName )
             } 
-            catch( common::UnsupportedException& )
+            catch ( common::UnsupportedException& )
             {
                 continue;
             }
@@ -617,6 +625,8 @@ BOOST_AUTO_TEST_CASE( EmptyStorage )
             BOOST_CHECK( FileIO::fileExists( fileName ) );
 
             setNonSquareData( m );  // just set dummy data to see it will be rewritten
+
+            SCAI_LOG_DEBUG( logger, "read empty storage " << m << " from file " << fileName )
 
             m.readFromFile( fileName );
 
@@ -653,7 +663,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
 
         unique_ptr<FileIO> fileIO( FileIO::create( fileSuffix ) );
 
-        if ( !fileIO->isSupportedMode( FileIO::FORMATTED ) )
+        if ( !fileIO->isSupportedMode( FileMode::FORMATTED ) )
         {
             SCAI_LOG_INFO( logger, *fileIO << " skipped, does not support FORMATTED mode" )
             continue;
@@ -666,7 +676,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
             continue;
         }
 
-        fileIO->setMode( FileIO::FORMATTED );
+        fileIO->setMode( FileMode::FORMATTED );
 
         auto array = utilskernel::randomHArray<ValueType>( N, 100 );
 
@@ -678,7 +688,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
 
         try
         {
-            fileIO->writeArray( array, fileName );
+            fileIO->open( fileName.c_str(), "w" );
+            fileIO->writeArray( array );
+            fileIO->close();
         }
         catch( common::UnsupportedException& )
         {
@@ -687,67 +699,48 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
 
         BOOST_CHECK( FileIO::fileExists( fileName ) );
 
-        // Test the method readArrayInfo for
+        // Test the method getArrayInfo for
         {
             IndexType size;
-            fileIO->readArrayInfo( size, fileName );
 
-            SCAI_LOG_DEBUG( logger, "readArrayInfo " << fileName << ": size = " << size )
+            fileIO->open( fileName.c_str(), "r" );
+            fileIO->getArrayInfo( size );
+            fileIO->close();
+
+            SCAI_LOG_DEBUG( logger, "getArrayInfo " << fileName << ": size = " << size )
 
             BOOST_CHECK_EQUAL( N, size );
         }
 
         // Test the method readArray
 
-        RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
-
+        for ( bool infoTest : { false, true } )
         {
             HArray<ValueType> inArray;
 
-            fileIO->readArray( inArray, fileName );
+            fileIO->open( fileName.c_str(), "r" );
 
-            SCAI_LOG_DEBUG( logger, "Read from file: " << inArray )
+            // in the 2nd test we verify that arrayInfo does not advance in the file
+
+            if ( infoTest )
+            {
+                IndexType size;
+                fileIO->getArrayInfo( size );
+                BOOST_CHECK_EQUAL( N, size );
+            }
+
+            fileIO->readArray( inArray );
+            fileIO->close();
+
+            SCAI_LOG_DEBUG( logger, "Read array from file " << fileName << ": " << inArray )
 
             BOOST_REQUIRE_EQUAL( N, inArray.size() );
 
             RealType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
-            for ( IndexType i = 0; i < N; ++i )
-            {
-                ValueType expectedVal = array[i];
-                ValueType readVal = inArray[i];
+            // Due to the formatted output there might be a loss of precision
 
-                // Due to the formatted output there might be a loss of precision
-
-                BOOST_CHECK( common::Math::abs( expectedVal - readVal ) < eps );
-            }
-        }
-
-        // Test the method readArray with first, n arguments
-
-        {
-            HArray<ValueType> inArray;
-
-            BOOST_CHECK_THROW(
-            {
-                fileIO->readArray( inArray, fileName, 0, 5 * N );
-            }, common::Exception );
-
-            fileIO->readArray( inArray, fileName, 1, N - 2 );
-
-            SCAI_LOG_DEBUG( logger, "Read block from file: " << inArray )
-
-            BOOST_REQUIRE_EQUAL( inArray.size(), N - 2 );
-
-            for ( IndexType i = 1; i < N - 1; ++i )
-            {
-                ValueType expectedVal = array[i];
-                ValueType readVal = inArray[i - 1];
-
-                // Due to the formatted output there might be a loss of precision
-
-                BOOST_CHECK( common::Math::abs( expectedVal - readVal ) < eps );
-            }
+            SCAI_CHECK_SMALL_ARRAY_DIFF( array, inArray, eps )
         }
 
 #ifdef DELETE_OUTPUT_FILES
@@ -778,7 +771,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryArray, ValueType, scai_numeric_test_types )
 
         unique_ptr<FileIO> fileIO( FileIO::create( fileSuffix ) );
 
-        if ( !fileIO->isSupportedMode( FileIO::BINARY ) )
+        if ( !fileIO->isSupportedMode( FileMode::BINARY ) )
         {
             SCAI_LOG_INFO( logger, *fileIO << " skipped, does not support BINARY mode" )
             continue;
@@ -791,7 +784,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryArray, ValueType, scai_numeric_test_types )
             continue;
         }
 
-        fileIO->setMode( FileIO::BINARY );
+        fileIO->setMode( FileMode::BINARY );
 
         IndexType range = 1000;
 
@@ -805,7 +798,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryArray, ValueType, scai_numeric_test_types )
 
         try
         {
-            fileIO->writeArray( array, fileName );
+            fileIO->open( fileName.c_str(), "w" );
+            fileIO->writeArray( array );
+            fileIO->close();
         }
         catch( common::UnsupportedException& )
         {
@@ -814,15 +809,28 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryArray, ValueType, scai_numeric_test_types )
 
         BOOST_CHECK( FileIO::fileExists( fileName ) );
 
-        HArray<ValueType> inArray;
+        for ( bool infoTest : { false, true } )
+        {
+            HArray<ValueType> inArray;
 
-        fileIO->readArray( inArray, fileName );
+            fileIO->open( fileName.c_str(), "r" );
 
-        BOOST_REQUIRE_EQUAL( inArray.size(), array.size() );
+            // getArrayInfo should not advance in file
 
-        // due to binary output and using same data type there should be no loss
+            if ( infoTest )
+            {
+                IndexType size;
+                fileIO->getArrayInfo( size );
+                BOOST_CHECK_EQUAL( N, size );
+            }
 
-        BOOST_TEST( hostReadAccess( array ) == hostReadAccess( inArray ), per_element() );
+            fileIO->readArray( inArray );
+            fileIO->close();
+
+            // due to binary output and using same data type there should be no loss
+    
+            SCAI_CHECK_EQUAL_ARRAY( array, inArray )
+        }
 
 #ifdef DELETE_OUTPUT_FILES
         int rc = FileIO::removeFile( fileName );
@@ -867,7 +875,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( EmptyArray, ValueType, scai_numeric_test_types )
 
         try
         {
-            fileIO->writeArray( array, fileName );
+            fileIO->open( fileName.c_str(), "w" );
+            fileIO->writeArray( array );
+            fileIO->close();
         }
         catch( common::UnsupportedException& )
         {
@@ -882,7 +892,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( EmptyArray, ValueType, scai_numeric_test_types )
 
         BOOST_CHECK_EQUAL( N, inArray.size() );
 
-        fileIO->readArray( inArray, fileName );
+        fileIO->open( fileName.c_str(), "r" );
+        fileIO->readArray( inArray );
+        fileIO->close();
 
         BOOST_CHECK_EQUAL( IndexType( 0 ), inArray.size() );
 
@@ -945,7 +957,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeSparseTest, ValueType, scai_numeric_test_typ
 
         try
         {
-            fileIO->writeSparse( N, sparseIndexes, sparseArray, fileName );
+            fileIO->open( fileName.c_str(), "w" );
+            fileIO->writeSparse( N, &zero, sparseIndexes, sparseArray );
+            fileIO->close();
         }
         catch( common::UnsupportedException& )
         {
@@ -954,12 +968,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeSparseTest, ValueType, scai_numeric_test_typ
 
         BOOST_CHECK( FileIO::fileExists( fileName ) );
 
-        // Test the method readArrayInfo for sparse vector data
+        // Test the method getArrayInfo for sparse vector data
 
         {
             IndexType size;
-            fileIO->readArrayInfo( size, fileName );
-            SCAI_LOG_DEBUG( logger, "readArrayInfo " << fileName << ": size = " << size )
+
+            fileIO->open( fileName.c_str(), "r" );
+            fileIO->getArrayInfo( size );
+            fileIO->close();
+
+            SCAI_LOG_DEBUG( logger, "getArrayInfo " << fileName << ": size = " << size )
             BOOST_CHECK_EQUAL( N, size );
         }
 
@@ -971,8 +989,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeSparseTest, ValueType, scai_numeric_test_typ
             IndexType         inN;
             HArray<ValueType> inValues;
             HArray<IndexType> inPos;
+            ValueType         zero;
 
-            fileIO->readSparse( inN, inPos, inValues, fileName );
+            fileIO->open( fileName.c_str(), "r" );
+            fileIO->readSparse( inN, &zero, inPos, inValues );
+            fileIO->close();
 
             SCAI_LOG_DEBUG( logger, "readSparse( " << fileName << " ): N = " << inN 
                                      << ", indexes = " << inPos << ", vals = " << inValues );
@@ -981,19 +1002,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeSparseTest, ValueType, scai_numeric_test_typ
             BOOST_REQUIRE_EQUAL( sparseArray.size(), inValues.size() );
             BOOST_REQUIRE_EQUAL( sparseIndexes.size(), inPos.size() );
 
-            // indexes must be equal
+            // indexes must be equal, values might be slightly different
 
-            BOOST_TEST( hostReadAccess( sparseIndexes ) == hostReadAccess( inPos ), per_element() );
-
-            for ( IndexType i = 0; i < inValues.size(); ++i )
-            {
-                ValueType expectedVal = sparseArray[i];
-                ValueType readVal = inValues[i];
-
-                // Due to the formatted output there might be a loss of precision
-
-                BOOST_CHECK( common::Math::abs( expectedVal - readVal ) < eps );
-            }
+            SCAI_CHECK_EQUAL_ARRAY( sparseIndexes, inPos )
+            SCAI_CHECK_SMALL_ARRAY_DIFF( sparseArray, inValues, eps )
         }
 
 #ifdef DELETE_OUTPUT_FILES
@@ -1045,7 +1057,9 @@ BOOST_AUTO_TEST_CASE( PatternIOTest )
 
         try
         {
-            fileIO->writeStorage( csrStorage, fileName );
+            fileIO->open( fileName.c_str(), "w" );
+            fileIO->writeStorage( csrStorage );
+            fileIO->close();
         }
         catch( common::UnsupportedException& )
         {
@@ -1054,7 +1068,9 @@ BOOST_AUTO_TEST_CASE( PatternIOTest )
 
         CSRStorage<ValueType> readStorage;
 
-        fileIO->readStorage( readStorage, fileName );
+        fileIO->open( fileName.c_str(), "r" );
+        fileIO->readStorage( readStorage );
+        fileIO->close();
 
         BOOST_REQUIRE_EQUAL( readStorage.getNumRows(), csrStorage.getNumRows() );
         BOOST_REQUIRE_EQUAL( readStorage.getNumValues(), csrStorage.getNumValues() );
@@ -1085,7 +1101,9 @@ BOOST_AUTO_TEST_CASE( PatternIOTest )
 
         BOOST_CHECK_THROW(
         {
-            fileIO->readStorage( readStorage, fileName );
+            fileIO->open( fileName.c_str(), "r" );
+            fileIO->readStorage( readStorage );
+            fileIO->close();
         }, common::Exception );
 
 #ifdef DELETE_OUTPUT_FILES
@@ -1096,6 +1114,38 @@ BOOST_AUTO_TEST_CASE( PatternIOTest )
 #endif
 
     }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( SplitReadTest )
+{
+    typedef DefaultReal ValueType;
+
+    const IndexType M = 23;
+    const IndexType N = 7;
+
+    HArray<ValueType> denseValues;
+    HArrayUtils::setSequence<ValueType>( denseValues, 1, 1, M * N );
+    DenseStorage<ValueType> dense( M, N, denseValues );
+
+    dense.writeToFile( "dense.mtx" );
+
+    DenseStorage<ValueType> storage1;
+    CSRStorage<ValueType> storage2;
+    DenseStorage<ValueType> storage3;
+
+    storage1.readFromFile( "dense.mtx", 0, 10 );
+    storage2.readFromFile( "dense.mtx", 10, 5 );
+    storage3.readFromFile( "dense.mtx", 15 );
+
+    BOOST_CHECK_EQUAL( storage3.getNumRows(), M - 15 );
+
+    auto data1 = storage1.denseValues();
+    HArrayUtils::appendArray( data1, storage2.denseValues() );
+    HArrayUtils::appendArray( data1, storage3.denseValues() );
+
+    BOOST_CHECK( HArrayUtils::all( data1, common::CompareOp::EQ, denseValues ) );
 }
 
 /* ------------------------------------------------------------------------- */

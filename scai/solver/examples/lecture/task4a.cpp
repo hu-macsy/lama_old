@@ -73,11 +73,11 @@ int main ( int argc, char* argv[] )
     std::cout << *comm << ": redistributed matrix: " << matrix << std::endl;
 
     // Create solution vector
-    auto solution = fill<DenseVector<ValueType>>( dist, 1 );
+    auto solution = denseVector( dist, ValueType( 1 ) );
     std::cout << *comm << ": vector solution : " << solution << std::endl;
 
     // Compute the rhs that fits our solution to be able to calculate the error later
-    auto rhs = eval<DenseVector<ValueType>>( matrix * solution );
+    auto rhs = denseVectorEval( matrix * solution );
     std::cout << *comm << ": vector rhs : " << rhs << std::endl;
     // Forget the solution, i.e. reset solution to zero so that there is something to solve
     solution = ValueType( 0 );
@@ -99,7 +99,7 @@ int main ( int argc, char* argv[] )
     cgSolver.solve ( solution, rhs );
 
     // calculate the error and its L2-Norm
-    auto error = fill<DenseVector<ValueType>>( dist, 1 );
+    auto error = denseVector( dist, ValueType( 1 ) );
     error = error - solution;
     RealType<ValueType> resNorm = l2Norm( error );
     if ( comm->getRank() == 0 )

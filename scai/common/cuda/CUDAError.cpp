@@ -162,6 +162,10 @@ const char* cudaDriverErrorString( CUresult res )
             str = "Unknown error. ";
             break;
 
+        case CUDA_ERROR_ILLEGAL_ADDRESS:
+            str = "Illegal Address (inconsistent state, process should terminate)";
+            break;
+
         default:
             str = "Illegal result value error.";
     }

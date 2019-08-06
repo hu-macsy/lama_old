@@ -54,6 +54,7 @@ AnyAddressing::AnyAddressing( const Distribution& dist )
     // bucket sort the owners, gives offsets and permutation to block values according to owners
 
     HArrayUtils::bucketSortOffsets( allLocalOffsets, allLocal2Global, allOwners, dist.getCommunicator().getSize() );
+
     HArrayUtils::inversePerm( allGlobal2Local, allLocal2Global ); // global2Local
 }
 

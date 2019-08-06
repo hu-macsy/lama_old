@@ -494,7 +494,7 @@ public:
      */
     void swap( ELLStorage<ValueType>& other );
 
-    virtual size_t getMemoryUsageImpl() const;
+    virtual size_t getMemoryUsage() const;
 
     using _MatrixStorage::getNumRows;
     using _MatrixStorage::getNumColumns;

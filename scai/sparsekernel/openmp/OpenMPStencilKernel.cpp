@@ -56,7 +56,7 @@ void OpenMPStencilKernel::stencilLocalSizes1(
     IndexType sizes[],
     const IndexType gridSizes[],
     const IndexType gridDistances[],
-    const common::Grid::BorderType gridBorders[],
+    const common::BorderType gridBorders[],
     const IndexType nPoints,
     const int stencilPositions[] )
 {
@@ -92,7 +92,7 @@ void OpenMPStencilKernel::stencilLocalSizes2(
     IndexType sizes[],
     const IndexType gridSizes[],
     const IndexType gridDistances[],
-    const common::Grid::BorderType gridBorders[],
+    const common::BorderType gridBorders[],
     const IndexType nPoints,
     const int stencilPositions[] )
 {
@@ -128,7 +128,7 @@ void OpenMPStencilKernel::stencilLocalSizes3(
     IndexType sizes[],
     const IndexType gridSizes[],
     const IndexType gridDistances[],
-    const common::Grid::BorderType gridBorders[],
+    const common::BorderType gridBorders[],
     const IndexType nPoints,
     const int stencilPositions[] )
 {
@@ -168,7 +168,7 @@ void OpenMPStencilKernel::stencilLocalSizes4(
     IndexType sizes[],
     const IndexType gridSizes[],
     const IndexType gridDistances[],
-    const common::Grid::BorderType gridBorders[],
+    const common::BorderType gridBorders[],
     const IndexType nPoints,
     const int stencilPositions[] )
 {
@@ -212,7 +212,7 @@ void OpenMPStencilKernel::stencilLocalSizes(
     const IndexType nDims,
     const IndexType gridSizes[],
     const IndexType gridDistances[],
-    const common::Grid::BorderType gridBorders[],
+    const common::BorderType gridBorders[],
     const IndexType nPoints,
     const int stencilPositions[] )
 {
@@ -246,7 +246,7 @@ void OpenMPStencilKernel::stencilLocalCSR1(
     const IndexType csrIA[],
     const IndexType gridSizes[],
     const IndexType gridDistances[],
-    const common::Grid::BorderType gridBorders[],
+    const common::BorderType gridBorders[],
     const IndexType nPoints,
     const int stencilPositions[],
     const ValueType stencilVal[],
@@ -290,7 +290,7 @@ void OpenMPStencilKernel::stencilLocalCSR2(
     const IndexType csrIA[],
     const IndexType gridSizes[],
     const IndexType gridDistances[],
-    const common::Grid::BorderType gridBorders[],
+    const common::BorderType gridBorders[],
     const IndexType nPoints,
     const int stencilPositions[],
     const ValueType stencilVal[],
@@ -337,7 +337,7 @@ void OpenMPStencilKernel::stencilLocalCSR3(
     const IndexType csrIA[],
     const IndexType gridSizes[],
     const IndexType gridDistances[],
-    const common::Grid::BorderType gridBorders[],
+    const common::BorderType gridBorders[],
     const IndexType nPoints,
     const int stencilPositions[],
     const ValueType stencilVal[],
@@ -387,7 +387,7 @@ void OpenMPStencilKernel::stencilLocalCSR4(
     const IndexType csrIA[],
     const IndexType gridSizes[],
     const IndexType gridDistances[],
-    const common::Grid::BorderType gridBorders[],
+    const common::BorderType gridBorders[],
     const IndexType nPoints,
     const int stencilPositions[],
     const ValueType stencilVal[],
@@ -441,7 +441,7 @@ void OpenMPStencilKernel::stencilLocalCSR(
     const IndexType nDims,
     const IndexType gridSizes[],
     const IndexType gridDistances[],
-    const common::Grid::BorderType gridBorders[],
+    const common::BorderType gridBorders[],
     const IndexType nPoints,
     const int stencilPositions[],
     const ValueType stencilVal[],
@@ -504,7 +504,7 @@ void OpenMPStencilKernel::stencilHaloSizes1(
     const IndexType localGridDistances[],
     const IndexType localLB[],
     const IndexType globalGridSizes[],
-    const common::Grid::BorderType globalGridBorders[],
+    const common::BorderType globalGridBorders[],
     const IndexType nPoints,
     const int stencilPositions[] )
 {
@@ -558,7 +558,7 @@ void OpenMPStencilKernel::stencilHaloSizes2(
     const IndexType localGridDistances[],
     const IndexType localLB[],
     const IndexType globalGridSizes[],
-    const common::Grid::BorderType globalGridBorders[],
+    const common::BorderType globalGridBorders[],
     const IndexType nPoints,
     const int stencilPositions[] )
 {
@@ -611,7 +611,7 @@ void OpenMPStencilKernel::stencilHaloSizes3(
     const IndexType localGridDistances[],
     const IndexType localLB[],
     const IndexType globalGridSizes[],
-    const common::Grid::BorderType globalGridBorders[],
+    const common::BorderType globalGridBorders[],
     const IndexType nPoints,
     const int stencilPositions[] )
 {
@@ -669,7 +669,7 @@ void OpenMPStencilKernel::stencilHaloSizes4(
     const IndexType localGridDistances[],
     const IndexType localLB[],
     const IndexType globalGridSizes[],
-    const common::Grid::BorderType globalGridBorders[],
+    const common::BorderType globalGridBorders[],
     const IndexType nPoints,
     const int stencilPositions[] )
 {
@@ -731,7 +731,7 @@ void OpenMPStencilKernel::stencilHaloSizes(
     const IndexType localGridDistances[],
     const IndexType localLB[],
     const IndexType globalGridSizes[],
-    const common::Grid::BorderType globalGridBorders[],
+    const common::BorderType globalGridBorders[],
     const IndexType nPoints,
     const int stencilPositions[] )
 {
@@ -771,7 +771,7 @@ void OpenMPStencilKernel::stencilHaloCSR1(
     const IndexType localLB[],
     const IndexType globalGridSizes[],
     const IndexType globalGridDistances[],
-    const common::Grid::BorderType globalGridBorders[],
+    const common::BorderType globalGridBorders[],
     const IndexType nPoints,
     const int stencilPositions[],
     const ValueType stencilVal[],
@@ -835,7 +835,7 @@ void OpenMPStencilKernel::stencilHaloCSR2(
     const IndexType localLB[],
     const IndexType globalGridSizes[],
     const IndexType globalGridDistances[],
-    const common::Grid::BorderType globalGridBorders[],
+    const common::BorderType globalGridBorders[],
     const IndexType nPoints,
     const int stencilPositions[],
     const ValueType stencilVal[],
@@ -900,7 +900,7 @@ void OpenMPStencilKernel::stencilHaloCSR3(
     const IndexType localLB[],
     const IndexType globalGridSizes[],
     const IndexType globalGridDistances[],
-    const common::Grid::BorderType globalGridBorders[],
+    const common::BorderType globalGridBorders[],
     const IndexType nPoints,
     const int stencilPositions[],
     const ValueType stencilVal[],
@@ -973,7 +973,7 @@ void OpenMPStencilKernel::stencilHaloCSR4(
     const IndexType localLB[],
     const IndexType globalGridSizes[],
     const IndexType globalGridDistances[],
-    const common::Grid::BorderType globalGridBorders[],
+    const common::BorderType globalGridBorders[],
     const IndexType nPoints,
     const int stencilPositions[],
     const ValueType stencilVal[],
@@ -1049,7 +1049,7 @@ void OpenMPStencilKernel::stencilHaloCSR(
     const IndexType localLB[],
     const IndexType globalGridSizes[],
     const IndexType globalGridDistances[],
-    const common::Grid::BorderType globalGridBorders[],
+    const common::BorderType globalGridBorders[],
     const IndexType nPoints,
     const int stencilPositions[],
     const ValueType stencilVal[],
