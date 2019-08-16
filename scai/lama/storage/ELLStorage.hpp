@@ -510,6 +510,10 @@ public:
 
     virtual void print( std::ostream& ) const;
 
+    /** Override _MatrixStorage::setCompressThreshold */
+
+    virtual void setCompressThreshold( float threshold );
+
 protected:
 
     using MatrixStorage<ValueType>::mRowIndexes;

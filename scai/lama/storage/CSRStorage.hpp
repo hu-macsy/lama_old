@@ -702,6 +702,10 @@ public:
 
     using MatrixStorage<ValueType>::getValueType;
 
+    /** Override _MatrixStorage::setCompressThreshold */
+
+    virtual void setCompressThreshold( float threshold );
+
 private:
 
     /* ==================================================================== */

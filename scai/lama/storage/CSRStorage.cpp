@@ -471,6 +471,15 @@ void CSRStorage<ValueType>::buildRowIndexes()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void CSRStorage<ValueType>::setCompressThreshold( float threshold )
+{
+    _MatrixStorage::setCompressThreshold( threshold );
+    buildRowIndexes();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void CSRStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::RedistributePlan& redistributor )
 {
     SCAI_REGION( "Storage.redistributeCSR" )

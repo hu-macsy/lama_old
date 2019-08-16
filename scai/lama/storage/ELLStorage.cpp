@@ -967,6 +967,15 @@ void ELLStorage<ValueType>::buildRowIndexes()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void ELLStorage<ValueType>::setCompressThreshold( float threshold )
+{
+    _MatrixStorage::setCompressThreshold( threshold );
+    buildRowIndexes();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void ELLStorage<ValueType>::compress( const RealType<ValueType> eps )
 {
     SCAI_LOG_INFO( logger, "compress: eps = " << eps )

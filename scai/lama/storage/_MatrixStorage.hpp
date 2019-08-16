@@ -188,9 +188,19 @@ public:
 
     virtual void wait() const = 0;
 
-    /** Allow for additional row compression. */
+    /** @brief Set the threshold for percentage of non-empty rows where it might be
+               useful to allocate an array of row indexes for non-empty rows.
 
-    void setCompressThreshold( float ratio );
+        @param[in] threshold build rowIndexes only if \f$nonZeroRows / numRows < threshold\f$,
+                   0 for never and 0.5 only if at least 50 percent of rows are empty.
+
+        There might be cases where a matrix storage contains only data for some rows, e.g. for the
+        halo part in a distributed matrix.
+        Some sparse formats like CSR and ELL can benefit from an additional array that contains
+        the non-empty row indexes.
+    */
+
+    virtual void setCompressThreshold( float threshold );
 
     /** Query the threshold  */
 

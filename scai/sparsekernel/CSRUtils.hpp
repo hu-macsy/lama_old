@@ -103,7 +103,7 @@ public:
      *
      *  @param[out] rowIndexes contains the indexes of non-zero rows
      *  @param[in]  csrIA the CSR row offset array
-     *  @param[in]  threshold builds rowIndexes only if \f$nonZeroRows / numRows < threshhold\f$
+     *  @param[in]  threshold builds rowIndexes only if \f$nonZeroRows / numRows < threshold\f$
      *  @param[in]  prefLoc is the context where operation is executed
      *  @returns the number of non-zero rows, will also be the size of rowIndexes if built
      *
