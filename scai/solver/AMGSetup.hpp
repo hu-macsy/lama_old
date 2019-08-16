@@ -57,7 +57,10 @@ class COMMON_DLL_IMPORTEXPORT _AMGSetup :
     public common::Printable,
     public common::Factory<AMGSetupCreateKeyType, _AMGSetup*>
 {
+
 public:
+
+    _AMGSetup();
 
     /**
      *  Provide a more convenient interface to the create method of the factory.
@@ -65,9 +68,51 @@ public:
 
     static _AMGSetup* getAMGSetup( const common::ScalarType scalarType, const std::string& setupType );
 
+    /**
+     *  @brief Set the maximal number of levels
+     *
+     *  By default, there is no restriction for the maximal number of levels.
+     */
+    void setMaxLevels( const IndexType level );
+
+    IndexType getMaxLevels() const;
+
+    void setHostOnlyLevel( IndexType hostOnlyLevel );
+
+    IndexType getHostOnlyLevel() const;
+
+    void setHostOnlyVars( IndexType hostOnlyVars );
+
+    IndexType getHostOnlyVars() const;
+
+    /**
+     *  @brief Set the minimal size for a matrix that it should have on the coarsest level
+     *
+     *  This size is used as stopping criterion for creation of a next level.
+     */
+    void setMinVarsCoarseLevel( const IndexType vars );
+
+    IndexType getMinVarsCoarseLevel() const;
+
+    void setReplicatedLevel( IndexType replicatedLevel );
+
+    IndexType getReplicatedLevel() const;
+
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
+private:
+
+    IndexType mMaxLevels;        //!< maximal number of matrices in the hiearchy 
+
+    IndexType mHostOnlyLevel;   //<! determines how many of the coarsest grids are kept on Host
+
+    IndexType mMinVarsCoarseLevel;  //!< no further level if matrix has less equal variables
+
+    IndexType mHostOnlyVars;    //<! matrices with a size less or equal have always host context
+
+    IndexType mReplicatedLevel;  //<! determines how many of the coarses levels will be replicated
 };
 
 /**
@@ -85,6 +130,10 @@ class COMMON_DLL_IMPORTEXPORT AMGSetup :
 public:
 
     AMGSetup();
+
+    AMGSetup( const AMGSetup& ) = delete;
+
+    AMGSetup& operator=( const AMGSetup& ) = delete;
 
     virtual ~AMGSetup();
 
@@ -175,26 +224,6 @@ public:
     virtual std::string getInterpolationInfo() const = 0;
 
     /**
-     *  @brief Set the maximal number of levels
-     *
-     *  By default, there is no restriction for the maximal number of levels.
-     */
-    void setMaxLevels( const IndexType level );
-
-    /**
-     *  @brief Set the minimal size for a matrix that it should have on the coarsest level
-     *
-     *  This size is used as stopping criterion for creation of a next level.
-     */
-    void setMinVarsCoarseLevel( const IndexType vars );
-
-    void setHostOnlyLevel( IndexType hostOnlyLevel );
-
-    void setHostOnlyVars( IndexType hostOnlyVars );
-
-    void setReplicatedLevel( IndexType replicatedLevel );
-
-    /**
      * @brief Sets default smoother that is used on each level
      *
      * Note: this method should be called before initialize.
@@ -223,16 +252,6 @@ public:
     std::string getCoarseLevelSolverInfo() const;
 
 protected:
-
-    IndexType mHostOnlyLevel;   //<! determines how many of the coarsest grids are kept on Host
-
-    IndexType mHostOnlyVars;    //<! matrices with a size less or equal have always host context
-
-    IndexType mReplicatedLevel;  //<! determines how many of the coarses levels will be replicated
-
-    IndexType mMinVarsCoarseLevel;  //!< no further level if matrix has less equal variables
-
-    IndexType mMaxLevels;           //!< maximal number of matrices in the hiearchy 
 
     /**
      *  @brief own implementation of Printable::writeAt
@@ -315,6 +334,7 @@ private:
      *  @brief Default solver to be used for smoothing on each level.
      */
     SolverPtr<ValueType> mSmoother; 
+
 };
 
 } /* end namespace solver */

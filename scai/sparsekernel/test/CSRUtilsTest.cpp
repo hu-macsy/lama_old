@@ -262,6 +262,43 @@ BOOST_AUTO_TEST_CASE( shiftDiagonalFirstTest )
 
 /* ------------------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( shiftDiagonalFirst1Test )
+{
+    ContextPtr testContext = ContextFix::testContext;
+
+    typedef SCAI_TEST_TYPE ValueType;
+
+    // CSR data of square matrix 6 x 6, diagonal elements in row 0, 2, 4, 5
+    //
+    //     0   1   2  -  -  -
+    //     -   -   -  -  -  -
+    //     0   1   2  -  -  -
+    //     0   1   2  -  -  -
+    //     -   -   -  -  4  -
+    //     -   -   -  -  4  5
+
+    HArray<IndexType> csrIA(     { 0,       3, 3,       6,       9, 10,  12 }, testContext );
+    HArray<IndexType> csrJA(     { 0, 1, 2,    0, 1, 2, 0, 1, 2, 4, 4, 5 }, testContext );
+    HArray<ValueType> csrValues( { 0, 1, 2,    0, 1, 2, 0, 1, 2, 4, 4, 5 }, testContext );
+
+    const IndexType numRows    = 6;
+    const IndexType numColumns = 6;
+
+    HArray<IndexType> diagonals( { 2, 3, 1, 0, 5, 4 } );
+
+    IndexType numDiags = CSRUtils::shiftDiagonalFirst( csrJA, csrValues, numRows, numColumns, csrIA, diagonals, testContext );
+
+    BOOST_CHECK_EQUAL( numDiags, 4 );   // no shift in rows 1, 4
+
+    HArray<IndexType> expJA(     { 2, 0, 1, 1, 0, 2, 0, 1, 2, 4, 4, 5 }, testContext );
+    HArray<ValueType> expValues( { 2, 0, 1, 1, 0, 2, 0, 1, 2, 4, 4, 5 }, testContext );
+
+    BOOST_TEST( hostReadAccess( csrJA ) == hostReadAccess( expJA ), per_element() );
+    BOOST_TEST( hostReadAccess( csrValues ) == hostReadAccess( expValues ), per_element() );
+}
+
+/* ------------------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxDiffValTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;

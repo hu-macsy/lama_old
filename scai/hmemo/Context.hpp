@@ -161,6 +161,33 @@ public:
 
     virtual void enableZeroCopy( bool flag ) const;
 
+    /** @brief Equality operator for two context instances.
+     *
+     *  @param[in] other   context for comparison
+     *  @return            true if this context is equal to other context.
+     *
+     *  Note: Logic of this operator is implemented via the virtual function
+     *  isEqual.
+     */
+    bool operator==( const Context& other ) const;
+
+    /** @brief Diversity operator for two context instances.
+     *
+     *  @param[in] other   context for comparison
+     *  @returns           true if this context is unequal to other context.
+     *
+     *  Note: Logic of this operator is implemented via the virtual function
+     *  isEqual.
+     */
+    bool operator!=( const Context& other ) const;
+
+    /**
+     * @brief Virtual predicate used for the equality operator. 
+     *
+     * This pure method must be implemented by each derived context class.
+     */
+    virtual bool isEqual( const Context& other ) const = 0;
+
     /** @brief Get a context of a certain type from the Context factory.
      *
      *  Note: This is the same as Factory::create but with default values.
@@ -177,12 +204,11 @@ public:
      */
     static ContextPtr getContextPtr( const common::ContextType type, int deviceNr = -1 );
 
-    /** @brief get context as set by SCAI_CONTEXT and SCAI_DEVICE
+    /** @brief get actual context as set by SCAI_CONTEXT and SCAI_DEVICE or by macro SCAI_HMEMO_CONTEXT
      *
      *  @return             a context of the type as set by environment variable SCAI_CONTEXT (Host if not set)
      *  @throws Exception if the context set by SCAI_CONTEXT is not available or unknown
      */
-
     static ContextPtr getContextPtr();
 
     /** @brief getHostPtr() as abbreviation of getContextPtr( common::ContextType::Host ) */
@@ -238,9 +264,9 @@ private:
 
     /** thread-private variable where the current context of a thread can be asked for */
 
-    typedef std::stack<const Context*> ContextStack;
+    typedef std::stack<const Context*> ThreadContextStack;
 
-    static thread_local ContextStack contextStack;
+    static thread_local ThreadContextStack threadContextStack;
 };
 
 /* ======================================================================== */
@@ -265,3 +291,4 @@ ContextPtr Context::getHostPtr()
 } /* end namespace hmemo */
 
 } /* end namespace scai */
+

@@ -88,13 +88,26 @@ BOOST_AUTO_TEST_CASE ( SetterTest )
     scai::lama::MatrixCreator::buildPoisson2D( coefficients, 5, N, N );
     SimpleAMG<ValueType> SimpleAMGSolver( "SimpleAMGSolver" );
 
-    /* cant not be tested: not getter
+    const IndexType hostOnlyLevel = 13;
+    SimpleAMGSolver.setHostOnlyLevel( hostOnlyLevel );
 
-    SimpleAMGSolver.setHostOnlyLevel( IndexType hostOnlyLevel );
-    SimpleAMGSolver.setHostOnlyVars( IndexType hostOnlyVars );
-    SimpleAMGSolver.setReplicatedLevel( IndexType replicatedLevel );
-    SimpleAMGSolver.setMaxLevels( unsigned int levels );
-    SimpleAMGSolver.setMinVarsCoarseLevel( unsigned int vars );*/
+    const IndexType hostOnlyVars = 1150;
+    SimpleAMGSolver.setHostOnlyVars( hostOnlyVars );
+
+    const IndexType maxLevels = 25;
+    SimpleAMGSolver.setMaxLevels( maxLevels );
+
+    const IndexType minVarsCoarseLevel = 100;
+    SimpleAMGSolver.setMinVarsCoarseLevel( minVarsCoarseLevel );
+
+    const IndexType replicatedLevel = 8;
+    SimpleAMGSolver.setReplicatedLevel( replicatedLevel );
+
+    BOOST_CHECK_EQUAL( SimpleAMGSolver.getSetup().getHostOnlyLevel(), hostOnlyLevel );
+    BOOST_CHECK_EQUAL( SimpleAMGSolver.getSetup().getHostOnlyVars(), hostOnlyVars );
+    BOOST_CHECK_EQUAL( SimpleAMGSolver.getSetup().getMaxLevels(), maxLevels );
+    BOOST_CHECK_EQUAL( SimpleAMGSolver.getSetup().getMinVarsCoarseLevel(), minVarsCoarseLevel );
+    BOOST_CHECK_EQUAL( SimpleAMGSolver.getSetup().getReplicatedLevel(), replicatedLevel );
 
     SolverPtr<ValueType> cgSolver ( new CG<ValueType> ( "CGCoarseLevelSolver" ) );
     SimpleAMGSolver.setCoarseLevelSolver( cgSolver );

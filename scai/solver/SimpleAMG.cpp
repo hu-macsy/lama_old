@@ -85,50 +85,42 @@ SolverCreateKeyType SimpleAMG<ValueType>::createValue()
 template<typename ValueType>
 SimpleAMG<ValueType>::SimpleAMG( const std::string& id ) : 
 
-    IterativeSolver<ValueType>( id ), 
-    mMaxLevels( 25 ), 
-    mMinVarsCoarseLevel( 100 )
+    IterativeSolver<ValueType>( id )
 {
+    mSetup.reset( newSetup() );
     SCAI_LOG_INFO( logger, "SimpleAMG, id = " << id << " created, no logger" )
 }
 
 template<typename ValueType>
 SimpleAMG<ValueType>::SimpleAMG( const std::string& id, LoggerPtr logger ) : 
 
-    IterativeSolver<ValueType>( id, logger ), 
-    mMaxLevels( 25 ), 
-    mMinVarsCoarseLevel( 100 )
+    IterativeSolver<ValueType>( id, logger )
 {
+    mSetup.reset( newSetup() );
     SCAI_LOG_INFO( SimpleAMG<ValueType>::logger, "SimpleAMG, id = " << id << " created, with logger" )
 }
 
 template<typename ValueType>
 SimpleAMG<ValueType>::SimpleAMG( const SimpleAMG& other ) : 
 
-    IterativeSolver<ValueType>( other ), 
-    mMaxLevels( other.mMaxLevels ), 
-    mMinVarsCoarseLevel( other.mMinVarsCoarseLevel )
+    IterativeSolver<ValueType>( other )
 {
+    mSetup.reset( newSetup() );
+    // ToDo: inherit AMGSetup attributes like mReplicatedLeel, ....
+    SCAI_LOG_INFO( SimpleAMG<ValueType>::logger, "SimpleAMG copied" )
 }
 
 template<typename ValueType>
 SimpleAMG<ValueType>::SimpleAMGRuntime::SimpleAMGRuntime() : 
 
     IterativeSolver<ValueType>::IterativeSolverRuntime(), 
-    mSetup(), 
-    mCurrentLevel( 0 ), 
-    mLibHandle( 0 ), 
-    mHostOnlyLevel( std::numeric_limits<IndexType>::max() ), 
-    mHostOnlyVars( 0 ), 
-    mReplicatedLevel( std::numeric_limits<IndexType>::max() )
+    mCurrentLevel( 0 )
 {
 }
 
 template<typename ValueType>
 SimpleAMG<ValueType>::SimpleAMGRuntime::~SimpleAMGRuntime() 
 {
-    SCAI_LOG_INFO( logger, "~SimpleAMGRuntime, delete setup" )
-    mSetup.reset();
     SCAI_LOG_INFO( logger, "~SimpleAMGRuntime" )
 }
 
@@ -136,6 +128,12 @@ template<typename ValueType>
 SimpleAMG<ValueType>::~SimpleAMG()
 {
     SCAI_LOG_INFO( logger, "~SimpleAMG" )
+}
+
+template<typename ValueType>
+const AMGSetup<ValueType>& SimpleAMG<ValueType>::getSetup() const
+{
+    return *mSetup;
 }
 
 /* ========================================================================= */
@@ -154,22 +152,20 @@ void SimpleAMG<ValueType>::loadSetupLibs()
     }
     else
     {
-        SCAI_LOG_WARN( logger, "SCAI_LIBRARY_PATH not set, only defaults can be used" )
+        static bool warnDone = false;
+
+        if ( !warnDone )
+        {
+            SCAI_LOG_WARN( logger, "SCAI_LIBRARY_PATH not set, only defaults can be used" )
+            warnDone = true;
+        }
     }
 }
 
 template<typename ValueType>
-void SimpleAMG<ValueType>::initialize( const Matrix<ValueType>& coefficients )
+AMGSetup<ValueType>* SimpleAMG<ValueType>::newSetup()
 {
-    SCAI_REGION( "Solver.SimpleAMG.initialize" )
-    SCAI_LOG_DEBUG( logger, "initialize AMG, coefficients matrix = " << coefficients )
-
-    SimpleAMGRuntime& runtime = getRuntime();
-
-    if ( runtime.mSetup.get() == NULL )
-    {
-        loadSetupLibs();
-    }
+    loadSetupLibs();
 
     std::string amgSetupKey = "SingleGridSetup";    // take this as default
 
@@ -200,25 +196,32 @@ void SimpleAMG<ValueType>::initialize( const Matrix<ValueType>& coefficients )
     }
     else
     {
-        // ToDo: choose a better setup if available
-        SCAI_LOG_WARN( logger, "Environment variable SCAI_AMG_SETUP not set, take default: " << amgSetupKey )
+        static bool warnDone = false;
+
+        if ( !warnDone )
+        {
+            SCAI_LOG_WARN( logger, "Environment variable SCAI_AMG_SETUP not set, take default: " << amgSetupKey )
+            warnDone = true;
+        }
     }
 
-    runtime.mSetup.reset( AMGSetup<ValueType>::getAMGSetup( amgSetupKey ) );
+    AMGSetup<ValueType>* setup = AMGSetup<ValueType>::getAMGSetup( amgSetupKey );
 
-    if ( !runtime.mSetup )
+    if ( !setup )
     {
         COMMON_THROWEXCEPTION( "No AMGSetup found, key = " << amgSetupKey )
     }
 
-    AMGSetup<ValueType>& amgSetup = *runtime.mSetup;
-    amgSetup.setMaxLevels( mMaxLevels );
-    amgSetup.setMinVarsCoarseLevel( mMinVarsCoarseLevel );
-    amgSetup.setHostOnlyLevel( runtime.mHostOnlyLevel );
-    amgSetup.setHostOnlyVars( runtime.mHostOnlyVars );
-    amgSetup.setReplicatedLevel( runtime.mReplicatedLevel );
-    amgSetup.setCoarseLevelSolver( mCoarseLevelSolver );
-    amgSetup.setSmoother( mSmoother );
+    return setup;
+}
+
+template<typename ValueType>
+void SimpleAMG<ValueType>::initialize( const Matrix<ValueType>& coefficients )
+{
+    SCAI_REGION( "Solver.SimpleAMG.initialize" )
+    SCAI_LOG_DEBUG( logger, "initialize AMG, coefficients matrix = " << coefficients )
+
+    AMGSetup<ValueType>& amgSetup = *mSetup;
     logSetupSettings();
     amgSetup.initialize( coefficients );
     logSetupInfo();
@@ -261,93 +264,93 @@ double SimpleAMG<ValueType>::getAverageResidualTime() const
 template<typename ValueType>
 void SimpleAMG<ValueType>::setMaxLevels( IndexType levels )
 {
-    mMaxLevels = levels;
+    mSetup->setMaxLevels( levels );
 }
 
 template<typename ValueType>
 void SimpleAMG<ValueType>::setMinVarsCoarseLevel( IndexType vars )
 {
-    mMinVarsCoarseLevel = vars;
+    mSetup->setMinVarsCoarseLevel( vars );
 }
 
 template<typename ValueType>
 const Matrix<ValueType>& SimpleAMG<ValueType>::getGalerkin( IndexType level )
 {
-    return getRuntime().mSetup->getGalerkin( level );
+    return mSetup->getGalerkin( level );
 }
 
 template<typename ValueType>
 const Matrix<ValueType>& SimpleAMG<ValueType>::getRestriction( IndexType level )
 {
-    return getRuntime().mSetup->getRestriction( level );
+    return mSetup->getRestriction( level );
 }
 
 template<typename ValueType>
 const Matrix<ValueType>& SimpleAMG<ValueType>::getInterpolation( IndexType level )
 {
-    return getRuntime().mSetup->getInterpolation( level );
+    return mSetup->getInterpolation( level );
 }
 
 template<typename ValueType>
 Vector<ValueType>& SimpleAMG<ValueType>::getSolutionVector( IndexType level )
 {
-    return getRuntime().mSetup->getSolutionVector( level );
+    return mSetup->getSolutionVector( level );
 }
 
 template<typename ValueType>
 Vector<ValueType>& SimpleAMG<ValueType>::getRhsVector( IndexType level )
 {
-    return getRuntime().mSetup->getRhsVector( level );
+    return mSetup->getRhsVector( level );
 }
 
 template<typename ValueType>
 Solver<ValueType>& SimpleAMG<ValueType>::getSmoother( IndexType level )
 {
-    return getRuntime().mSetup->getSmoother( level );
+    return mSetup->getSmoother( level );
 }
 
 template<typename ValueType>
 Solver<ValueType>& SimpleAMG<ValueType>::getCoarseLevelSolver()
 {
-    return getRuntime().mSetup->getCoarseLevelSolver();
+    return mSetup->getCoarseLevelSolver();
 }
 
 template<typename ValueType>
 void SimpleAMG<ValueType>::setHostOnlyLevel( IndexType hostOnlyLevel )
 {
-    getRuntime().mHostOnlyLevel = hostOnlyLevel;
+    mSetup->setHostOnlyLevel( hostOnlyLevel );
 }
 
 template<typename ValueType>
 void SimpleAMG<ValueType>::setHostOnlyVars( IndexType hostOnlyVars )
 {
-    getRuntime().mHostOnlyVars = hostOnlyVars;
+    mSetup->setHostOnlyVars( hostOnlyVars );
 }
 
 template<typename ValueType>
 void SimpleAMG<ValueType>::setReplicatedLevel( IndexType replicatedLevel )
 {
-    getRuntime().mReplicatedLevel = replicatedLevel;
+    mSetup->setReplicatedLevel( replicatedLevel );
 }
 
 template<typename ValueType>
 void SimpleAMG<ValueType>::setCoarseLevelSolver( SolverPtr<ValueType> solver )
 {
     SCAI_LOG_DEBUG ( logger, "Set Coarse Level Solver to" << *solver )
-    mCoarseLevelSolver = solver;
+    mSetup->setCoarseLevelSolver( solver );
 }
 
 template<typename ValueType>
 void SimpleAMG<ValueType>::setSmoother( SolverPtr<ValueType> solver )
 {
     SCAI_LOG_DEBUG( logger, "Defined smoother for all level " << *solver )
-    mSmoother = solver;
+    mSetup->setSmoother( solver );
 }
 
 template<typename ValueType>
 IndexType SimpleAMG<ValueType>::getNumLevels()
 {
-    return getRuntime().mSetup->getNumLevels();
+    return mSetup->getNumLevels();
 }
 
 template<typename ValueType>
@@ -357,7 +360,7 @@ void SimpleAMG<ValueType>::cycle()
     SimpleAMGRuntime& runtime = getRuntime();
     SCAI_REGION_N( "Solver.SimpleAMG.cycle", runtime.mCurrentLevel )
     // dereferences to current level solution + rhs
-    AMGSetup<ValueType>& amgSetup = *runtime.mSetup;
+    AMGSetup<ValueType>& amgSetup = *mSetup;
     const Vector<ValueType>* curRhsPtr = runtime.mRhs;
     Vector<ValueType>* curSolutionPtr = 0;
 
@@ -427,24 +430,27 @@ void SimpleAMG<ValueType>::logSetupSettings()
         return;
     }
 
-    if ( getRuntime().mSetup.get() != 0 )
+    if ( mSetup )
     {
+        const AMGSetup<ValueType>& setup = *mSetup;
+
         mLogger->logMessage( LogLevel::solverInformation, "Running SimpleAMG.\n" );
         mLogger->logNewLine( LogLevel::solverInformation );
         mLogger->logMessage( LogLevel::solverInformation, "Setup Components:\n" );
         mLogger->logMessage( LogLevel::solverInformation, "=================\n" );
         std::stringstream outputCouplingPredicate;
-        outputCouplingPredicate << getRuntime().mSetup->getCouplingPredicateInfo() << "\n";
+        outputCouplingPredicate << mSetup->getCouplingPredicateInfo() << "\n";
         mLogger->logMessage( LogLevel::solverInformation, outputCouplingPredicate.str() );
         std::stringstream outputColoring;
-        outputColoring << getRuntime().mSetup->getColoringInfo() << "\n";
+        outputColoring << mSetup->getColoringInfo() << "\n";
         mLogger->logMessage( LogLevel::solverInformation, outputColoring.str() );
         std::stringstream outputInterpolation;
-        outputInterpolation << getRuntime().mSetup->getInterpolationInfo() << "\n";
+        outputInterpolation << mSetup->getInterpolationInfo() << "\n";
         mLogger->logMessage( LogLevel::solverInformation, outputInterpolation.str() );
         mLogger->logNewLine( LogLevel::solverInformation );
         std::stringstream outputRunning;
-        outputRunning << "Running Setup (maxLevels=" << mMaxLevels << ", mMinVarsCoarseLevel=" << mMinVarsCoarseLevel
+        outputRunning << "Running Setup (maxLevels=" << setup.getMaxLevels() 
+                      << ", minVarsCoarseLevel=" << setup.getMinVarsCoarseLevel()
                       << ")...\n";
         mLogger->logMessage( LogLevel::solverInformation, outputRunning.str() );
     }
@@ -463,7 +469,7 @@ void SimpleAMG<ValueType>::logSetupInfo()
     }
 
     mLogger->logMessage( LogLevel::solverInformation, "Setup done.\n" );
-    mLogger->logType( LogLevel::solverInformation, "Number of levels\t: ", getRuntime().mSetup->getNumLevels() );
+    mLogger->logType( LogLevel::solverInformation, "Number of levels\t: ", mSetup->getNumLevels() );
     mLogger->logNewLine( LogLevel::solverInformation );
 
     if ( mLogger->getLogLevel() < LogLevel::advancedInformation )
@@ -471,7 +477,7 @@ void SimpleAMG<ValueType>::logSetupInfo()
         return;
     }
 
-    for ( IndexType i = 0; i < getRuntime().mSetup->getNumLevels(); ++i )
+    for ( IndexType i = 0; i < mSetup->getNumLevels(); ++i )
     {
         if ( i == 0 )
         {
@@ -484,18 +490,18 @@ void SimpleAMG<ValueType>::logSetupInfo()
         }
 
         std::stringstream output;
-        double averageNumValues = static_cast<double>( getRuntime().mSetup->getGalerkin( i ).getNumValues() )
-                                  / getRuntime().mSetup->getGalerkin( i ).getNumRows();
-        output << std::setw( 3 ) << i << std::setw( 9 ) << getRuntime().mSetup->getGalerkin( i ).getNumRows()
-               << std::setw( 9 ) << getRuntime().mSetup->getGalerkin( i ).getNumColumns() << std::setw( 10 )
-               << getRuntime().mSetup->getGalerkin( i ).getNumValues() << "  " << std::setw( 6 ) << std::fixed
+        double averageNumValues = static_cast<double>( mSetup->getGalerkin( i ).getNumValues() )
+                                  / mSetup->getGalerkin( i ).getNumRows();
+        output << std::setw( 3 ) << i << std::setw( 9 ) << mSetup->getGalerkin( i ).getNumRows()
+               << std::setw( 9 ) << mSetup->getGalerkin( i ).getNumColumns() << std::setw( 10 )
+               << mSetup->getGalerkin( i ).getNumValues() << "  " << std::setw( 6 ) << std::fixed
                << std::setprecision( 1 ) << averageNumValues << "\n";
         mLogger->logMessage( LogLevel::advancedInformation, output.str() );
     }
 
     mLogger->logNewLine( LogLevel::advancedInformation );
 
-    for ( IndexType i = 0; i < getRuntime().mSetup->getNumLevels() - 1; ++i )
+    for ( IndexType i = 0; i < mSetup->getNumLevels() - 1; ++i )
     {
         if ( i == 0 )
         {
@@ -508,11 +514,11 @@ void SimpleAMG<ValueType>::logSetupInfo()
         }
 
         std::stringstream output;
-        double averageNumValues = static_cast<double>( getRuntime().mSetup->getInterpolation( i ).getNumValues() )
-                                  / getRuntime().mSetup->getInterpolation( i ).getNumRows();
-        output << std::setw( 3 ) << i << std::setw( 9 ) << getRuntime().mSetup->getInterpolation( i ).getNumRows()
-               << std::setw( 9 ) << getRuntime().mSetup->getInterpolation( i ).getNumColumns()
-               << std::setw( 10 ) << getRuntime().mSetup->getInterpolation( i ).getNumValues() << "  "
+        double averageNumValues = static_cast<double>( mSetup->getInterpolation( i ).getNumValues() )
+                                  / mSetup->getInterpolation( i ).getNumRows();
+        output << std::setw( 3 ) << i << std::setw( 9 ) << mSetup->getInterpolation( i ).getNumRows()
+               << std::setw( 9 ) << mSetup->getInterpolation( i ).getNumColumns()
+               << std::setw( 10 ) << mSetup->getInterpolation( i ).getNumValues() << "  "
                << std::setw( 6 ) << std::fixed << std::setprecision( 1 ) << averageNumValues << "\n";
         mLogger->logMessage( LogLevel::advancedInformation, output.str() );
     }
@@ -528,17 +534,17 @@ void SimpleAMG<ValueType>::logSolverInfo()
         return;
     }
 
-    if ( getRuntime().mSetup.get() != 0 )
+    if ( mSetup.get() != 0 )
     {
         mLogger->logNewLine( LogLevel::solverInformation );
         mLogger->logMessage( LogLevel::solverInformation, "Solution Components:\n" );
         mLogger->logMessage( LogLevel::solverInformation, "====================\n" );
         mLogger->logMessage( LogLevel::solverInformation, "Iteration Type : V-Cycle\n" );
         std::stringstream smootherInfo;
-        smootherInfo << "Smoothing      : " << getRuntime().mSetup->getSmootherInfo() << "\n";
+        smootherInfo << "Smoothing      : " << mSetup->getSmootherInfo() << "\n";
         mLogger->logMessage( LogLevel::solverInformation, smootherInfo.str() );
         std::stringstream coarseLevelSolverInfo;
-        coarseLevelSolverInfo << "Coarse Level   : " << getRuntime().mSetup->getCoarseLevelSolverInfo() << "\n";
+        coarseLevelSolverInfo << "Coarse Level   : " << mSetup->getCoarseLevelSolverInfo() << "\n";
         mLogger->logMessage( LogLevel::solverInformation, coarseLevelSolverInfo.str() );
         mLogger->logNewLine( LogLevel::solverInformation );
     }
@@ -560,53 +566,53 @@ void SimpleAMG<ValueType>::logSetupDetails()
     double sizeRestrictionCSR = 0.0;
     double sizeGalerkinCSR = 0.0;
 
-    for ( IndexType i = 0; i < getRuntime().mSetup->getNumLevels(); ++i )
+    for ( IndexType i = 0; i < mSetup->getNumLevels(); ++i )
     {
         // Vector
         if ( i == 0 )
         {
-            sizeVector += 2 * getRuntime().mSetup->getGalerkin( 0 ).getValueTypeSize()
-                          * getRuntime().mSetup->getGalerkin( 0 ).getNumRows();
+            sizeVector += 2 * mSetup->getGalerkin( 0 ).getValueTypeSize()
+                          * mSetup->getGalerkin( 0 ).getNumRows();
         }
         else
         {
-            sizeVector += getRuntime().mSetup->getSolutionVector( i ).getMemoryUsage();
-            sizeVector += getRuntime().mSetup->getRhsVector( i ).getMemoryUsage();
+            sizeVector += mSetup->getSolutionVector( i ).getMemoryUsage();
+            sizeVector += mSetup->getRhsVector( i ).getMemoryUsage();
         }
 
-        if ( i != getRuntime().mSetup->getNumLevels() - 1 )
+        if ( i != mSetup->getNumLevels() - 1 )
         {
-            sizeVector += getRuntime().mSetup->getTmpResVector( i ).getMemoryUsage();
+            sizeVector += mSetup->getTmpResVector( i ).getMemoryUsage();
             // Interpolation
             {
-                sizeInterpolation += getRuntime().mSetup->getInterpolation( i ).getMemoryUsage();
-                IndexType numIndexInterpolationCSR = getRuntime().mSetup->getInterpolation( i ).getNumValues()
-                                                     + getRuntime().mSetup->getInterpolation( i ).getNumRows();
+                sizeInterpolation += mSetup->getInterpolation( i ).getMemoryUsage();
+                IndexType numIndexInterpolationCSR = mSetup->getInterpolation( i ).getNumValues()
+                                                     + mSetup->getInterpolation( i ).getNumRows();
                 sizeInterpolationCSR += numIndexInterpolationCSR * sizeof( IndexType );
-                IndexType numValueInterpolationCSR = getRuntime().mSetup->getInterpolation( i ).getNumValues();
-                size_t interpolationSizeType = getRuntime().mSetup->getInterpolation( i ).getValueTypeSize();
+                IndexType numValueInterpolationCSR = mSetup->getInterpolation( i ).getNumValues();
+                size_t interpolationSizeType = mSetup->getInterpolation( i ).getValueTypeSize();
                 sizeInterpolationCSR += numValueInterpolationCSR * interpolationSizeType;
             }
             // Restriction
             {
-                sizeRestriction += getRuntime().mSetup->getRestriction( i ).getMemoryUsage();
-                IndexType numIndexRestrictionCSR = getRuntime().mSetup->getRestriction( i ).getNumValues()
-                                                   + getRuntime().mSetup->getRestriction( i ).getNumRows();
+                sizeRestriction += mSetup->getRestriction( i ).getMemoryUsage();
+                IndexType numIndexRestrictionCSR = mSetup->getRestriction( i ).getNumValues()
+                                                   + mSetup->getRestriction( i ).getNumRows();
                 sizeRestrictionCSR += numIndexRestrictionCSR * sizeof( IndexType );
-                size_t restrictionSizeType = getRuntime().mSetup->getRestriction( i ).getValueTypeSize();
-                IndexType numValueRestrictionCSR = getRuntime().mSetup->getRestriction( i ).getNumValues();
+                size_t restrictionSizeType = mSetup->getRestriction( i ).getValueTypeSize();
+                IndexType numValueRestrictionCSR = mSetup->getRestriction( i ).getNumValues();
                 sizeRestrictionCSR += numValueRestrictionCSR * restrictionSizeType;
             }
         }
 
         // Galerkin
         {
-            sizeGalerkin += getRuntime().mSetup->getGalerkin( i ).getMemoryUsage();
-            IndexType numIndexGalerkinCSR = getRuntime().mSetup->getGalerkin( i ).getNumValues()
-                                            + getRuntime().mSetup->getGalerkin( i ).getNumRows();
+            sizeGalerkin += mSetup->getGalerkin( i ).getMemoryUsage();
+            IndexType numIndexGalerkinCSR = mSetup->getGalerkin( i ).getNumValues()
+                                            + mSetup->getGalerkin( i ).getNumRows();
             sizeGalerkinCSR += numIndexGalerkinCSR * sizeof( IndexType );
-            size_t galerkinSizeType = getRuntime().mSetup->getGalerkin( i ).getValueTypeSize();
-            IndexType numValueGalerkinCSR = getRuntime().mSetup->getGalerkin( i ).getNumValues();
+            size_t galerkinSizeType = mSetup->getGalerkin( i ).getValueTypeSize();
+            IndexType numValueGalerkinCSR = mSetup->getGalerkin( i ).getNumValues();
             sizeGalerkinCSR += numValueGalerkinCSR * galerkinSizeType;
         }
     }
@@ -618,8 +624,8 @@ void SimpleAMG<ValueType>::logSetupDetails()
                            / static_cast<double>( sizeInterpolationCSR + sizeRestrictionCSR + sizeGalerkinCSR ) - 100.0;
     size_t cgSolverValueTypeSize = getRuntime().mSetup->getGalerkin( getRuntime().mSetup->getNumLevels() - 1 ).getValueTypeSize();
     double sizeCGSolver = static_cast<double>( cgSolverValueTypeSize
-                          * getRuntime().mSetup->getGalerkin( getRuntime().mSetup->getNumLevels() - 1 ).getNumRows()
-                          * getRuntime().mSetup->getGalerkin( getRuntime().mSetup->getNumLevels() - 1 ).getNumRows() );
+                          * mSetup->getGalerkin( mSetup->getNumLevels() - 1 ).getNumRows()
+                          * mSetup->getGalerkin( mSetup->getNumLevels() - 1 ).getNumRows() );
     double sizeTotal = static_cast<double>( sizeVector + sizeInterpolation + sizeRestriction + sizeGalerkin
                                             + sizeCGSolver );
     double sizeTotalCSR = static_cast<double>( sizeVector + sizeInterpolationCSR + sizeRestrictionCSR + sizeGalerkinCSR

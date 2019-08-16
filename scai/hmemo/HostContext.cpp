@@ -76,6 +76,16 @@ void HostContext::writeAt( std::ostream& stream ) const
     stream << "HostContext( #Threads = " << nThreads << " )";
 }
 
+bool HostContext::isEqual( const Context& other ) const
+{
+    if ( &other == this )
+    {
+        return true;
+    }
+
+    return other.getType() == common::ContextType::Host;
+}
+
 static weak_ptr<class HostContext> contextInstance;
 
 ContextPtr HostContext::create( int deviceNr )

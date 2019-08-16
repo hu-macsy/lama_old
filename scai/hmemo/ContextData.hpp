@@ -68,37 +68,29 @@ class COMMON_DLL_IMPORTEXPORT ContextData: public common::Printable
 {
 private:
 
-    size_t size; //!<  allocated size stands also for capacity
+    size_t mSize; //!<  allocated size stands also for capacity
 
     MemoryPtr mMemory; //!<  shared pointer to the context
 
-    void* pointer; //!<  pointer to the data on the context
+    void* mPointer; //!<  pointer to the data on the context
 
-    bool valid;     //!<  is true if data at context is valid
+    bool mValid;     //!<  is true if data at context is valid
 
-    bool allocated; //!<  is true if data has been allocated by context
+    bool mAllocated; //!<  is true if data has been allocated by context
 
 public:
 
-    void* get()
-    {
-        return pointer;
-    }
+    /** Query the pointer to the allocated data */
 
-    MemoryPtr getMemoryPtr() const
-    {
-        return mMemory;
-    }
+    inline void* get();
 
-    const Memory& getMemory() const
-    {
-        return *mMemory;
-    }
+    inline const void* get() const;
 
-    const void* get() const
-    {
-        return pointer;
-    }
+    /** Query the memory (shared pointer) where this incarnation resides */
+
+    inline MemoryPtr getMemoryPtr() const;
+
+    inline const Memory& getMemory() const;
 
     /** Constructor, memory object must always be given. */
 
@@ -113,10 +105,9 @@ public:
 
     ~ContextData();
 
-    size_t capacity() const
-    {
-        return size;
-    }
+    /** Query the size of allocated memory */
+
+    inline size_t capacity() const;
 
     /** allocate data for the Context array on the context */
 
@@ -146,19 +137,21 @@ public:
 
     void free();
 
-    void setValid( bool flag )
-    {
-        valid = flag;
-    }
+    /** Setter for the valid flag */
 
-    bool isValid() const
-    {
-        return valid;
-    }
+    inline void setValid( bool flag );
+
+    /** Query for the valid flag */
+
+    inline bool isValid() const;
 
     virtual void writeAt( std::ostream& stream ) const;
 
+    /** Copy valid data from other context to this context */
+
     void copyFrom( const ContextData& source, size_t size );
+
+    /** Copy valid data from other context to this context, asynchronous version */
 
     tasking::SyncToken* copyFromAsync( const ContextData& source, size_t size );
 
@@ -172,8 +165,49 @@ private:
 
     ContextData( const ContextData& ) = delete;
 
+    // define the move assign operator, attribute noexcept required for efficient use in container classes
+
     ContextData& operator=( ContextData&& other ) noexcept;
 };
+
+/* ---------------------------------------------------------------- */
+/*  Implementation of inline methods                                */
+/* ---------------------------------------------------------------- */
+
+void ContextData::setValid( bool flag )
+{
+    mValid = flag;
+}
+
+bool ContextData::isValid() const
+{
+    return mValid;
+}
+
+void* ContextData::get()
+{
+    return mPointer;
+}
+
+MemoryPtr ContextData::getMemoryPtr() const
+{
+    return mMemory;
+}
+
+const Memory& ContextData::getMemory() const
+{
+    return *mMemory;
+}
+
+const void* ContextData::get() const
+{
+    return mPointer;
+}
+
+size_t ContextData::capacity() const
+{
+    return mSize;
+}
 
 } /* end namespace hmemo */
 

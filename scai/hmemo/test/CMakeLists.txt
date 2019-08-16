@@ -30,6 +30,7 @@
 set ( CXX_SOURCES
       hmemoTest
       ContextTest  
+      ContextStackTest  
       AccessTest  
       HArrayTest  
       HArrayRefTest  
