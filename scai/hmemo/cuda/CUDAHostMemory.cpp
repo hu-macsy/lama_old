@@ -62,11 +62,7 @@ SCAI_LOG_DEF_LOGGER( CUDAHostMemory::logger, "Memory.CUDAHostMemory" );
 CUDAHostMemory::CUDAHostMemory( std::shared_ptr<const CUDAContext> cudaContext ) :
 
     Memory( MemoryType::CUDAHostMemory ),
-    mCUDAContext( cudaContext ),
-    mNumberOfAllocates( 0 ),
-    mNumberOfAllocatedBytes( 0 ),
-    mMaxAllocatedBytes( 0 )
-
+    mCUDAContext( cudaContext )
 {
     SCAI_ASSERT( cudaContext, "CUDAHostMemory requires valid CUDAContext, is NULL" )
     SCAI_LOG_INFO( logger, "CUDAHostMemory created, allows faster transfer HOST <-> " << *mCUDAContext )
@@ -82,7 +78,7 @@ void CUDAHostMemory::writeAt( std::ostream& stream ) const
     stream << "CUDAHostMemory( <-> " << *mCUDAContext << " )";
 }
 
-void* CUDAHostMemory::allocate( const size_t size ) const
+void* CUDAHostMemory::allocate( const size_t size ) 
 {
     SCAI_LOG_TRACE( logger, *this << ": allocate " << size << " bytes" )
     void* pointer = 0;
@@ -95,14 +91,12 @@ void* CUDAHostMemory::allocate( const size_t size ) const
     SCAI_CUDA_RT_CALL( cudaHostGetDevicePointer( &pDevice, pointer, flags ), "cudaHostGetDevicePointer" )
     SCAI_ASSERT_EQUAL( pDevice, pointer, "Not yet supported: pointer conversion for different context" )
 
-    mNumberOfAllocatedBytes += size;
-    mMaxAllocatedBytes = std::max( mMaxAllocatedBytes, mNumberOfAllocatedBytes );
-    mNumberOfAllocates++;
+    Memory::setAllocated( size );   // keep statistic up to data
 
     return pointer;
 }
 
-void CUDAHostMemory::free( void* pointer, const size_t size ) const
+void CUDAHostMemory::free( void* pointer, const size_t size )
 {
     // SCAI_REGION( "CUDAHostMemory::free" )
     // Be careful: do not use
@@ -112,8 +106,8 @@ void CUDAHostMemory::free( void* pointer, const size_t size ) const
     SCAI_CONTEXT_ACCESS( mCUDAContext )
     SCAI_CUDA_DRV_CALL_NOTHROW( cuMemFreeHost( pointer ), "cuMemFreeHost( " << pointer << ", " << size << " ) failed" )
     SCAI_LOG_DEBUG( logger, *this << ": freed " << size << " bytes, pointer = " << pointer )
-    mNumberOfAllocatedBytes -= size;
-    mNumberOfAllocates--;
+
+    Memory::setFreed( size );   // keep statistic up to data
 }
 
 void CUDAHostMemory::memcpy( void* dst, const void* src, const size_t size ) const
@@ -228,13 +222,6 @@ void CUDAHostMemory::memcpyTo( const Memory& dstMemory, void* dst, const void* s
         SCAI_LOG_ERROR( logger, "copy to " << dstMemory << " from " << *this << " not supported" )
         COMMON_THROWEXCEPTION( "copy to " << dstMemory << " from " << *this << " not supported" )
     }
-}
-
-/* ----------------------------------------------------------------------------- */
-
-size_t CUDAHostMemory::maxAllocatedBytes() const
-{
-    return mMaxAllocatedBytes;
 }
 
 /* ----------------------------------------------------------------------------- */

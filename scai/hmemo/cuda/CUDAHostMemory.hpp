@@ -72,9 +72,9 @@ public:
 
     virtual ~CUDAHostMemory();
 
-    virtual void* allocate( const size_t size ) const;
+    virtual void* allocate( const size_t size );
 
-    virtual void free( void* pointer, const size_t size ) const;
+    virtual void free( void* pointer, const size_t size );
 
     virtual void memcpy( void* dst, const void* src, const size_t size ) const;
 
@@ -99,8 +99,6 @@ public:
         return *mCUDAContext;
     }
 
-    size_t maxAllocatedBytes() const;
-
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
@@ -108,12 +106,6 @@ protected:
     virtual void writeAt( std::ostream& stream ) const;
 
     std::shared_ptr<const CUDAContext> mCUDAContext;   // fast DMA transfer to this device
-
-private:
-
-    mutable size_t mNumberOfAllocates;
-    mutable size_t mNumberOfAllocatedBytes;
-    mutable size_t mMaxAllocatedBytes;
 };
 
 } /* end namespace hmemo */

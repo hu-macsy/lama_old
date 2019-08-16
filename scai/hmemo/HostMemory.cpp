@@ -62,30 +62,14 @@ SCAI_LOG_DEF_LOGGER( HostMemory::logger, "Memory.HostMemory" )
 HostMemory::HostMemory( std::shared_ptr<const HostContext> hostContextPtr ) :
 
     Memory( MemoryType::HostMemory ),
-    mHostContextPtr( hostContextPtr ),
-    mNumberOfAllocates( 0 ),
-    mNumberOfAllocatedBytes( 0 ),
-    mMaxAllocatedBytes( 0 )
-
+    mHostContextPtr( hostContextPtr )
 {
     SCAI_LOG_INFO( logger, "HostMemory created" )
 }
 
 HostMemory::~HostMemory()
 {
-    if ( mNumberOfAllocates > 0 )
-    {
-        SCAI_LOG_ERROR( logger, *this << ": " << mNumberOfAllocates << " allocate without free" )
-    }
-
-    if ( mNumberOfAllocatedBytes != 0 )
-    {
-        SCAI_LOG_ERROR( logger,
-                        *this << ": number of allocated bytes = " << mNumberOfAllocatedBytes
-                        << ", should be 0, so mismatch of free/allocate sizes" )
-    }
-
-    SCAI_LOG_INFO( logger, "~HostMemory" )
+    Memory::checkAllFreed();
 }
 
 void HostMemory::writeAt( std::ostream& stream ) const
@@ -94,7 +78,7 @@ void HostMemory::writeAt( std::ostream& stream ) const
     stream << "HostMemory( " << *mHostContextPtr << " )";
 }
 
-void* HostMemory::allocate( const size_t size ) const
+void* HostMemory::allocate( const size_t size )
 {
     SCAI_ASSERT( size > 0, "allocate with size = " << size << " should not be done" )
     void* pointer = malloc( size );
@@ -107,22 +91,19 @@ void* HostMemory::allocate( const size_t size ) const
     // allocate must be thread-safe in case where multiple threads use LAMA arrays
     std::unique_lock<std::recursive_mutex> lock( allocate_mutex );
 
-    mNumberOfAllocatedBytes += size;
-    mMaxAllocatedBytes = std::max( mNumberOfAllocatedBytes, mMaxAllocatedBytes );
-    mNumberOfAllocates++;
+    Memory::setAllocated( size );
 
     SCAI_LOG_DEBUG( logger, "allocated " << pointer << ", size = " << size )
     return pointer;
 }
 
-void HostMemory::free( void* pointer, const size_t size ) const
+void HostMemory::free( void* pointer, const size_t size )
 {
     SCAI_LOG_DEBUG( logger, "free " << pointer << ", size = " << size )
-    SCAI_ASSERT( mNumberOfAllocates >= 1, "Invalid free, because there are no open allocates." )
+
     ::free( pointer );
     std::unique_lock<std::recursive_mutex> lock( allocate_mutex );
-    mNumberOfAllocatedBytes -= size;
-    mNumberOfAllocates--;
+    Memory::setFreed( size );
 }
 
 void HostMemory::memcpy( void* dst, const void* src, const size_t size ) const
@@ -162,11 +143,6 @@ MemoryPtr HostMemory::getIt()
     }
 
     return instancePtr;
-}
-
-size_t HostMemory::maxAllocatedBytes() const
-{
-    return mMaxAllocatedBytes;
 }
 
 } /* end namespace hmemo */

@@ -67,13 +67,10 @@ SCAI_LOG_DEF_LOGGER( CUDAMemory::logger, "Memory.CUDAMemory" )
 
 /**  constructor  *********************************************************/
 
-CUDAMemory::CUDAMemory( std::shared_ptr<const CUDAContext> cudaContext )
+CUDAMemory::CUDAMemory( std::shared_ptr<const CUDAContext> cudaContext ) : 
 
-    : Memory( MemoryType::CUDAMemory ),
-      mCUDAContext( cudaContext ),
-      mNumberOfAllocates( 0 ),
-      mNumberOfAllocatedBytes( 0 ),
-      mMaxAllocatedBytes( 0 )
+    Memory( MemoryType::CUDAMemory ),
+    mCUDAContext( cudaContext )
 
 {
     SCAI_ASSERT( cudaContext, "NULL context for CUDA memory" )
@@ -86,14 +83,16 @@ CUDAMemory::~CUDAMemory()
 {
     SCAI_LOG_INFO( logger, "~CUDAMemory: " << *this )
 
-    if ( mNumberOfAllocates > 0 )
+    Memory::checkAllFreed();
+
+    if ( Memory::allocates() > 0 )
     {
-        SCAI_LOG_ERROR( logger, *this << ": " << mNumberOfAllocates << " allocate without free" )
+        SCAI_LOG_ERROR( logger, *this << ": " << Memory::allocates() << " allocate without free" )
     }
 
-    if ( mNumberOfAllocatedBytes != 0 )
+    if ( Memory::allocatedBytes() != 0 )
     {
-        SCAI_LOG_ERROR( logger, *this << ": number of allocated bytes = " << mNumberOfAllocatedBytes
+        SCAI_LOG_ERROR( logger, *this << ": number of allocated bytes = " << Memory::allocatedBytes()
                         << ", mismatch of free/allocate sizes" )
     }
 }
@@ -121,7 +120,7 @@ void CUDAMemory::writeAt( std::ostream& stream ) const
 
 /* ----------------------------------------------------------------------------- */
 
-void* CUDAMemory::allocate( const size_t size ) const
+void* CUDAMemory::allocate( const size_t size )
 {
     // SCAI_REGION( "CUDA.allocate" )
     SCAI_CONTEXT_ACCESS( mCUDAContext )
@@ -130,27 +129,25 @@ void* CUDAMemory::allocate( const size_t size ) const
     CUdeviceptr pointer = 0;
     SCAI_CUDA_DRV_CALL_EXCEPTION(
         cuMemAlloc( &pointer, size ),
-        "cuMemAlloc( size = " << size << " ) failed. This allocation would require a total of " << mMaxAllocatedBytes + size << " bytes global memory.",
+        "cuMemAlloc( size = " << size << " ) failed,"
+        << " already allocated: " << Memory::allocatedBytes() << " bytes global memory.",
         MemoryException
     )
     SCAI_LOG_DEBUG( logger, *this << ": allocated " << size << " bytes, ptr = " << ( ( void* ) pointer ) )
-    mNumberOfAllocatedBytes += size;
-    mNumberOfAllocates++;
-    mMaxAllocatedBytes = std::max( mNumberOfAllocatedBytes, mMaxAllocatedBytes );
+    Memory::setAllocated( size );
     return ( void* ) pointer;
 }
 
 /* ----------------------------------------------------------------------------- */
 
-void CUDAMemory::free( void* pointer, const size_t size ) const
+void CUDAMemory::free( void* pointer, const size_t size ) 
 {
     // Note: free mgiht be called in other destructors, so do never throw
 
     SCAI_CONTEXT_ACCESS( mCUDAContext )
     SCAI_LOG_DEBUG( logger, *this << ": free " << size << " bytes, ptr = " << pointer )
     SCAI_CUDA_DRV_CALL_NOTHROW( cuMemFree( ( CUdeviceptr ) pointer ), "cuMemFree( " << pointer << " ) failed" )
-    mNumberOfAllocatedBytes -= size;
-    mNumberOfAllocates--;
+    Memory::setFreed( size );
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -533,13 +530,6 @@ SyncToken* CUDAMemory::memcpyToAsync( const Memory& dstMemory, void* dst, const 
     }
 
     return NULL;
-}
-
-/* ----------------------------------------------------------------------------- */
-
-size_t CUDAMemory::maxAllocatedBytes() const
-{
-    return mMaxAllocatedBytes;
 }
 
 /* ----------------------------------------------------------------------------- */

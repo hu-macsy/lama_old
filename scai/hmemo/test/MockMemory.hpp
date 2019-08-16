@@ -81,12 +81,12 @@ public:
         return scai::hmemo::MemoryType::UserMemory;
     }
 
-    virtual void* allocate( const size_t size ) const
+    virtual void* allocate( const size_t size ) 
     {
         return malloc( size );
     }
 
-    virtual void free( void* pointer, const size_t ) const
+    virtual void free( void* pointer, const size_t )
     {
         ::free( pointer );
     }

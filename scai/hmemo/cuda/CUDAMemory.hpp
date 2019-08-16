@@ -86,9 +86,9 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    virtual void* allocate( const size_t size ) const;
+    virtual void* allocate( const size_t size );
 
-    virtual void free( void* pointer, const size_t size ) const;
+    virtual void free( void* pointer, const size_t size );
 
     virtual void memcpy( void* dst, const void* src, const size_t size ) const;
 
@@ -110,10 +110,6 @@ public:
 
     virtual ContextPtr getContextPtr() const;
 
-    /** Implementation of Memory::maxAllocatedbytes */
-
-    virtual size_t maxAllocatedBytes() const;
-
 private:
 
     bool canCopyCUDA( const CUDAMemory& other ) const;
@@ -132,10 +128,6 @@ private:
     tasking::SyncToken* memcpyAsyncToHost( void* dst, const void* src, const size_t size ) const;
     tasking::SyncToken* memcpyAsyncFromCUDAHost( void* dst, const void* src, const size_t size ) const;
     tasking::SyncToken* memcpyAsyncToCUDAHost( void* dst, const void* src, const size_t size ) const;
-
-    mutable size_t mNumberOfAllocates; //!< variable counts allocates
-    mutable size_t mNumberOfAllocatedBytes; //!< variable counts allocated bytes on device
-    mutable size_t mMaxAllocatedBytes; //!< variable counts the maximum allocated bytes
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };

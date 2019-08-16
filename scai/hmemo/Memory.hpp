@@ -61,7 +61,7 @@ enum class MemoryType
     HostMemory,       //!< memory for CPU as host, is main memory
     CUDAMemory,       //!< CUDA GPU memory on a device
     CUDAHostMemory,   //!< pinned memory that allows faster transfer to a certain CUDA Device
-    UserMemory        //!< can be used for a new derived Context class
+    UserMemory        //!< can be used for a new derived memory class
 };
 
 /**
@@ -91,7 +91,7 @@ public:
 
     /** Method to get the type of the memory. */
 
-    MemoryType getType() const;
+    inline MemoryType getType() const;
 
     /** Predicate to check whether copy from other memory to this memory is supported.
      *  If the method returns true, a call of memcpyFrom with srcMemory is safe.
@@ -139,18 +139,25 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    /** This method allocates memory and must be implemented by
-     *  each Memory.
+    /** This method allocates memory and must be implemented by each derived class.
      *
      *  @param[in] size is the number of bytes needed
      *  @return pointer to the allocated data, NULL if not enough data is available
      */
 
-    virtual void* allocate( const size_t size ) const = 0;
+    virtual void* allocate( const size_t size ) = 0;
 
     /** This method returns the maximal number of allocated bytes during the lifetime of the memory. */
 
-    virtual size_t maxAllocatedBytes() const = 0;
+    inline size_t maxAllocatedBytes() const;
+
+    /** This method returns the number of allocated bytes currently allocated by this memory. */
+
+    inline size_t allocatedBytes() const;
+
+    /** This method returns the number of allocates currently done on this memory */
+
+    inline size_t allocates() const;
 
     /**
      * This method free's allocated data allocated by this allocator.
@@ -160,7 +167,7 @@ public:
      *
      * The pointer must have been allocated by the same allocator with the given size.
      */
-    virtual void free( void* pointer, const size_t size ) const = 0;
+    virtual void free( void* pointer, const size_t size ) = 0;
 
     /** Copy within the same memory.
      *
@@ -203,10 +210,9 @@ public:
 
     virtual ContextPtr getContextPtr() const = 0;
 
-    const Context& getContext() const
-    {
-        return *getContextPtr();
-    }
+    /** @brief return the context to use for this memory (as reference) */
+
+    inline const Context& getContext() const;
 
 protected:
 
@@ -216,16 +222,58 @@ protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
+    /** Derived classes should call this method when they allocate data for correct statistics */
+
+    void setAllocated( size_t nBytes );
+
+    /** Derived classes should call this method when they allocate data for correct statistics */
+
+    void setFreed( size_t nBytes );
+
+    void checkAllFreed();
+
+    Memory() = delete;  // disable default constructor
+
+    Memory( const Memory& ) = delete;   // disable default copy constructor
+
+    Memory& operator= ( const Memory& ) = delete;   // disable default assignment operator
+
     MemoryType mMemoryType;
 
-private:
+    size_t mAllocates; //!< variable counts allocates
 
-    Memory();  // disable default constructor
+    size_t mAllocatedBytes;//!< variable counts allocated bytes
+
+    size_t mMaxAllocatedBytes;//!< variable counts max allocated bytes
 };
 
-inline MemoryType Memory::getType() const
+/* ------------------------------------------------------------------------- */
+/*  Implementation of inline methods                                         */
+/* ------------------------------------------------------------------------- */
+
+MemoryType Memory::getType() const
 {
     return mMemoryType;
+}
+
+size_t Memory::maxAllocatedBytes() const
+{
+    return mMaxAllocatedBytes;
+}
+
+size_t Memory::allocatedBytes() const
+{
+    return mAllocatedBytes;
+}
+
+size_t Memory::allocates() const
+{
+    return mAllocates;
+}
+
+const Context& Memory::getContext() const
+{
+    return *getContextPtr();
 }
 
 } /* end namespace hmemo */

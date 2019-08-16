@@ -49,7 +49,12 @@ SCAI_LOG_DEF_LOGGER( Memory::logger, "Memory" )
 
 /* ---------------------------------------------------------------------------------*/
 
-Memory::Memory( MemoryType type ) : mMemoryType( type )
+Memory::Memory( MemoryType type ) : 
+
+    mMemoryType( type ),
+    mAllocates( 0 ),
+    mAllocatedBytes( 0 ),
+    mMaxAllocatedBytes( 0 )
 {
     SCAI_LOG_DEBUG( logger, "Memory( type = " << mMemoryType << " )" )
 }
@@ -57,6 +62,37 @@ Memory::Memory( MemoryType type ) : mMemoryType( type )
 Memory::~Memory()
 {
     SCAI_LOG_DEBUG( logger, "~Memory( type = " << mMemoryType << " )" )
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void Memory::setAllocated( size_t nBytes )
+{
+    mAllocatedBytes += nBytes;
+    mAllocates += 1;
+    mMaxAllocatedBytes = std::max( mAllocatedBytes, mMaxAllocatedBytes );
+}
+
+void Memory::setFreed( size_t nBytes )
+{   
+    SCAI_ASSERT_GE_ERROR( mAllocatedBytes, nBytes, "serious error, more bytes freed than allocated" )
+    SCAI_ASSERT_ERROR( mAllocates > 0, "free without a matching allocate" )
+
+    mAllocatedBytes -= nBytes;
+    mAllocates -= 1;
+}   
+
+void Memory::checkAllFreed()
+{
+    if ( mAllocates > 0 )
+    {
+        SCAI_LOG_ERROR( logger, *this << ": " << mAllocates << " allocate without free" )
+    }
+
+    if ( mAllocatedBytes != 0 )
+    {
+        SCAI_LOG_ERROR( logger, *this << ": " << Memory::allocatedBytes() << " allocated bytes not freed." )
+    }
 }
 
 /* ---------------------------------------------------------------------------------*/

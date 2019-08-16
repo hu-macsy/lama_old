@@ -66,9 +66,9 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    virtual void* allocate( const size_t size ) const;
+    virtual void* allocate( const size_t size );
 
-    virtual void free( void* pointer, const size_t size ) const;
+    virtual void free( void* pointer, const size_t size );
 
     virtual void memcpy( void* dst, const void* src, const size_t size ) const;
 
@@ -84,21 +84,11 @@ public:
 
     static MemoryPtr getIt();
 
-    /** Implementation of pure method Memory::maxAllocatedBytes() */
-
-    virtual size_t maxAllocatedBytes() const;
-
 private:
 
     std::shared_ptr<const HostContext> mHostContextPtr;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
-    mutable size_t mNumberOfAllocates; //!< variable counts allocates
-
-    mutable size_t mNumberOfAllocatedBytes;//!< variable counts allocated bytes
-
-    mutable size_t mMaxAllocatedBytes;//!< variable counts max allocated bytes
 
     mutable std::recursive_mutex allocate_mutex;// needed to make allocate/free thread-safe
 };
