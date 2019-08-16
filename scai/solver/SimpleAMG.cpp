@@ -622,7 +622,7 @@ void SimpleAMG<ValueType>::logSetupDetails()
     double overheadGalerkin = 100.0 * static_cast<double>( sizeGalerkin ) / static_cast<double>( sizeGalerkinCSR ) - 100.0;
     double overhead = 100.0 * static_cast<double>( sizeInterpolation + sizeRestriction + sizeGalerkin )
                            / static_cast<double>( sizeInterpolationCSR + sizeRestrictionCSR + sizeGalerkinCSR ) - 100.0;
-    size_t cgSolverValueTypeSize = getRuntime().mSetup->getGalerkin( getRuntime().mSetup->getNumLevels() - 1 ).getValueTypeSize();
+    size_t cgSolverValueTypeSize = mSetup->getGalerkin( mSetup->getNumLevels() - 1 ).getValueTypeSize();
     double sizeCGSolver = static_cast<double>( cgSolverValueTypeSize
                           * mSetup->getGalerkin( mSetup->getNumLevels() - 1 ).getNumRows()
                           * mSetup->getGalerkin( mSetup->getNumLevels() - 1 ).getNumRows() );
