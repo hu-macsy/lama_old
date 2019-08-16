@@ -1132,6 +1132,37 @@ BOOST_AUTO_TEST_CASE( resizeTest )
     }
 }
 
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( purgeTest )
+{
+    auto hostCtx = hmemo::Context::getHostPtr();
+    auto hostMem = hostCtx->getMemoryPtr();
+
+    typedef SCAI_TEST_TYPE ValueType;     // value type does not matter for resize
+
+    const IndexType n = 13;
+
+    DenseVector<ValueType> v1( n, ValueType( 0 ), hostCtx );
+
+    size_t nAllocates = hostMem->allocates();
+    size_t nAllocatedBytes = hostMem->allocatedBytes();
+
+    v1.clear();
+
+    // clear does not free any memory, can be verified by statistics of host memory
+
+    BOOST_CHECK_EQUAL( nAllocates, hostMem->allocates() );
+    BOOST_CHECK_EQUAL( nAllocatedBytes, hostMem->allocatedBytes() );
+
+    v1.purge();
+
+    // purge has freed the allocated, can be verified by statistics of host memory
+
+    BOOST_CHECK_EQUAL( nAllocates, hostMem->allocates() + 1 );
+    BOOST_CHECK_EQUAL( nAllocatedBytes, hostMem->allocatedBytes() + n * sizeof( ValueType ) );
+}
+
 #ifdef SCAI_COMPLEX_SUPPORTED
 
 /* --------------------------------------------------------------------- */

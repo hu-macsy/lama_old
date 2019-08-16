@@ -679,15 +679,6 @@ void SparseVector<ValueType>::writeLocalToFile( FileIO& file ) const
     file.writeSparse( localSize, &mZeroValue, mNonZeroIndexes, mNonZeroValues );
 }
 
-/* ---------------------------------------------------------------------------------*/
-
-template<typename ValueType>
-void SparseVector<ValueType>::clearValues()
-{
-    mNonZeroValues.clear();
-    mNonZeroIndexes.clear();
-}
-
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -1725,10 +1716,26 @@ void SparseVector<ValueType>::allocate( DistributionPtr distribution )
 template<typename ValueType>
 void SparseVector<ValueType>::allocate( const IndexType n )
 {
-    setDistributionPtr( DistributionPtr( new NoDistribution( n ) ) );
+    setDistributionPtr( noDistribution( n ) );
 
     mNonZeroValues.clear();
     mNonZeroIndexes.clear();
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseVector<ValueType>::clear()
+{
+    allocate( 0 );
+}
+
+template<typename ValueType>
+void SparseVector<ValueType>::purge()
+{
+    setDistributionPtr( noDistribution( 0 ) );
+    mNonZeroValues.purge();
+    mNonZeroIndexes.purge();
 }
 
 /* ------------------------------------------------------------------------- */

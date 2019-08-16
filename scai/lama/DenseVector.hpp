@@ -219,6 +219,14 @@ public:
 
     virtual void allocate( dmemo::DistributionPtr distribution );
 
+    /** Implementation of pure method _Vector::clear */
+
+    virtual void clear();
+
+    /** Implementation of pure method _Vector::purge */
+
+    virtual void purge();
+
     /* --------------------------------------------------------------------- */
 
     /** Override the default assignment operator.  */
@@ -613,12 +621,6 @@ protected:
         DenseVector<ValueType>& in,
         bool descending );
 
-    hmemo::HArray<ValueType> mLocalValues; //!< my local values of vector
-
-    /** array that might be used to keep halo values of vector, avoids reallocation of memory for halo values */
-
-    mutable hmemo::HArray<ValueType> mHaloValues;
-
     /** Implementation of _Vector::writeLocalToFile */
 
     virtual void writeLocalToFile( FileIO& file ) const;
@@ -626,10 +628,6 @@ protected:
     /** Implementation of _Vector::readFromFile */
 
     virtual void readFromFile( FileIO& file );
-
-    /** Implementation of _Vector::clearValues */
-
-    virtual void clearValues();
 
 public:
 
@@ -640,6 +638,14 @@ public:
     // key for factory
 
     static VectorCreateKeyType createValue();
+
+protected:
+
+    hmemo::HArray<ValueType> mLocalValues; //!< my local values of vector
+
+    /** array that might be used to keep halo values of vector, avoids reallocation of memory for halo values */
+
+    mutable hmemo::HArray<ValueType> mHaloValues; //!< tmp array to keep halo values, avoids reallocations
 };
 
 /* ------------------------------------------------------------------------- */

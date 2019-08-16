@@ -203,6 +203,14 @@ public:
 
     virtual void allocate( const IndexType n );
 
+    /** Implementation of pure method _Vector::clear */
+
+    virtual void clear();
+
+    /** Implementation of pure method _Vector::purge */
+
+    virtual void purge();
+
     /** Query the zero value, i.e. default value at positions not in nonZeroIndexes. */
     
     inline ValueType getZero() const;
@@ -489,10 +497,6 @@ private:
     /** Implementation of _Vector::readFromFile */
 
     virtual void readFromFile( FileIO& file );
-
-    /** Implementation of _Vector::clearValues */
-
-    virtual void clearValues();
 
 public:
 

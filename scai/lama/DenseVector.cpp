@@ -1558,6 +1558,23 @@ void DenseVector<ValueType>::allocate( const IndexType n )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DenseVector<ValueType>::clear()
+{
+    setDistributionPtr( noDistribution( 0 ) );
+    mLocalValues.clear();
+}
+
+template<typename ValueType>
+void DenseVector<ValueType>::purge()
+{
+    setDistributionPtr( noDistribution( 0 ) );
+    mLocalValues.purge();
+    mHaloValues.purge();
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void DenseVector<ValueType>::assign( const _Vector& other )
 {
     // translate virtual call to specific template call via wrapper
@@ -1926,14 +1943,6 @@ void DenseVector<ValueType>::readFromFile( FileIO& file )
         file.readArray( mLocalValues );
         setDistributionPtr( genBlockDistributionBySize( mLocalValues.size(), comm ) );
     }
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-template<typename ValueType>
-void DenseVector<ValueType>::clearValues()
-{
-    mLocalValues.clear();
 }
 
 /* ========================================================================= */

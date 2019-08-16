@@ -192,7 +192,7 @@ void _Vector::assign( const _HArray& globalValues )
 {
     SCAI_LOG_INFO( logger, "assign vector with globalValues = " << globalValues )
 
-    setDistributionPtr( DistributionPtr( new NoDistribution( globalValues.size() ) ) );
+    setDistributionPtr( noDistribution( globalValues.size() ) );
     setDenseValues( globalValues );
 }
 

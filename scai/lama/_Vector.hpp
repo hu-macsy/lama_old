@@ -229,16 +229,6 @@ public:
         const common::BinaryOp op ) = 0;
 
     /**
-     * @brief Sets the local data of the vector to zero. 
-     *
-     * This routine has the same semantic as setValues with an empty array of any type. It is
-     * a private routine as it allows a temporary inconsistency between the local part and 
-     * the distribution.
-     */
-
-    virtual void clearValues() = 0;
-
-    /**
      * This method initilaizes all values of an allocated vector with random numbers.
      *
      * @param[in] bound draw random numbers in the range between 0 and bound (inclusive)
@@ -533,11 +523,6 @@ public:
      */
     virtual void prefetch( const hmemo::ContextPtr context ) const = 0;
 
-    /**
-     * @brief Starts a prefetch to make data valid at the context of the vector.
-     *
-     */
-
     void prefetch() const;
 
     /**
@@ -547,6 +532,8 @@ public:
 
     /**
      * @brief Sets the 'preferred' context where data resides and computations are done.
+     *
+     * This routine does not imply any data transfer.
      */
     void setContextPtr( hmemo::ContextPtr context );
 
@@ -614,6 +601,25 @@ public:
      * @brief Replicate this vector, i.e. redistribute with NoDistribution( size() )
      */
     void replicate();
+
+    /**
+     * @brief Clears the vector, i.e. resets it to a zero vector
+     *
+     * \code
+     *     DenseVector<double> a( ... );
+     *     a.clear();                      \\ resets it to a zero vector
+     *
+     * \endcode
+     *
+     * This routine will not free any allocated memory. It is especially helpful to invalidate
+     * all data before it is defined again.
+     */
+    virtual void clear() = 0;
+
+    /**
+     * @brief Same as clear but here all data is freed.
+     */
+    virtual void purge() = 0;
 
 protected:
 
