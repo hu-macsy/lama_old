@@ -55,6 +55,10 @@ public:
      *
      *  @param[in] A1, A2 are the two matrices that build the hybrid one.
      *
+     *  Note: If one of the matrices is a matrix with a high ratio of empty rows
+     *        (e.g. for boundary conditions) it is recommended to set this matrix as 
+     *        the 2nd argument A2.
+     *
      *  The distributions of A1 and A2 must be the same and are the corresponding
      *  distributions for this matrix.
      *
@@ -70,9 +74,6 @@ public:
     {
         SCAI_ASSERT_EQ_ERROR( A1.getRowDistribution(), A2.getRowDistribution(), "HybridMatrix: size mismatch" )
         SCAI_ASSERT_EQ_ERROR( A1.getColDistribution(), A2.getColDistribution(), "HybridMatrix: size mismatch" )
-
-        tmpTarget.reset( A1.newTargetVector() );
-        tmpSource.reset( A1.newSourceVector() );
     }
 
     /** 
@@ -86,15 +87,13 @@ public:
         const Vector<ValueType>* y,
         const common::MatrixOp op ) const
     {
+        SCAI_ASSERT_ERROR( &result != &x, "alias of x and result not allowed" )
+
         // result = alpha * ( A1 + A2 ) * x +  beta * y 
-        //  ->  result = alpha * A1 * x + [ alpha * A2 * x + beta * y ]
+        //  ->  result = alpha * A1 * x + beta * y; result += alpha * A2 * x;
 
-        Vector<ValueType>& tmp = common::isTranspose( op ) ? *tmpSource : *tmpTarget;
-
-        SCAI_LOG_DEBUG( logger, "gemv 1, op = " << op << ", A2 = " << mA2 )
-        mA2.matrixTimesVector( tmp, alpha, x, beta, y, op );
-        SCAI_LOG_DEBUG( logger, "gemv 2, op = " << op << ", A1 = " << mA1 )
-        mA1.matrixTimesVector( result, alpha, x, ValueType( 1 ), &tmp, op );
+        mA1.matrixTimesVector( result, alpha, x, beta, y, op );
+        mA2.matrixTimesVector( result, alpha, x, ValueType( 1 ), &result, op );
     }
 
     /**
@@ -157,9 +156,6 @@ public:
     using OperatorMatrix<ValueType>::logger;
 
 private:
-
-    std::unique_ptr<Vector<ValueType>> tmpTarget;  // temporary vector, will be reused
-    std::unique_ptr<Vector<ValueType>> tmpSource;  // temporary vector, will be reused
 
     Matrix<ValueType>& mA1;     // This class keeps only a reference
     Matrix<ValueType>& mA2;     // This class keeps only a reference

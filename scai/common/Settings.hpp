@@ -128,6 +128,7 @@ public:
      *  # Example file with environment variables
      *  ...
      *  <name> <rank> DOMAIN=3 SCAI_CONTEXT=Host SCAI_NP=2x2 WEIGHT=4
+     *  \endcode
      *  ...
      */
     static int readSettingsFile( const char* fileName, const char* name, int rank );

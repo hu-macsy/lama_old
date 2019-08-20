@@ -6,8 +6,11 @@ Settings
 The class Settings provides a standardized way to query values from environment variables
 and to set them via command line arguments.
 
+Query values of environment variables
+-------------------------------------
+
 The following example shows how to query the value of the environment variable
-``SCAI_SOLVER``. 
+``SCAI_SOLVER`` as a string.
 
 .. code-block:: c++
 
@@ -62,6 +65,9 @@ Integer values can be queried as follows:
     {
         cout << "SCAI_DEVICE not defined" << endl;
     }
+
+Setting environment variables via command line arguments
+--------------------------------------------------------
 
 Environment variables starting with the prefix ``SCAI_`` can also be set 
 via command line arguments. This might be more convenient in certain 
@@ -127,6 +133,64 @@ for the rank is taken to compute the position of the value.
    --SCAI_DEVICE=7,6,5,4         // returns device = 4 for rank = 3
    --SCAI_DEVICE=0,1             // returns device = 1 for rank = 3, pos = rank%2
    --SCAI_DEVICE=0,1,2           // returns device = 0 for rank = 3, pos = rank%3
+
+Setting Machine Specific Environment Variables
+----------------------------------------------
+
+When running LAMA applications on heterogeneous systems it might be useful to
+define environment variables that are specific for the node (processor name) and
+for the rank of the process in a node. Typical examples are:
+
+ * a variable WEIGHT might define how many load a process might take
+ * a variable DOMAIN might be used to build subgroups of processors for task parallelism
+
+For such situtations a file (e.g. ``Settings.txt``) can be used that contains such machine
+dependent settings:
+
+.. code-block:: c++
+
+  #  comment lines and empty lines are ignored
+  
+  #  <machine-name> <node-rank>  <var1>=<value1> <var2>=<value2> ...
+
+  bombelli *    WEIGHT=3.1  DOMAIN=0
+  newton   0-3  WEIGHT=1.5  DOMAIN=1
+  newton   4-7  WEIGHT=2.5  DOMAIN=2
+  banach1  0-3  WEIGHT=4.2  DOMAIN=3
+  banach2  *    WEIGHT=2.2  DOMAIN=4
+
+The first entry in a line is the name of the node and the second entry the rank. ``*`` might be used
+as a placeholder for any rank or any node. Furthermore it is possible to use ranges eg. like ``2-5``
+for the rank.
+
+Within the LAMA application the file can be read by the method ``readSettingsFile`` of the class 
+Settings.
+
+.. code-block:: c++
+
+   const char[] settingsFileName = "Settings.txt";
+   const char[] procName = ...;
+   int rank = ...;
+   common::Settings::readSettingsFile( settingsFileName, procName, rank );
+
+Here is more general solution of reading a settings file whose name is specified
+by the environment variable ``SCAI_SETTINGS``.
+
+.. code-block:: c++
+
+   std::string settingsFileName;
+   const Communicator& comm = ...;    // contains processor specific settings
+
+   if ( common::Settings::getEnvironment( settingsFileName, "SCAI_SETTINGS" ) )
+   {
+       common::Settings::readSettingsFile( settingsFileName.c_str(), comm.getProcessorName(), comm.getNodeRank() );
+   }
+
+The environment variables ``WEIGHT`` and ``DOMAIN`` that contain processor-specific values
+might be used later to meet the corresponding requirements.
+
+Environment Variables used in LAMA
+----------------------------------
 
 Environment variables currently used in libraries:
 

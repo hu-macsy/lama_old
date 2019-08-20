@@ -261,7 +261,12 @@ protected:
     /** 
      *  This method shoud be called by the derived AMG setup class to set the matrices for the next level.
      *
-     *  @param[in] interpolationMatrix is the 
+     *  @param[in] interpolationMatrix stands for the linear mapping from the current level to the next coarser level
+     *  @param[in] galerkinMatrix is the projection of the original matrix for the coarser level 
+     *  @param[in] restrictionMatrix is the mapping from the coarser level into the current level.
+     *
+     *  The restrictionMatrix is the tranpose of the interpolationMatrix and the galerkinMatrix is the triple product
+     *  of restrictionMatrix times matrix of current level times interpolationMatrix.
      *
      *  This call takes over the ownership of all matrices. The matrices will not be changed, i.e.
      *  the calling method might use e.g. a reference of the galerkin matrix to compute the next level.
