@@ -23,7 +23,6 @@
  * @endlicense
  *
  * @brief Example of using the settings
- *        /
  * @author Thomas Brandes
  * @date 27.01.2016
  */
@@ -45,13 +44,40 @@ int main( int argc, char const* argv[] )
     cout << "==============================" << endl;
     Settings::printEnvironment( cout );
     cout << endl;
+
     Settings::parseArgs( argc, argv );
+
+    if ( argc > 1 )
+    {
+        // there are some remaining arguments, shouldn't happpen
+        cerr << "ERROR: only arguments like --SCAI_xxx are accepted." << endl;
+        return -1;
+    }
+
     cout << "SCAI variables of environment (after parsing command line args):" << endl;
     cout << "================================================================" << endl;
     Settings::printEnvironment( cout );
     cout << endl;
+
+    string settingsFile;
+
+    const char NAME[] = "scai";
+    const int NODE_RANK = 3;
+
+    if ( Settings::getEnvironment( settingsFile, "SCAI_SETTINGS" ) )
+    {
+        cout << "Read file " << settingsFile << " to find settings for node = " << NAME << ", rank = " << NODE_RANK << endl;
+        Settings::readSettingsFile( settingsFile.c_str(), NAME, NODE_RANK );
+        cout << "SCAI variables of environment (after reading settings):" << endl;
+        cout << "================================================================" << endl;
+        Settings::printEnvironment( cout );
+        cout << endl;
+    }
+
     // take the 4-th argument for comma separated value lists
-    Settings::setRank( 3 );
+
+    Settings::setRank( NODE_RANK );
+
     bool useMKL;
 
     if ( Settings::getEnvironment( useMKL, "SCAI_USE_MKL" ) )
