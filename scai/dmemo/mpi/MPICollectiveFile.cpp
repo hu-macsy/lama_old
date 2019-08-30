@@ -30,6 +30,9 @@
 #include <scai/dmemo/mpi/MPICollectiveFile.hpp>
 
 #include <scai/dmemo/mpi/MPIUtils.hpp>
+#include <scai/tracing.hpp>
+
+#include <scai/common/exception/IOException.hpp>
 
 namespace scai
 {
@@ -50,30 +53,66 @@ MPICollectiveFile::MPICollectiveFile( CommunicatorPtr comm ) :
 
 void MPICollectiveFile::open( const char* fileName, const char* fileMode )
 {
+    SCAI_REGION( "ColFile.MPI.open" )
+
+    SCAI_LOG_INFO( logger, "MPI open collecitve file " << fileName << ", mode " << fileMode )
+
     // we need the MPI communicator from the communicator
 
     auto mpiComm = std::dynamic_pointer_cast<const MPICommunicator>( mComm );
 
     SCAI_ASSERT( mpiComm, "MPICollective file only with MPI communicator, comm = " << *mComm )
 
-    int openMode = MPI_MODE_WRONLY | MPI_MODE_CREATE;
+    int openMode = 0;
 
     if ( strcmp( fileMode, "r" ) == 0 )
     {
         openMode = MPI_MODE_RDONLY;
     }
+    else if ( strcmp( fileMode, "w" ) == 0 )
+    {
+        openMode = MPI_MODE_DELETE_ON_CLOSE | MPI_MODE_WRONLY;
+
+        int rc = MPI_File_open( mpiComm->getMPIComm(), const_cast<char*>( fileName ), openMode, MPI_INFO_NULL, &mFileHandle );
+
+        SCAI_LOG_DEBUG( logger, "open file " << fileName << " for delete, rc = " << rc )
+
+        if ( rc == MPI_SUCCESS )
+        {
+            SCAI_MPICALL( logger, MPI_File_close( &mFileHandle ), "could not delete existing file " << fileName )
+        }
+
+        openMode = MPI_MODE_WRONLY | MPI_MODE_CREATE | MPI_MODE_EXCL;
+    }
+    else if ( strcmp( fileMode, "a" ) == 0 )
+    {
+        openMode = MPI_MODE_WRONLY | MPI_MODE_CREATE | MPI_MODE_APPEND;
+    }
+    else
+    {
+        SCAI_THROWEXCEPTION( common::IOException, "illegal mode = " << fileMode << " to open file " << fileName )
+    }
 
     SCAI_MPICALL( logger,
                   MPI_File_open( mpiComm->getMPIComm(), const_cast<char*>( fileName ), openMode, MPI_INFO_NULL, &mFileHandle ),
-                  "MPI_File_open" )
+                  "MPI_File_open: fileName = " << fileName << ", mode = " << fileMode )
 
-    CollectiveFile::set( fileName, 0 );
+    if ( strcmp( fileMode, "a" ) == 0 )
+    {
+        CollectiveFile::set( fileName, getSize() );
+    }
+    else
+    {
+        CollectiveFile::set( fileName, 0 );
+    }
 }
 
 /* -------------------------------------------------------------------------- */
 
 void MPICollectiveFile::close()
 {
+    SCAI_REGION( "ColFile.MPI.close" )
+
     SCAI_LOG_INFO( logger, "close file " << mFileName << ", offset = " << mOffset );
 
     SCAI_MPICALL( logger, MPI_File_close( &mFileHandle ), "MPI_File_close" )
@@ -81,47 +120,99 @@ void MPICollectiveFile::close()
 
 /* -------------------------------------------------------------------------- */
 
-void MPICollectiveFile::writeSingleImpl( const size_t offset, const void* val, const size_t n, const common::ScalarType stype )
+size_t MPICollectiveFile::writeSingleImpl( const size_t offset, const void* val, const size_t n, const common::ScalarType stype )
 {
     SCAI_LOG_INFO( logger, *mComm << ": writeSingle( offset = " << offset << ", size = " << n << ", type = " << stype )
 
     MPI_Status stat;
+
+    MPI_Datatype commType = MPICommunicator::getMPIType( stype );
+
     SCAI_MPICALL( logger, 
-      MPI_File_write_at( mFileHandle, offset, const_cast<void*>( val ), n, MPICommunicator::getMPIType( stype ), &stat ),
+      MPI_File_write_at( mFileHandle, offset, const_cast<void*>( val ), n, commType, &stat ),
       "MPI_File_write_at" )
+
+    int writtenEntries = 0;
+
+    SCAI_MPICALL( logger, MPI_Get_count( &stat, commType, &writtenEntries ),
+                  "MPI_Get_count<" << stype << ">" )
+
+    return static_cast<size_t>( writtenEntries );
 }
 
-void MPICollectiveFile::writeAllImpl( const size_t offset, const void* val, const size_t n, const common::ScalarType stype )
+/* -------------------------------------------------------------------------- */
+
+size_t MPICollectiveFile::writeAllImpl( const size_t offset, const void* val, const size_t n, const common::ScalarType stype )
 {
     SCAI_LOG_INFO( logger, *mComm << ": writeAll( offset = " << offset << ", size = " << n << ", type = " << stype )
 
     MPI_Status stat;
+
+    MPI_Datatype commType = MPICommunicator::getMPIType( stype );
 
     SCAI_MPICALL( logger,
         MPI_File_write_at_all(
             mFileHandle, 
             offset, 
             const_cast<void*>( val ), n,
-            MPICommunicator::getMPIType( stype ), &stat ),
+            commType, &stat ),
         "MPI_File_write_at_all" )
+
+    int writtenEntries = 0;
+
+    SCAI_MPICALL( logger, MPI_Get_count( &stat, commType, &writtenEntries ),
+                  "MPI_Get_count<" << stype << ">" )
+
+    return static_cast<size_t>( writtenEntries );
 }
 
 /* -------------------------------------------------------------------------- */
 
-void MPICollectiveFile::readSingleImpl( void* val, const size_t n, const size_t offset, const common::ScalarType stype )
+size_t MPICollectiveFile::readSingleImpl( void* val, const size_t n, const size_t offset, const common::ScalarType stype )
 {
     MPI_Status stat;
+
+    MPI_Datatype commType = MPICommunicator::getMPIType( stype );
+
     SCAI_MPICALL( logger,
-        MPI_File_read_at( mFileHandle, offset, val, n, MPICommunicator::getMPIType( stype ), &stat ),
+        MPI_File_read_at( mFileHandle, offset, val, n, commType, &stat ),
         "MPI_File_read_at" )
+
+    int readEntries = 0;
+
+    SCAI_MPICALL( logger, MPI_Get_count( &stat, commType, &readEntries ),
+                  "MPI_Get_count<" << stype << ">" )
+
+    return static_cast<size_t>( readEntries );
 }
 
-void MPICollectiveFile::readAllImpl( void* val, const size_t n, const size_t offset, const common::ScalarType stype )
+/* -------------------------------------------------------------------------- */
+
+size_t MPICollectiveFile::readAllImpl( void* val, const size_t n, const size_t offset, const common::ScalarType stype )
 {
     MPI_Status stat;
+
+    MPI_Datatype commType = MPICommunicator::getMPIType( stype );
+
     SCAI_MPICALL( logger,
-        MPI_File_read_at_all( mFileHandle, offset, val, n, MPICommunicator::getMPIType( stype ), &stat ),
+        MPI_File_read_at_all( mFileHandle, offset, val, n, commType, &stat ),
         "MPI_File_read_at_all" )
+
+    int readEntries = 0;
+
+    SCAI_MPICALL( logger, MPI_Get_count( &stat, commType, &readEntries ),
+                  "MPI_Get_count<" << stype << ">" )
+
+    return static_cast<size_t>( readEntries );
+}
+
+/* -------------------------------------------------------------------------- */
+
+size_t MPICollectiveFile::getSize() const
+{
+    MPI_Offset size;
+    SCAI_MPICALL( logger, MPI_File_get_size( mFileHandle, &size ), "MPI_File_get_size" )
+    return static_cast<size_t>( size );
 }
 
 /* -------------------------------------------------------------------------- */

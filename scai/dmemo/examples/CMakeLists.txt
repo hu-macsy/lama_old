@@ -33,7 +33,7 @@ include ( scai_macro/scai_run_script )
 include ( scai_function/scai_example_directory )
 
 foreach ( executable DemoDistribution DemoGeneralDistribution DemoGenBlockDistribution DemoGridDistribution
-                     DemoSplitComm DemoSettingsComm ParallelIO BenchComm )
+                     DemoSplitComm DemoSettingsComm ParallelIO ParallelIOAppend BenchComm )
 
     scai_add_example( EXECUTABLE ${executable}.exe 
                       FILES      ${executable}.cpp )

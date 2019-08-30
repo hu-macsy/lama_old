@@ -1809,6 +1809,8 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
     }
     else if ( getDistribution().isReplicated() )
     {
+        SCAI_REGION( "Vector.Dense.Rep2Dist" )
+
         SCAI_LOG_DEBUG( logger, *this << ": replicated vector" << " will be localized to " << *distribution )
 
         HArray<ValueType> newLocalValues;
@@ -1818,6 +1820,8 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
     }
     else if ( distribution->isReplicated() )
     {
+        SCAI_REGION( "Vector.Dense.Dist2Rep" )
+
         SCAI_LOG_DEBUG( logger, *this << " will be replicated, i.e. combine all local parts" )
         // replicate a distributed vector
         HArray<ValueType> globalValues;
@@ -1834,6 +1838,8 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
     }
     else
     {
+        SCAI_REGION( "Vector.Dense.Redist" )
+
         // each element has exactly one old and one new owner, here we use a RedistributePlan
 
         SCAI_LOG_DEBUG( logger, *this << " will be redistributed to " << *distribution )

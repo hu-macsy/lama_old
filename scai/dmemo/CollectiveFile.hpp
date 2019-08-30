@@ -67,6 +67,11 @@ public:
      */
     virtual void close() = 0;
 
+    /**
+     *  @brief Pure method that returns the file size of the opened file.
+     */
+    virtual size_t getSize() const = 0;
+
     template<typename ValueType>
     void writeSingle( const ValueType array[], const IndexType n );
 
@@ -147,6 +152,13 @@ public:
      */
     void setOffset( const size_t offset );
 
+    /**
+     * @brief Query if end of file has reached
+     *
+     * This function might be used to verify that all entries of a file have been read.
+     */
+    inline bool eof() const;
+
     inline const Communicator& getCommunicator() const;
 
     inline std::shared_ptr<const Communicator> getCommunicatorPtr() const;
@@ -161,13 +173,24 @@ protected:
      *  @param[in] n      is the number of entries to write
      *  @param[in] stype  specifies the type of the data
      */
-    virtual void writeSingleImpl( const size_t offset, const void* val, const size_t n, const common::ScalarType stype ) = 0;
+    virtual size_t writeSingleImpl( const size_t offset, const void* val, const size_t n, const common::ScalarType stype ) = 0;
 
-    virtual void writeAllImpl( const size_t offset, const void* val, const size_t n, const common::ScalarType stype ) = 0;
+    virtual size_t writeAllImpl( const size_t offset, const void* val, const size_t n, const common::ScalarType stype ) = 0;
 
-    virtual void readSingleImpl( void* val, const size_t n, const size_t offset, const common::ScalarType stype ) = 0;
+    virtual size_t readSingleImpl( void* val, const size_t n, const size_t offset, const common::ScalarType stype ) = 0;
 
-    virtual void readAllImpl( void* val, const size_t n, const size_t offset, const common::ScalarType stype ) = 0;
+    /**
+     *  @brief Untyped version of reading data from a collective file by each processor
+     *
+     *  @param[in] offset specifes the file position where to read
+     *  @param[in] val    is pointer of the data to read
+     *  @param[in] n      is the number of entries to read
+     *  @param[in] stype  specifies the type of the data
+     *  @return    number of entries that have been read
+     *
+     *  It indicates an error if the return value is not equal n
+     */
+    virtual size_t readAllImpl( void* val, const size_t n, const size_t offset, const common::ScalarType stype ) = 0;
 
     void set( const char* filename, size_t offset );
 
@@ -199,6 +222,11 @@ std::shared_ptr<const Communicator> CollectiveFile::getCommunicatorPtr() const
 const Communicator& CollectiveFile::getCommunicator() const
 {
     return *mComm;
+}
+
+bool CollectiveFile::eof() const
+{
+    return mOffset >= getSize();
 }
 
 }

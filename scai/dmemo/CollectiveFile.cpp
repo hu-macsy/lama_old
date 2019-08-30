@@ -247,15 +247,39 @@ void CollectiveFile::readSingle( hmemo::HArray<ValueType>& array, const IndexTyp
 template<typename ValueType>
 void CollectiveFile::readAll( ValueType local[], const IndexType n, const IndexType offset )
 {
+    // here we have no more type conversion, read local array from local offset
+
     SCAI_REGION( "ColFile.readAll" )
 
-    // no more type conversion, read local array from local offset
+    SCAI_LOG_INFO( logger, *mComm << ": read " << n << " values of type " 
+                           << common::TypeTraits<ValueType>::id() << " at offset " << offset )
+
+    size_t nArray[2];      // used for sum reduction of nExpected and nRead
+
+    size_t& nExpected  = nArray[0];
+    size_t& nRead = nArray[1];
+
+    nExpected = n;
 
     auto arrayType = common::TypeTraits<ValueType>::stype;
 
-    this->readAllImpl( local, n, mOffset + offset * sizeof( ValueType ), arrayType );
+    nRead = this->readAllImpl( local, nExpected, mOffset + offset * sizeof( ValueType ), arrayType );
 
-    mOffset += mComm->sum( n ) * sizeof( ValueType );
+    if ( nExpected != nRead )
+    {
+        // processes give an individual error message
+
+        SCAI_LOG_ERROR( logger, *mComm << ": read only " << nRead << " entries ["
+                                << common::TypeTraits<ValueType>::id() << "] instead of " << nExpected )
+    }
+
+    // global check to guarantee that all processors throw an exception
+
+    mComm->sumImpl( nArray, nArray, 2, common::TypeTraits<size_t>::stype );
+
+    SCAI_ASSERT_EQ_ERROR( nExpected, nRead, "number of read entries does not match number of expected entries." )
+
+    mOffset += nRead * sizeof( ValueType );
 }
 
 /* -------------------------------------------------------------------------- */

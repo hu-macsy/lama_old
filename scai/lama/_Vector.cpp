@@ -232,6 +232,8 @@ void _Vector::writeToFileMaster( FileIO& file ) const
 
     if ( dist.isMasterDistributed( comm ) )
     {
+        SCAI_REGION( "Vector.writeMaster" )
+
         SCAI_LOG_DEBUG( logger, *this << ": MASTER writes it" )
 
         if ( comm->getRank() == 0 )
@@ -243,6 +245,8 @@ void _Vector::writeToFileMaster( FileIO& file ) const
     }
     else
     {
+        SCAI_REGION( "Vector.writeMasterRedist" )
+
         SCAI_LOG_DEBUG( logger, *this << ": master mode, replicate it" )
 
         DistributionPtr masterDist = dist.toMasterDistribution( comm );
@@ -267,11 +271,15 @@ void _Vector::writeToFileBlocked( FileIO& file ) const
 
     if ( dist.isBlockDistributed( comm ) )
     {
+        SCAI_REGION( "Vector.writeBlocked" )
+
         SCAI_LOG_INFO( logger, *this << ": independent/collective write blocked, write local data" )
         writeLocalToFile( file );
     }
     else
     {
+        SCAI_REGION( "Vector.writeBlockedRedist" )
+
         SCAI_LOG_DEBUG( logger, *this << ": independent/collective write, not blocked yet" )
 
         DistributionPtr blockDist = dist.toBlockDistribution( comm );

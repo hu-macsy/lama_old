@@ -91,29 +91,43 @@ void NoCollectiveFile::close()
 
 /* ---------------------------------------------------------------------------------- */
 
-void NoCollectiveFile::writeSingleImpl( const size_t offset, const void* val, const size_t n, const common::ScalarType stype )
+size_t NoCollectiveFile::getSize() const
+{
+    size_t currentPos = ftell( mFile );
+    fseek( mFile, 0L, SEEK_END );
+    size_t fileSize = ftell( mFile );
+    fseek( mFile, currentPos, SEEK_SET );
+    return fileSize;
+}
+
+/* ---------------------------------------------------------------------------------- */
+
+size_t NoCollectiveFile::writeSingleImpl( const size_t offset, const void* val, const size_t n, const common::ScalarType stype )
 {
     SCAI_LOG_INFO( logger, "write " << n << " entries " << stype << " @ offset = " << offset )
     SCAI_ASSERT_ERROR( mFile, "no file open" )
     fseek( mFile, offset, SEEK_SET );
+    size_t writeN = 0;
+
     // n == 0 : val might be null that would result in sanitize error
     if ( n > 0 ) 
     {
         size_t writeN = fwrite( val, typeSize( stype ), n, mFile );
         SCAI_ASSERT_EQ_ERROR( writeN, n, "insufficent write" )
     }
+    return writeN;
 }
 
 /* ---------------------------------------------------------------------------------- */
 
-void NoCollectiveFile::writeAllImpl( const size_t offset, const void* val, const size_t n, const common::ScalarType stype )
+size_t NoCollectiveFile::writeAllImpl( const size_t offset, const void* val, const size_t n, const common::ScalarType stype )
 {
-    writeSingleImpl( offset, val, n, stype );
+    return writeSingleImpl( offset, val, n, stype );
 }
 
 /* ---------------------------------------------------------------------------------- */
 
-void NoCollectiveFile::readSingleImpl( void* val, const size_t n, const size_t offset, const common::ScalarType stype )
+size_t NoCollectiveFile::readSingleImpl( void* val, const size_t n, const size_t offset, const common::ScalarType stype )
 {
     SCAI_LOG_INFO( logger, "read " << n << " entries " << stype << " @ offset = " << offset )
 
@@ -121,14 +135,14 @@ void NoCollectiveFile::readSingleImpl( void* val, const size_t n, const size_t o
     fseek( mFile, offset, SEEK_SET );
     size_t elemSize = typeSize( stype );
     size_t readN = fread( val, elemSize, n, mFile );
-    SCAI_ASSERT_EQ_ERROR( readN, n, "insufficent read" )
+    return readN;
 }
 
 /* ---------------------------------------------------------------------------------- */
 
-void NoCollectiveFile::readAllImpl( void* val, const size_t n, const size_t offset, const common::ScalarType stype )
+size_t NoCollectiveFile::readAllImpl( void* val, const size_t n, const size_t offset, const common::ScalarType stype )
 {
-    readSingleImpl( val, n, offset, stype );
+    return readSingleImpl( val, n, offset, stype );
 }
 
 }
