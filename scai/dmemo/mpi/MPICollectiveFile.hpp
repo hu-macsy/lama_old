@@ -71,22 +71,27 @@ public:
     /**
      *   Implementation of pure method CollectiveFile::writeSingleImpl
      */
-    virtual void writeSingleImpl( const size_t offset, const void* val, const size_t n, const common::ScalarType stype );
+    virtual size_t writeSingleImpl( const size_t offset, const void* val, const size_t n, const common::ScalarType stype );
 
     /**
      *   Implementation of pure method CollectiveFile::writeAllImpl
      */
-    virtual void writeAllImpl( const size_t offset, const void* val, const size_t n, const common::ScalarType stype );
+    virtual size_t writeAllImpl( const size_t offset, const void* val, const size_t n, const common::ScalarType stype );
 
     /**
      *   Implementation of pure method CollectiveFile::readSingleImpl
      */
-    virtual void readSingleImpl( void* val, const size_t n, const size_t offset, const common::ScalarType stype );
+    virtual size_t readSingleImpl( void* val, const size_t n, const size_t offset, const common::ScalarType stype );
 
     /**
      *   Implementation of pure method CollectiveFile::readAllImpl
      */
-    virtual void readAllImpl( void* val, const size_t n, const size_t offset, const common::ScalarType stype );
+    virtual size_t readAllImpl( void* val, const size_t n, const size_t offset, const common::ScalarType stype );
+
+    /**
+     *   Return the size of the file (in number of bytes)
+     */
+    virtual size_t getSize() const;
 
 private:
 

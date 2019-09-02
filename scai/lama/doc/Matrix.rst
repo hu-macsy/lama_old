@@ -84,7 +84,7 @@ another using the copy constructor.
   // for later use:
   int numRows    = 6;
   int numColumns = 4;
-  dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr( Communicator::MPI ) );
+  dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr( CommunicatorType::MPI ) );
   dmemo::DistributionPtr rDist( dmemo::Distribution::getDistributionPtr( "BLOCK", comm, numRows, 1.0 ) );
   dmemo::DistributionPtr cDist( dmemo::Distribution::getDistributionPtr( "BLOCK", comm, numColumns, 1.0 ) );
   common::ContextPtr cudaContextPtr = common::Context::getContextPtr( common::context::CUDA );

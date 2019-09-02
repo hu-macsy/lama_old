@@ -104,7 +104,7 @@ void ParMetisPartitioning::squarePartitioning(
     // options[ METIS_OPTION_DBGLVL ] = METIS_DBG_TIME;
     // recursive bisection
 
-    SCAI_ASSERT_EQ_ERROR( comm.getType(), Communicator::MPI, "ParMetis only works on MPI distributed data" )
+    SCAI_ASSERT_EQ_ERROR( comm.getType(), CommunicatorType::MPI, "ParMetis only works on MPI distributed data" )
 
     const MPICommunicator& mpiComm = static_cast<const MPICommunicator&>( comm );
 

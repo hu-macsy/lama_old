@@ -8,7 +8,7 @@ the communication routines via MPI.
 
 .. code-block:: c++
 
-   CommunicatorPtr mpiComm = Communicator::getCommunicatorPtr( Communicator::MPI );
+   CommunicatorPtr mpiComm = Communicator::getCommunicatorPtr( CommunicatorType::MPI );
 
 Note: It is not necessary to call ``MPI_Init`` in your application. It will be
 called implicitly with the first call to get the MPI communicator from the factory.

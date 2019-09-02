@@ -253,7 +253,7 @@ In the following you see all possible constructor calls:
 
   // for later use:
   const int size = 4;
-  dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr( Communicator::MPI ) );
+  dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr( CommunicatorType::MPI ) );
   dmemo::DistributionPtr dist( dmemo::Distribution::getDistributionPtr( "BLOCK", comm, size, 1.0 ) );
   common::ContextPtr cudaContextPtr = common::Context::getContextPtr( common::context::CUDA );
 

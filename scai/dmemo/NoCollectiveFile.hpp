@@ -54,13 +54,15 @@ public:
 
     virtual void close();
 
-    virtual void writeSingleImpl( const size_t offset, const void* val, const size_t n, const common::ScalarType stype );
+    virtual size_t getSize() const;
 
-    virtual void writeAllImpl( const size_t offset, const void* val, const size_t n, const common::ScalarType stype );
+    virtual size_t writeSingleImpl( const size_t offset, const void* val, const size_t n, const common::ScalarType stype );
 
-    virtual void readSingleImpl( void* val, const size_t n, const size_t offset, const common::ScalarType stype );
+    virtual size_t writeAllImpl( const size_t offset, const void* val, const size_t n, const common::ScalarType stype );
 
-    virtual void readAllImpl( void* val, const size_t n, const size_t offset, const common::ScalarType stype );
+    virtual size_t readSingleImpl( void* val, const size_t n, const size_t offset, const common::ScalarType stype );
+
+    virtual size_t readAllImpl( void* val, const size_t n, const size_t offset, const common::ScalarType stype );
 
 private:
 

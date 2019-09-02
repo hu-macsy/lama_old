@@ -75,9 +75,11 @@ int main( int argc, const char* argv[] )
         auto time = common::Walltime::get();
 
         auto outFile = comm->collectiveFile();
-        outFile->open( fileName, "w" );
-        outFile->writeSingle( K );
+
+        outFile->open( fileName, "a" );
  
+        auto originalSize = outFile->getOffset();
+
         for ( IndexType iter = 0; iter < K; iter ++ )
         {
             SCAI_REGION( "main.write" )
@@ -85,7 +87,7 @@ int main( int argc, const char* argv[] )
             outFile->writeAll( myData, dist->lb() );
         }
 
-        auto nBytes = outFile->getOffset();
+        auto nBytes = outFile->getOffset() - originalSize;
 
         outFile->close();
 
@@ -93,14 +95,13 @@ int main( int argc, const char* argv[] )
         
         double rateGBs = static_cast<double>( nBytes ) / ( 1000.0 * 1000.0 * 1000.0 * time );
 
-        HOST_PRINT( rank, "Have written " << nBytes << " Bytes" )
+        HOST_PRINT( rank, "Have written " << nBytes << " Bytes, appended to " << originalSize << " bytes" )
         HOST_PRINT( rank, "Write took " << time << " seconds, is " << rateGBs << " GB/s" )
     }
     else
     {
         SCAI_REGION( "main.in" )
 
-        IndexType K;
         IndexType N;
 
         auto inFile = comm->collectiveFile();
@@ -111,49 +112,28 @@ int main( int argc, const char* argv[] )
 
         HOST_PRINT( rank, "Read collective file " << fileName << ", size = " << inFile->getSize() )
 
-        inFile->readSingle( K );
-
-        HOST_PRINT( rank, "Read collective file " << fileName << " with " << K << " data arrays" )
-
         hmemo::HArray<ValueType> myData;   // reuse allocated data for reading
 
-        size_t nBytes = 0;
-
-        for ( IndexType iter = 0; iter < K; ++iter )
+        while ( !inFile->eof() )
         {
             SCAI_REGION( "main.read" )
 
             inFile->readSingle( N );
 
+            HOST_PRINT( rank, "Read parallel array of size " << N )
+
             auto dist = blockDistribution( N, comm );
+
             inFile->readAll(  myData, dist->getLocalSize(), dist->lb() );
-
-            // check for correct values in last iteration
-            
-            if ( iter % 20 == 0 )
-            {
-                SCAI_REGION( "main.check" )
-
-                auto rData = hostReadAccess( myData );
-
-                for ( IndexType i = 0; i < myData.size(); ++i )
-                {
-                    IndexType iGlobal = dist->local2Global( i );
-                    SCAI_ASSERT_EQ_ERROR( rData[i], fillArray( iGlobal ), 
-                                          *comm << ": illegal result @ i = " << i << " is global " << iGlobal )
-                }
-            }
-
-            if ( iter + 1 == K )
-            {
-                nBytes = inFile->getOffset();
- 
-                SCAI_ASSERT_EQ_ERROR( nBytes, inFile->getSize(), *comm << ": incomplete read of the file." )
-
-                inFile->close();
-                time = common::Walltime::get() - time;
-            }
         }
+
+        size_t nBytes = inFile->getOffset();
+
+        SCAI_ASSERT_EQ_ERROR( nBytes, inFile->getSize(), *comm << ": incomplete read of the file." )
+
+        inFile->close();
+
+        time = common::Walltime::get() - time;
 
         double rateGBs = nBytes / ( 1000.0 * 1000.0 * 1000.0 * time );
 

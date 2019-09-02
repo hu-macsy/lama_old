@@ -17,8 +17,8 @@ For creating a ``Distribution`` you always also need a ``Communicator``, that la
 
 .. code-block:: c++
 
-	dmemo::CommunicatorPtr noComm  = dmemo::Communicator::getCommunicatorPtr( dmemo::Communicator::NO );
-	dmemo::CommunicatorPtr mpiComm = dmemo::Communicator::getCommunicatorPtr( dmemo::Communicator::MPI );
+	dmemo::CommunicatorPtr noComm  = dmemo::Communicator::getCommunicatorPtr( dmemo::CommunicatorType::NO );
+	dmemo::CommunicatorPtr mpiComm = dmemo::Communicator::getCommunicatorPtr( dmemo::CommunicatorType::MPI );
 
 	dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr(); // returning the default communicator
 

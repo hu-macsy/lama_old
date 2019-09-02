@@ -69,8 +69,8 @@ a corresponding object.
 
 .. code-block:: c++
 
-   CommunicatorPtr mpiComm = Communicator::getCommunicatorPtr( Communicator::MPI );
-   CommunicatorPtr noComm = Communicator::getCommunicatorPtr( Communicator::NO );
+   CommunicatorPtr mpiComm = Communicator::getCommunicatorPtr( CommunicatorType::MPI );
+   CommunicatorPtr noComm = Communicator::getCommunicatorPtr( CommunicatorType::NO );
 
 In many methods the communicator object is an optional argument. If it is omitted,
 the current communicator is taken.
