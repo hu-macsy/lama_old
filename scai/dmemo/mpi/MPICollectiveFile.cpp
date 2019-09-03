@@ -134,8 +134,14 @@ size_t MPICollectiveFile::writeSingleImpl( const size_t offset, const void* val,
 
     int writtenEntries = 0;
 
-    SCAI_MPICALL( logger, MPI_Get_count( &stat, commType, &writtenEntries ),
-                  "MPI_Get_count<" << stype << ">" )
+    if ( n > 0 )
+    {
+        // MPI_File_write_at might have not set stat if n was zero
+    
+        SCAI_MPICALL( logger, 
+                       MPI_Get_count( &stat, commType, &writtenEntries ),
+                      "MPI_Get_count<" << stype << ">" )
+    }
 
     return static_cast<size_t>( writtenEntries );
 }
@@ -160,8 +166,14 @@ size_t MPICollectiveFile::writeAllImpl( const size_t offset, const void* val, co
 
     int writtenEntries = 0;
 
-    SCAI_MPICALL( logger, MPI_Get_count( &stat, commType, &writtenEntries ),
-                  "MPI_Get_count<" << stype << ">" )
+    if ( n > 0 )
+    {
+        // MPI_File_write_at_all might have not set stat if n was zero
+
+        SCAI_MPICALL( logger, 
+                      MPI_Get_count( &stat, commType, &writtenEntries ),
+                      "MPI_Get_count<" << stype << ">" )
+    }
 
     return static_cast<size_t>( writtenEntries );
 }
@@ -180,8 +192,13 @@ size_t MPICollectiveFile::readSingleImpl( void* val, const size_t n, const size_
 
     int readEntries = 0;
 
-    SCAI_MPICALL( logger, MPI_Get_count( &stat, commType, &readEntries ),
-                  "MPI_Get_count<" << stype << ">" )
+    if ( n > 0 )
+    {
+        // MPI_File_read_at might have not set stat if n was zero
+
+        SCAI_MPICALL( logger, MPI_Get_count( &stat, commType, &readEntries ),
+                      "MPI_Get_count<" << stype << ">" )
+    }
 
     return static_cast<size_t>( readEntries );
 }
@@ -200,8 +217,13 @@ size_t MPICollectiveFile::readAllImpl( void* val, const size_t n, const size_t o
 
     int readEntries = 0;
 
-    SCAI_MPICALL( logger, MPI_Get_count( &stat, commType, &readEntries ),
-                  "MPI_Get_count<" << stype << ">" )
+    if ( n > 0 )
+    {
+        // MPI_File_read_at_all might have not set stat if n was zero
+
+        SCAI_MPICALL( logger, MPI_Get_count( &stat, commType, &readEntries ),
+                      "MPI_Get_count<" << stype << ">" )
+    }
 
     return static_cast<size_t>( readEntries );
 }
