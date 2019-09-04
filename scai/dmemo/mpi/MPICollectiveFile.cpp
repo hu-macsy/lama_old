@@ -71,16 +71,7 @@ void MPICollectiveFile::open( const char* fileName, const char* fileMode )
     }
     else if ( strcmp( fileMode, "w" ) == 0 )
     {
-        openMode = MPI_MODE_DELETE_ON_CLOSE | MPI_MODE_WRONLY;
-
-        int rc = MPI_File_open( mpiComm->getMPIComm(), const_cast<char*>( fileName ), openMode, MPI_INFO_NULL, &mFileHandle );
-
-        SCAI_LOG_DEBUG( logger, "open file " << fileName << " for delete, rc = " << rc )
-
-        if ( rc == MPI_SUCCESS )
-        {
-            SCAI_MPICALL( logger, MPI_File_close( &mFileHandle ), "could not delete existing file " << fileName )
-        }
+        std::remove( fileName );   // make sure that a new file is created
 
         openMode = MPI_MODE_WRONLY | MPI_MODE_CREATE | MPI_MODE_EXCL;
     }
