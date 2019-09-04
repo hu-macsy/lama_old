@@ -45,6 +45,8 @@
 #include <scai/lama/matrix/_Matrix.hpp>
 #include <scai/lama/io/PartitionIO.hpp>
 
+#include <scai/common/Settings.hpp>
+
 // tracing
 #include <scai/tracing.hpp>
 
@@ -334,7 +336,9 @@ void _Vector::writeToFile(
         file->setDataType( dataType );
         file->setIndexType( indexType );
 
-        file->open( fileName.c_str(), "w" );
+        bool appendMode = false;
+        common::Settings::getEnvironment( appendMode, "SCAI_IO_APPEND" );
+        file->open( fileName.c_str(), appendMode ? "a" : "w" );
         writeToFile( *file );
         file->close();
     }

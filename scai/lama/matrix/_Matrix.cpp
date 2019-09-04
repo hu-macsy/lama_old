@@ -282,7 +282,10 @@ void _Matrix::writeToFile(
         file->setDataType( dataType );
         file->setIndexType( indexType );
 
-        file->open( fileName.c_str(), "w" );
+        bool appendMode = false;
+        common::Settings::getEnvironment( appendMode, "SCAI_IO_APPEND" );
+        file->open( fileName.c_str(), appendMode ? "a" : "w" );
+
         SCAI_LOG_DEBUG( logger, *this << ": writeToFile uses opened " << *file )
         writeToFile( *file );
         file->close();

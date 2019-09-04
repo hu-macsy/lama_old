@@ -93,7 +93,6 @@ FileIO::FileIO() :
 
     mFileMode( FileMode::DEFAULT ),                      // no force of anything
     mDistMode( DistributedIOMode::DEFAULT ),             // no force of anything
-    mAppendMode( false ),                                // default is to write each output file new
     mScalarTypeIndex( common::ScalarType::INDEX_TYPE ),  // default is as used in LAMA
     mScalarTypeData( common::ScalarType::INTERNAL )      // default is same type as used in output data structure
 {
@@ -112,8 +111,6 @@ FileIO::FileIO() :
 
         SCAI_LOG_INFO( logger, "File mode set by SCAI_IO_BINARY = " << binary << " : " << mFileMode )
     }
-
-    common::Settings::getEnvironment( mAppendMode, "SCAI_IO_APPEND" );
 
     std::string datatype;
 
@@ -254,7 +251,6 @@ void FileIO::writeMode( std::ostream& stream ) const
 {
     stream << "FileMode = " << mFileMode;
     stream << ", DistributedIOMode = " << mDistMode;
-    stream << ", append = " << mAppendMode;
     stream << ", data = " << mScalarTypeData;
     stream << ", index = " << mScalarTypeIndex;
 }
@@ -301,11 +297,6 @@ void FileIO::setMode( const FileMode mode )
     {
         mFileMode = mode;
     }
-}
-
-void FileIO::enableAppendMode( bool flag )
-{
-    mAppendMode = flag;
 }
 
 /* --------------------------------------------------------------------------------- */

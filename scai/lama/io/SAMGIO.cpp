@@ -143,14 +143,6 @@ SCAI_LOG_DEF_LOGGER( SAMGIO::logger, "FileIO.SAMGIO" )
 
 SAMGIO::SAMGIO()
 {
-    if ( common::Settings::getEnvironment( mAppendMode, "SCAI_IO_APPEND" ) )
-    {
-        if ( mAppendMode )
-        {
-            SCAI_LOG_WARN( logger, "SAMG format does not support append mode" )
-        }
-    }
-
     SCAI_LOG_INFO( logger, "SAMGIO default object: " << *this )
 }
 

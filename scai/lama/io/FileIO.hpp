@@ -338,12 +338,6 @@ public:
 
     void setMode( FileMode mode );
 
-    /** Enable/Disable append mode.
-     *
-     *  For the append mode, write operations will append data in existing files
-     */
-    void enableAppendMode( bool flag );
-
     /** Help routine that determines the availability of a given file by its name. */
 
     static bool fileExists( const std::string& fileName );
@@ -472,7 +466,6 @@ protected:
 
     FileMode mFileMode;                     //!< can be set to force binary or text I/O
     DistributedIOMode mDistMode;            //!< actual mode used for distributed I/O
-    bool mAppendMode;                       //!< if true output is appended to existing files
 
     common::ScalarType mScalarTypeIndex; //!< representation type of row indexes
     common::ScalarType mScalarTypeData;  //!< representation type of array/matrix value entries

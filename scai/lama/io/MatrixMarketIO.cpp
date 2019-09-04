@@ -499,6 +499,8 @@ MMHeader::MMHeader( const common::ScalarType dataType, const IndexType numRows, 
 template<typename ValueType>
 void MatrixMarketIO::writeArrayImpl( const hmemo::HArray<ValueType>& array )
 {
+    SCAI_REGION( "IO.MM.writeArray" )
+
     SCAI_LOG_INFO( logger, *this << ": write array " << array << " to " << mFile.getFileName() );
 
     SCAI_ASSERT_ERROR( mFileMode != FileMode::BINARY, *this << ": Matrix market format can not be written binary" );
