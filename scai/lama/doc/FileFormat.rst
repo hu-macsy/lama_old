@@ -127,42 +127,12 @@ Here are some remarks:
  * Some formats do not store for a matrix storage the number of columns explicitly. Here the number of columns
    is determined by the maximal column index that appears in the data.
 
-SAMG format
------------
-
-The SAMG format comes from the |SAMG| library of Fraunhofer SCAI and uses two files to describe a matrix or vector - 
-one header file with general information ( mode, size), one for the data. 
-The data can be saved in both modes, either BINARY or FORMATTED.
-
-.. |SAMG| raw:: html
-
-   <a href="https://www.scai.fraunhofer.de/de/geschaeftsfelder/schnelle-loeser/produkte/samg.html" target="_blank"> SAMG </a>
-
-Matrices
-^^^^^^^^
-
-Matrix header: *.frm*
-   first line:  mode (f formatted, b binary) *tab* 4 (SAMG internal version number)
-   second line: *tab tab* number of values (nv) *tab* number of rows (nr) *tab* 22 (SAMG internal: symmetry information) *tab* 1 (SAMG internal: number of unknowns ) *tab* 0 (SAMG internal)   
-
-.. 22: unsymmetric, not equal sums of row
-
-Matrix data: *.amg*
-   one value per line:
-   nr lines with ia data
-   nv lines with ja data
-   nv lines with values
-   
-Vectors
-^^^^^^^
-
-Vector header: *.frv*
-   first line: mode (f formatted, x xdr, b binary)
-   second line: number of values (nv)
-   third line: size of value type (in most cases: 4 for float, 8 for double)
-   
-Vector data: *.vec*
-   nv lines with values (one value per line)
+======================    ==========================================
+File Format               Description
+======================    ==========================================
+:doc:`LamaFileFormat`     Proprietary file format used in LAMA.
+:doc:`SAMGFileFormat`     File format as used for the SAMG library.
+======================    ==========================================
 
 Level 5 MAT-File Format
 -----------------------
