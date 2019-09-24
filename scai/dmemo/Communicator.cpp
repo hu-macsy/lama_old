@@ -426,12 +426,12 @@ IndexType Communicator::shift0(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void Communicator::sumArray( HArray<ValueType>& array ) const
+void Communicator::reduce( HArray<ValueType>& array, const common::BinaryOp reduceOp ) const
 {
     ContextPtr commContext = getCommunicationContext( array );
 
-    SCAI_LOG_INFO( logger, "sumArray<" << common::TypeTraits<ValueType>::id()
-                   << " at this context " << *commContext << ", array = " << array )
+    SCAI_LOG_INFO( logger, "reduce<" << common::TypeTraits<ValueType>::id()
+                   << " at this context " << *commContext << ", array = " << array << ", op = " << reduceOp )
 
     SCAI_CONTEXT_ACCESS( commContext );
 
@@ -439,9 +439,9 @@ void Communicator::sumArray( HArray<ValueType>& array ) const
 
     WriteAccess<ValueType> data( array, commContext );
 
-    // alias of inValues and outValues, sumImpl can deal with it
+    // alias of inValues and outValues, reduceImpl can deal with it
 
-    sumImpl( data.get(), data.get(), numElems, common::TypeTraits<ValueType>::stype );
+    reduceImpl( data.get(), data.get(), numElems, common::TypeTraits<ValueType>::stype, reduceOp );
 }
 
 /* -------------------------------------------------------------------------- */

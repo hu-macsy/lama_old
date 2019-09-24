@@ -275,7 +275,7 @@ void CollectiveFile::readAll( ValueType local[], const IndexType n, const IndexT
 
     // global check to guarantee that all processors throw an exception
 
-    mComm->sumImpl( nArray, nArray, 2, common::TypeTraits<size_t>::stype );
+    mComm->reduceImpl( nArray, nArray, 2, common::TypeTraits<size_t>::stype, common::BinaryOp::ADD );
 
     SCAI_ASSERT_EQ_ERROR( nExpected, nRead, "number of read entries does not match number of expected entries." )
 

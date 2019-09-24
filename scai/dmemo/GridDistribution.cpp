@@ -31,6 +31,8 @@
 #include <scai/dmemo/GridDistribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 
+#include <scai/tracing.hpp>
+
 // std
 #include <fstream>
 
@@ -431,6 +433,8 @@ IndexType GridDistribution::global2Local( const IndexType globalIndex ) const
 
 void GridDistribution::computeOwners( HArray<PartitionId>& owners, const HArray<IndexType>& indexes ) const
 {
+    SCAI_REGION( "Distribution.Grid.computeOwners" )
+
     ContextPtr ctx = Context::getHostPtr();    // currently only available @ Host
 
     const IndexType n = indexes.size();
@@ -439,6 +443,8 @@ void GridDistribution::computeOwners( HArray<PartitionId>& owners, const HArray<
     WriteOnlyAccess<PartitionId> wOwners( owners, ctx, n );
 
     // ToDo: call a kernel and allow arbitrary context
+
+    #pragma omp parallel for
 
     for ( IndexType i = 0; i < n; i++ )
     {

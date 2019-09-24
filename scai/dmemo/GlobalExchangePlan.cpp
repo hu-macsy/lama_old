@@ -29,8 +29,6 @@
 
 #include <scai/dmemo/GlobalExchangePlan.hpp>
 
-#include <scai/tracing.hpp>
-
 namespace scai
 {
 

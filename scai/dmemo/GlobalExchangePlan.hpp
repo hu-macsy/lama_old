@@ -31,6 +31,7 @@
 // internal scai libraris
 #include <scai/dmemo/Communicator.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/tracing.hpp>
 
 //#include <cmath>
 
@@ -170,6 +171,7 @@ inline GlobalExchangePlan globalExchangePlan(
     const hmemo::HArray<PartitionId>& target, 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr() )
 {
+    SCAI_REGION( "GlobalExchangePlan.build" )
     return GlobalExchangePlan::globalExchangePlan( target, comm );
 }
 
@@ -199,6 +201,8 @@ void globalExchange(
     const hmemo::HArray<PartitionId>& target,
     dmemo::CommunicatorPtr comm )
 {
+    SCAI_REGION( "GlobalExchangePlan.globalExchange" )
+
     if ( comm->getSize() < 2 )
     {
         recvValues = sendValues;
@@ -221,6 +225,8 @@ void globalExchange(
     const hmemo::HArray<PartitionId>& target,
     CommunicatorPtr comm ) 
 {
+    SCAI_REGION( "GlobalExchangePlan.globalExchange2" )
+
     if ( comm->getSize() < 2 )
     {
         recvValues1 = sendValues1;
@@ -248,6 +254,7 @@ void globalExchange(
     const hmemo::HArray<PartitionId>& target,
     CommunicatorPtr comm )
 {
+    SCAI_REGION( "GlobalExchangePlan.globalExchange3" )
     if ( comm->getSize() < 2 )
     {
         recvValues1 = sendValues1;
@@ -270,6 +277,8 @@ void globalExchange(
 template<typename ValueType>
 void GlobalExchangePlan::exchange( hmemo::HArray<ValueType>& recvArray, const hmemo::HArray<ValueType>& sendArray ) const
 {
+    SCAI_REGION( "GlobalExchangePlan.exchange" )
+
     if ( sendArray.size() != mSendPerm.size() )
     {
         SCAI_LOG_WARN( logger, "exchange send array ( size = " << sendArray.size() 
@@ -295,6 +304,8 @@ void GlobalExchangePlan::exchangeBack(
     const hmemo::HArray<ValueType>& sendArray, 
     const common::BinaryOp op ) const
 {
+    SCAI_REGION( "GlobalExchangePlan.exchangeBack" )
+
     SCAI_ASSERT_EQ_ERROR( sendArray.size(), mRecvPlan.totalQuantity(), "serious mismatch" )
 
     hmemo::HArray<ValueType> recvArrayByProcs;
