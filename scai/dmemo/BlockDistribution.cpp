@@ -29,6 +29,7 @@
 
 // hpp
 #include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/tracing.hpp>
 
 // std
 #include <fstream>
@@ -142,6 +143,8 @@ IndexType BlockDistribution::global2Local( const IndexType globalIndex ) const
 
 void BlockDistribution::computeOwners( HArray<PartitionId>& owners, const HArray<IndexType>& indexes ) const
 {
+    SCAI_REGION( "Distribution.Block.computeOwners" )
+
     ContextPtr ctx = Context::getHostPtr();    // currently only available @ Host
 
     const IndexType n = indexes.size();
@@ -151,6 +154,7 @@ void BlockDistribution::computeOwners( HArray<PartitionId>& owners, const HArray
 
     // ToDo: call a kernel and allow arbitrary context
 
+    #pragma omp parallel for
     for ( IndexType i = 0; i < n; i++ )
     {
         wOwners[i] = rIndexes[i] / mBlockSize;   // same as getOwner
