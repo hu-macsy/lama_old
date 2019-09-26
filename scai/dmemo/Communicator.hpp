@@ -636,6 +636,33 @@ public:
         const common::ScalarType stype, 
         const common::BinaryOp reduceOp ) const = 0;
 
+    /**
+     *   @brief sumImpl for backward compatibility
+     */
+    inline void sumImpl(
+        void* outValues,
+        const void* inValues,
+        const IndexType n,
+        const common::ScalarType stype ) const;
+
+    /**
+     *   @brief maxImpl for backward compatibility
+     */
+    inline void maxImpl(
+        void* outValues,
+        const void* inValues,
+        const IndexType n,
+        const common::ScalarType stype ) const;
+
+    /**
+     *   @brief minImpl for backward compatibility
+     */
+    inline void minImpl(
+        void* outValues,
+        const void* inValues,
+        const IndexType n,
+        const common::ScalarType stype ) const;
+
     /* @brief Maximal value combined with a location value where maximum was found.
      *
      *  @param[in,out] val        is a value on each processor, only out for root with maximal value
@@ -1006,6 +1033,35 @@ template<typename ValueType>
 void Communicator::sumArray( hmemo::HArray<ValueType>& array ) const
 {
     reduce( array, common::BinaryOp::ADD );
+}
+
+/* -------------------------------------------------------------------------- */
+
+void Communicator::sumImpl(
+        void* outValues,
+        const void* inValues,
+        const IndexType n,
+        const common::ScalarType stype ) const
+{
+    reduceImpl( outValues,inValues, n, stype, common::BinaryOp::ADD );
+}
+
+void Communicator::minImpl(
+        void* outValues,
+        const void* inValues,
+        const IndexType n,
+        const common::ScalarType stype ) const
+{
+    reduceImpl( outValues,inValues, n, stype, common::BinaryOp::MIN );
+}
+
+void Communicator::maxImpl(
+        void* outValues,
+        const void* inValues,
+        const IndexType n,
+        const common::ScalarType stype ) const
+{
+    reduceImpl( outValues,inValues, n, stype, common::BinaryOp::MAX );
 }
 
 /* -------------------------------------------------------------------------- */
