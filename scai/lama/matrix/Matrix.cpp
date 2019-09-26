@@ -832,6 +832,8 @@ void Matrix<ValueType>::setRawDenseData( const IndexType n, const IndexType m, c
 template<typename ValueType>
 void Matrix<ValueType>::fillFromAssembly( const MatrixAssembly<ValueType>& assembly, common::BinaryOp op )
 {
+    SCAI_REGION( "Mat.fillFromAssembly" )
+
     DistributionPtr colDist = getColDistributionPtr();
     DistributionPtr rowDist = getRowDistributionPtr();
 

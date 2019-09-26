@@ -33,6 +33,7 @@
 #include <scai/lama/storage/COOStorage.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/common/test/TestMacros.hpp>
+#include <scai/utilskernel/test/TestMacros.hpp>
 #include <scai/common/TypeTraits.hpp>
 
 #include <scai/utilskernel.hpp>
@@ -60,25 +61,35 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructor1Test, ValueType, scai_numeric_test_ty
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
 
+    // unsorted COO data
+
     HArray<IndexType> cooIA( {  0, 1, 2, 1 } );
     HArray<IndexType> cooJA( {  0, 1, 2, 2 } );
     HArray<ValueType> cooValues( { 0.5, 0.5, 0.3, 0.2 } );
 
-    COOStorage<ValueType> cooStorage( numRows, numColumns, cooIA, cooJA, cooValues, loc );
+    // sorted COO data, used for checks
+
+    HArray<IndexType> cooIASorted( {  0, 1, 1, 2 } );
+    HArray<IndexType> cooJASorted( {  0, 1, 2, 2 } );
+    HArray<ValueType> cooValuesSorted( { 0.5, 0.5, 0.2, 0.3 } );
+
+    bool isSorted = false;
+
+    COOStorage<ValueType> cooStorage( numRows, numColumns, cooIA, cooJA, cooValues, isSorted, loc );
 
     // COO keeps values in same order
 
-    BOOST_TEST( hostReadAccess( cooIA ), cooStorage.getIA() );
-    BOOST_TEST( hostReadAccess( cooJA ), cooStorage.getJA() );
-    BOOST_TEST( hostReadAccess( cooValues ), cooStorage.getValues() );
+    BOOST_TEST( hostReadAccess( cooIASorted ) == hostReadAccess( cooStorage.getIA() ), boost::test_tools::per_element() );
+    BOOST_TEST( hostReadAccess( cooJASorted ) == hostReadAccess( cooStorage.getJA() ), boost::test_tools::per_element() );
+    BOOST_TEST( hostReadAccess( cooValuesSorted ) == hostReadAccess( cooStorage.getValues() ), boost::test_tools::per_element() );
 
     // copy constructor 
 
     COOStorage<ValueType> cooStorageCopy( cooStorage );
 
-    BOOST_TEST( hostReadAccess( cooIA ), cooStorageCopy.getIA() );
-    BOOST_TEST( hostReadAccess( cooJA ), cooStorageCopy.getJA() );
-    BOOST_TEST( hostReadAccess( cooValues ), cooStorageCopy.getValues() );
+    SCAI_CHECK_EQUAL_ARRAY( cooIASorted, cooStorageCopy.getIA() )
+    SCAI_CHECK_EQUAL_ARRAY( cooJASorted, cooStorageCopy.getJA() )
+    SCAI_CHECK_EQUAL_ARRAY( cooValuesSorted, cooStorageCopy.getValues() )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
