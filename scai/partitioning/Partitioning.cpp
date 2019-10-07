@@ -141,7 +141,7 @@ void Partitioning::squarePartitioning(
 void Partitioning::squarePartitioningW(
     hmemo::HArray<PartitionId>& newLocalOwners,
     const lama::_Matrix& matrix,
-    const hmemo::HArray<IndexType>& vertexWeights,
+    const hmemo::HArray<float>& vertexWeights,
     const float weight ) const
 {
     const Communicator& comm = matrix.getRowDistribution().getCommunicator();
@@ -166,7 +166,7 @@ void Partitioning::squarePartitioningW(
 void Partitioning::squarePartitioningW(
     hmemo::HArray<PartitionId>& newLocalOwners,
     const lama::_Matrix& matrix,
-    const hmemo::HArray<IndexType>&,
+    const hmemo::HArray<float>&,
     const hmemo::HArray<float>& weight ) const
 {
     SCAI_LOG_ERROR( logger, "vertex weights are ignored" )

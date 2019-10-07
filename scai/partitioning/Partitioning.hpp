@@ -125,7 +125,7 @@ public:
 
     virtual void squarePartitioningW( hmemo::HArray<PartitionId>& newOwners,
                                       const lama::_Matrix& matrix,
-                                      const hmemo::HArray<IndexType>& vertexWeights,
+                                      const hmemo::HArray<float>& vertexWeights,
                                       const hmemo::HArray<float>& processorWeights ) const;
 
     /** This method is a special case of the above one but here the number of the processor
@@ -137,7 +137,7 @@ public:
 
     void squarePartitioningW( hmemo::HArray<PartitionId>& newLocalOwners,
                               const lama::_Matrix& matrix,
-                              const hmemo::HArray<IndexType>& vertexWeights,
+                              const hmemo::HArray<float>& vertexWeights,
                               const float weight ) const;
 
     /** Partitioning of rectangular matrix

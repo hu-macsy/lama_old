@@ -179,7 +179,7 @@ void ParMetisPartitioning::squarePartitioning(
 void ParMetisPartitioning::squarePartitioningW( 
     HArray<PartitionId>& newLocalOwners,
     const lama::_Matrix& matrix,
-    const HArray<IndexType>& vertexWeights,
+    const HArray<float>& vertexWeights,
     const HArray<float>& processorWeights ) const
 {
     SCAI_REGION( "ParMETIScall" )
@@ -232,10 +232,21 @@ void ParMetisPartitioning::squarePartitioningW(
 
     SCAI_LOG_INFO( logger, comm << ": CSR graph ready" )
 
+    HArray<idx_t> iVertexWeights;   // keeps converted float weights
+
+    {
+        ReadAccess<float> rWeights( vertexWeights );
+        WriteOnlyAccess<idx_t> wWeights( iVertexWeights, nlocal );
+        for ( IndexType i = 0; i < nlocal; ++i )
+        {
+            wWeights[i] = static_cast<idx_t>( rWeights[i] );
+        }
+    }
+
     ReadAccess<idx_t> rDistOffsets( graph.distOffsets() );
     ReadAccess<idx_t> rIA( graph.ia() );
     ReadAccess<idx_t> rJA( graph.ja() );
-    ReadAccess<idx_t> rWeights( vertexWeights );
+    ReadAccess<idx_t> rWeights( iVertexWeights );
 
     idx_t res = ParMETIS_V3_PartKway( const_cast<idx_t*>( rDistOffsets.get() ), 
                                       const_cast<idx_t*>( rIA.get() ),
