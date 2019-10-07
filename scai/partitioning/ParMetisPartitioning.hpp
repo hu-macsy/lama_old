@@ -81,6 +81,11 @@ public:
                                      const lama::_Matrix& matrix, 
                                      const hmemo::HArray<float>& processorWeights ) const;
 
+    virtual void squarePartitioningW( hmemo::HArray<PartitionId>& newLocalOwners, 
+                                      const lama::_Matrix& matrix, 
+                                      const hmemo::HArray<IndexType>& vertexWeights,
+                                      const hmemo::HArray<float>& processorWeights ) const;
+
     /** Override Printable::writeAt */
 
     virtual void writeAt( std::ostream& stream ) const;

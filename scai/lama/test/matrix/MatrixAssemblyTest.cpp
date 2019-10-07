@@ -215,15 +215,13 @@ BOOST_AUTO_TEST_CASE( failTest )
     // number of columns too small
 
     BOOST_CHECK_THROW( {
-        localStorage = assembly.buildLocalCOO( *dist, 5, common::BinaryOp::COPY );
+        assembly.checkLegalIndexes( numRows, 5 );
     }, common::Exception );
 
     // number of rows too small
 
-    dist = std::make_shared<dmemo::BlockDistribution>( 5, comm);
-
     BOOST_CHECK_THROW( {
-        localStorage = assembly.buildLocalCOO( *dist, numColumns, common::BinaryOp::COPY );
+        assembly.checkLegalIndexes( 5, numColumns );
     }, common::Exception );
 
     // building local data only with distribution that has same communicator

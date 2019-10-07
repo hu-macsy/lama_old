@@ -123,12 +123,22 @@ public:
                                      const lama::_Matrix& matrix,
                                      const hmemo::HArray<float>& processorWeights ) const = 0;
 
+    virtual void squarePartitioningW( hmemo::HArray<PartitionId>& newOwners,
+                                      const lama::_Matrix& matrix,
+                                      const hmemo::HArray<IndexType>& vertexWeights,
+                                      const hmemo::HArray<float>& processorWeights ) const;
+
     /** This method is a special case of the above one but here the number of the processor
      *  weights are gathered before, i.e. number of new and old partitions remains the same.
      */
     void squarePartitioning( hmemo::HArray<PartitionId>& newLocalOwners,
                              const lama::_Matrix& matrix,
                              const float weight ) const;
+
+    void squarePartitioningW( hmemo::HArray<PartitionId>& newLocalOwners,
+                              const lama::_Matrix& matrix,
+                              const hmemo::HArray<IndexType>& vertexWeights,
+                              const float weight ) const;
 
     /** Partitioning of rectangular matrix
      *

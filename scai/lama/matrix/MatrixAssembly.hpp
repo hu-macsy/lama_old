@@ -79,6 +79,13 @@ public:
 
     void push( const IndexType i, const IndexType j, const ValueType val );
 
+    /** 
+     *   @brief Add elements from another assembly as increment operator
+     *
+     *   This method can be used to reduce matrix assemblies from different threads
+     */
+    MatrixAssembly& operator+=( const MatrixAssembly<ValueType>& other );
+
     /** Get the number of rows used in the assembled data.
      *
      *  For conversion into a matrix this matrix must have at least the 
@@ -150,13 +157,15 @@ public:
      */
     void truncate( const IndexType numRows, const IndexType numColumns );
 
+    /** Check for correct indexes of the assembled entries
+     *
+     *  Note: throws an exception on all processors even if there are illegal indexes on some
+     */
+    void checkLegalIndexes( const IndexType numRows, const IndexType numColumns ) const;
+
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
-    /** Check for correct indexes of the assembled entries */
-
-    void checkLegalIndexes( const IndexType numRows, const IndexType numColumns ) const;
 
     // for pushing the assembled data we use the C++ vector class
 

@@ -1566,6 +1566,8 @@ void CSRStorage<ValueType>::binaryOpCSR(
     common::BinaryOp op,
     const CSRStorage<ValueType>& b )
 {
+    SCAI_REGION( "Storage.CSR.binaryOpCSR" )
+
     SCAI_LOG_INFO( logger, "this = a ( " << a.getNumRows() << " x " << a.getNumColumns() << ", nnz = " << a.getNumValues() << " ) " 
                     << op << " b ( " << b.getNumRows() << " x " << b.getNumColumns() << ", nnz = " << b.getNumValues() << " )" )
 
@@ -1793,10 +1795,18 @@ void CSRStorage<ValueType>::fillCOO(
     hmemo::HArray<ValueType> cooValues,
     const common::BinaryOp op )
 {
+    SCAI_REGION( "Storage.CSR.fillCOO" )
+
     using sparsekernel::COOUtils;
 
     SCAI_ASSERT_EQ_ERROR( cooIA.size(), cooJA.size(), "COO data: cooIA and cooJA must have same size" )
     SCAI_ASSERT_EQ_ERROR( cooIA.size(), cooValues.size(), "COO data: cooIA and cooValues must have same size" )
+
+    SCAI_ASSERT_DEBUG( HArrayUtils::validIndexes( cooIA, getNumRows() ), 
+                       "invalid row indexes, #rows = " << getNumRows() );
+
+    SCAI_ASSERT_DEBUG( HArrayUtils::validIndexes( cooJA, getNumColumns() ), 
+                       "invalid column indexes, #cols = " << getNumColumns() );
 
     // convert the COO data to CSR, so it is sorted and filling can be done in parallel
 
@@ -1806,11 +1816,24 @@ void CSRStorage<ValueType>::fillCOO(
 
     COOUtils::convertCOO2CSR( csrIA, cooIA, getNumRows(), getContextPtr() );
 
-    CSRStorage<ValueType> csr1( getNumRows(), getNumColumns(), std::move( csrIA ), std::move( cooJA ), std::move( cooValues ) );
+    if ( getNumValues() == 0 )
+    {
+        mIA = std::move( csrIA );
+        mJA = std::move( cooJA );
+        mValues = std::move( cooValues );
 
-    sortRows();
+        mSortedRows = true;  // coo daa is sorted due to normalization
+        buildRowIndexes();
+    }
+    else
+    {
+        CSRStorage<ValueType> csr1( getNumRows(), getNumColumns(), 
+                                    std::move( csrIA ), std::move( cooJA ), std::move( cooValues ) );
 
-    binaryOpCSR( *this, op, csr1 );
+        sortRows();
+
+        binaryOpCSR( *this, op, csr1 );
+    }
 }
 
 /* ========================================================================= */

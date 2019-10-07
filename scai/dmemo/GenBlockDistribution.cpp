@@ -34,6 +34,7 @@
 #include <scai/dmemo/Distributed.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
+#include <scai/tracing.hpp>
 
 // std
 #include <fstream>
@@ -277,6 +278,8 @@ IndexType GenBlockDistribution::global2Local( const IndexType globalIndex ) cons
 
 void GenBlockDistribution::computeOwners( HArray<PartitionId>& owners, const HArray<IndexType>& indexes ) const
 {
+    SCAI_REGION( "Distribution.GenBlock.computeOwners" )
+
     ContextPtr ctx = Context::getHostPtr();    // currently only available @ Host
 
     const IndexType n = indexes.size();
@@ -285,6 +288,8 @@ void GenBlockDistribution::computeOwners( HArray<PartitionId>& owners, const HAr
     WriteOnlyAccess<PartitionId> wOwners( owners, ctx, n );
 
     // ToDo: call a kernel and allow arbitrary context
+
+    #pragma omp parallel for
 
     for ( IndexType i = 0; i < n; i++ )
     {

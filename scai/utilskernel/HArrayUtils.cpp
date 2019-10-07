@@ -951,6 +951,8 @@ bool HArrayUtils::allScalar(
     const ValueType val,
     ContextPtr prefLoc )
 {
+    SCAI_REGION( "HArray.allScalar" )
+
     const IndexType n = array.size();
 
     static LAMAKernel<UtilKernelTrait::allCompareScalar<ValueType> > allCompare;

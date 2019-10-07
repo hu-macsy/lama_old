@@ -704,70 +704,45 @@ void MPICommunicator::scanImpl( void* outValues, const void* inValues, const Ind
 /*              sum                                                                   */
 /* ---------------------------------------------------------------------------------- */
 
-void MPICommunicator::sumImpl( void* outValues, const void* inValues, const IndexType n, common::ScalarType stype ) const
+void MPICommunicator::reduceImpl(
+    void* outValues,
+    const void* inValues,
+    const IndexType n,
+    const common::ScalarType stype,
+    const common::BinaryOp reduceOp ) const
 {
-    SCAI_REGION( "Communicator.MPI.sum" )
+    SCAI_REGION( "Communicator.MPI.reduce" )
 
     MPI_Datatype commType = getMPIType( stype );
-    MPI_Op opType = getMPISum( stype );
 
+    MPI_Op opType = MPI_SUM;
+
+    switch ( reduceOp )
+    {
+        case common::BinaryOp::ADD : opType = getMPISum( stype );
+                                     break;
+        case common::BinaryOp::MIN : opType = getMPIMin( stype );
+                                     break;
+        case common::BinaryOp::MAX : opType = getMPIMax( stype );
+                                     break;
+        default: COMMON_THROWEXCEPTION( "Unsupported op = " << reduceOp << " for communicator reduction, type = " << stype << "." );
+    }
+     
     if ( inValues == outValues )
     {
         SCAI_MPICALL( logger, MPI_Allreduce( MPI_IN_PLACE, outValues, n, commType, opType,
-                                             mComm ), "MPI_Allreduce(MPI_SUM)" )
+                                             mComm ), "MPI_Allreduce" )
     }
     else
     {
         SCAI_MPICALL( logger, MPI_Allreduce( const_cast<void*>( inValues ), outValues, n, commType, opType,
-                                             mComm ), "MPI_Allreduce(MPI_SUM)" )
+                                             mComm ), "MPI_Allreduce" )
     }
 }
 
 /* ---------------------------------------------------------------------------------- */
-/*              min                                                                   */
+/*      synchronize ( BARRIER )                                                       */
 /* ---------------------------------------------------------------------------------- */
-
-void MPICommunicator::minImpl( void* outValues, const void* inValues, const IndexType n, common::ScalarType stype ) const
-{
-    SCAI_REGION( "Communicator.MPI.min" )
-
-    MPI_Datatype commType = getMPIType( stype );
-    MPI_Op opType = getMPIMin( stype );
-
-    if ( inValues == outValues )
-    {
-        SCAI_MPICALL( logger, MPI_Allreduce( MPI_IN_PLACE, outValues, n, commType, opType,
-                                             mComm ), "MPI_Allreduce(MPI_SUM)" )
-    }
-    else
-    {
-        SCAI_MPICALL( logger, MPI_Allreduce( const_cast<void*>( inValues ), outValues, n, commType, opType,
-                                             mComm ), "MPI_Allreduce(MPI_SUM)" )
-    }
-}
-
-/* ---------------------------------------------------------------------------------- */
-/*              min                                                                   */
-/* ---------------------------------------------------------------------------------- */
-
-void MPICommunicator::maxImpl( void* outValues, const void* inValues, const IndexType n, common::ScalarType stype ) const
-{
-    SCAI_REGION( "Communicator.MPI.max" )
-
-    MPI_Datatype commType = getMPIType( stype );
-    MPI_Op opType = getMPIMax( stype );
-
-    if ( inValues == outValues )
-    {
-        SCAI_MPICALL( logger, MPI_Allreduce( MPI_IN_PLACE, outValues, n, commType, opType,
-                                             mComm ), "MPI_Allreduce(MPI_SUM)" )
-    }
-    else
-    {
-        SCAI_MPICALL( logger, MPI_Allreduce( const_cast<void*>( inValues ), outValues, n, commType, opType,
-                                             mComm ), "MPI_Allreduce(MPI_SUM)" )
-    }
-}
 
 void MPICommunicator::synchronize() const
 {

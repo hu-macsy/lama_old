@@ -124,6 +124,7 @@ COOStorage<ValueType>::COOStorage(
     HArray<IndexType> ia, 
     HArray<IndexType> ja, 
     HArray<ValueType> values, 
+    bool isSorted,
     ContextPtr ctx ) : 
 
     MatrixStorage<ValueType>( numRows, numColumns, ctx ),
@@ -136,7 +137,10 @@ COOStorage<ValueType>::COOStorage(
     SCAI_ASSERT_EQ_ERROR( mIA.size(), mJA.size(), "serious mismatch for sizes of ia, ja" )
     SCAI_ASSERT_EQ_ERROR( mIA.size(), mValues.size(), "serious mismatch for sizes of ia, ja" )
 
-    verifySorting();
+    if ( !isSorted )
+    {
+        verifySorting();
+    }
 }
 
 /* --------------------------------------------------------------------------- */

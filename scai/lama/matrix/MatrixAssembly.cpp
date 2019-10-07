@@ -35,6 +35,7 @@
 #include <scai/sparsekernel/COOUtils.hpp>
 
 #include <scai/common/macros/instantiate.hpp>
+#include <scai/tracing.hpp>
 
 #include <algorithm>
 
@@ -86,6 +87,17 @@ void MatrixAssembly<ValueType>::reserve( const IndexType n )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+MatrixAssembly<ValueType>& MatrixAssembly<ValueType>::operator+=( const MatrixAssembly<ValueType>& other )
+{
+    mIA.insert( mIA.end(), other.mIA.begin(), other.mIA.end() );
+    mJA.insert( mJA.end(), other.mJA.begin(), other.mJA.end() );
+    mValues.insert( mValues.end(), other.mValues.begin(), other.mValues.end() );
+    return *this;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 IndexType MatrixAssembly<ValueType>::getNumRows() const
 {
     auto it = std::max_element( std::begin(mIA), std::end(mIA) ); 
@@ -120,6 +132,8 @@ IndexType MatrixAssembly<ValueType>::getNumValues() const
 template<typename ValueType>
 void MatrixAssembly<ValueType>::checkLegalIndexes( const IndexType numRows, const IndexType numColumns ) const
 {
+    SCAI_REGION( "MatrixAssembly.checkLegalIndexes" )
+
     using namespace utilskernel;
 
     HArrayRef<IndexType> ia( mIA );
@@ -156,9 +170,13 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildLocalCOO(
     const IndexType numColumns,
     common::BinaryOp op ) const
 {
+    SCAI_REGION( "MatrixAssembly.buildLocalCOO" )
+
     SCAI_ASSERT_EQ_ERROR( dist.getCommunicator(), *mComm, "dist has illegal communicator" )
 
+#ifdef SCAI_ASSERT_LEVEL_DEBUG
     checkLegalIndexes( dist.getGlobalSize(), numColumns );
+#endif
 
     HArrayRef<IndexType> ia( mIA );
     HArrayRef<IndexType> ja( mJA );
@@ -173,17 +191,39 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildLocalCOO(
     HArray<PartitionId> owners;
 
     dist.computeOwners( owners, ia );
- 
-    // send the COO data to their owners and receive it
 
-    dmemo::globalExchange( ownedIA, ownedJA, ownedValues, ia, ja, values, owners, dist.getCommunicatorPtr() );
+    bool isLocal = utilskernel::HArrayUtils::allScalar( owners, common::CompareOp::EQ, mComm->getRank() );
+    isLocal = mComm->all( isLocal );
+
+    if ( isLocal )
+    { 
+        SCAI_LOG_DEBUG( logger, "local assembling" )
+
+        // each processor has only assembled local data, so no global exchange required
+
+        utilskernel::HArrayUtils::assign( ownedIA, ia );
+        utilskernel::HArrayUtils::assign( ownedJA, ja );
+        utilskernel::HArrayUtils::assign( ownedValues, values );
+    }
+    else
+    {
+        SCAI_LOG_DEBUG( logger, "global assembling" )
+
+        // send the COO data to their owners and receive it
+
+        dmemo::globalExchange( ownedIA, ownedJA, ownedValues, ia, ja, values, owners, dist.getCommunicatorPtr() );
+    }
 
     dist.global2LocalV( ownedIA, ownedIA );   // translates global row indexes to local ones
 
     sparsekernel::COOUtils::normalize( ownedIA, ownedJA, ownedValues, op, Context::getHostPtr() );
 
+    // Note: constructor of COOStorage will also normalize, but cannot handle double entries at same pos
+
+    bool isSorted = true;
+
     return COOStorage<ValueType>( dist.getLocalSize(), numColumns,
-                                  std::move( ownedIA ), std::move( ownedJA ), std::move( ownedValues ) );
+                                  std::move( ownedIA ), std::move( ownedJA ), std::move( ownedValues ), isSorted );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -194,6 +234,8 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildOwnedCOO(
     const IndexType numColumns,
     common::BinaryOp op ) const
 {
+    SCAI_REGION( "MatrixAssembly.buildOwnedCOO" )
+
     // These COO arrays will keep the matrix items owned by this processor
 
     HArray<IndexType> ownedIA;
@@ -257,8 +299,10 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildOwnedCOO(
 
     sparsekernel::COOUtils::normalize( ownedIA, ownedJA, ownedValues, op, Context::getHostPtr() );
 
+    bool isSorted = true;
+
     return COOStorage<ValueType>( dist.getLocalSize(), numColumns,
-                                  std::move( ownedIA ), std::move( ownedJA ), std::move( ownedValues ) );
+                                  std::move( ownedIA ), std::move( ownedJA ), std::move( ownedValues ), isSorted );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -269,11 +313,15 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildGlobalCOO(
     const IndexType numColumns,
     common::BinaryOp op ) const
 {
+    SCAI_REGION( "MatrixAssembly.buildGobalCOO" )
+
     using utilskernel::HArrayUtils;
 
     ContextPtr contextPtr = Context::getHostPtr();
 
+#ifdef SCAI_ASSERT_LEVEL_DEBUG
     checkLegalIndexes( numRows, numColumns );
+#endif
 
     const IndexType numValues = mComm->sum( mIA.size() );
     const IndexType maxSize   = mComm->max( mIA.size() );
@@ -346,8 +394,10 @@ COOStorage<ValueType> MatrixAssembly<ValueType>::buildGlobalCOO(
 
     sparsekernel::COOUtils::normalize( allIA, allJA, allValues, op, Context::getHostPtr() );
 
+    bool isSorted = true;
+
     return COOStorage<ValueType>( numRows, numColumns,
-                                  std::move( allIA ), std::move( allJA ), std::move( allValues ) );
+                                  std::move( allIA ), std::move( allJA ), std::move( allValues ), isSorted );
 }
 
 /* -------------------------------------------------------------------------- */

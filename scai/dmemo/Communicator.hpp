@@ -49,6 +49,7 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/macros/count.hpp>
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/BinaryOp.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/macros/loop.hpp>
 
@@ -607,7 +608,7 @@ public:
      *  @param[in] localValue  value on the calling partition
      *  @returns   global value, available for all partitions.
      *
-     *  Implementation uses pure virtual method sumImpl (without template arguments)
+     *  Implementation uses pure virtual method reduceImpl (without template arguments)
      */
     template<typename ValueType>
     inline ValueType sum( const ValueType localValue ) const;
@@ -618,22 +619,49 @@ public:
     template<typename ValueType>
     inline ValueType max( const ValueType localValue ) const;
 
-    /**  Sum values from all processes and distributes the result back to all processes.
+    /**  reduce values from all processes and set the result back to all processes.
      *
      *   @param[out] outValues array with the result values, same on all processes
      *   @param[in]  inValues individual contributions on each process
      *   @param[in]  n is the number of values in arrays inValues and outValues
      *   @param[in]  stype specifies the data type of the data
+     *   @param[in]  op specifies the binary reduce operator
+     *
+     *   Note: alias of outValues and inValues is supported.
      */
-    virtual void sumImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const = 0;
+    virtual void reduceImpl(
+        void* outValues, 
+        const void* inValues, 
+        const IndexType n, 
+        const common::ScalarType stype, 
+        const common::BinaryOp reduceOp ) const = 0;
 
-    /**  Find minimal values from all processes and distributes the result back to all processes. */
+    /**
+     *   @brief sumImpl for backward compatibility
+     */
+    inline void sumImpl(
+        void* outValues,
+        const void* inValues,
+        const IndexType n,
+        const common::ScalarType stype ) const;
 
-    virtual void minImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const = 0;
+    /**
+     *   @brief maxImpl for backward compatibility
+     */
+    inline void maxImpl(
+        void* outValues,
+        const void* inValues,
+        const IndexType n,
+        const common::ScalarType stype ) const;
 
-    /**  Find maximal values from all processes and distributes the result back to all processes. */
-
-    virtual void maxImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const = 0;
+    /**
+     *   @brief minImpl for backward compatibility
+     */
+    inline void minImpl(
+        void* outValues,
+        const void* inValues,
+        const IndexType n,
+        const common::ScalarType stype ) const;
 
     /* @brief Maximal value combined with a location value where maximum was found.
      *
@@ -809,6 +837,17 @@ public:
         const hmemo::HArray<ValueType>& sendArray,
         const int direction ) const;
 
+    /** @brief Reduce elements among a set of processor
+     *
+     *  @tparam        ValueType   specifies the type of the array data
+     *  @param[in,out] array       in are the local values, out are the reduced values
+     *  @param[in]     op          is the binary reduction operator                    
+     *
+     *  Note: All partitions must have the same size for the array
+     */
+    template<typename ValueType>
+    void reduce( hmemo::HArray<ValueType>& array, const common::BinaryOp reduceOp ) const;
+
     /** @brief Sum up values of an array
      *
      *  @tparam        ValueType   specifies the type of the array data
@@ -955,7 +994,7 @@ ValueType Communicator::sum( ValueType localValue ) const
 
     // general routine uses typeless pointers void*, type is coded via ScalarType
 
-    sumImpl( &globalValue, &localValue, 1, common::TypeTraits<ValueType>::stype );
+    reduceImpl( &globalValue, &localValue, 1, common::TypeTraits<ValueType>::stype, common::BinaryOp::ADD );
 
     return globalValue;
 }
@@ -969,7 +1008,7 @@ ValueType Communicator::min( ValueType localValue ) const
 
     // general routine uses typeless pointers void*, type is coded via ScalarType
 
-    minImpl( &globalValue, &localValue, 1, common::TypeTraits<ValueType>::stype );
+    reduceImpl( &globalValue, &localValue, 1, common::TypeTraits<ValueType>::stype, common::BinaryOp::MIN );
 
     return globalValue;
 }
@@ -983,9 +1022,46 @@ ValueType Communicator::max( ValueType localValue ) const
 
     // general routine uses typeless pointers void*, type is coded via ScalarType
 
-    maxImpl( &globalValue, &localValue, 1, common::TypeTraits<ValueType>::stype );
+    reduceImpl( &globalValue, &localValue, 1, common::TypeTraits<ValueType>::stype, common::BinaryOp::MAX );
 
     return globalValue;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void Communicator::sumArray( hmemo::HArray<ValueType>& array ) const
+{
+    reduce( array, common::BinaryOp::ADD );
+}
+
+/* -------------------------------------------------------------------------- */
+
+void Communicator::sumImpl(
+        void* outValues,
+        const void* inValues,
+        const IndexType n,
+        const common::ScalarType stype ) const
+{
+    reduceImpl( outValues,inValues, n, stype, common::BinaryOp::ADD );
+}
+
+void Communicator::minImpl(
+        void* outValues,
+        const void* inValues,
+        const IndexType n,
+        const common::ScalarType stype ) const
+{
+    reduceImpl( outValues,inValues, n, stype, common::BinaryOp::MIN );
+}
+
+void Communicator::maxImpl(
+        void* outValues,
+        const void* inValues,
+        const IndexType n,
+        const common::ScalarType stype ) const
+{
+    reduceImpl( outValues,inValues, n, stype, common::BinaryOp::MAX );
 }
 
 /* -------------------------------------------------------------------------- */

@@ -156,17 +156,14 @@ public:
 
     virtual std::unique_ptr<class CollectiveFile> collectiveFile() const;
 
-    /** Implementation of Communicator::sumImpl */
+    /** Implementation of Communicator::reduceImpl */
 
-    virtual void sumImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const;
-
-    /** Implementation of Communicator::minImpl */
-
-    virtual void minImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const;
-
-    /** Implementation of Communicator::maxImpl */
-
-    virtual void maxImpl( void* outValues, const void* inValues, const IndexType n, const common::ScalarType stype ) const;
+    virtual void reduceImpl( 
+        void* outValues, 
+        const void* inValues, 
+        const IndexType n, 
+        const common::ScalarType stype,
+        const common::BinaryOp op ) const;
 
     /** Implementation of Communicator::scanImpl */
 

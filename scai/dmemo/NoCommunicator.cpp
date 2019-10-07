@@ -93,27 +93,12 @@ void NoCommunicator::all2allImpl( void* recvBuffer, const void* sendBuffer, cons
     safer_memcpy( recvBuffer, sendBuffer, typeSize( stype ) );
 }
 
-void NoCommunicator::sumImpl( void* outData, const void* inData, const IndexType n, const common::ScalarType stype ) const
-{
-    if ( outData == inData )
-    {
-        return;   // IN_PLACE
-    }
-
-    safer_memcpy( outData, inData, typeSize( stype ) * n );
-}
-
-void NoCommunicator::minImpl( void* outData, const void* inData, const IndexType n, const common::ScalarType stype ) const
-{
-    if ( outData == inData )
-    {
-        return;   // IN_PLACE
-    }
-
-    safer_memcpy( outData, inData, typeSize( stype ) * n );
-}
-
-void NoCommunicator::maxImpl( void* outData, const void* inData, const IndexType n, const common::ScalarType stype ) const
+void NoCommunicator::reduceImpl( 
+    void* outData, 
+    const void* inData, 
+    const IndexType n, 
+    const common::ScalarType stype, 
+    const common::BinaryOp ) const
 {
     if ( outData == inData )
     {

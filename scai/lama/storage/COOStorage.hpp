@@ -129,6 +129,7 @@ public:
      *  @param[in] ia row indexes of the storage entries
      *  @param[in] ja column indexes of the storage entries, ja.size() == ia.size()
      *  @param[in] values matrix values, values.size() == ja.size()
+     *  @param[in] isSorted if true the arrays ia and ja are sorted and there are no double entries 
      *  @param[in] ctx specifies the context where the storage is allocated/used
      *
      *  Arrays might also be passed via the move operator in which case the allocated
@@ -140,6 +141,7 @@ public:
         hmemo::HArray<IndexType> ia,
         hmemo::HArray<IndexType> ja,
         hmemo::HArray<ValueType> values,
+        bool isSorted = false,
         hmemo::ContextPtr ctx = hmemo::Context::getContextPtr() );
 
     /** Destructor of COO sparse matrix. */

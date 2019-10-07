@@ -611,6 +611,8 @@ bool OpenMPUtils::allCompareScalar(
     const IndexType n,
     const CompareOp op )
 {
+    SCAI_REGION( "OpenMP.Utils.allCompareScalar" )
+
     bool val = true;
 
     #pragma omp parallel
@@ -2041,7 +2043,7 @@ IndexType OpenMPUtils::countAddSparse(
     const IndexType indexes2[],
     const IndexType n2 )
 {
-    SCAI_REGION( "OpenMP.Utils.countAddSparse" )
+    // do not instrument, called in parallel loops SCAI_REGION( "OpenMP.Utils.countAddSparse" )
 
     SCAI_LOG_DEBUG( logger, "countAddSparse( n1 = " << n1 << ", n2 = " << n2 << ")" )
 
@@ -2172,7 +2174,7 @@ IndexType OpenMPUtils::joinSparse(
     const ValueType values2[],
     const IndexType n2 )
 {
-    SCAI_REGION( "OpenMP.Utils.joinSparse" )
+    // do not instrument, called in parallel loops for combining CSR rows
 
     SCAI_LOG_DEBUG( logger, "joinSparse: Sp( n1 = " << n1 << " ), "
                              << " with Sp( n2 = " << n2 << " )" )
@@ -2334,9 +2336,9 @@ IndexType OpenMPUtils::allCompareSparse(
     const IndexType n2,
     const CompareOp op )
 {
-    SCAI_REGION( "OpenMP.Utils.binopSparse" )
+    SCAI_REGION( "OpenMP.Utils.compareSparse" )
 
-    SCAI_LOG_DEBUG( logger, "binopSparse: Sp( n1 = " << n1 << ", zero1 = " << zero1 << "), "
+    SCAI_LOG_DEBUG( logger, "compareSparse: Sp( n1 = " << n1 << ", zero1 = " << zero1 << "), "
                              << op << " Sp( n2 = " << n2 << ", zero2 = " << zero2 )
 
     IndexType i1 = 0;

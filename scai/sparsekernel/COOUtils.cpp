@@ -38,7 +38,9 @@
 #include <scai/hmemo/HostWriteAccess.hpp>
 #include <scai/hmemo/HostReadAccess.hpp>
 
+#include<scai/tracing.hpp>
 #include <scai/common/macros/loop.hpp>
+#include <scai/common/OpenMP.hpp>
 #include <algorithm>
 
 namespace scai
@@ -113,6 +115,8 @@ bool COOUtils::isSorted(
     const HArray<IndexType>& ja,
     ContextPtr )
 {
+    SCAI_REGION( "Sparse.COO.isSorted" )
+
     SCAI_ASSERT_EQ_ERROR( ia.size(), ja.size(), "inconsitent size of coo arrays" )
 
     const IndexType numValues = ia.size();
@@ -127,20 +131,44 @@ bool COOUtils::isSorted(
     auto rIA = hostReadAccess( ia );
     auto rJA = hostReadAccess( ja );
 
-    #pragma omp parallel for
-
-    for ( IndexType k = 0; k < numValues - 1; ++k )
+    #pragma omp parallel 
     {
-        if ( rIA[k] > rIA[k+1] )
+        IndexType lb, ub;   // contains range individual for each trhead
+
+        omp_get_my_range( lb, ub, numValues - 1 );
+
+        if ( lb < ub )
         {
-            sorted = false;
-        }
-        else if ( rIA[k] == rIA[k+1] && rJA[k] >= rJA[k + 1] )
-        {
-            // entries at same position are also not allowed
-            sorted = false;
+            // so we have a legal index value for lb
+
+            IndexType i1 = rIA[lb];
+            IndexType j1 = rJA[lb];
+
+            // no openmp for here as loop carries dependencies
+
+            for ( IndexType k = lb; k < ub; ++k )
+            {
+                IndexType i2 = rIA[k + 1];
+                IndexType j2 = rJA[k + 1];
+
+                if ( i1 == i2 )
+                {
+                     if ( j1 >= j2 )
+                     {
+                         sorted = false;
+                     }
+                }
+                else if ( i1 > i2 )
+                {
+                    sorted = false;
+                }
+    
+                i1 = i2;
+                j1 = j2;
+            }
         }
     }
+
     return sorted;
 }
 
@@ -154,6 +182,8 @@ void COOUtils::sort(
     ContextPtr )
 {
     using namespace utilskernel;
+
+    SCAI_REGION( "Sparse.COO.sort" )
 
     const IndexType nnz = values.size();
 
@@ -194,6 +224,7 @@ void COOUtils::sort(
     };
 
     {
+        SCAI_REGION( "Sparse.COO.sortPerm" )
         cmp myCmp( ia, ja );
         auto wPerm = hostWriteAccess( perm );
         std::stable_sort( wPerm.begin(), wPerm.end() , myCmp );
@@ -219,6 +250,8 @@ void COOUtils::unique(
     ContextPtr )
 
 {
+    SCAI_REGION( "Sparse.COO.unique" )
+
     const IndexType nnz = values.size();
 
     SCAI_ASSERT_EQ_ERROR( ia.size(), nnz, "serious mismatch for COO data" )
@@ -271,6 +304,8 @@ void COOUtils::normalize(
     common::BinaryOp op,
     ContextPtr prefLoc )
 {
+    SCAI_REGION("Sparse.COO.normalize")
+
     if ( COOUtils::isSorted( cooIA, cooJA, prefLoc ) )
     {
         return;
@@ -632,6 +667,8 @@ void COOUtils::jacobi(
     const HArray<ValueType>& cooValues,
     ContextPtr prefLoc )
 {
+    SCAI_REGION( "Sparse.COO.jacobi" )
+
     SCAI_ASSERT_EQ_ERROR( rhs.size(), oldSolution.size(), "jacobi only for square matrices" )
    
     const IndexType numRows = rhs.size();
@@ -680,6 +717,8 @@ void COOUtils::jacobiHalo(
     const HArray<ValueType>& cooValues,
     ContextPtr prefLoc )
 {
+    SCAI_REGION( "Sparse.COO.jacobiHalo" )
+
     const IndexType numRows = localSolution.size();
     const IndexType numValues = cooIA.size();
 
@@ -732,6 +771,8 @@ SyncToken* COOUtils::gemv(
     bool async,
     ContextPtr prefLoc )
 {
+    SCAI_REGION( "Sparse.COO.gemv" )
+
     // SCAI_ASSERT_EQ_ERROR( x.size(), numColumns, "illegally sized array x for gemv" )
     // SCAI_ASSERT_EQ_ERROR( y.size(), numRows, "illegally sized array y for gemv" )
 
