@@ -319,9 +319,10 @@ CSRGraph<IdxType>::~CSRGraph()
 
 /* ====================================================================== */
 
-// Metis and Parmetis come with MPI_INT or MPI_LONG_LONG_INT 
+//  Metis/Parmetis come with either 32- or 64-bit integer
 
-SCAI_COMMON_INST_CLASS( CSRGraph, int )
+SCAI_COMMON_INST_CLASS( CSRGraph, int32_t )
+SCAI_COMMON_INST_CLASS( CSRGraph, int64_t )
 
 } /* end namespace partitioning */
 

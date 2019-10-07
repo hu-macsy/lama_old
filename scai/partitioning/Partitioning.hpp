@@ -190,9 +190,11 @@ protected:
 
     /** Norm the weights that its sum is exactly 1. */
 
-    static void normWeights( std::vector<float>& weights );
+    template<typename ValueType>
+    static void normWeights( std::vector<ValueType>& weights );
 
-    static void normWeights( hmemo::HArray<float>& weights );
+    template<typename ValueType>
+    static void normWeights( hmemo::HArray<ValueType>& weights );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
@@ -202,7 +204,8 @@ protected:
     template<typename ValueType>
     static void gatherAll( ValueType vals[], const ValueType val, const dmemo::Communicator& comm );
 
-    static void normWeights( float weights[], IndexType np );
+    template<typename ValueType>
+    static void normWeights( ValueType weights[], IndexType np );
 };
 
 template<typename ValueType>
@@ -235,6 +238,44 @@ void Partitioning::getDistributionOffsets( hmemo::HArray<IdxType>& offsets, cons
     }
 
     utilskernel::HArrayUtils::scan1( offsets );
+}
+
+/* ---------------------------------------------------------------------- */
+
+template<typename ValueType>
+void Partitioning::normWeights( ValueType weights[], IndexType np )
+{
+    // now each partition norms it
+
+    ValueType sum = 0;
+
+    for ( IndexType i = 0; i < np; ++i )
+    {
+        sum += weights[i];
+    }
+
+    ValueType sumNorm = 0.0f;
+
+    for ( IndexType i = 0; i < np - 1; ++i )
+    {
+        weights[i] /= sum;
+        sumNorm += weights[i];
+    }
+
+    weights[np - 1] = ValueType( 1 ) - sumNorm;
+}
+
+template<typename ValueType>
+void Partitioning::normWeights( std::vector<ValueType>& weights )
+{
+    normWeights( &weights[0], IndexType( weights.size() ) );
+}
+
+template<typename ValueType>
+void Partitioning::normWeights( hmemo::HArray<ValueType>& weights )
+{
+    auto writeWeights = hostWriteAccess( weights );
+    normWeights( writeWeights.get(), weights.size() );
 }
 
 } /* end namespace partitioning */

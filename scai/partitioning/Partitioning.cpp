@@ -70,41 +70,6 @@ void Partitioning::gatherWeights( hmemo::HArray<float>& weights, const float wei
 
 /* ---------------------------------------------------------------------- */
 
-void Partitioning::normWeights( float weights[], IndexType np )
-{
-    // now each partition norms it
-
-    float sum = 0;
-
-    for ( IndexType i = 0; i < np; ++i )
-    {
-        sum += weights[i];
-    }
-
-    float sumNorm = 0.0f;
-
-    for ( IndexType i = 0; i < np - 1; ++i )
-    {
-        weights[i] /= sum;
-        sumNorm += weights[i];
-    }
-
-    weights[np - 1] = 1.0f - sumNorm;
-}
-
-void Partitioning::normWeights( std::vector<float>& weights )
-{
-    normWeights( &weights[0], IndexType( weights.size() ) );
-}
-
-void Partitioning::normWeights( hmemo::HArray<float>& weights )
-{
-    hmemo::WriteAccess<float> writeWeights( weights );
-    normWeights( writeWeights.get(), weights.size() );
-}
-
-/* ---------------------------------------------------------------------- */
-
 void Partitioning::rectangularRedistribute( lama::_Matrix& matrix, const float weight ) const
 {
     SCAI_REGION( "partitioning.rect" )
@@ -206,6 +171,9 @@ void Partitioning::writeAt( std::ostream& stream ) const
 {
     stream << "Partitioning( any )";
 }
+
+/* ------  Instantiations ------------------------------------------------ */
+
 
 } /* end namespace partitioning */
 
