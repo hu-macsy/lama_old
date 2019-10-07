@@ -725,7 +725,7 @@ void MPICommunicator::reduceImpl(
                                      break;
         case common::BinaryOp::MAX : opType = getMPIMax( stype );
                                      break;
-        default: COMMON_THROWEXCEPTION( "Unsupported op = " << reduceOp << " for communicator reduction." );
+        default: COMMON_THROWEXCEPTION( "Unsupported op = " << reduceOp << " for communicator reduction, type = " << stype << "." );
     }
      
     if ( inValues == outValues )

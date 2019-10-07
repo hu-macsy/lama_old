@@ -173,6 +173,43 @@ void Partitioning::squarePartitioning(
 
 /* ---------------------------------------------------------------------- */
 
+void Partitioning::squarePartitioningW(
+    hmemo::HArray<PartitionId>& newLocalOwners,
+    const lama::_Matrix& matrix,
+    const hmemo::HArray<IndexType>& vertexWeights,
+    const float weight ) const
+{
+    const Communicator& comm = matrix.getRowDistribution().getCommunicator();
+
+    hmemo::HArray<float> processorWeights;
+
+    Partitioning::gatherWeights( processorWeights, weight, comm );
+
+    // check that all weights are greater 0 
+
+    SCAI_LOG_DEBUG( logger, "weights gathered = " << processorWeights );
+
+    normWeights( processorWeights );
+
+    SCAI_LOG_DEBUG( logger, "now call squarePartitioning with all processor weights = " << processorWeights );
+
+    squarePartitioningW( newLocalOwners, matrix, vertexWeights, processorWeights );
+}
+
+/* ---------------------------------------------------------------------- */
+
+void Partitioning::squarePartitioningW(
+    hmemo::HArray<PartitionId>& newLocalOwners,
+    const lama::_Matrix& matrix,
+    const hmemo::HArray<IndexType>&,
+    const hmemo::HArray<float>& weight ) const
+{
+    SCAI_LOG_ERROR( logger, "vertex weights are ignored" )
+    squarePartitioning( newLocalOwners, matrix, weight );
+}
+
+/* ---------------------------------------------------------------------- */
+
 dmemo::DistributionPtr Partitioning::partitionIt( 
     const dmemo::CommunicatorPtr comm, 
     const lama::_Matrix& matrix, 
