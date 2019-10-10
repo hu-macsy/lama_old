@@ -88,14 +88,15 @@ void ParMetisPartitioning::squarePartitioning(
     const lama::_Matrix& matrix,
     const HArray<float>& processorWeights ) const
 {
-    SCAI_REGION( "ParMETIScall" )
+    SCAI_REGION( "Partitioning.ParMetis.square" )
 
     auto commPtr = Communicator::getCommunicatorPtr();
 
     const Distribution& dist = matrix.getRowDistribution();
     const Communicator& comm = *commPtr;
   
-    SCAI_LOG_INFO( logger, comm << ": square partitioning with ParMetis" )
+    SCAI_LOG_INFO( logger, comm << ": square partitioning with ParMetis<idx_t=" << common::TypeTraits<idx_t>::stype 
+                                << ", real_t=" << common::TypeTraits<real_t>::stype << ">" )
 
     // Note that here we have: global size == local size of distribution
 
@@ -110,9 +111,9 @@ void ParMetisPartitioning::squarePartitioning(
 
     MPI_Comm lamaComm = mpiComm.getMPIComm();
 
-    idx_t wgtflag    = 0;
+    idx_t wgtflag    = 0;  // weights on the vertices
     idx_t numflag    = 0;  // C-style numbering, indexes start with 0, is default in LAMA
-    idx_t ncon       = 1;  // number of weights per edge
+    idx_t ncon       = 1;  // number of weights per vertex
     idx_t nparts     = processorWeights.size();   // desired number of processors
     real_t ubvec[]   = { 1.05 };  // ncon entries, imbalance allowed
     idx_t  options[] = { 0 };   // take default options
@@ -126,6 +127,8 @@ void ParMetisPartitioning::squarePartitioning(
 
     Partitioning::normWeights( tpwghts );
 
+    SCAI_LOG_ERROR( logger, comm << ": Processor weights: " << tpwghts[0] << ", " << tpwghts[1] )
+
     IndexType nlocal = dist.getLocalSize();
 
     HArray<idx_t> partition; 
@@ -133,7 +136,7 @@ void ParMetisPartitioning::squarePartitioning(
 
     CSRGraph<idx_t> graph( matrix );
 
-    SCAI_LOG_INFO( logger, comm << ": CSR graph ready" )
+    SCAI_LOG_INFO( logger, comm << ": CSR<" << common::TypeTraits<idx_t>::stype << "> graph ready" )
 
     ReadAccess<idx_t> rDistOffsets( graph.distOffsets() );
     ReadAccess<idx_t> rIA( graph.ia() );
@@ -182,7 +185,7 @@ void ParMetisPartitioning::squarePartitioningW(
     const HArray<float>& vertexWeights,
     const HArray<float>& processorWeights ) const
 {
-    SCAI_REGION( "ParMETIScall" )
+    SCAI_REGION( "Partitioning.ParMetis.squareW" )
 
     auto commPtr = Communicator::getCommunicatorPtr();
 
@@ -207,11 +210,11 @@ void ParMetisPartitioning::squarePartitioningW(
 
     MPI_Comm lamaComm = mpiComm.getMPIComm();
 
-    idx_t wgtflag    = 0;
+    idx_t wgtflag    = 2;  // weights for the vertices
     idx_t numflag    = 0;  // C-style numbering, indexes start with 0, is default in LAMA
     idx_t ncon       = 1;  // number of weights per edge
     idx_t nparts     = processorWeights.size();   // desired number of processors
-    real_t ubvec[]   = { 1.05 };  // ncon entries, imbalance allowed
+    real_t ubvec[]   = { 1.02 };  // ncon entries, imbalance allowed
     idx_t  options[] = { 0 };   // take default options
     idx_t  edgeCut   = 0;         // is output argument
    
@@ -223,6 +226,8 @@ void ParMetisPartitioning::squarePartitioningW(
 
     Partitioning::normWeights( tpwghts );
 
+    SCAI_LOG_ERROR( logger, comm << ": Processor weights: " << tpwghts[0] << ", " << tpwghts[1] )
+
     IndexType nlocal = dist.getLocalSize();
 
     HArray<idx_t> partition; 
@@ -230,7 +235,7 @@ void ParMetisPartitioning::squarePartitioningW(
 
     CSRGraph<idx_t> graph( matrix );
 
-    SCAI_LOG_INFO( logger, comm << ": CSR graph ready" )
+    SCAI_LOG_INFO( logger, comm << ": CSR<" << common::TypeTraits<idx_t>::stype << "> graph ready" )
 
     HArray<idx_t> iVertexWeights;   // keeps converted float weights
 
