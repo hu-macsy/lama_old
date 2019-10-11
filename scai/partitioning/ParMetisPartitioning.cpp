@@ -127,8 +127,6 @@ void ParMetisPartitioning::squarePartitioning(
 
     Partitioning::normWeights( tpwghts );
 
-    SCAI_LOG_ERROR( logger, comm << ": Processor weights: " << tpwghts[0] << ", " << tpwghts[1] )
-
     IndexType nlocal = dist.getLocalSize();
 
     HArray<idx_t> partition; 
@@ -226,8 +224,6 @@ void ParMetisPartitioning::squarePartitioningW(
 
     Partitioning::normWeights( tpwghts );
 
-    SCAI_LOG_ERROR( logger, comm << ": Processor weights: " << tpwghts[0] << ", " << tpwghts[1] )
-
     IndexType nlocal = dist.getLocalSize();
 
     HArray<idx_t> partition; 
@@ -237,7 +233,7 @@ void ParMetisPartitioning::squarePartitioningW(
 
     SCAI_LOG_INFO( logger, comm << ": CSR<" << common::TypeTraits<idx_t>::stype << "> graph ready" )
 
-    HArray<idx_t> iVertexWeights;   // keeps converted float weights
+    HArray<idx_t> iVertexWeights;   // temporary array to keep vertex weights converted to idx_t
 
     {
         ReadAccess<float> rWeights( vertexWeights );
@@ -267,7 +263,7 @@ void ParMetisPartitioning::squarePartitioningW(
                                       wPartition.get(),
                                       &lamaComm );
 
-    SCAI_LOG_ERROR( logger, comm << ": parmetis result with vertex weights = " << res << ", edgecut = " << edgeCut )
+    SCAI_LOG_INFO( logger, comm << ": parmetis result with vertex weights = " << res << ", edgecut = " << edgeCut )
 
     wPartition.release();
 

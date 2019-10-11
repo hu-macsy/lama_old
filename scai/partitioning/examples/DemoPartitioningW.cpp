@@ -32,6 +32,8 @@
 #include <scai/lama/freeFunction.hpp>
 #include <scai/lama/io/PartitionIO.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/GeneralDistribution.hpp>
+#include <scai/dmemo/SingleDistribution.hpp>
 #include <scai/dmemo/RedistributePlan.hpp>
 
 #define HOST_PRINT( comm, msg )            \
@@ -80,6 +82,14 @@ static void statistic( const SparseMatrix<ValueType>& matrix, const char* name )
     total = comm->sum( size );
 
     HOST_PRINT( comm, "#nnz[" << name << "]: min = " << min << ", max = " << max << " avg = " << ( total / comm->getSize()  ) )
+
+    size = matrix.getHaloStorage().getNumValues();
+
+    min   = comm->min( size );
+    max   = comm->max( size );
+    total = comm->sum( size );
+
+    HOST_PRINT( comm, "#edge_cut[" << name << "]: min = " << min << ", max = " << max << " avg = " << ( total / comm->getSize()  ) )
 }
 
 template<typename ValueType>
@@ -98,7 +108,7 @@ static void statistic( const DenseVector<ValueType>& vector, const char* name )
 
 void printHelp( CommunicatorPtr comm, const char* cmd )
 {
-    HOST_PRINT( comm, cmd << " <matrixFileName> [-w <weightsFileName>] [-p <partitioningTool>]" )
+    HOST_PRINT( comm, cmd << " <matrixFileName> [-w <weightsFileName>] [-p <partitioningTool>] [-d <distFileName>]" )
 }
 
 int main( int narg, const char* argv[] )
@@ -112,10 +122,12 @@ int main( int narg, const char* argv[] )
         return 1;
     }
 
-    bool hasVertexWeights = false;
+    bool hasVertexWeights = false;               // default is no weights
+    bool hasMapping = false;                     // default is no mapping
 
     std::string matrixFileName = argv[1];
     std::string weightsFileName;                 // default is no weights
+    std::string mappingFileName = "BLOCK";       // name default block distribution
     std::string PARTITIONING_ID = "PARMETIS";    // default partitioning tool
 
     int k = 2;
@@ -153,6 +165,22 @@ int main( int narg, const char* argv[] )
 
             k += 2;
         }
+        else if ( strcmp( argv[k], "-d" ) == 0 )
+        {
+            if ( k + 1 < narg )
+            {
+                mappingFileName = argv[k + 1];
+                hasMapping = true;
+            }
+            else
+            {
+                HOST_PRINT( comm, "-d must be followed by file name" )
+                printHelp( comm, argv[0] );
+                return 1;
+            }
+
+            k += 2;
+        }
         else
         {
             HOST_PRINT( comm, "illegal arg " << argv[k] )
@@ -169,20 +197,33 @@ int main( int narg, const char* argv[] )
 
     HOST_PRINT( comm, "Read matrix A = " << A )
 
-    auto oldDist = blockDistribution( A.getNumRows(), comm );
+    DistributionPtr oldDist = blockDistribution( A.getNumRows(), comm );
+
+    if ( hasMapping )
+    {
+        PartitionId MASTER = 0;
+        auto mapping = read<DenseVector<IndexType>>( mappingFileName );
+        SCAI_ASSERT_EQ_ERROR( A.getNumRows(), mapping.size(), "mismatch of mapping file with matrix" )
+        mapping.redistribute( singleDistribution( mapping.size(), comm ) );
+        HOST_PRINT( comm, "Read mapping as vector of owners = " << mapping )
+        oldDist = generalDistributionBySingleOwners( mapping.getLocalValues(), MASTER, comm );
+    }
+
     A.redistribute( oldDist, oldDist );
 
-    statistic( A, "BLOCK" );
+    HOST_PRINT( comm, "Matrix original distribution : " << *oldDist )
+
+    statistic( A, mappingFileName.c_str() );
 
     DenseVector<float> W;
-  
+
     if ( hasVertexWeights )
     {
         W.readFromFile( weightsFileName );
         HOST_PRINT( comm, "Read weights = " << W );
         SCAI_ASSERT_EQ_ERROR( W.size(), A.getNumRows(), "#weights does not match matrix size" )
         W.redistribute( oldDist );
-        statistic( W, "block" );
+        statistic( W, mappingFileName.c_str() );
     }
 
     if ( Partitioning::canCreate( PARTITIONING_ID.c_str() ) )
@@ -197,7 +238,7 @@ int main( int narg, const char* argv[] )
 
         float procWeight = 1.0f;
 
-        if ( W.size() >  0 )
+        if ( hasVertexWeights )
         {
             HOST_PRINT( comm, PARTITIONING_ID << ": square partitioning with vertex weights" )
             thePartitioning->squarePartitioningW( newLocalOwners, A, W.getLocalValues(), procWeight);
@@ -223,13 +264,11 @@ int main( int narg, const char* argv[] )
             statistic( W, PARTITIONING_ID.c_str() );
         }
 
-        DenseVector<IndexType> newOwners( oldDist, newLocalOwners );
+        // print the mapping vector (set local array with rank of each processsor)
 
-        newOwners += 3;
-
-        HOST_PRINT( comm, "Write distribution to file " << DIST_FILE_NAME )
-
-        newOwners.writeToFile( DIST_FILE_NAME );
+        DenseVector<IndexType> newDistVector( dist, comm->getRank() );
+        newDistVector.writeToFile( DIST_FILE_NAME );
+        HOST_PRINT( comm, "Mapping written to file " << DIST_FILE_NAME )
     }
     else
     { 
