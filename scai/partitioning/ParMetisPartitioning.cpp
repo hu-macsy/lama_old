@@ -235,12 +235,21 @@ void ParMetisPartitioning::squarePartitioningW(
 
     HArray<idx_t> iVertexWeights;   // temporary array to keep vertex weights converted to idx_t
 
+    float maxWeight = utilskernel::HArrayUtils::reduce( vertexWeights, common::BinaryOp::MAX );
+    maxWeight = comm.max( maxWeight );
+
+    // for conversion scale weight into range 0 .. 100 
+
+    float scale = 10.0f / maxWeight;
+
+    SCAI_LOG_INFO( logger, "max weight " << maxWeight << ", scale = " << scale )
+
     {
         ReadAccess<float> rWeights( vertexWeights );
         WriteOnlyAccess<idx_t> wWeights( iVertexWeights, nlocal );
         for ( IndexType i = 0; i < nlocal; ++i )
         {
-            wWeights[i] = static_cast<idx_t>( rWeights[i] );
+            wWeights[i] = static_cast<idx_t>( rWeights[i] * scale + 0.5f );
         }
     }
 
@@ -262,6 +271,11 @@ void ParMetisPartitioning::squarePartitioningW(
                                       &edgeCut, 
                                       wPartition.get(),
                                       &lamaComm );
+
+    if ( res > 5 )
+    {
+        COMMON_THROWEXCEPTION( "ParMetis failed, rc = " << res )
+    }
 
     SCAI_LOG_INFO( logger, comm << ": parmetis result with vertex weights = " << res << ", edgecut = " << edgeCut )
 
