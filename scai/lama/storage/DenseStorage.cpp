@@ -720,6 +720,35 @@ void DenseStorage<ValueType>::matrixTimesMatrix(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DenseStorage<ValueType>::matrixPlusMatrix(
+    const ValueType alpha,
+    const MatrixStorage<ValueType>& a,
+    const ValueType beta,
+    const MatrixStorage<ValueType>& b )
+{
+    SCAI_LOG_INFO( logger,
+                   *this << ": = " << alpha << " * A + " << beta << " * B" 
+                         << ", with A = " << a << ", B = " << b )
+
+    if ( a.getFormat() != Format::DENSE )
+    {
+        matrixPlusMatrix( alpha, convert<DenseStorage<ValueType>>( a ), beta, b );
+    }
+    else if ( b.getFormat() != Format::DENSE )
+    {
+        matrixPlusMatrix( alpha, a, beta, convert<DenseStorage<ValueType>>( b ) );
+    }
+    else
+    {
+        // all matrices are now dense
+        matrixPlusMatrixDense( alpha, static_cast<const DenseStorage<ValueType>&>( a ),
+                               beta,  static_cast<const DenseStorage<ValueType>&>( b ) );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void DenseStorage<ValueType>::matrixTimesMatrixDense(
     const ValueType alpha,
     const DenseStorage<ValueType>& a,
@@ -787,6 +816,29 @@ void DenseStorage<ValueType>::matrixTimesMatrixDense(
                       a.getValues(), common::MatrixOp::NORMAL,
                       b.getValues(), common::MatrixOp::NORMAL,
                       beta, m, n, k, getContextPtr() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseStorage<ValueType>::matrixPlusMatrixDense(
+    const ValueType alpha,
+    const DenseStorage<ValueType>& a,
+    const ValueType beta,
+    const DenseStorage<ValueType>& b )
+{
+    SCAI_LOG_INFO( logger,
+                   "matrixPlusMatrixDense: " << alpha << " * a + " << beta << " * b, with a = " << a << ", b = " << b )
+
+    SCAI_ASSERT_EQ_ERROR( a.getNumRows(), b.getNumRows(), "size mismatch for dense storage add" )
+    SCAI_ASSERT_EQ_ERROR( a.getNumColumns(), b.getNumColumns(), "serious size mismatch for dense storage add" )
+
+    IndexType m = a.getNumRows();
+    IndexType n = a.getNumColumns();
+
+    _MatrixStorage::setDimension( m, n );
+
+    HArrayUtils::arrayPlusArray( mData, alpha, a.getValues(), beta, b.getValues(), getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

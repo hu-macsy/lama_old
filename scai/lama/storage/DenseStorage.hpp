@@ -374,6 +374,15 @@ public:
         const ValueType beta,
         const MatrixStorage<ValueType>& c );
 
+    /** 
+     *  Implementation of MatrixStorage::matrixPlusMatrix for Dense 
+     */
+    virtual void matrixPlusMatrix(
+        const ValueType alpha,
+        const MatrixStorage<ValueType>& a,
+        const ValueType beta,
+        const MatrixStorage<ValueType>& b );
+
     /** Implementation of MatrixStorage::jacobiIterate for Dense */
 
     virtual void jacobiIterate(
@@ -522,6 +531,14 @@ private:
                                  const DenseStorage<ValueType>& b,
                                  const ValueType beta,
                                  const DenseStorage<ValueType>& c );
+
+    /** Implementation of matrix plus matrix for dense matrices. */
+
+    void matrixPlusMatrixDense(
+        const ValueType alpha,
+        const DenseStorage<ValueType>& a,
+        const ValueType beta,
+        const DenseStorage<ValueType>& b );
 
     /** Implementation of matrix times matrix for dense * sparse */
 

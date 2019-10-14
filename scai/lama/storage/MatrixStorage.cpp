@@ -857,7 +857,7 @@ void MatrixStorage<ValueType>::matrixPlusMatrix(
     const ValueType beta,
     const MatrixStorage<ValueType>& b )
 {
-    SCAI_UNSUPPORTED( *this << ": no matrixPlusMatrix for this format available, take CSR" )
+    SCAI_UNSUPPORTED( *this << ": no matrixPlusMatrix ( a = " << a << ", b = " << b << ") for this format available, take CSR" )
 
     // Make sure that CSRStorage really has overridden it, otherwise endless recursion here
 
