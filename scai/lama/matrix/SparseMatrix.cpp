@@ -219,12 +219,12 @@ bool SparseMatrix<ValueType>::isConsistent() const
         SCAI_ASSERT_EQ_ERROR( maxColumns, getNumColumns(), "inconsistent number of columns" )
         SCAI_ASSERT_EQ_ERROR( maxRows, getNumRows(), "inconsistent number of rows" )
 
-        SCAI_ASSERT_EQUAL_ERROR( getRowDistribution().getLocalSize(), mLocalData->getNumRows() )
+			SCAI_ASSERT_EQUAL_ERROR( getRowDistribution().getLocalSize(), mLocalData->getNumRows() )
         SCAI_ASSERT_EQUAL_ERROR( mHaloData->getNumRows(), mLocalData->getNumRows() )
 
         SCAI_LOG_DEBUG( logger, comm << ": is consistent : " << *this )
     }
-    catch ( common::Exception& e )
+   catch ( common::Exception& e )
     {
         SCAI_LOG_INFO( logger, *this << " not consistent: " << e.what() )
         consistencyErrors = 1;

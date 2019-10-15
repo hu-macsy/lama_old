@@ -70,18 +70,20 @@ void Partitioning::gatherWeights( hmemo::HArray<float>& weights, const float wei
 
 /* ---------------------------------------------------------------------- */
 
-void Partitioning::normWeights( float weights[], IndexType np )
+/*
+template <typename ValueType>
+void Partitioning::normWeights( ValueType weights[], IndexType np )
 {
     // now each partition norms it
 
-    float sum = 0;
+    ValueType sum = 0;
 
     for ( IndexType i = 0; i < np; ++i )
     {
         sum += weights[i];
     }
 
-    float sumNorm = 0.0f;
+    ValueType sumNorm = 0.0f;
 
     for ( IndexType i = 0; i < np - 1; ++i )
     {
@@ -92,16 +94,20 @@ void Partitioning::normWeights( float weights[], IndexType np )
     weights[np - 1] = 1.0f - sumNorm;
 }
 
-void Partitioning::normWeights( std::vector<float>& weights )
+template <typename ValueType>
+void Partitioning::normWeights( std::vector<ValueType>& weights )
 {
     normWeights( &weights[0], IndexType( weights.size() ) );
 }
 
-void Partitioning::normWeights( hmemo::HArray<float>& weights )
+template <typename ValueType>
+void Partitioning::normWeights( hmemo::HArray<ValueType>& weights )
 {
-    hmemo::WriteAccess<float> writeWeights( weights );
+    hmemo::WriteAccess<ValueType> writeWeights( weights );
     normWeights( writeWeights.get(), weights.size() );
 }
+*/
+
 
 /* ---------------------------------------------------------------------- */
 
