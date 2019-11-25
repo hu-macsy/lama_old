@@ -429,8 +429,19 @@ public:
      *  @param[in] redistributor contains source distribution of other and target distribution of this
      *
      */
-
     virtual void redistribute( const _MatrixStorage& other, const dmemo::RedistributePlan& redistributor );
+
+    /**
+     *  @brief  In-place redistribution 
+     *
+     *  \code
+     *      matrixStorage.redistribute( matrixStorage, redistributor );
+     *  \endcode
+     *
+     *  This routine might avoid memory allocation by reusing allocated data. This is especially true if
+     *  the local data remains the same. Nevertheless, there might be additional variables created.
+     */
+    virtual void redistributeInPlace( const dmemo::RedistributePlan& redistributor );
 
     /** Special case where other storage is CSR of same type avoids temporary CSR conversion. */
 

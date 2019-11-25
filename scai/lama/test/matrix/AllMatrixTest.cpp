@@ -1008,6 +1008,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, scai_numeric_test_ty
                 SCAI_LOG_DEBUG( logger, "redistribute plan = " << plan << ", applied to " << matrix )
 
                 matrix.redistribute( plan );
+     
+                BOOST_CHECK( matrix.isConsistent() );
 
                 matrix1->redistribute( dist2, colDist );
 

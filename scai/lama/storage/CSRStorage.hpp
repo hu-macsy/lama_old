@@ -534,6 +534,10 @@ public:
 
     virtual void redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::RedistributePlan& redistributor );
 
+    /** Redistribution in place might avoid additional memory allocation */
+
+    virtual void redistributeInPlace( const dmemo::RedistributePlan& redistributor );
+
     /** Override splitHalo with version that avoids unnecessary conversions. */
 
     virtual void splitHalo(

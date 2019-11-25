@@ -1015,6 +1015,55 @@ void MatrixStorage<ValueType>::redistribute( const _MatrixStorage& other, const 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void MatrixStorage<ValueType>::redistributeInPlace( const RedistributePlan& redistributor )
+{
+    SCAI_REGION( "Storage.redistributeInPlace" )
+
+    // For the redistribution we use the CSR format on both sides
+
+    const Distribution& sourceDistribution = *redistributor.getSourceDistributionPtr();
+    const Distribution& targetDistribution = *redistributor.getTargetDistributionPtr();
+
+    SCAI_LOG_INFO( logger, *this << ": redistribute rows via " << redistributor )
+
+    if ( sourceDistribution == targetDistribution )
+    {
+        SCAI_LOG_INFO( logger, "redistributor with same source/target distribution" )
+
+        return; // so we are done
+    }
+
+    const IndexType numColumns = getNumColumns(); // does not change
+
+    // check that source distribution fits with storage
+
+    SCAI_ASSERT_EQ_ERROR( getNumRows(), sourceDistribution.getLocalSize(), "serious mismatch" )
+
+    // get the matrix data from other in CSR format
+
+    HArray<IndexType> sourceIA;
+    HArray<IndexType> sourceJA;
+    HArray<ValueType> sourceValues;
+
+    buildCSRData( sourceIA, sourceJA, sourceValues );
+
+    HArray<IndexType> targetIA;
+    HArray<IndexType> targetJA;
+    HArray<ValueType> targetValues;
+
+    StorageMethods<ValueType>::redistributeCSR( 
+        targetIA, targetJA, targetValues, 
+        sourceIA, sourceJA, sourceValues,
+        redistributor );
+
+    const IndexType targetNumRows = targetIA.size() - 1;
+
+    setCSRData( targetNumRows, numColumns, targetIA, targetJA, targetValues );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void MatrixStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& other, const RedistributePlan& redistributor )
 {
     SCAI_REGION( "Storage.redistributeCSR" )

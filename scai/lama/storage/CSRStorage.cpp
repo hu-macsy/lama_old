@@ -482,59 +482,74 @@ void CSRStorage<ValueType>::setCompressThreshold( float threshold )
 template<typename ValueType>
 void CSRStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::RedistributePlan& redistributor )
 {
+    if ( this == &other )
+    {
+        redistributeInPlace( redistributor );
+        return;
+    }
+
     SCAI_REGION( "Storage.redistributeCSR" )
 
     const dmemo::Distribution& sourceDistribution = *redistributor.getSourceDistributionPtr();
     const dmemo::Distribution& targetDistribution = *redistributor.getTargetDistributionPtr();
+
     SCAI_LOG_INFO( logger,
                    other << ": redistribute of CSR<" << other.getValueType() << "> to CSR<" << this->getValueType() << " via " << redistributor )
-    bool sameDist = false;
 
-    // check for same distribution, either equal or both replicated
-
-    if ( sourceDistribution.isReplicated() && targetDistribution.isReplicated() )
-    {
-        sameDist = true;
-    }
-    else if ( &sourceDistribution == &targetDistribution )
-    {
-        sameDist = true;
-    }
-
-    if ( sameDist )
+    if ( sourceDistribution == targetDistribution )
     {
         SCAI_LOG_INFO( logger, "redistributor with same source/target distribution" )
-        assign( other );
+        assignCSR( other );
         return; // so we are done
     }
 
     // check that source distribution fits with storage
-    SCAI_ASSERT_EQUAL_ERROR( other.getNumRows(), sourceDistribution.getLocalSize() )
 
-    if ( &other == this )
-    {
-        // due to alias we need temporary array
-        HArray<IndexType> targetIA;
-        HArray<IndexType> targetJA;
-        HArray<ValueType> targetValues;
-        StorageMethods<ValueType>::redistributeCSR( targetIA, targetJA, targetValues, other.getIA(), other.getJA(),
-                other.getValues(), redistributor );
-        // we can swap the new arrays
-        mIA.swap( targetIA );
-        mJA.swap( targetJA );
-        mValues.swap( targetValues );
-    }
-    else
-    {
-        StorageMethods<ValueType>::redistributeCSR( mIA, mJA, mValues, other.getIA(), other.getJA(), other.getValues(),
-                redistributor );
-    }
+    SCAI_ASSERT_EQ_ERROR( other.getNumRows(), sourceDistribution.getLocalSize(), "serious mismatch" )
 
-    // it is not necessary to convert the other storage to CSR
- 
+    StorageMethods<ValueType>::redistributeCSR( mIA, mJA, mValues, 
+                                                other.getIA(), other.getJA(), other.getValues(),
+                                                redistributor );
+
     _MatrixStorage::setDimension( mIA.size() - 1, other.getNumColumns() );
-
     buildRowIndexes();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CSRStorage<ValueType>::redistributeInPlace( const dmemo::RedistributePlan& redistributor )
+{
+    SCAI_REGION( "Storage.CSR.redistributeInPlace" )
+
+    const dmemo::Distribution& sourceDistribution = *redistributor.getSourceDistributionPtr();
+    const dmemo::Distribution& targetDistribution = *redistributor.getTargetDistributionPtr();
+
+    SCAI_LOG_INFO( logger, *this << ": redistributeInPlace,CSR<" << getValueType() << "> via " << redistributor )
+
+    if ( sourceDistribution == targetDistribution )
+    {
+        return;
+    }
+
+    SCAI_ASSERT_EQ_ERROR( sourceDistribution.getLocalSize(), getNumRows(), "serious mismatch" )
+
+    // due to alias we need temporary array
+
+    HArray<IndexType> targetIA;
+    HArray<IndexType> targetJA;
+    HArray<ValueType> targetValues;
+
+    StorageMethods<ValueType>::redistributeCSR( targetIA, targetJA, targetValues, getIA(), getJA(), getValues(), redistributor );
+
+    const IndexType numRows = targetIA.size() - 1;
+
+    SCAI_ASSERT_EQ_ERROR( targetDistribution.getLocalSize(), numRows, "serious mismatch" )
+
+    // use constructor to ensure consistent CSR storage data, but move in the new allocated data
+
+    *this = CSRStorage( numRows, getNumColumns(), 
+                        std::move( targetIA ), std::move( targetJA ), std::move( targetValues ) );
 }
 
 /* --------------------------------------------------------------------------- */
