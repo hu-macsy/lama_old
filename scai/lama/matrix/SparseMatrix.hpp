@@ -148,8 +148,20 @@ public:
 
     /**
      *  @brief Constructor of a distributed sparse matrix with local storages
+     *
+     *  @param[in] rowDist is the distribution of the rows for the sparse matrix
+     *  @param[in] storage is the local part of the matrix owned by this processor
+     *  @param[in] checkFlag if true some global checks are done to verify consistency among all processors.
+     *
+     *  The following conditions must hold:
+     *
+     *  * The number of rows in storage must match the local size of the distribution (always checked)
+     *  * The number of columns in stroage must be the same on all processors (verified if checkFlag set)
+     *  * Kind and global size of row distribution must be same on all processors (verified if checkFlag set)
      */
-    SparseMatrix( dmemo::DistributionPtr rowDist, std::shared_ptr<MatrixStorage<ValueType> > storage );
+    SparseMatrix( dmemo::DistributionPtr rowDist, 
+                  std::shared_ptr<MatrixStorage<ValueType> > storage,
+                  const bool checkFlag = false );
 
     /** Override also the default copy constructor that does not make a
      *  deep copy of the input matrix due to the use of shared pointers.
@@ -698,6 +710,11 @@ protected:
     /** Implementation of pure method Matrix<ValueType>::buildComplex */
 
     virtual void buildComplex( const Matrix<RealType<ValueType> >& x, const Matrix<RealType<ValueType> >& y );
+
+    /**
+     *  @brief Local setting of the sparse matrix like constructor ( rowDist, storage )
+     */
+    void setLocal( dmemo::DistributionPtr rowDist, std::shared_ptr<MatrixStorage<ValueType>>, const bool checkFlag = true );
 
 public:
 

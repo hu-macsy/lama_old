@@ -107,11 +107,31 @@ SparseMatrix<ValueType>::SparseMatrix( shared_ptr<MatrixStorage<ValueType> > sto
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-SparseMatrix<ValueType>::SparseMatrix( DistributionPtr rowDist, shared_ptr<MatrixStorage<ValueType> > storage ) :
+SparseMatrix<ValueType>::SparseMatrix( DistributionPtr rowDist, shared_ptr<MatrixStorage<ValueType> > storage, const bool checkFlag ) :
 
     Matrix<ValueType>( rowDist, noDistribution( storage->getNumColumns() ) )
 
 {
+    if ( checkFlag )
+    {
+        // make sure that all processors have same number of (global) rows and columns
+        // requires global communication, i.e. max reductions on communicator 
+
+        auto const& comm = rowDist->getCommunicator();
+
+        IndexType nRows   = rowDist->getGlobalSize();
+        IndexType nCols   = storage->getNumColumns();
+
+        // Note: reductions will verify that current communicator contains all processors of 
+        //       comm, i.e. all processors will participate
+
+        IndexType maxRows = comm.max( nRows );
+        IndexType maxCols = comm.max( nCols );
+
+        SCAI_ASSERT_EQ_ERROR( nRows, maxRows, comm << ": inconsistent num of rows" )
+        SCAI_ASSERT_EQ_ERROR( nCols, maxCols, comm << ": inconsistent num of cols" )
+    }
+
     IndexType localNumRows = storage->getNumRows();
 
     // only local checks here, global checks by isConsistent
@@ -522,6 +542,55 @@ void SparseMatrix<ValueType>::assignLocal( const _MatrixStorage& storage, Distri
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseMatrix<ValueType>::setLocal( DistributionPtr rowDist, shared_ptr<MatrixStorage<ValueType> > storage, const bool checkFlag )
+{
+    if ( checkFlag )
+    {
+        // make sure that all processors have same number of (global) rows and columns
+        // requires global communication, i.e. max reductions on communicator 
+
+        auto const& comm = rowDist->getCommunicator();
+
+        IndexType nRows   = rowDist->getGlobalSize();
+        IndexType nCols   = storage->getNumColumns();
+
+        // Note: reductions will verify that current communicator contains all processors of 
+        //       comm, i.e. all processors will participate
+
+        IndexType maxRows = comm.max( nRows );
+        IndexType maxCols = comm.max( nCols );
+
+        SCAI_ASSERT_EQ_ERROR( nRows, maxRows, comm << ": inconsistent num of rows" )
+        SCAI_ASSERT_EQ_ERROR( nCols, maxCols, comm << ": inconsistent num of cols" )
+    }
+
+    IndexType localNumRows = storage->getNumRows();
+
+    SCAI_ASSERT_EQ_ERROR( localNumRows, rowDist->getLocalSize(), "#rows in matrix storage does not fix to distribution" )
+
+    mLocalData = storage;
+
+    // due to consistency, halo part should be allocated and have same number of rows as local data
+
+    if ( mHaloData )
+    {
+        mHaloData->allocate( localNumRows, 0 );
+    }
+    else
+    {
+        mHaloData.reset( storage->newMatrixStorage( localNumRows, 0 ) );
+    }
+
+    mHaloExchangePlan.clear();
+
+    // no column distribution, i.e.haloData has no entries
+
+    _Matrix::setDistributedMatrix( rowDist, noDistribution( storage->getNumColumns() ) );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void SparseMatrix<ValueType>::assignDistribute( const _MatrixStorage& storage, DistributionPtr rowDist, DistributionPtr colDist )
 {
     SCAI_LOG_INFO( logger,
@@ -676,14 +745,16 @@ void SparseMatrix<ValueType>::redistribute( const RedistributePlan& redistributo
     {
         // Halo must be removed before redistribution, i.e. set replicated columnn distribution
 
-        redistribute( getRowDistributionPtr(), noDistribution( getNumColumns() ) );
+        mLocalData->joinHalo( *mLocalData, *mHaloData, mHaloExchangePlan, getColDistribution() );
     }
 
-    shared_ptr<MatrixStorage<ValueType> > newData( mLocalData->newMatrixStorage() );
-    newData->redistribute( *mLocalData, redistributor );
-    mLocalData = newData;
+    mLocalData->redistributeInPlace( redistributor );
 
-    _Matrix::setDistributedMatrix( redistributor.getTargetDistributionPtr(), getColDistributionPtr() );
+    // make sure that the sparse matrix is consistent with the new local data
+
+    setLocal( redistributor.getTargetDistributionPtr(), mLocalData, false );
+
+    // now split halo correspoinding to the new column distribution
 
     redistribute( getRowDistributionPtr(), colDistributionPtr );
 }
